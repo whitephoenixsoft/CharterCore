@@ -130,3 +130,6 @@ The goal is correctness and trust, not scale.
 Early design / MVP implementation.
 Expect rapid iteration and intentional constraints.
 
+---
+This repository contains documentation and specifications.
+Any future code will be governed by the same license unless otherwise stated.
