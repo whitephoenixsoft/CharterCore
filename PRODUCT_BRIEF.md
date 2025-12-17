@@ -2,43 +2,40 @@
 
 ## Decision Governance for Modern Teams
 
-The Problem
+### The Problem
 
 Teams make important decisions every day — about architecture, policy, ownership, priorities, and risk.
 
 These decisions:
 
-Happen in Slack threads
+- Happen in Slack threads
 
-Are half-documend in wikis
+- Are half-documend in wikis
 
-Are implied by pull requests
+- Are implied by pull requests
 
-Are forgotten when people leave
+- Are forgotten when people leave
 
 
 Tools like Jira, GitHub, Confluence, and Slack manage work and content — but none of them answer a simple question:
 
 > Who had the authority to decide this, and what did we actually agree to?
 
-
-
-
 ---
 
-The Solution
+### The Solution
 
 Charter is a governance layer that records decisions as first-class objects.
 
 It provides:
 
-Explicit decision-making sessions
+- Explicit decision-making sessions
 
-Clear scope and authority
+- Clear scope and authority
 
-Immutable, auditable decision records
+- Immutable, auditable decision records
 
-Safe evolution of decisions over time
+- Safe evolution of decisions over time
 
 
 Charter doesn’t replace your tools — it integrates with them.
@@ -46,15 +43,15 @@ Charter doesn’t replace your tools — it integrates with them.
 
 ---
 
-What Makes Charter Different
+### What Makes Charter Different
 
-Existing Tools	Charter
-
-Track tasks	Track legitimacy
-Store documents	Preserve agreements
-Implicit authority	Explicit authority
-Edits overwrite history	Supersession preserves intent
-Centralized control	Federated governance
+Existing Tools	| Charter
+:-- | :--
+Track tasks |	Track legitimacy
+Store documents |	Preserve agreements
+Implicit authority |	Explicit authority
+Edits overwrite history	| Supersession preserves intent
+Centralized control |	Federated governance
 
 
 Charter is not about speed — it’s about trust.
@@ -62,7 +59,7 @@ Charter is not about speed — it’s about trust.
 
 ---
 
-How It Works (High Level)
+### How It Works (High Level)
 
 1. A team defines an Area (scope, authority, templates)
 
@@ -85,31 +82,31 @@ Optional AI helps facilitate — but humans remain in control.
 
 ---
 
-Who It’s For
+### Who It’s For
 
-Product & Engineering teams making architectural decisions
+- Product & Engineering teams making architectural decisions
 
-Policy and compliance teams maintaining living policies
+- Policy and compliance teams maintaining living policies
 
-Student and research teams collaborating without hierarchy
+- Student and research teams collaborating without hierarchy
 
-Founders and small teams building institutional memory
+- Founders and small teams building institutional memory
 
-Enterprises needing federated governance without bureaucracy
+- Enterprises needing federated governance without bureaucracy
 
 
 
 ---
 
-Why Now
+### Why Now
 
-Teams are distributed
+- Teams are distributed
 
-Decisions are increasingly asynchronous
+- Decisions are increasingly asynchronous
 
-AI accelerates conversation but not accountability
+- AI accelerates conversation but not accountability
 
-Governance is falling through the cracks
+- Governance is falling through the cracks
 
 
 Charter fills the gap between conversation and commitment.
@@ -117,15 +114,15 @@ Charter fills the gap between conversation and commitment.
 
 ---
 
-What Charter Does Not Do
+### What Charter Does Not Do
 
-Enforce policies
+- Enforce policies
 
-Execute actions
+- Execute actions
 
-Configure systems
+- Configure systems
 
-Replace existing workflows
+- Replace existing workflows
 
 
 Charter captures agreement, not activity.
@@ -133,14 +130,14 @@ Charter captures agreement, not activity.
 
 ---
 
-Vision
+### Vision
 
 Charter becomes the system of record for why things are the way they are — while letting teams choose how they work.
 
 
 ---
 
-Status
+### Status
 
 Charter is in early development. We are focused on correctness, clarity, and trust before scale.
 
