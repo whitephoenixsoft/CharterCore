@@ -48,6 +48,7 @@ Properties:
 - Bound to a scope
 - Superseded (not edited) when changed
 - Fully auditable
+- Retired when no longer applicable 
 
 Resolutions are living documents through lineage, not mutation.
 
@@ -66,11 +67,16 @@ Templates belong to Areas.
 Explicit rules that define who may accept resolutions.
 Authority is evaluated at acceptance time and is non-retroactive.
 
+It is stored as a special case resolution and must be updated like other resolutions.
+
 ---
 
 ### Scope
 Explicit boundaries that define what kinds of decisions are legitimate.
+
 Scope violations block acceptance and must be resolved explicitly.
+
+It is stored as a special case resolution and must be updated like other resolutions.
 
 ---
 
