@@ -14,7 +14,7 @@ It aligns with existing ones.
 
 ## Core Incentives
 
-1. Receipts (Defensive Incentive)
+### 1. Receipts (Defensive Incentive)
 
 Charter produces immutable, authority-checked records of decisions.
 
@@ -32,7 +32,7 @@ This incentive is strongest in:
 
 ---
 
-2. Reduced Re-Litigation
+### 2. Reduced Re-Litigation
 
 Charter prevents implicit re-opening of settled decisions.
 
@@ -50,7 +50,7 @@ This reduces:
 
 ---
 
-3. Auditability Without Surveillance
+### 3. Auditability Without Surveillance
 
 Charter audits decisions, not people.
 
@@ -64,7 +64,7 @@ This makes auditability compatible with trust.
 
 ---
 
-4. Legitimacy Signaling
+### 4. Legitimacy Signaling
 
 Charter enables organizations to demonstrate:
 
@@ -76,7 +76,7 @@ This builds trust even when outcomes are disputed.
 
 ---
 
-5. Longevity Over Individuals
+### 5. Longevity Over Individuals
 
 Charter preserves rationale beyond staff turnover.
 
