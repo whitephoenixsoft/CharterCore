@@ -8,7 +8,7 @@ These are permanent design boundaries.
 
 ## Charter Does Not
 
-1. Decide Outcomes
+### 1. Decide Outcomes
 
 Charter does not:
 
@@ -20,7 +20,7 @@ Humans decide. Charter records.
 
 ---
 
-2. Interpret Meaning
+### 2. Interpret Meaning
 
 Charter does not:
 
@@ -32,7 +32,7 @@ It records what was accepted, not what is true.
 
 ---
 
-3. Enforce Compliance
+### 3. Enforce Compliance
 
 Charter does not:
 
@@ -44,7 +44,7 @@ It is a ledger, not an enforcer.
 
 ---
 
-4. Replace Deliberation
+### 4. Replace Deliberation
 
 Charter does not:
 
@@ -56,7 +56,7 @@ Conversation happens elsewhere.
 
 ---
 
-5. Claim Neutrality of Outcomes
+### 5. Claim Neutrality of Outcomes
 
 Charter is neutral about process, not outcomes.
 
