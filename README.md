@@ -1,141 +1,27 @@
-# CharterCore
+# Charter Core
 
-A governance engine for recording agreed decisions within explicit scope and authority.
+Charter Core is a deterministic governance engine for recording, evolving, and auditing agreed decisions within explicit authority and scope.
 
-It provides a structured way for individuals and teams to agree on decisions
-("resolutions") within explicit scope and authority, and to preserve those
-agreements over time.
+Charter Core is designed to preserve institutional integrity by making decisions explicit, immutable, and reviewable over time.
 
-Charter does not manage work, execute actions, or enforce policies.
-It records legitimacy and intent.
+It does not provide chat, AI facilitation, or user experience features.
+Those are intentionally handled by separate layers.
 
----
+## What Charter Core Does
 
-## Core Concepts
+- Defines governance Areas
+- Records Authority and Scope as first-class decisions
+- Facilitates structured decision sessions
+- Captures candidates and accepted resolutions
+- Preserves immutable decision history
+- Supports review, supersession, and retirement of decisions
 
-### Area
-A governance boundary that defines:
-- Scope (what kinds of decisions are allowed)
-- Authority (who may accept decisions)
-- Templates (how decisions are structured)
+## What Charter Core Does NOT Do
 
-Areas enable federated governance across teams and domains.
+- Monitor conversations
+- Infer decisions
+- Provide user interfaces
+- Require AI
+- Enforce workflows beyond decision legitimacy
 
----
-
-### Session
-A structured, auditable conversation used to:
-- Propose decisions
-- Validate scope
-- Validate authority
-- Detect conflicts
-
-Sessions may be:
-- Active
-- Blocked (due to conflicts or overreach)
-- Resumed
-- Closed
-
-Sessions preserve reasoning but do not mutate decisions silently.
-
----
-
-### Resolution
-An immutable record of an agreed decision.
-
-Properties:
-- Accepted under explicit authority
-- Bound to a scope
-- Superseded (not edited) when changed
-- Fully auditable
-- Retired when no longer applicable 
-
-Resolutions are living documents through lineage, not mutation.
-
----
-
-### Templates
-Structured formats for resolutions.
-Templates enforce consistency and domain-specific language,
-but do not enforce semantics.
-
-Templates belong to Areas.
-
----
-
-### Authority
-Explicit rules that define who may accept resolutions.
-Authority is evaluated at acceptance time and is non-retroactive.
-
-It is stored as a special case resolution and must be updated like other resolutions.
-
----
-
-### Scope
-Explicit boundaries that define what kinds of decisions are legitimate.
-
-Scope violations block acceptance and must be resolved explicitly.
-
-It is stored as a special case resolution and must be updated like other resolutions.
-
----
-
-### AI Assistance (Optional)
-AI may assist by:
-- Facilitating sessions
-- Summarizing discussions
-- Drafting candidate resolutions
-
-AI may not:
-- Accept resolutions
-- Change authority
-- Change scope
-- Execute actions
-
-Charter must function fully without AI.
-
----
-
-## What Charter Is Not
-
-- Not a task manager
-- Not a workflow engine
-- Not a policy enforcement system
-- Not a configuration manager
-- Not a source of execution truth
-
-Charter integrates with existing tools rather than replacing them.
-
----
-
-## Design Principles
-
-- Decisions are explicit
-- Authority is visible
-- Scope is enforced
-- History is preserved
-- No silent state changes
-- Process correctness over automation
-
----
-
-## MVP Scope
-
-The initial implementation is intentionally minimal:
-- Single Area
-- Single-user authority
-- Hard-coded rules
-- Monolithic architecture
-
-The goal is correctness and trust, not scale.
-
----
-
-## Status
-
-Early design / MVP implementation.
-Expect rapid iteration and intentional constraints.
-
----
-This repository contains documentation and specifications.
-Any future code will be governed by the same license unless otherwise stated.
+Charter Core is intentionally boring, explicit, and trustworthy.
