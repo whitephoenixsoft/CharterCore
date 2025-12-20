@@ -9,10 +9,9 @@ Correctness and trust matter more than features.
 
 ## Core Rule
 
-> **Invariants > MVP convenience > Features**
+> **Invariants > Features**
 
-If a contribution violates a long-term invariant, it will not be accepted,
-even if it improves usability or speed.
+If a contribution violates a long-term invariant, it will not be accepted, even if it improves usability or speed.
 
 ---
 
@@ -21,11 +20,11 @@ even if it improves usability or speed.
 Please read:
 - `README.md`
 - `PRODUCT_BRIEF.md`
-- `INVARIANTS_GOAL.md`
-- `MVP_DEVIATIONS.md`
+- `INVARIANTS.md`
+- `MENTAL_MODEL.md`
+- `SIMULATIONS.md`
 
-If your change affects decision-making, authority, or scope,
-it **must** align with those documents.
+If your change affects decision-making, authority, or scope, it **must** align with those documents.
 
 ---
 
@@ -44,7 +43,6 @@ it **must** align with those documents.
 - New authority models
 - Automation or enforcement
 - Semantic interpretation of scope
-- AI-driven decisions
 - Cross-area behavior
 
 ---
@@ -54,10 +52,9 @@ it **must** align with those documents.
 - A workflow engine
 - A task executor
 - A configuration manager
-- An AI decision-maker
+- An AI decision maker
 
-If your idea pushes Charter in these directions,
-it likely belongs in an integration, not the core engine.
+If your idea pushes Charter in these directions, it likely belongs in an integration, not the core engine.
 
 ---
 
