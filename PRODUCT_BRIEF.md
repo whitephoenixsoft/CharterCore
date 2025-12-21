@@ -1,22 +1,75 @@
-# Charter Core — Product Brief
+# Charter Core — Product Brief 
 
-Modern organizations lose institutional memory through informal decisions, overwritten documents, and unclear authority. Charter Core exists to solve this problem by treating decisions as first-class, auditable artifacts.
+Modern systems lose legitimacy over time.
 
-Charter Core provides a minimal governance engine that records:
+Decisions are made in meetings, chats, or documents, then silently encoded as flags, configs, or policies. Authority is implied, scope is forgotten, and history is overwritten. Months later, no one can answer why something is allowed — only that it is.
+
+**Charter Core exists to preserve decision legitimacy.**
+
+Charter Core is a minimal governance engine that treats decisions as first-class, immutable records. It explicitly captures:
+
 - What was decided
-- By whom
-- Under what authority
-- Within what scope
-- And when it changes
+- Who had authority to decide
+- Within what scope the decision applies
+- How agreement was reached
+- When the decision was accepted, superseded, or retired
 
-Decisions are not overwritten or implied. They are explicitly accepted, versions, reviewed, and retired through structured sessions.
+Decisions in Charter Core are never implicit and never overwritten. They are accepted through structured sessions and evolve only by supersession, preserving a complete and auditable decision history.
 
-Charter Core is suitable for:
-- Software architecture decisions
-- Organizational policies
-- Governance processes
-- Long-lived rules and standards
-- Any domain requiring auditability and integrity
+---
 
-Charter Core is not an AI system, chat system, or workflow engine.
-It is the foundation upon which such systems can be safely built.
+## What Charter Core Is
+
+- A decision ledger
+- A legitimacy engine
+- A governance foundation for other systems
+
+Charter Core is designed to be embedded as a library or accessed through APIs by tools that need reliable decision memory.
+
+--- 
+
+## What Charter Core Is Not
+
+- Not a workflow engine
+- Not a policy language
+- Not a state store
+- Not a chat system
+- Not an AI system
+
+Charter Core does not execute actions or interpret meaning.
+It records explicit human decisions and preserves their legitimacy over time.
+
+---
+
+## Where Charter Core Is Useful
+
+Charter Core applies wherever authority matters and history should not be rewritten, including:
+
+- Software architecture and technical decisions
+- Organizational policies and standards
+- Governance and compliance processes
+- Configuration and rule changes
+- Multiplayer systems and game canon
+- Any domain requiring auditability, traceability, and integrity
+
+---
+
+## The Core Idea
+
+> State answers “what is true.”
+> Charter answers “why it is allowed.”
+
+Charter Core provides the missing layer between human agreement and system behavior.
+
+---
+
+## Why This Matters
+
+By separating decision legitimacy from system execution, Charter Core enables systems that are:
+
+- easier to reason about
+- safer to evolve
+- harder to abuse
+- resilient to team and organizational change
+
+Charter Core does not replace existing tools — it stabilizes them.
