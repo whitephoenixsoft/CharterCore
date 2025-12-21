@@ -451,29 +451,6 @@ Charter Core defers meaning instead of encoding it prematurely.
 
 ---
 
-## Simulation 19 — Manual Governance, No AI
-
-### Context
-
-Charter used purely as a governance ledger.
-
-### Flow
-
-- Manual candidates
-- External discussion
-- Explicit acceptance
-
-### Outcome
-
-Full value retained
-
-### Validated Invariants
-
-- AI optionality
-- Engine completeness
-
----
-
 ## Summary 
 
 Taken together, these simulations demonstrate that Charter Core:

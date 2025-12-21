@@ -188,16 +188,3 @@ It does not:
 - Enforce execution
 
 Downstream systems consume Charter Core state explicitly via APIs.
-
----
-
-## 17. AI Is Outside the Engine Boundary
-
-Charter Core contains no AI logic.
-
-Any AI system:
-- Must interact exclusively through public APIs
-- Has no special authority
-- Cannot legitimize decisions
-
-Charter Core must remain fully functional without any AI present.
