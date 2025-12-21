@@ -1,95 +1,342 @@
-# Mapping: Invariants → Acceptance Tests
-
-This document maps long-term invariants to acceptance tests.
-
-Acceptance tests are **validation mechanisms**, not definitions of correctness.
-An invariant may exist without a test, but a test must never contradict an invariant.
+# Charter Core — Acceptance Tests (Invariant-Driven)
 
 ---
 
-## Decision & History
+## AT-1 Explicit Decisions Only
 
-- **Immutability**  
-  → Test: Resolution creation produces immutable records
+### Given
 
-- **Supersession**  
-  → Test: New resolution supersedes existing one for same scope
+- An initialized Area with valid Authority and Scope
+- A session with candidates and recorded positions
 
-- **Single Active Resolution**  
-  → Test: Prevent two active resolutions in same scope
+### When
 
----
+No candidate satisfies the Authority rule
 
-## Sessions
+### Then
 
-- **Decisions Require Sessions**  
-  → Test: Resolution cannot be created outside a session
+- No resolution is created
+- No implicit “winner” is inferred
+- Session remains ACTIVE or BLOCKED
 
-- **Explicit Acceptance**  
-  → Test: Resolution only created after accept action
+### Fail if
 
-- **Session Blocking**  
-  → Test: Scope or authority conflicts block session
-
-- **Session Resume**  
-  → Test: Blocked sessions require conflict resolution before resume
+A resolution exists without explicit acceptance
 
 ---
 
-## Scope
+## AT-2 Immutable History
 
-- **Scope Defines Legitimacy**  
-  → Test: Out-of-scope resolution blocks acceptance
+### Given
 
-- **Explicit Scope Violations**  
-  → Test: Scope violations are visible and logged
+An accepted resolution R-1
 
----
+### When
 
-## Authority
+Any attempt is made to modify, overwrite, or delete R-1
 
-- **Authority Checked at Acceptance**  
-  → Test: Acceptance fails without authority
+### Then
 
-- **Explicit Authority**  
-  → Test: No default or implicit authority paths exist
+- The operation is rejected
+- R-1 remains unchanged
 
----
+### And
 
-## AI
-
-- **AI Is Non-Decisive**  
-  → Test: AI cannot accept or finalize resolutions
-
-- **AI Optionality**  
-  → Test: System functions with AI disabled
+Only a new resolution may supersede or retire R-1
 
 ---
 
-## Templates
+## AT-3 Areas Define Governance Boundaries
 
-- **Template Conformance**  
-  → Test: Resolution must match template structure
+### Given
 
-- **No Semantic Enforcement**  
-  → Test: Template does not auto-approve content
+- Two Areas A and B
+- Each has independent Authority and Scope
+
+### When
+
+A session is opened in Area A
+
+Then
+
+- Only Area A’s Authority governs the session
+- Area B has no effect unless explicitly referenced
+
+### Fail if
+
+Authority or Scope from another Area is implicitly applied
 
 ---
 
-## Integration & Execution
+## AT-4 Authority Is a First-Class Resolution
 
-- **No Execution**  
-  → Test: No external side effects occur on acceptance
+### Given
 
-- **Integration as Context Only**  
-  → Test: External links do not affect authority or scope
+An Area with an active Authority resolution A-AUTH-1
+
+### When
+
+A new Authority candidate is accepted
+
+### Then
+
+- A new Authority resolution A-AUTH-2 is created
+- A-AUTH-1 is marked Superseded or Retired
+- No other Authority remains active
+
+### Fail if
+
+Multiple active Authorities exist in the same Area
 
 ---
 
-## Notes
+## AT-5 Scope Is a First-Class Resolution
 
-- Not all invariants have tests in the MVP.
-- Some invariants are enforced socially or structurally.
-- Missing tests indicate **intentional deferral**, not omission.
+### Given
 
-If a test ever conflicts with an invariant, the test is wrong.
+An Area with an active Scope resolution S-1
+
+### When
+
+A new Scope candidate is accepted
+
+### Then
+
+- A new Scope resolution S-2 is created
+- S-1 is superseded or retired
+- S-2 becomes the only active Scope
+
+---
+
+## AT-6 Context Preservation (Authority & Scope)
+
+### Given
+
+- A session S accepted under Authority A-1 and Scope S-1
+- Later, Authority A-2 and Scope S-2 become active
+
+### Then
+
+- Resolution R created in S permanently references A-1 and S-1
+- R is not re-evaluated or invalidated
+
+### Fail if
+
+Historical resolutions are altered by later context changes
+
+---
+
+## AT-7 Sessions Are the Sole Unit of Legitimacy
+
+### Given
+
+A candidate exists outside of any session
+
+### When
+
+An attempt is made to accept it
+
+### Then
+
+Acceptance is rejected
+
+### And
+
+No resolution is created
+
+---
+
+## AT-8 Candidates Are Neutral
+
+### Given
+
+Multiple candidates exist in a session
+
+### When
+
+Some candidates receive no positions or discussion
+
+### Then
+
+- No effect occurs
+- Only accepted candidates produce resolutions
+
+### Fail if
+
+Mere existence or ordering affects outcome
+
+---
+
+## AT-9 Deterministic Evaluation
+
+### Given
+
+Identical session state:
+- same participants
+- same positions
+- same Authority rule
+
+### When
+
+Evaluation is run multiple times
+
+### Then
+
+The outcome is identical every time
+
+### Fail if
+
+Non-deterministic results occur
+
+---
+
+## AT-10 Explicit Resolution Lifecycle
+
+### Given
+
+A resolution R-1 is Active
+
+### When
+
+It is superseded or retired
+
+### Then
+
+- Its lifecycle state changes explicitly
+- R-1 remains queryable
+
+### Fail if
+
+R-1 disappears or is silently altered
+
+---
+
+## AT-11 No Generic Policy Streams
+
+### Given
+
+Resolutions of arbitrary types exist
+
+### When
+
+They are processed by the engine
+
+### Then
+
+- Only Authority and Scope receive special handling
+- All others are treated uniformly
+
+### Fail if
+
+Engine behavior varies by resolution type beyond Authority/Scope
+
+---
+
+## AT-12 Transparency of Governing Context
+
+### Given
+
+A session is opened
+
+### Then
+
+The engine can return:
+- active Authority
+- active Scope
+- any explicitly referenced Scopes
+
+### Fail if
+
+A resolution can be accepted without this information being available
+
+---
+
+## AT-13 Decision Rules Announced at Session Start
+
+### Given
+
+A session is opened
+
+### Then
+
+- Exactly one Authority resolution governs the session
+- That rule remains fixed for the session’s lifetime
+
+### Fail if
+
+The decision rule changes mid-session without closing or revalidation
+
+---
+
+## AT-14 Session Blocking and Revalidation
+
+### Given
+
+A session is BLOCKED or PAUSED
+
+### When
+
+Authority or Scope changes externally
+
+### Then
+
+Session cannot resume without revalidation
+
+### Fail if
+
+Acceptance proceeds under changed context without detection
+
+---
+
+## AT-15 No Permissions or Identity Semantics
+
+### Given
+
+Participant identifiers are provided
+
+### Then
+
+- Engine treats them as opaque identifiers
+- No permission checks occur internally
+
+### Fail if
+
+Engine enforces roles, ranks, or access rules
+
+---
+
+## AT-16 No Side Effects Beyond State
+
+### Given
+
+A resolution is accepted
+
+### Then
+
+Only internal state is updated
+
+### Fail if
+
+- External systems are invoked
+- Tasks or workflows are triggered
+
+---
+
+## AT-17 AI Outside Engine Boundary
+
+### Given
+
+An AI system proposes candidates or metadata
+
+### When
+
+No explicit acceptance occurs
+
+### Then
+
+No resolution is created
+
+### Fail if
+
+AI input alone can legitimize a decision
+
