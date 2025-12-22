@@ -451,6 +451,93 @@ Charter Core defers meaning instead of encoding it prematurely.
 
 ---
 
+## Simulation 19 — Why Area Names Must Be Non-Semantic
+
+### Simulation: Area Rename Without Governance Impact
+
+#### Context
+
+- Organization refactors terminology
+- Governance rules stay the same
+
+#### Setup
+
+###### Area
+
+- ID: A-7
+- Name: "Infrastructure"
+- 
+##### Active Resolutions
+
+- Authority R-AUTH-7
+    “Infrastructure Lead approves decisions.”
+- Scope R-SCOPE-7
+    “Applies to cloud infrastructure, networking, and deployment tooling.”
+    
+#### Initial Decision
+
+##### Session
+
+> “Choose Load Balancer”
+
+##### Candidate
+
+> “Use managed load balancer from Cloud Provider X”
+
+##### Outcome
+
+- Accepted
+- Resolution R-LB-1 created
+- References:
+    - Area A-7
+    - R-AUTH-7
+    - R-SCOPE-7
+
+#### Rename Event (No Session)
+
+The team renames the Area:
+    "Infrastructure" → "Platform Engineering"
+
+##### Important
+
+- No session
+- No candidates
+- No acceptance
+
+### Observed System Behavior
+
+- R-LB-1 remains valid
+- No authority is re-evaluated
+- No scope is reinterpreted
+- No retroactive changes occur
+
+### Why This Matters
+
+If the Area name were semantic:
+- Renaming would imply governance change
+- History would become ambiguous
+- Tooling would require approval for cosmetic edits
+
+Charter avoids this entirely.
+
+### Explicit Contrast (What Charter Does Not Do)
+
+Charter does not assume:
+- "Platform Engineering" means broader authority
+- "Infrastructure" means less responsibility
+- Name changes imply scope drift
+
+Only **resolutions** carry meaning.
+
+### Simulation Outcome
+
+✅ Humans get readable structure
+✅ Governance remains explicit
+✅ History stays stable
+✅ CLI / UI remain usable
+
+---
+
 ## Summary 
 
 Taken together, these simulations demonstrate that Charter Core:

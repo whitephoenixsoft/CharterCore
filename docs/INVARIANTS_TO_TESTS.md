@@ -320,3 +320,63 @@ Only internal state is updated
 - External systems are invoked
 - Tasks or workflows are triggered
 
+---
+
+## AT-17 Area Name Does Not Affect Legitimacy or Enforcement
+
+### Given
+
+- An Area A-1 is created with:
+    - Name: "Backend Architecture"
+- An initialization session creates:
+    - Authority resolution R-AUTH-1
+    - Scope resolution R-SCOPE-1: “Decisions related to backend architecture, databases, and APIs.”
+
+### When
+
+1. A session S-1 is started in Area A-1.
+2. A candidate C-1 is proposed: “Adopt PostgreSQL as primary database.”
+3. Candidate C-1 is accepted under R-AUTH-1.
+
+### Then
+
+- Resolution R-DB-1 is created with metadata:
+    - Area: A-1
+    - Authority: R-AUTH-1
+    - Scope: R-SCOPE-1
+- The Area name "Backend Architecture":
+    - Is not evaluated
+    - Is not parsed
+    - Is not used in authority checks
+    - Is not used in scope validation
+    - 
+### And When (Rename Case)
+
+4. The Area name is changed to "Platform Engineering" without a session.
+
+### Then
+
+- No resolutions are created
+- No authority or scope changes occur
+- All existing resolutions remain valid
+- Future sessions still reference:
+    - A-1
+    - The currently active Authority and Scope resolutions
+
+### And When (Misleading Name Case)
+
+5. The Area name is changed to "Company Legal Policies".
+
+### Then
+
+- The engine:
+    - Does not block decisions
+    - Does not raise conflicts
+    - Does not infer scope or authority changes
+- Only explicit Scope or Authority resolutions can change applicability
+
+### Pass Condition
+
+✔ Area name changes never require a session
+✔ Area name changes never affect legitimacy
+✔ Area name is never used for semantic inference

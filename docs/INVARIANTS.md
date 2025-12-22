@@ -188,3 +188,9 @@ It does not:
 - Enforce execution
 
 Downstream systems consume Charter Core state explicitly via APIs.
+
+---
+
+## 17. Area Name
+
+Area names are human-readable identifiers only and have no semantic, authority, or scope-enforcement meaning.
