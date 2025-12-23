@@ -1,196 +1,221 @@
-# Charter Core — Formal Engine Invariants (Revised)
+# Charter Core — Formal Engine Invariants & Boundaries (Frozen)
 
-## 1. Explicit Decisions Only
-
-Charter Core recognizes a decision only when it is explicitly accepted within a session according to the active Authority rule.
-No implicit, inferred, or out-of-band decisions are permitted.
+> Status: FROZEN
+> Changes to these invariants require explicit justification and new simulations demonstrating preserved legitimacy.
 
 ---
 
-## 2. Immutable History
+## Core Principle
 
-All accepted resolutions are immutable.
-Resolutions are never edited or deleted.
+Charter Core is a **legitimacy engine**, not a reasoning engine, workflow engine, or collaboration tool.
 
-Any change in meaning, rule, or applicability must be expressed as a new resolution that supersedes or retires a previous one.
-
----
-
-## 3. Areas Define Governance Boundaries
-
-All sessions, candidates, and resolutions exist within an Area.
-An Area is a bounded governance context and the highest-level container recognized by the engine.
-
-Charter Core does not infer or enforce relationships between Areas.
+Its sole responsibility is to ensure that decisions are:
+- Explicit
+- Auditable
+- Governed
+- Non-retroactive
 
 ---
 
-## 4. Authority Is a First-Class Resolution
+## Engine Invariants (Frozen)
 
-Each Area must maintain exactly one active Authority resolution at any given time.
+---
+
+### 1. Explicit Decisions Only
+
+No decision is legitimate unless it is explicitly accepted within a session.
+- Silence is not consent
+- Metadata is not acceptance
+- Automation is not authority
+
+---
+
+### 2. Immutable History
+
+Once accepted, a resolution is immutable.
+
+- Resolutions are never edited
+- Corrections require superseding resolutions
+- History is append-only
+
+---
+
+### 3. Areas Are Hard Governance Boundaries
+
+Every resolution belongs to exactly one Area.
+
+- Areas do not implicitly overlap
+- Areas do not inherit authority or scope
+- Cross-area relevance must be explicitly referenced
+
+---
+
+### 4. Authority Is a First-Class Resolution
+
+Each Area must maintain **exactly one Active Authority resolution** at any given time.
 
 Authority:
 - Defines who has standing in a session
-- Defines the deterministic decision rule used to evaluate agreement
-- Is purely mechanical and non-interpretive
+- Defines the deterministic decision rule for the agreement
+- Is purely mechanical
 
-Authority does not:
-- Evaluate candidate content
-- Prioritize candidates
-- Apply semantic judgment
+Authority does **not**:
+- Interpret content
+- Judge correctness
+- Assign roles
+- Apply semantic meaning
 
-Authority changes may occur only through a decision session.
-All previous Authority resolutions remain immutable and historically accessible.
+Authority changes:
+- Require a decision session
+- Never rewrite history
 
 ---
 
-## 5. Scope Is a First-Class Resolution
+### 5. Scope Is a First-Class, Descriptive Resolution
 
-Each Area must maintain exactly one active Scope resolution at any given time.
+Each Area must have exactly one active Scope resolution at any time.
 
 Scope:
-- Is descriptive and informational to the engine
-- Does not enforce or block decisions mechanically
+- Describes what kinds of decisions belong in the Area
+- Is descriptive, not enforcing
+- Exists to inform humans and block obvious misuse
 
-Scope changes may occur only through a decision session.
-All previous Scope resolutions remain immutable and historically accessible.
-
----
-
-## 6. Context Preservation (Authority & Scope)
-
-Every session and every accepted resolution must permanently record:
-
-- The active Authority resolution of the primary Area at the time of acceptance
-- The active Scope resolution of the primary Area at the time of acceptance
-- Any additional Scope resolutions explicitly referenced during the session
-
-Later changes to Authority or Scope must never retroactively affect prior sessions or resolutions.
+Scope changes:
+- Require a decision session
+- Never invalidate prior resolutions
 
 ---
 
-## 7. Sessions Are the Sole Unit of Legitimacy
+### 6. Context Preservation Is Mandatory
 
-A resolution may be accepted only within a session.
+Every accepted resolution must permanently record:
+- The active Authority resolution at acceptance
+- The active Scope resolution at acceptance
+- Any additional Areas or Scopes explicitly referenced during the session
 
-Sessions define:
-- Participants
-- Candidates
-- Positions
-- Evaluation state
-- Outcome
-
-Charter Core does not support decisions made outside of sessions.
+Later changes must never retroactively alter legitimacy.
 
 ---
 
-## 8. Candidates Are Neutral
+### 7. Sessions Are the Unit of Legitimacy
 
-Candidates represent proposed options under consideration.
-They imply no endorsement, priority, or intent.
+Resolutions may only be accepted within sessions.
 
-A candidate has no effect unless accepted through a session.
-
----
-
-## 9. Deterministic Evaluation
-
-Given the same:
-- Participants
-- Positions
-- Authority rule
-- Session state
-
-Charter Core must always produce the same outcome.
-
-No probabilistic, heuristic, or semantic evaluation is permitted within the engine.
+Sessions:
+- Define participants
+- Enforce authority rules
+- Enforce session constraints
+- Produce zero or more resolutions
 
 ---
 
-## 10. Explicit Resolution Lifecycle
+### 8. Candidates Are Neutral
 
-Resolutions may transition only through explicit states, including:
+Candidates are options under consideration.
+
+They:
+- Imply no intent
+- Imply no endorsement
+- May be abandoned without consequence
+
+Only accepted candidates become resolutions.
+
+---
+
+### 9. Explicit Resolution Lifecycle
+
+Resolutions transition only through explicit states:
 - Active
 - Under Review
 - Superseded
 - Retired
 
-State transitions must be explicit and auditable.
-No resolution is ever removed from history.
+Rules:
+- No resolution is ever removed
+- A resolution under review may not be accepted
+- All transitions are auditable
 
 ---
 
-## 11. No Generic Policy Streams
+### 10. Session Constraints Are Engine-Enforced
 
-Charter Core does not support arbitrary rule streams, aliases, or version tracks.
+Sessions may declare explicit constraints at creation time.
 
-Only Authority and Scope receive special semantic treatment by the engine.
+Constraints:
+- Apply only to the current session
+- Are enforced mechanically by the engine
+- Must be satisfied before acceptance
+- Do not modify Authority or Scope
 
-All other resolutions are treated uniformly.
-
----
-
-## 12. Transparency of Governing Context
-
-Before a session may accept a resolution, Charter Core must expose:
-
-The active Authority resolution
-
-The active Scope resolution
-
-This requirement exists to ensure that decisions are made with explicit knowledge of governing context.
+Constraints prevent premature or illegitimate acceptance.
 
 ---
 
-## 13. Decision Rules Are Announced at Session Start
+### 11. Session Blocking and Pausing Are Explicit
 
-Every session must be associated with exactly one Authority resolution.
+If a session cannot satisfy its Authority rule or constraints, it must:
+- Enter a blocked or paused state
 
-The Authority’s decision rule:
-- Governs acceptance, rejection, blocking, and closure
-- Is fixed for the duration of the session
-- Must be known to all participants at session start
+When resuming:
+- Active Authority is revalidated
+- Active Scope is revalidated
 
----
-
-## 14. Session Blocking and Pausing Are Explicit
-
-If a session cannot satisfy its Authority rule, it must enter a blocked or paused state.
-
-When a paused or blocked session resumes, Charter Core must re-validate:
-- Active Authority
-- Active Scope
-
-If the governing context has changed, the session may not proceed without explicit handling.
+If context has materially changed, explicit handling is required.
 
 ---
 
-## 15. No Permissions or Identity Semantics
+### 12. Rationale Is Optional but Preservable
 
-Charter Core does not implement:
-- User authentication
-- Permissions
-- Roles
-- Access control
+Charter Core must never require rationale to legitimize a decision.
 
-All participant identity and permission enforcement occur outside the engine.
+However:
+- Any rationale provided must be preserved
+- The audit trail (sessions, candidates, supersession) explains why decisions evolved
 
----
-
-## 16. No Side Effects Beyond State
-
-Charter Core produces only internal state changes and queryable records.
-
-It does not:
-- Trigger workflows
-- Create tasks
-- Call external systems
-- Enforce execution
-
-Downstream systems consume Charter Core state explicitly via APIs.
+Legitimacy comes from process, not prose.
 
 ---
 
-## 17. Area Name
+### 13. No Semantic Inference
 
-Area names are human-readable identifiers only and have no semantic, authority, or scope-enforcement meaning.
+Charter Core must never infer:
+- Authority overlap
+- Scope overlap
+- Role equivalence
+- Intent
+
+All meaning is explicit or human-interpreted.
+
+---
+
+### 14. AI Is Outside the Engine Boundary
+
+Charter Core must be fully functional without AI.
+
+If integrated:
+- AI may suggest
+- AI may annotate
+- AI may warn
+
+AI may never:
+- Accept decisions
+- Modify resolutions
+- Override authority
+- Bypass constraints
+
+---
+
+## Frozen Boundary (Non-Goals)
+
+Charter Core explicitly does not provide:
+- Chat systems
+- Workflow orchestration
+- Task execution
+- Role management
+- Identity systems
+- Semantic reasoning
+- Conflict resolution by inference
+- UX patterns (rounds, turns, moderation)
+
+These belong to higher layers.
+
