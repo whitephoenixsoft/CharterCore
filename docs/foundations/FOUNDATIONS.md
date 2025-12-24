@@ -60,6 +60,19 @@ This document:
 
 ---
 
+### WHY_CHARTER_IS_DIFFERENT.md
+
+Summary of why Charter is different for other similar engines.
+
+This document:
+
+- Summarizes foundational decisions 
+- Points out key differences
+- Why it matters
+- Key design principle
+
+---
+
 ## Interpretive Priority
 
 In case of ambiguity:
