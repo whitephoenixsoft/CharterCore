@@ -380,3 +380,47 @@ Only internal state is updated
 ✔ Area name changes never require a session
 ✔ Area name changes never affect legitimacy
 ✔ Area name is never used for semantic inference
+
+---
+
+AT: Area Initialization Requirement
+Given an Area with no Authority or Scope
+When a user attempts to accept a non-Authority, non-Scope resolution
+Then the system must block acceptance and require initialization
+
+---
+
+AT-CP-02: Context Is Preserved
+Change:
+Add explicit assertion that no reinterpretation occurs.
+New Assertion Added:
+Given a resolution accepted under Scope S1
+When Scope is later changed to S2
+Then the original resolution:
+Remains valid
+Retains reference to S1
+Is not flagged, altered, or blocked by the engine
+
+AT-AUTH-04: Authority Changes Are Non-Retroactive
+Change:
+Clarify that legitimacy is frozen.
+New Assertion Added:
+Authority changes must not mark prior resolutions as:
+invalid
+deprecated
+questionable
+“out of authority”
+
+AT-LEG-01: Legitimacy Is Time-Bound
+Given
+Authority A1 and Scope S1 are active
+A resolution R1 is accepted
+When
+Authority changes to A2
+Scope changes to S2
+Then
+R1 remains:
+Active (unless explicitly retired)
+Legitimate
+Immutable
+No engine-generated warning or correction occurs
