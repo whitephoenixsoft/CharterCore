@@ -240,6 +240,41 @@ Until both are present:
 - All other sessions must be blocked
 
 ---
+
+### 18. Verifiable Export Integrity
+
+Charter Core must provide a deterministic mechanism to verify the integrity of exported data.
+
+- Exports must include sufficient information to detect:
+    - Structural tampering
+    - Content modification outside Charter Core
+- On import, Charter Core must never silently accept altered data as legitimate history.
+- If integrity verification fails, imported content must:
+    - Be rejected or
+    - Enter an explicit Under Review state requiring human confirmation
+
+This invariant applies only at import/export boundaries.
+
+It does **not** affect:
+- Authority semantics
+- Scope semantics
+- Session mechanics
+- Resolution legitimacy rules
+
+Charter Core remains a legitimacy engine, not a cryptographic trust system.
+
+#### Rationale (Why This Exists)
+
+- Charter already guarantees logical integrity internally.
+- Import/export introduces an external trust boundary.
+- Silent tampering would undermine auditability and legitimacy.
+- Detection is required; prevention is not.
+
+This mirrors established systems (Git, package managers, SBOMs):
+- History remains immutable inside
+- External artifacts are verified on entry
+
+---
 ## Frozen Boundary (Non-Goals)
 
 Charter Core explicitly does not provide:
