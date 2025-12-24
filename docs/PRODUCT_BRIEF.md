@@ -54,6 +54,28 @@ Charter Core applies wherever authority matters and history should not be rewrit
 
 ---
 
+## Charter Core and Responsibility Patterns
+
+Many systems use procedural patterns such as *Chain of Responsibility* to determine who handles an action at runtime. These patterns are effective for execution, routing, and control flow.
+
+Charter Core addresses a different problem.
+
+Charter Core does not route requests or execute decisions. Instead, it records how responsibility was legitimately resolved when a decision became canonical.
+
+Where Chain of Responsibility answers:
+
+>“Who handled this?”
+
+Charter Core answers:
+
+>“Under what authority was this decision accepted?”
+
+This distinction allows Charter Core to coexist with existing architectures without replacing them. Runtime systems may evolve, handlers may change, and roles may disappear — but Charter preserves the legitimacy, authority, and scope that were in force *at the moment of decision*.
+
+Charter Core is therefore not a workflow engine or execution framework. It is a **governance ledger** that complements procedural systems by preserving institutional truth.
+
+---
+
 ## The Core Idea
 
 > State answers “what is true.”

@@ -189,3 +189,62 @@ Every change points to:
 - Mod-friendly governance
 - Debuggable story logic
 - Multiplayer dispute resolution
+
+---
+
+## Runtime Responsibility vs Canonical Legitimacy
+
+Game engines and simulations commonly rely on procedural responsibility chains:
+
+- Input handling
+- AI decision trees
+- Ability resolution
+- Event propagation
+- Faction influence systems
+
+These systems determine what happens during play.
+
+Charter Core governs a different layer:
+
+> What becomes true in the world.
+
+### Separation of Concerns
+
+- **Runtime systems** decide:
+    - Can this action occur?
+    - Who executes it?
+    - What are the immediate effects?
+
+- **Charter Core** records:
+    - Who was authorized to make the decision
+    - Under what rules agreement was measured
+    - Within which scope the decision applies
+    - When and how the decision changed over time
+
+This allows games to support:
+- Laws that evolve
+- Political systems with audit trails
+- Faction governance
+- Player-driven rule changes
+- World canon that persists beyond sessions or saves
+
+### Example
+
+A game may allow a player character to issue a decree at runtime.
+
+- The game engine determines whether the action is allowed.
+- Charter Core determines whether the decree becomes law.
+
+If accepted, the decree becomes an immutable resolution:
+- Later challenged
+- Superseded
+- Or retired — but never erased.
+
+### Why This Matters
+
+By separating execution from legitimacy:
+- Game logic stays fast and flexible
+- Governance stays explicit and auditable
+- Narrative integrity survives refactors, patches, and balance changes
+
+Charter Core does not replace in-engine logic. It provides a canonical memory of decisions that outlives any single system.
