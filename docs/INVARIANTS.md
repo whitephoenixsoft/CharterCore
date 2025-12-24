@@ -86,14 +86,15 @@ Scope changes:
 
 ---
 
-### 6. Context Preservation Is Mandatory
+### 6. Context Preservation (Authority & Scope)
 
-Every accepted resolution must permanently record:
-- The active Authority resolution at acceptance
-- The active Scope resolution at acceptance
-- Any additional Areas or Scopes explicitly referenced during the session
+Every session and every accepted resolution must permanently record:
+- The active Authority resolution at the time of acceptance
+- The active Scope resolution at the time of acceptance
+- Any additional Scopes explicitly referenced during the session
 
-Later changes must never retroactively alter legitimacy.
+Later changes to Authority or Scope must never invalidate, reinterpret, suppress, or alter previously accepted resolutions.
+Relevance, applicability, or correction may only be expressed through new resolutions.
 
 ---
 
@@ -205,6 +206,40 @@ AI may never:
 
 ---
 
+### 15. Legitimacy Is Evaluated at Acceptance Time
+
+A resolution’s legitimacy is determined solely by:
+- The Authority active at acceptance
+- The Scope active at acceptance
+- The decision rule satisfied at acceptance
+
+No future state change may retroactively affect legitimacy.
+
+---
+
+### 16. Relevance Is Human, Not Mechanical
+
+Charter Core does not determine whether a resolution is still relevant.
+
+Relevance is expressed only through:
+- Supersession
+- Retirement
+- Clarifying resolutions
+
+Charter Core must not auto-retire or suppress resolutions based on context drift.
+
+---
+
+### 17. Area Initialization Requirement
+
+An Area must have exactly one active Authority resolution and exactly one active Scope resolution before any other resolution may be accepted within that Area.
+
+Until both are present:
+- The Area is considered uninitialized
+- Only sessions whose sole purpose is to establish Authority and/or Scope are permitted
+- All other sessions must be blocked
+
+---
 ## Frozen Boundary (Non-Goals)
 
 Charter Core explicitly does not provide:
