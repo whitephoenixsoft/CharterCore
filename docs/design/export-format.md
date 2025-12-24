@@ -23,15 +23,15 @@ Clients (CLI, UI, integrations) must not redefine its structure.
     There is exactly one export format. Import behavior (restore vs consolidate) is a function of the importer, not the file.
 2. Full audit preservation
     Sessions, candidates, and lifecycle transitions are preserved even if not required to legitimize decisions.
-3 No semantic interpretation
+3. No semantic interpretation
     The engine does not infer meaning from content. All relationships are explicit.
 4. Append-only semantics
     Nothing in an export implies deletion or rewriting of history.
 
 ---
 ## Top-Level Structure
-Copy code
-Json
+
+```Json
 {
   "charter_version": "1.0",
   "exported_at": "2025-12-24T18:42:00Z",
@@ -41,14 +41,13 @@ Json
   },
   "areas": [ ... ]
 }
-
+```
 ---
 ## Area Object
 
 Each Area is exported independently but may reference other Areas by ID.
 
-Copy code
-Json
+```Json
 {
   "area_id": "A-ENG-001",
   "metadata": {
@@ -64,17 +63,18 @@ Json
   "resolutions": [ ... ],
   "sessions": [ ... ]
 }
-
+```
 ### Notes
-Area identity is stable.
-Area names or descriptions, if any, are represented as resolutions, not mutable fields.
+- Area identity is stable.
+- Area names or descriptions, if any, are represented as resolutions, not mutable fields.
 
 ---
 ## Resolution Object
 
 Resolutions are immutable decision artifacts.
-Copy code
-Json
+
+
+```Json
 {
   "resolution_id": "R-ARCH-004",
   "type": "GENERAL", 
@@ -92,11 +92,13 @@ Json
   "supersedes": [],
   "superseded_by": null
 }
-
+```
 ### Resolution Types
-GENERAL
-AUTHORITY
-SCOPE
+
+- `GENERAL`
+- `AUTHORITY`
+- `SCOPE`
+
 (Types are informational; enforcement comes from engine rules.)
 
 ---
@@ -109,6 +111,7 @@ ACTIVE
 UNDER_REVIEW
 SUPERSEDED
 RETIRED
+```
 
 Rules:
 - State transitions are explicit and auditable
