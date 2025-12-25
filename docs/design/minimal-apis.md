@@ -65,7 +65,10 @@ Rules:
     - Resolution being superceded (explicit only)
 - Announces decision rule up front
 
-The engine does not proactively invalidate sessions; it reacts at interaction points.
+Notes:
+- The engine does not proactively invalidate sessions; it reacts at interaction points.
+- The engine does not trust cached participants.
+- Each authoritative action reasserts the participant set.
 
 ---
 
@@ -188,6 +191,10 @@ Returns:
 - `BLOCKED` (with reason)
 - `INCOMPLETE`
 
+Notes:
+- The engine does not trust cached participants
+- Each authoritative action reasserts the participant set
+
 This function is informational only. 
 
 ---
@@ -215,9 +222,11 @@ Creates:
 - A Resolution
 - Captures acceptance context immutably
 
-This method is authoritive.
-
-The engine does not proactively invalidate sessions; it reacts at interaction points.
+Notes:
+- The engine does not trust cached participants
+- Each authoritative action reasserts the participant set
+- This method is authoritive.
+- The engine does not proactively invalidate sessions; it reacts at interaction points.
 
 ---
 
