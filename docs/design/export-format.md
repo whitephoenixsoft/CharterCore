@@ -173,9 +173,15 @@ Votes are purely mechanical records.
 {
   "actor_id": "alice",
   "candidate_id": "C-DB-POSTGRES",
+  "type": "ACCEPT"
   "recorded_at": "2025-02-01T14:00:00Z"
 }
 ```
+
+Voting Types:
+- `ACCEPT`
+- `REJECT`
+- `ABSTAIN`
 
 The engine does not interpret actor identity beyond matching authority rules.
 

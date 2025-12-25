@@ -47,6 +47,7 @@ start_session(
   area_id,
   session_id,
   problem_statement,
+  participant_list,
   preceding_resolution_id?, // optional, explicit
   referenced_scope_ids?   // optional, explicit
 )
@@ -55,12 +56,16 @@ start_session(
 Rules:
 - Fails if Area is uninitialized
 - Fails if preceding resolution does not exist or status is not `ACTIVE`or if not in the same Area.
+- Fails if participant list is empty 
 - Captures:
     - Active Authority
     - Active Scope
+    - The list of participants at the start of the session 
     - Referenced scopes (explicit only)
     - Resolution being superceded (explicit only)
 - Announces decision rule up front
+
+The engine does not proactively invalidate sessions; it reacts at interaction points.
 
 ---
 
@@ -93,7 +98,7 @@ pause_session(session_id, reason?)
 `resume_session`
 
 ```Text
-resume_session(session_id)
+resume_session(session_id, participant_list)
 ```
 
 On resume, engine must re-validate:
@@ -148,16 +153,19 @@ list_candidates(session_id)
 
 ## 4. Decision / Acceptance APIs
 
-`record_vote`
+`record_stance`
 
 ```Text
-record_vote(
-  session_id,
-  actor_id,
-  candidate_id
+record_stance(
+    session_id, 
+    candidate_id, 
+    actor_id, 
+    stance
 )
 ```
 
+Rules:
+- stance ∈ {ACCEPT, REJECT, ABSTAIN}
 - Engine records votes mechanically
 - No semantic interpretation
 
@@ -166,7 +174,7 @@ record_vote(
 `evaluate_session`
 
 ```Text
-evaluate_session(session_id)
+evaluate_session(session_id, participant_list)
 ```
 
 Engine checks:
@@ -180,16 +188,23 @@ Returns:
 - `BLOCKED` (with reason)
 - `INCOMPLETE`
 
+This function is informational only. 
+
 ---
 
 `accept_candidate`
 
 ```Text
-accept_candidate(session_id, candidate_id)
+accept_candidate(
+  session_id, 
+  candidate_id,
+  participant_list
+)
 ```
 
 Rules:
 - Exactly one candidate per resolution
+- Participant list is used to validate authority 
 
 Fails if:
 - Authority rule not satisfied for that Candidate 
@@ -199,6 +214,10 @@ Fails if:
 Creates:
 - A Resolution
 - Captures acceptance context immutably
+
+This method is authoritive.
+
+The engine does not proactively invalidate sessions; it reacts at interaction points.
 
 ---
 
@@ -233,26 +252,29 @@ list_resolutions(
   state_filter?
 )
 ```
+
 ---
 
-`transition_resolution_state`
+`mark_resolution_under_review`
 
 ```Text
-transition_resolution_state(
-  resolution_id,
-  new_state
-)
+mark_resolution_under_review(resolution_id)
+```
+Rules:
+- Cannot be called on Scope or Authority resolutions
+- Resolution must be `ACTIVE`
+
+---
+
+`clear_resolution_under_review`
+
+```Text
+clear_resolution_under_review(resolution_id)
 ```
 
-Allowed states:
-- `ACTIVE`
-- `UNDER_REVIEW`
-- `SUPERSEDED`
-- `RETIRED`
-
-Rules:
-- State transitions are explicit
-- `UNDER_REVIEW` resolutions cannot be accepted as authority/scope
+Rules :
+- Will set the status of the resolution to `ACTIVE`
+- Only resolutions marked `UNDER_REVIEW` manually (not imported) qualify
 
 ---
 
@@ -401,4 +423,4 @@ This API guarantees:
 - No AI dependency
 - No hidden state transitions
 
-If an integration needs more power, it must build on top, not inside.
+If an integration needs more power, it must build on top, not ins

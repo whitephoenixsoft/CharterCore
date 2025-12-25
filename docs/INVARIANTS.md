@@ -139,6 +139,8 @@ Rules:
 - No resolution is ever removed
 - A resolution under review may not be accepted
 - All transitions are auditable
+- Resolution legitimacy states (Active, Superseded, Retired) may only change through the acceptance of a decision within a session.
+- Non-legitimacy workflow states (e.g. Under Review) may be modified directly but must not affect authority, scope, or decision validity.
 
 ---
 
@@ -296,6 +298,14 @@ When such a change occurs, any affected active sessions must be:
 - Explicitly paused or blocked
 
 No session may continue under invalidated governing context.
+
+---
+
+## 20. Explicit Dissent Invariant
+
+Charter Core must support explicit expression of disagreement within a session.
+
+Silence or absence must never be interpreted as consent or rejection.
 
 ---
 ## Frozen Boundary (Non-Goals)
