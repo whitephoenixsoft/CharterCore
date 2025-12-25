@@ -1,6 +1,6 @@
-# Charter Core — Formal Engine Invariants & Boundaries (Frozen)
+# Charter Core — Formal Engine Invariants & Boundaries 
 
-> Status: FROZEN
+> Status: FINALIZING 
 > Changes to these invariants require explicit justification and new simulations demonstrating preserved legitimacy.
 
 ---
@@ -118,6 +118,10 @@ They:
 - Imply no intent
 - Imply no endorsement
 - May be abandoned without consequence
+
+Candidates have no lifecycle outside a session and no legitimacy unless accepted.
+
+Rejection and removal are non-semantic and must not affect engine state.
 
 Only accepted candidates become resolutions.
 
@@ -273,6 +277,25 @@ Charter Core remains a legitimacy engine, not a cryptographic trust system.
 This mirrors established systems (Git, package managers, SBOMs):
 - History remains immutable inside
 - External artifacts are verified on entry
+
+---
+
+## 19. Concurrency Invariant
+
+Charter Core allows multiple concurrent sessions within the same Area.
+
+Sessions are isolated while active and do not interfere with one another.
+
+Interference may occur only after the acceptance of a resolution that:
+- Changes Authority
+- Changes Scope
+- Supersedes an active Resolution
+
+When such a change occurs, any affected active sessions must be:
+- Re-validated, or
+- Explicitly paused or blocked
+
+No session may continue under invalidated governing context.
 
 ---
 ## Frozen Boundary (Non-Goals)
