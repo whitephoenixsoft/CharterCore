@@ -1,426 +1,529 @@
-# Charter Core — Acceptance Tests (Invariant-Driven)
+# Charter Core — Acceptance Tests (Invariant-Driven, Frozen)
+
+These acceptance tests define the minimum behavioral guarantees of Charter Core.
+
+If any test fails, the engine has violated a core invariant.
+Acceptance tests assert what must or must not happen, not how it is implemented.
 
 ---
 
-## AT-1 Explicit Decisions Only
+## Section A — Core Legitimacy Invariants
 
-### Given
+### AT-1 Explicit Decisions Only
 
-- An initialized Area with valid Authority and Scope
-- A session with candidates and recorded positions
+#### Given
 
-### When
+- An initialized Area with an active Authority and Scope
+- A session with candidates and recorded stances
 
-No candidate satisfies the Authority rule
+#### When
 
-### Then
+- No candidate satisfies the Authority rule
+
+#### Then
 
 - No resolution is created
 - No implicit “winner” is inferred
-- Session remains ACTIVE or BLOCKED
+- The session remains ACTIVE or enters BLOCKED
 
-### Fail if
+#### Fail if
 
-A resolution exists without explicit acceptance
+- A resolution exists without explicit acceptance
 
 ---
 
-## AT-2 Immutable History
+### AT-2 Sessions Are the Sole Unit of Legitimacy
 
-### Given
+#### Given
 
-An accepted resolution R-1
+- A candidate exists outside of any session
 
-### When
+#### When
 
-Any attempt is made to modify, overwrite, or delete R-1
+- An attempt is made to accept it
 
-### Then
+#### Then
+
+- Acceptance is rejected
+- No resolution is created
+
+---
+
+### AT-3 Immutable Resolution History
+
+#### Given
+
+- A resolution R-1 has been accepted
+
+#### When
+
+- Any attempt is made to modify, overwrite, or delete R-1
+
+#### Then
 
 - The operation is rejected
-- R-1 remains unchanged
+- R-1 remains unchanged and queryable
 
-### And
+#### And
 
-Only a new resolution may supersede or retire R-1
+- Only a new resolution may supersede or retire R-1
 
 ---
 
-## AT-3 Areas Define Governance Boundaries
+### AT-4 Deterministic Evaluation
 
-### Given
+#### Given
+
+- Identical session state:
+- same participants
+- same stances
+- same Authority rule
+
+#### When
+
+- Evaluation is run multiple times
+
+#### Then
+
+- The outcome is identical every time
+
+#### Fail if
+
+- Non-deterministic results occur
+
+---
+
+### AT-5 No Semantic Interpretation
+
+#### Given
+
+- Candidates with arbitrary content
+- Optional rationale text
+
+#### When
+
+- The engine evaluates or accepts candidates
+
+#### Then
+
+- Content and rationale are never interpreted
+- Only mechanical Authority and Scope rules are applied
+
+#### Fail if
+
+- Meaning, wording, or intent affects outcome
+
+---
+
+## Section B — Areas, Authority, and Scope
+
+### AT-6 Areas Define Hard Governance Boundaries
+
+#### Given
 
 - Two Areas A and B
 - Each has independent Authority and Scope
 
-### When
+#### When
 
-A session is opened in Area A
+- A session is opened in Area A
 
-Then
+#### Then
 
 - Only Area A’s Authority governs the session
 - Area B has no effect unless explicitly referenced
 
-### Fail if
+#### Fail if
 
-Authority or Scope from another Area is implicitly applied
-
----
-
-## AT-4 Authority Is a First-Class Resolution
-
-### Given
-
-An Area with an active Authority resolution A-AUTH-1
-
-### When
-
-A new Authority candidate is accepted
-
-### Then
-
-- A new Authority resolution A-AUTH-2 is created
-- A-AUTH-1 is marked Superseded or Retired
-- No other Authority remains active
-
-### Fail if
-
-Multiple active Authorities exist in the same Area
+- Authority or Scope from another Area is implicitly applied
 
 ---
 
-## AT-5 Scope Is a First-Class Resolution
+### AT-7 Authority Is a First-Class Resolution
 
-### Given
+#### Given
 
-An Area with an active Scope resolution S-1
+- An Area with an active Authority resolution A-AUTH-1
 
-### When
+#### When
 
-A new Scope candidate is accepted
+- A new Authority candidate is accepted
 
-### Then
+#### Then
 
-- A new Scope resolution S-2 is created
-- S-1 is superseded or retired
-- S-2 becomes the only active Scope
+- A-AUTH-2 is created
+- A-AUTH-1 is marked SUPERSEDED
+- Exactly one active Authority exists
 
----
+#### Fail if
 
-## AT-6 Context Preservation (Authority & Scope)
-
-### Given
-
-- A session S accepted under Authority A-1 and Scope S-1
-- Later, Authority A-2 and Scope S-2 become active
-
-### Then
-
-- Resolution R created in S permanently references A-1 and S-1
-- R is not re-evaluated or invalidated
-
-### Fail if
-
-Historical resolutions are altered by later context changes
+-Multiple active Authorities exist
 
 ---
 
-## AT-7 Sessions Are the Sole Unit of Legitimacy
+### AT-8 Scope Is a First-Class Resolution
 
-### Given
+#### Given
 
-A candidate exists outside of any session
+- An Area with an active Scope resolution S-1
 
-### When
+#### When
 
-An attempt is made to accept it
+- A new Scope candidate is accepted
 
-### Then
+#### Then
 
-Acceptance is rejected
-
-### And
-
-No resolution is created
+- S-2 is created
+- S-1 is marked SUPERSEDED
+- Exactly one active Scope exists
 
 ---
 
-## AT-8 Candidates Are Neutral
+### AT-9 Context Preservation (Authority & Scope)
 
-### Given
+#### Given
 
-Multiple candidates exist in a session
+- A session S accepts a resolution R under Authority A-1 and Scope S-1
 
-### When
+#### When
 
-Some candidates receive no positions or discussion
+- Authority A-2 and Scope S-2 later become active
 
-### Then
+#### Then
 
-- No effect occurs
-- Only accepted candidates produce resolutions
+- R permanently references A-1 and S-1
+- R is not re-evaluated, altered, or flagged
 
-### Fail if
+#### Fail if
 
-Mere existence or ordering affects outcome
-
----
-
-## AT-9 Deterministic Evaluation
-
-### Given
-
-Identical session state:
-- same participants
-- same positions
-- same Authority rule
-
-### When
-
-Evaluation is run multiple times
-
-### Then
-
-The outcome is identical every time
-
-### Fail if
-
-Non-deterministic results occur
+- Historical resolutions are altered by later context
 
 ---
 
-## AT-10 Explicit Resolution Lifecycle
+## AT-10 Area Initialization Is Required
 
-### Given
+#### Given
 
-A resolution R-1 is Active
+- An Area with no active Authority or Scope
 
-### When
+#### When
 
-It is superseded or retired
+- A non-Authority, non-Scope resolution is accepted
 
-### Then
+#### Then
 
-- Its lifecycle state changes explicitly
-- R-1 remains queryable
-
-### Fail if
-
-R-1 disappears or is silently altered
+- Acceptance is blocked
+- Initialization is required
 
 ---
 
-## AT-11 No Generic Policy Streams
+## Section C — Session Mechanics & Blocking
 
-### Given
+### AT-11 Authority Rule Is Fixed per Session
 
-Resolutions of arbitrary types exist
+#### Given
 
-### When
+- A session is started
 
-They are processed by the engine
-
-### Then
-
-- Only Authority and Scope receive special handling
-- All others are treated uniformly
-
-### Fail if
-
-Engine behavior varies by resolution type beyond Authority/Scope
-
----
-
-## AT-12 Transparency of Governing Context
-
-### Given
-
-A session is opened
-
-### Then
-
-The engine can return:
-- active Authority
-- active Scope
-- any explicitly referenced Scopes
-
-### Fail if
-
-A resolution can be accepted without this information being available
-
----
-
-## AT-13 Decision Rules Announced at Session Start
-
-### Given
-
-A session is opened
-
-### Then
+#### Then
 
 - Exactly one Authority resolution governs the session
-- That rule remains fixed for the session’s lifetime
+- The rule is fixed for the session’s lifetime
 
-### Fail if
+#### Fail if
 
-The decision rule changes mid-session without closing or revalidation
-
----
-
-## AT-14 Session Blocking and Revalidation
-
-### Given
-
-A session is BLOCKED or PAUSED
-
-### When
-
-Authority or Scope changes externally
-
-### Then
-
-Session cannot resume without revalidation
-
-### Fail if
-
-Acceptance proceeds under changed context without detection
+- Authority changes mid-session without revalidation
 
 ---
 
-## AT-15 No Permissions or Identity Semantics
+### AT-12 Standing Is Action-Based
 
-### Given
+#### Given
 
-Participant identifiers are provided
+- Authority rule = UNANIMOUS_PRESENT
+- A session with Alice, Bob, Charlie listed
 
-### Then
+#### When
 
-- Engine treats them as opaque identifiers
-- No permission checks occur internally
+- Alice and Bob cast stances
+- Charlie takes no action
 
-### Fail if
+#### Then
 
-Engine enforces roles, ranks, or access rules
-
----
-
-## AT-16 No Side Effects Beyond State
-
-### Given
-
-A resolution is accepted
-
-### Then
-
-Only internal state is updated
-
-### Fail if
-
-- External systems are invoked
-- Tasks or workflows are triggered
+- Present set = {Alice, Bob}
+- Charlie is not counted
 
 ---
 
-## AT-17 Area Name Does Not Affect Legitimacy or Enforcement
+### AT-13 Explicit Disagreement Blocks Unanimity
 
-### Given
+#### Given
 
-- An Area A-1 is created with:
-    - Name: "Backend Architecture"
-- An initialization session creates:
-    - Authority resolution R-AUTH-1
-    - Scope resolution R-SCOPE-1: “Decisions related to backend architecture, databases, and APIs.”
+- Authority rule = UNANIMOUS_PRESENT
+- Alice, Bob, Charlie all present
 
-### When
+#### When
 
-1. A session S-1 is started in Area A-1.
-2. A candidate C-1 is proposed: “Adopt PostgreSQL as primary database.”
-3. Candidate C-1 is accepted under R-AUTH-1.
+- Alice: ACCEPT
+- Bob: ACCEPT
+- Charlie: REJECT
 
-### Then
+#### Then
 
-- Resolution R-DB-1 is created with metadata:
-    - Area: A-1
-    - Authority: R-AUTH-1
-    - Scope: R-SCOPE-1
-- The Area name "Backend Architecture":
-    - Is not evaluated
-    - Is not parsed
-    - Is not used in authority checks
-    - Is not used in scope validation
-    - 
-### And When (Rename Case)
-
-4. The Area name is changed to "Platform Engineering" without a session.
-
-### Then
-
-- No resolutions are created
-- No authority or scope changes occur
-- All existing resolutions remain valid
-- Future sessions still reference:
-    - A-1
-    - The currently active Authority and Scope resolutions
-
-### And When (Misleading Name Case)
-
-5. The Area name is changed to "Company Legal Policies".
-
-### Then
-
-- The engine:
-    - Does not block decisions
-    - Does not raise conflicts
-    - Does not infer scope or authority changes
-- Only explicit Scope or Authority resolutions can change applicability
-
-### Pass Condition
-
-✔ Area name changes never require a session
-✔ Area name changes never affect legitimacy
-✔ Area name is never used for semantic inference
+- Resolution cannot be accepted
+- Session remains blocked
+- Objection is recorded in audit trail
 
 ---
 
-AT: Area Initialization Requirement
-Given an Area with no Authority or Scope
-When a user attempts to accept a non-Authority, non-Scope resolution
-Then the system must block acceptance and require initialization
+### AT-14 Session Blocking and Revalidation
+
+#### Given
+
+- A session is PAUSED or BLOCKED
+
+#### When
+
+- Authority, Scope, or Preceding Resolution changes
+
+#### Then
+
+- Session cannot resume without revalidation
+
+#### Fail if
+
+- Acceptance proceeds under changed context
 
 ---
 
-AT-CP-02: Context Is Preserved
-Change:
-Add explicit assertion that no reinterpretation occurs.
-New Assertion Added:
-Given a resolution accepted under Scope S1
-When Scope is later changed to S2
-Then the original resolution:
-Remains valid
-Retains reference to S1
-Is not flagged, altered, or blocked by the engine
+### AT-15 Concurrent Sessions Are Isolated
 
-AT-AUTH-04: Authority Changes Are Non-Retroactive
-Change:
-Clarify that legitimacy is frozen.
-New Assertion Added:
-Authority changes must not mark prior resolutions as:
-invalid
-deprecated
-questionable
-“out of authority”
+#### Given
 
-AT-LEG-01: Legitimacy Is Time-Bound
-Given
-Authority A1 and Scope S1 are active
-A resolution R1 is accepted
-When
-Authority changes to A2
-Scope changes to S2
-Then
-R1 remains:
-Active (unless explicitly retired)
-Legitimate
-Immutable
-No engine-generated warning or correction occurs
+- Two sessions active in the same Area
+
+#### When
+
+- No Authority, Scope, or superseding resolution is accepted
+
+#### Then
+
+- Sessions do not interfere
+
+---
+
+### AT-16 Supersession Triggers Revalidation
+
+#### Given
+
+- Session S references Resolution R
+- Another session supersedes R
+
+#### Then
+
+- S requires revalidation
+- S may not accept candidates until handled
+
+---
+
+## Section D — Resolution Lifecycle
+
+### AT-17 Explicit Resolution Lifecycle
+
+#### Given
+
+- A resolution R is ACTIVE
+
+#### When
+
+- It is superseded or retired via a session
+
+#### Then
+
+- Its lifecycle state changes explicitly
+- R remains queryable forever
+
+#### Fail if
+
+- R disappears or is silently altered
+
+---
+
+### AT-18 Resolution State Changes Require Sessions
+
+#### Given
+
+- A resolution R is ACTIVE
+
+#### When
+
+- An API attempts to mark it SUPERSEDED or RETIRED without a session
+
+#### Then
+
+- Operation is rejected
+- Engine reports: “Resolution legitimacy may only change via a decision session.”
+
+---
+
+### Section E — Import / Export & Integrity
+
+### AT-19 Valid Export Imports Successfully
+
+#### Given
+
+- A Charter Core instance with Areas, Sessions, and Resolutions
+- An export generated by the engine
+
+#### When
+
+- The export is imported without modification
+
+#### Then
+
+- Import succeeds
+- All references are preserved
+- No resolutions are marked UNDER_REVIEW
+
+---
+
+### AT-20 Tampered Export Is Detected
+
+#### Given
+
+- A valid export
+- Manual modification of content or metadata
+
+#### When
+
+- The export is imported
+
+#### Then
+
+- Integrity verification fails
+- Import is rejected or
+- All affected resolutions are marked UNDER_REVIEW
+
+---
+
+### AT-21 Structural Integrity Is Enforced
+
+#### Given
+
+An export where:
+- A resolution references a missing session, or
+- A session references a missing Authority
+#### When
+
+- The export is imported
+
+#### Then
+
+- Import fails deterministically
+- No partial state is created
+
+---
+
+### AT-22 Failed Import Does Not Mutate History
+
+#### Given
+
+- An existing Charter Core instance
+- A failed import attempt
+
+#### Then
+
+- Existing history remains unchanged
+
+---
+
+### AT-23 Fresh Import from Flat Resolution List
+
+#### Given
+
+- An organization with no existing Charter history
+- A flat list of resolutions with no sessions or candidates
+
+#### When
+
+- The list is imported in CONSOLIDATE mode
+
+#### Then
+
+- Each imported resolution is created
+- Each resolution is marked UNDER_REVIEW
+- No Authority or Scope is inferred
+- No resolution becomes ACTIVE without a session
+#### Fail if
+
+- Any resolution is treated as accepted
+- Authority or Scope is assumed implicitly
+
+---
+
+## Section F — CLI-Critical Acceptance Tests (Single-User Mode)
+
+### AT-CLI-1 CLI Initialization Flow
+
+#### Given
+
+- A new local Charter instance
+
+#### When
+
+- A user initializes an Area
+- Defines Authority and Scope via sessions
+
+#### Then
+
+- Area becomes initialized
+- Decisions may proceed
+
+---
+
+### AT-CLI-2 Export → Import Round Trip
+
+#### Given
+
+- A local Charter history
+- An export saved to source control
+
+#### When
+
+- The export is imported unchange
+
+#### Then
+
+- No resolution enters UNDER_REVIEW
+- Full auditability is preserved
+
+---
+
+### AT-CLI-3 Consolidation Detects Divergence
+
+#### Given
+
+- A local initialized Area
+- An imported export with divergent resolutions
+
+#### When
+
+- Imported in CONSOLIDATE mode
+
+#### Then
+
+- Imported resolutions are marked UNDER_REVIEW
+- No local resolutions are altered
+
+---
+
+## Final Note (Non-Test)
+
+These acceptance tests intentionally do not:
+- Enforce UX
+- Define CLI flags
+- Infer semantics
+- Require rationale
+- Require AI
+
+They define the legitimacy envelope of Charter Core.
