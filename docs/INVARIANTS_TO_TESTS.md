@@ -30,6 +30,8 @@ Acceptance tests assert what must or must not happen, not how it is implemented.
 
 - A resolution exists without explicit acceptance
 
+Note: BLOCKED implies a deterministic unmet condition; ACTIVE implies evaluation is incomplete.
+
 ---
 
 ### AT-2 Sessions Are the Sole Unit of Legitimacy
@@ -245,13 +247,17 @@ Acceptance tests assert what must or must not happen, not how it is implemented.
 
 #### When
 
-- Alice and Bob cast stances
+- Alice and Bob cast stances (ACCEPT, REJECT, ABSTAIN)
 - Charlie takes no action
 
 #### Then
 
 - Present set = {Alice, Bob}
 - Charlie is not counted
+
+Notes:
+- A stance is any explicit engine-recorded expression of acceptance or rejection.
+- Presence is derived from recorded actions within the session.
 
 ---
 
@@ -273,6 +279,8 @@ Acceptance tests assert what must or must not happen, not how it is implemented.
 - Resolution cannot be accepted
 - Session remains blocked
 - Objection is recorded in audit trail
+
+Note: A stance is any explicit engine-recorded expression of acceptance or rejection.
 
 ---
 
@@ -490,7 +498,7 @@ An export where:
 
 #### When
 
-- The export is imported unchange
+- The export is imported unchanged
 
 #### Then
 
