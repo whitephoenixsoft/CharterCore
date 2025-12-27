@@ -1,24 +1,24 @@
 use super::candidate::Candidate;
 use super::vote::Vote;
-use crate::ids::{AreaId, ObjectHash, ResolutionId, SessionId};
+use crate::ids::{ObjectHash, ExternalId, ActorId};
 use crate::time::Timestamp;
 
 /// record saving the instance of a addition/change to a resolution
 #[derive(Debug, Clone)]
 pub struct Session {
-    pub id: SessionId,
-    pub area_id: AreaId,
+    pub label: ExternalId,
+    pub area_id: ObjectHash,
 
     pub problem_statement: String,
 
     // Frozen content
-    pub authority_resolution_id: ResolutionId,
+    pub authority_resolution_id: ObjectHash,
     pub authority_rule: AuthorityRule,
-    pub scope_resolution_id: ResolutionId,
-    pub referenced_scope_ids: Vec<ResolutionId>,
+    pub scope_resolution_id: ObjectHash,
+    pub referenced_scope_ids: Vec<ObjectHash>,
 
     /// Optional explicit supersession target
-    pub preceding_resolution_id: Option<ResolutionId>,
+    pub preceding_resolution_id: Option<ObjectHash>,
 
     // Lifecyle fields
     pub state: SessionState,
@@ -26,6 +26,7 @@ pub struct Session {
     pub closed_at: Option<String>,
 
     // Session contents
+    pub participants: Vec<ActorId>,
     pub candidates: Vec<Candidate>,
     pub votes: Vec<Vote>,
 
@@ -34,18 +35,18 @@ pub struct Session {
 }
 
 /// The state of a session
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub enum SessionState {
     Active,
     Paused,
-    Blocked,
+    Blocked { reason: String },
     Closed,
 }
 
 /// The rule governing session voting
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub enum AuthorityRule {
-    SoleActor,
+    SoleActor { actor: ActorId },
     UnanimousPresent,
     MajorityPresent,
 }
