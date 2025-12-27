@@ -1,10 +1,9 @@
-use super::authority_rule::AuthorityRule;
 use super::candidate::Candidate;
-use super::session_state::SessionState;
 use super::vote::Vote;
 use crate::ids::{AreaId, ObjectHash, ResolutionId, SessionId};
 use crate::time::Timestamp;
 
+/// record saving the instance of a addition/change to a resolution
 #[derive(Debug, Clone)]
 pub struct Session {
     pub id: SessionId,
@@ -32,4 +31,21 @@ pub struct Session {
 
     /// Deterministice integrity check
     pub object_hash: ObjectHash,
+}
+
+/// The state of a session
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum SessionState {
+    Active,
+    Paused,
+    Blocked,
+    Closed,
+}
+
+/// The rule governing session voting
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum AuthorityRule {
+    SoleActor,
+    UnanimousPresent,
+    MajorityPresent,
 }

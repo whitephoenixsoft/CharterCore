@@ -1,4 +1,3 @@
-use super::resolution_state::ResolutionState;
 use crate::ids::{AreaId, ObjectHash, ResolutionId, SessionId};
 use crate::time::Timestamp;
 
@@ -39,9 +38,18 @@ pub struct Resolution {
     pub content: ResolutionContent,
 }
 
-/// Opage uninterpreted resolution content
+/// Opaque uninterpreted resolution content
 #[derive(Debug, Clone)]
 pub struct ResolutionContent {
     /// Rqw payload (CLI / UI / App defind )
     pub text: String,
+}
+
+/// Possible states of the resolution
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum ResolutionState {
+    Active,
+    UnderReview,
+    Superseded,
+    Retired,
 }

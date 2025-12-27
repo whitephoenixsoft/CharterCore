@@ -1,10 +1,11 @@
-use crate::ids::{AreaId, ResolutionId};
+use crate::ids::{AreaId, ResolutionId, ObjectHash};
 use crate::time::Timestamp;
 
 /// Engine-owned Area record.
 /// Areas are hard governance boundaries.
 pub struct Area {
     pub id: AreaId,
+    pub object_hash: ObjectHash,
 
     /// Creation metadata (audit only)
     pub created_at: Timestamp,

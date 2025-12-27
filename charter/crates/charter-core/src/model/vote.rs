@@ -1,8 +1,7 @@
 use crate::ids::{ActorId, CandidateId};
 use crate::time::Timestamp;
 
-use super::vote_type::VoteType;
-
+/// Immutable voting record on the stance for a candidate
 #[derive(Debug, Clone)]
 pub struct Vote {
     /// The id of the one who voted
@@ -12,7 +11,15 @@ pub struct Vote {
     pub candidate_id: CandidateId,
 
     /// accept, reject, or abstain
-    pub vtype: VoteType,
+    pub stance: VoteType,
 
     pub recorded_at: Timestamp,
+}
+
+/// Types of explicit voting
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum VoteType {
+    Accept,
+    Reject,
+    Abstain,
 }
