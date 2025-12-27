@@ -43,4 +43,4 @@ pub struct AreaId(pub ObjectId);
 pub struct SessionId(pub ObjectId);
 
 #[derive(Clone, Copy, PartialEq, Eq, Hash, Debug)]
-pub struct ResoutionId(pub ObjectId);
+pub struct ResolutionId(pub ObjectId);
