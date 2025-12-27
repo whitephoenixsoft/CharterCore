@@ -7,6 +7,10 @@ Charter Core is designed to preserve institutional integrity by making decisions
 It does not provide chat, AI facilitation, or user experience features.
 Those are intentionally handled by separate layers.
 
+## Status
+
+**EARLY DEVELOPMENT**
+
 ## What Charter Core Does
 
 - Defines governance Areas
