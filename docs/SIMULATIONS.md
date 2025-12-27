@@ -319,21 +319,54 @@ Validated Invariants
 Concurrency isolation
 Supersession requires revalidation
 Legitimacy preserved
-Summary
-Taken together, these simulations demonstrate that Charter Core:
-Preserves legitimacy under disagreement, ambiguity, and change
-Requires Authority and Scope to be explicit, never inferred
-Allows decisions to evolve without rewriting history
-Handles imports conservatively and transparently
-Crucially, these properties hold without reliance on:
-AI
-Turn-taking rules
-Mandatory UX flows
-Organizational assumptions
-These simulations define the behavioral contract of the engine.
-If a future change causes one of these scenarios to fail,
-it is not a feature regression — it is an invariant violation.
-If you want next:
-a mapping from simulations → acceptance tests, or
-a CLI walkthrough derived from simulations, or
-the EVE worst-case simulation rewritten with rejection + participants
+
+Simulation — Import in RESTORE Mode (Full History Rehydration)
+Context
+An organization migrates from another Charter Core instance or a verified backup.
+The export includes:
+Areas
+Sessions
+Candidates
+Votes / stances
+Resolutions
+Authority & Scope history
+Supersession chains
+Preconditions
+Export was produced by Charter Core tooling
+Export has not been modified
+Flow
+import_area(export_blob, mode = RESTORE)
+Engine verifies:
+Referential integrity
+Hashes / signatures (if present)
+Session → Resolution links
+Authority and Scope timelines
+Import succeeds
+System Behavior
+All sessions are recreated exactly
+All resolutions retain:
+original IDs
+original lifecycle states
+original Authority and Scope references
+No resolution is marked UNDER_REVIEW
+No authority or scope is revalidated
+No sessions are re-evaluated
+Outcome
+Historical state is identical to export
+Future sessions proceed from restored state
+No new legitimacy is created during import
+Failure Case (Same Simulation)
+If any of the following occur:
+Missing referenced session
+Broken supersession chain
+Authority active before creation
+Resolution accepted without a session
+Then:
+Import fails deterministically
+No partial state is created
+Existing system state remains unchanged
+Validated Invariants
+Immutable history
+No retroactive legitimacy
+Import does not fabricate authority
+Determinism over convenience
