@@ -1,6 +1,6 @@
-use crate::ids::ObjectId;
+use crate::ids::ObjectHash;
 
 pub trait ObjectStore {
-	fn put(&mut self, obj: Vec<u8>) -> ObjectId;
-	fn get(&self, id: &ObjectId) -> Option<Vec<u8>>;
+	fn put(&mut self, obj: Vec<u8>) -> ObjectHash;
+	fn get(&self, id: &ObjectHash) -> Option<Vec<u8>>;
 }
