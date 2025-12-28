@@ -18,30 +18,36 @@ If any simulation fails, the engine has violated a core invariant.
 
 --- 
 
-Simulation 1 — Area Initialization (Mandatory Bootstrap)
-Context
+## Simulation 1 — Area Initialization (Mandatory Bootstrap)
+
+### Context
+
 A new Area is created. No decisions are allowed until governance exists.
-Actors
-Alice
-Bob
-Flow
-Area A-Design-Project is created
-System requires an initialization session
-Authority candidates are proposed
-Scope candidates are proposed
-Authority and Scope are accepted
-Area becomes initialized
-Outcome
-One active Authority resolution
-One active Scope resolution
-All future sessions reference these
-Validated Invariants
-Areas require explicit governance
-Authority and Scope are first-class resolutions
-No silent defaults
-Simulation 2 — Flat Authority Collaboration (Students)
-Context
+### Actors
+- Alice
+- Bob
+### Flow
+1. Area A-Design-Project is created
+2. System requires an initialization session
+3. Authority candidates are proposed
+4. Scope candidates are proposed
+5. Authority and Scope are accepted
+6. Area becomes initialized
+### Outcome
+- One active Authority resolution
+- One active Scope resolution
+- All future sessions reference these
+### Validated Invariants
+- Areas require explicit governance
+- Authority and Scope are first-class resolutions
+- No silent defaults
+
+## Simulation 2 — Flat Authority Collaboration (Students)
+
+### Context
+
 Two students collaborate with no hierarchy.
+
 Flow
 Session opened in initialized Area
 Multiple candidates proposed
@@ -370,3 +376,52 @@ Immutable history
 No retroactive legitimacy
 Import does not fabricate authority
 Determinism over convenience
+
+Simulation — Divergent Authority With Rejection
+Context
+Two machines diverge.
+Imported Timeline (Machine B)
+R-AUTH-2
+Authority changed to MAJORITY
+R-X
+Decision passed 2/3 under MAJORITY
+R-Y
+Another decision passed 2/3 under MAJORITY
+All imported into Machine A as UNDER_REVIEW
+Local Context (Machine A)
+Active Authority: R-AUTH-LOCAL (SOLO)
+No imported Authority accepted yet
+Review Flow
+Step 1 — Review R-AUTH-2
+User rejects R-AUTH-2
+Result:
+Local Authority unchanged
+R-AUTH-2 remains visible as rejected import
+Step 2 — Review R-X
+User reviews R-X Engine shows:
+Imported Authority: R-AUTH-2 (rejected locally)
+Imported Scope references (if any)
+User explicitly accepts R-X
+Result:
+R-X becomes active under local Authority
+Imported context preserved immutably
+Step 3 — Review R-Y
+User rejects R-Y
+Final State
+Resolution
+Status
+R-AUTH-2
+REJECTED (imported)
+R-X
+ACTIVE
+R-Y
+REJECTED
+No retroactive changes
+No mechanical replay
+Full audit clarity
+Validated Invariants
+Chronological review
+Authority non-retroactivity
+Explicit legitimacy
+No cascading effects
+Auditability across divergent timelines
