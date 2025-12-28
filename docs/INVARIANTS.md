@@ -308,6 +308,28 @@ Charter Core must support explicit expression of disagreement within a session.
 Silence or absence must never be interpreted as consent or rejection.
 
 ---
+
+## 21. Import Review Invariants
+
+### IR-1 — Chronological Review Invariant
+
+Imported resolutions MUST be reviewed in their original chronological order.
+No resolution type (including Authority or Scope) may be reviewed out of order.
+
+### IR-2 — Local Authority Governs Review
+
+Imported Authority and Scope resolutions do not govern the mechanics of review.
+All review acceptances are evaluated under the locally active Authority.
+
+### IR-3 — No Cascading Rejection
+
+Rejecting an imported resolution MUST NOT implicitly invalidate or auto-reject later imported resolutions.
+
+### IR-4 — Context Preservation Without Reinterpretation
+
+Imported acceptance context is preserved immutably for audit and reasoning but is never re-applied mechanically.
+
+---
 ## Frozen Boundary (Non-Goals)
 
 Charter Core explicitly does not provide:
