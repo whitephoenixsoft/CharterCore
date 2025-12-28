@@ -469,6 +469,83 @@ An export where:
 
 ---
 
+AT-IR-01 — Chronological Review Order
+Given
+An imported history containing resolutions in this order:
+Authority R-AUTH-2
+Resolution R-A
+Resolution R-B
+All marked UNDER_REVIEW
+When
+The user initiates review
+Then
+The engine presents R-AUTH-2, then R-A, then R-B in order
+Fail if
+Any resolution is reviewed out of order
+Any resolution type is prioritized
+AT-IR-02 — Imported Authority Does Not Govern Review
+Given
+Local Area has Authority R-AUTH-LOCAL (SOLO)
+Imported Authority R-AUTH-IMPORTED defines MAJORITY
+R-AUTH-IMPORTED is UNDER_REVIEW
+When
+The user attempts to accept R-AUTH-IMPORTED during review
+Then
+Acceptance is evaluated using R-AUTH-LOCAL
+Imported Authority mechanics are not applied
+Fail if
+Imported Authority affects vote evaluation
+AT-IR-03 — Authority Rejection Does Not Block Later Review
+Given
+Imported resolutions in order:
+Authority R-AUTH-2
+Resolution R-A
+Both UNDER_REVIEW
+When
+R-AUTH-2 is explicitly rejected
+Then
+R-A remains reviewable
+No automatic rejection occurs
+Fail if
+R-A is auto-rejected or blocked
+AT-IR-04 — Imported Context Is Preserved
+Given
+Resolution R-A imported with acceptance context:
+Authority: R-AUTH-2
+Scope: R-SCOPE-2
+When
+R-A is reviewed
+Then
+The engine exposes:
+Imported Authority reference
+Imported Scope reference
+And
+No reinterpretation occurs
+Fail if
+Context is overwritten or recalculated
+AT-IR-05 — No Retroactive Authority Application
+Given
+Imported Authority R-AUTH-2 is accepted during review
+Imported Resolution R-A appears earlier in the timeline
+When
+Review proceeds
+Then
+R-AUTH-2 does not retroactively govern R-A
+Fail if
+Earlier resolutions are re-evaluated
+AT-IR-06 — Review Acceptance Is Explicit
+Given
+Multiple imported resolutions under review
+When
+The user accepts only some of them
+Then
+Only explicitly accepted resolutions become active
+Others remain rejected or under review
+Fail if
+Implicit acceptance occurs
+
+---
+
 ## Section F — CLI-Critical Acceptance Tests (Single-User Mode)
 
 ### AT-CLI-1 CLI Initialization Flow
