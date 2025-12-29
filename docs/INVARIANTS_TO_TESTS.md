@@ -601,6 +601,107 @@ Implicit acceptance occurs
 - No local resolutions are altered
 
 ---
+AT-REF-01: Sessions May Reference External Areas Explicitly
+Given
+Area A-Product exists
+Area A-Finance exists
+Both Areas are initialized with Authority and Scope
+When
+A session S-1 is started in Area A-Product
+S-1 explicitly references Area A-Finance
+Then
+Session S-1 records the reference to A-Finance immutably
+No validation error occurs
+No Authority or Scope from A-Finance is applied
+Fail if
+Referenced Area influences decision mechanics
+Referenced Area Authority is evaluated
+AT-REF-02: Sessions May Reference External Resolutions Explicitly
+Given
+Area A-Finance has an active resolution R-Budget-7
+Area A-Product is initialized
+When
+A session S-2 is started in A-Product
+S-2 explicitly references resolution R-Budget-7
+Then
+Reference to R-Budget-7 is stored immutably in S-2
+R-Budget-7’s Area, Authority, and Scope are not applied
+Acceptance mechanics remain governed solely by A-Product
+Fail if
+Referenced resolution affects acceptance
+Referenced resolution is revalidated or enforced
+AT-REF-03: Referenced Resolutions May Be Superseded Without Invalidating Sessions
+Given
+Session S-3 references resolution R-Infra-2
+R-Infra-2 is ACTIVE at session start
+When
+Another session supersedes R-Infra-2 with R-Infra-3
+Then
+S-3 remains valid but requires revalidation before acceptance
+No automatic invalidation occurs
+No retroactive change to S-3’s stored reference
+Fail if
+Session silently proceeds without revalidation
+Session is auto-closed or invalidated
+AT-REF-04: Multiple References Are Allowed and Independent
+Given
+Session S-4 references:
+Area A-Legal
+Area A-Security
+Resolution R-Compliance-9
+When
+Session progresses normally
+Then
+All references are preserved
+No priority or ordering is inferred
+No conflict is detected by the engine
+Fail if
+Engine attempts to reconcile or rank references
+
+AT-REF-05: References Are Informational Only
+Given
+Session S-5 references Area A-HR
+A candidate clearly violates HR policy (semantically)
+When
+Authority rule is satisfied in S-5
+Then
+Resolution is accepted
+No engine-level blocking occurs
+Fail if
+Engine blocks acceptance based on referenced Area content
+AT-REF-06: Referenced Areas Do Not Require Initialization Compatibility
+Given
+Session S-6 in Area A-Engineering
+A-Future exists but is uninitialized
+When
+S-6 references Area A-Future
+Then
+Reference is accepted
+No validation error occurs
+Fail if
+Engine enforces governance completeness on referenced Areas
+AT-REF-07: References Are Immutable After Session Start
+Given
+Session S-7 is started with references to Area A-X
+When
+An attempt is made to add or remove references
+Then
+Operation is rejected
+Original references remain unchanged
+Fail if
+References mutate mid-session
+
+AT-REF-08: References Are Preserved in Export and Import
+Given
+A session with references is exported
+The export is imported via RESTORE or CONSOLIDATE
+Then
+All references are preserved exactly
+No inference or reconciliation occurs
+Fail if
+References are dropped, normalized, or reinterpreted
+
+---
 
 ## Final Note (Non-Test)
 

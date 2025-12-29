@@ -42,41 +42,60 @@ Problem:
 
 ### charter init
 
-charter unit
+```Bash
+charter init
+```
 
 Behavior:
-- Sets up storage
+- initializes storage e.g. `.charter/`
+- Recommends to create an area with an example or start importing from a file with examples.
 
 ### charter area create
-
+```Bash
 charter area create A-PLATFORM --name "Platform Engineering"
-
-### charter area use
-
-charter area use A-PLATFORM
+```
 Behavior:
+- creates the domain and objects and references
+- If it is the first area then switch to that area context 
+- Warns to create initial session for authority and scope before creating a session.
+- shows example how to create a resolution, quickly 
+### charter area use
+```Bash
+charter area use A-PLATFORM
+```
+Behavior:
+- switch to area context 
 - Fails if an active session exists
 - Prints Authority + Scope on success
 ### charter area list
-
+```Bash
 charter area list
+```
+Behavior:
+- lists all the area short name and full names.
 ### charter area status
-
+```Bash
 charter area status
+```
+Behavior:
+- displays sessions active, blocked, or paused
+- displays the number of active resolutions
 ## Sessions
 
 ### charter session start
-
+```Bash
 charter session start "Choose database"
-
+```
 Option flags:
 --preceding R-DB-1
---reference-scope R-SCOPE-3
+--ref-area finance
+--ref-resolution finance/R-12
+--participants Alice,Bob,Charlie (maybe needs one per participant)
 
 Behavior:
 - Fails if Area uninitialized
-- Fails if another session is active
-- Captures Authority, Scope, participants
+- Fails if another session is active. Will warn the user to pause the session before trying again.
+- Captures Authority, Scope, Participants, Preceding Resolution 
 
 ### charter session status
 

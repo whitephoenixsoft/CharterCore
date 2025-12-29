@@ -329,6 +329,26 @@ Rejecting an imported resolution MUST NOT implicitly invalidate or auto-reject l
 
 Imported acceptance context is preserved immutably for audit and reasoning but is never re-applied mechanically.
 
+----
+## 22. References Are Informational Only
+
+Charter Core allows sessions and resolutions to explicitly reference other Areas, Scopes, or Resolutions.
+
+References:
+- Do not grant authority
+- Do not imply approval
+- Do not create precedence
+- Do not impose obligations
+- Do not affect acceptance, rejection, or blocking
+
+References must never:
+- Alter decision rules
+- Affect legitimacy
+- Trigger enforcement
+- Cause implicit conflicts
+
+All effects of references are external to the engine and strictly informational.
+
 ---
 ## Frozen Boundary (Non-Goals)
 

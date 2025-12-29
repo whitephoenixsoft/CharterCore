@@ -425,3 +425,53 @@ Authority non-retroactivity
 Explicit legitimacy
 No cascading effects
 Auditability across divergent timelines
+
+Simulation 20 — Cross-Area Awareness Without Authority Leakage
+Context A decision in Product affects Finance but is not governed by Finance.
+Flow
+Product Area session references Finance Area
+Product Authority governs acceptance
+Resolution is accepted
+Outcome
+Finance is aware (via reference)
+Product retains full authority
+Validated Invariants
+Explicit reference
+No authority leakage
+No inference
+Simulation 21 — Precision Reference to Historical Decision
+Context A new decision depends on a prior decision elsewhere.
+Flow
+Session references a specific external resolution
+That resolution is later superseded
+Session is flagged for revalidation
+Outcome
+Historical awareness preserved
+No retroactive invalidation
+Validated Invariants
+Context preservation
+Supersession handling
+Determinism
+Simulation 22 — Over-Referencing Without Penalty
+Context Team references many Areas “just in case.”
+Flow
+Session references 6 Areas and 3 resolutions
+No conflicts exist mechanically
+Outcome
+Engine remains neutral
+Humans bear cognitive load, not engine
+Validated Invariants
+Minimalism
+No semantic inference
+Simulation 23 — Import With External References
+Context Imported decisions reference Areas that do not exist locally.
+Flow
+Import in CONSOLIDATE mode
+Referenced Areas missing locally
+Outcome
+Import succeeds
+References preserved as opaque IDs
+No blocking
+Validated Invariants
+Import integrity
+Engine agnosticism
