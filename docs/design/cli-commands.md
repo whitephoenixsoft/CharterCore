@@ -49,6 +49,7 @@ charter init
 Behavior:
 - initializes storage e.g. `.charter/`
 - Recommends to create an area with an example or start importing from a file with examples.
+- creates initial area and runs auto authority and scope creation like area create
 
 ### charter area create
 ```Bash
@@ -57,7 +58,9 @@ charter area create A-PLATFORM --name "Platform Engineering"
 Behavior:
 - creates the domain and objects and references
 - If it is the first area then switch to that area context 
-- Warns to create initial session for authority and scope before creating a session.
+- Warns to change scope if working with limited scoped project
+- creates initial authority of solo mode and display as auto created 
+- creates initial scope of unrestricted (text) and display as auto created
 - shows example how to create a resolution, quickly 
 ### charter area use
 ```Bash
