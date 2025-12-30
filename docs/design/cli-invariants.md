@@ -161,3 +161,75 @@ The CLI must visually and structurally distinguish:
 #### Fail if
 - Imported resolutions feel indistinguishable from locally created ones
 
+CLI-INV-SOLO-01: Single Active Session in Solo Mode
+In solo mode, the CLI must allow at most one ACTIVE session at a time.
+If a session is active:
+Starting a new session must fail unless the current session is paused or closed.
+The CLI must guide the user to pause or close explicitly.
+Fail condition
+CLI allows multiple active sessions in solo mode.
+
+CLI-ERG-02: Status Commands Must Suggest Legal Next Actions
+Every status output must:
+List zero or more valid next actions
+Never suggest illegal or blocked actions
+Never auto-execute them
+
+CLI-INV-REVIEW-01: Review Actions Require Explicit Import Context
+A review accept or reject command must either:
+be executed within an active review context, or
+explicitly qualify the import ID.
+Fail if provenance is ambiguous.
+
+CLI-IO-02: Forced Imports Must Explicitly Mark All Resolutions UNDER_REVIEW
+
+CLI-OUT-01: Human-Readable Output Is Default; Machine Output Requires Flags
+
+CLI-INV-06: Review Is a Mutable Workspace Until Closed
+Accepting or rejecting during review is reversible
+Closing a review is irreversible
+Fail if:
+Review decisions are final before review close
+
+CLI-INV-07: Batch Operations Must Be Explicit
+Batch accept/reject must operate only on:
+current import
+current review
+Force flags required for superseding behavior
+Fail if:
+CLI silently supersedes local resolutions
+
+CLI-INV-08: Provenance Is Always Visible in Review
+For every imported resolution, the CLI must be able to show:
+Import ID
+Original area label (if any)
+Original session problem statement (read-only)
+Superseded local resolution (if applicable)
+Fail if:
+User cannot tell where a resolution came from
+
+CLI-INV-09: Review Commands Never Mutate Engine Without Sessions
+Every accepted resolution must:
+correspond to a session (even if hidden)
+have an acceptance context
+Batch operations may hide sessions, not eliminate them
+Fail if:
+Resolution appears without a session in audit
+
+CLI-INV-10: Review Is Not a Session
+Review does not:
+vote
+evaluate authority
+block or pause sessions
+Review only prepares or applies resolutions
+Fail if:
+Review alters active sessions directly
+CLI-INV-11: Next Actions Are Always Shown
+After every review command, CLI must show:
+Valid next steps (contextual) Examples:
+review show
+review accept
+review reject
+review close
+Fail if:
+User is left without guidance
