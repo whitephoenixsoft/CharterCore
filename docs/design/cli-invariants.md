@@ -224,6 +224,7 @@ block or pause sessions
 Review only prepares or applies resolutions
 Fail if:
 Review alters active sessions directly
+
 CLI-INV-11: Next Actions Are Always Shown
 After every review command, CLI must show:
 Valid next steps (contextual) Examples:
@@ -233,3 +234,21 @@ review reject
 review close
 Fail if:
 User is left without guidance
+
+CLI-INV-12: Single Active Review (Solo Mode)
+In solo mode, the CLI must allow at most one active review at a time.
+Starting a new review requires closing the current review explicitly.
+Fail if
+User can open review open I-2 while I-1 is still active
+
+CLI-INV-13: Review Closure Semantics
+When charter review close is executed, any imported resolution still in UNDER_REVIEW must be transitioned to ABANDONED.
+Properties
+ABANDONED resolutions:
+are immutable
+are queryable in audit
+may be re-imported later
+do not affect local resolutions
+Fail if
+UNDER_REVIEW resolutions remain after close
+ABANDONED resolutions are treated as rejected or consolidated
