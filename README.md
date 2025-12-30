@@ -7,10 +7,23 @@ Charter Core is designed to preserve institutional integrity by making decisions
 It does not provide chat, AI facilitation, or user experience features.
 Those are intentionally handled by separate layers.
 
+Charter Core is designed to be fully deterministic and testable: the same inputs always produce the same outcomes.
 ## Status
 
 **EARLY DEVELOPMENT**
 
+## Intended Usage
+
+Charter Core is a library and engine, not an end-user product.
+
+It is intended to be embedded into:
+- CLIs
+- developer tools
+- internal systems
+- games or simulations
+- governance-aware applications
+
+All user experience, collaboration, and workflow concerns are intentionally handled outside the engine.
 ## What Charter Core Does
 
 - Defines governance Areas
@@ -28,7 +41,7 @@ Those are intentionally handled by separate layers.
 - Require AI
 - Enforce workflows beyond decision legitimacy
 
-Charter Core is intentionally boring, explicit, and trustworthy.
+Charter Core is intentionally boring, explicit, and trustworthy — by design, not convention.
 
 ---
 

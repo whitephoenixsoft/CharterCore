@@ -19,7 +19,7 @@ If a contribution violates a long-term invariant, it will not be accepted, even 
 
 Please read:
 - `README.md`
-- `PRODUCT_BRIEF.md`
+- `PRODUCT_BRIEF_CORE.md`
 - `INVARIANTS.md`
 - `MENTAL_MODEL.md`
 - `SIMULATIONS.md`
