@@ -421,6 +421,7 @@ Note: A stance is any explicit engine-recorded expression of acceptance or rejec
 An export where:
 - A resolution references a missing session, or
 - A session references a missing Authority
+
 #### When
 
 - The export is imported
@@ -462,6 +463,7 @@ An export where:
 - Each resolution is marked UNDER_REVIEW
 - No Authority or Scope is inferred
 - No resolution becomes ACTIVE without a session
+
 #### Fail if
 
 - Any resolution is treated as accepted
@@ -469,97 +471,146 @@ An export where:
 
 ---
 ## Section F - Import Reviews
+
 ### AT-IR-01 — Chronological Review Order
 
 #### Given
+
 An imported history containing resolutions in this order:
-Authority R-AUTH-2
-Resolution R-A
-Resolution R-B
-All marked UNDER_REVIEW
+1. Authority R-AUTH-2
+2. Resolution R-A
+3. Resolution R-B
+4. All marked UNDER_REVIEW
+
 #### When
-The user initiates review
-Then
-The engine presents R-AUTH-2, then R-A, then R-B in order
+
+- The user initiates review
+
+#### Then
+
+- The engine presents R-AUTH-2, then R-A, then R-B in order
+
 #### Fail if
-Any resolution is reviewed out of order
-Any resolution type is prioritized
+
+- Any resolution is reviewed out of order
+- Any resolution type is prioritized
 
 ---
 
 ### AT-IR-02 — Imported Authority Does Not Govern Review
 
 #### Given
-Local Area has Authority R-AUTH-LOCAL (SOLO)
-Imported Authority R-AUTH-IMPORTED defines MAJORITY
-R-AUTH-IMPORTED is UNDER_REVIEW
+
+- Local Area has Authority R-AUTH-LOCAL (SOLO)
+- Imported Authority R-AUTH-IMPORTED defines MAJORITY
+- R-AUTH-IMPORTED is UNDER_REVIEW
+
 #### When
-The user attempts to accept R-AUTH-IMPORTED during review
+
+- The user attempts to accept R-AUTH-IMPORTED during review
+
 #### Then
-Acceptance is evaluated using R-AUTH-LOCAL
-Imported Authority mechanics are not applied
+
+- Acceptance is evaluated using R-AUTH-LOCAL
+- Imported Authority mechanics are not applied
+
 #### Fail if
-Imported Authority affects vote evaluation
+
+- Imported Authority affects vote evaluation
 
 --- 
 
 ### AT-IR-03 — Authority Rejection Does Not Block Later Review
-Given
+
+#### Given
+
 Imported resolutions in order:
-Authority R-AUTH-2
-Resolution R-A
-Both UNDER_REVIEW
-When
-R-AUTH-2 is explicitly rejected
-Then
-R-A remains reviewable
-No automatic rejection occurs
-Fail if
-R-A is auto-rejected or blocked
+1. Authority R-AUTH-2
+2. Resolution R-A
+3. Both UNDER_REVIEW
+
+#### When
+
+- R-AUTH-2 is explicitly rejected
+
+#### Then
+
+- R-A remains reviewable
+- No automatic rejection occurs
+
+#### Fail if
+
+- R-A is auto-rejected or blocked
 
 --- 
 
 ### AT-IR-04 — Imported Context Is Preserved
-Given
-Resolution R-A imported with acceptance context:
-Authority: R-AUTH-2
-Scope: R-SCOPE-2
-When
-R-A is reviewed
-Then
-The engine exposes:
-Imported Authority reference
-Imported Scope reference
-And
-No reinterpretation occurs
-Fail if
-Context is overwritten or recalculated
+
+#### Given
+
+- Resolution R-A imported with acceptance context:
+- Authority: R-AUTH-2
+- Scope: R-SCOPE-2
+
+#### When
+
+- R-A is reviewed
+
+#### Then
+
+- The engine exposes:
+- Imported Authority reference
+- Imported Scope reference
+
+#### And
+
+- No reinterpretation occurs
+
+#### Fail if
+
+- Context is overwritten or recalculated
 
 --- 
 
 #### AT-IR-05 — No Retroactive Authority Application
-Given
-Imported Authority R-AUTH-2 is accepted during review
-Imported Resolution R-A appears earlier in the timeline
-When
-Review proceeds
-Then
-R-AUTH-2 does not retroactively govern R-A
-Fail if
-Earlier resolutions are re-evaluated
+
+#### Given
+
+- Imported Authority R-AUTH-2 is accepted during review
+- Imported Resolution R-A appears earlier in the timeline
+
+#### When
+
+- Review proceeds
+
+#### Then
+
+- R-AUTH-2 does not retroactively govern R-A
+
+#### Fail if
+
+- Earlier resolutions are re-evaluated
 
 --- 
 
 ### AT-IR-06 — Review Acceptance Is Explicit
-Given
-Multiple imported resolutions under review
-When
-The user accepts only some of them
-Then
-Only explicitly accepted resolutions become active
-Others remain rejected or under review
-Fail if
-Implicit acceptance occurs
+
+#### Given
+
+- Multiple imported resolutions under review
+
+#### When
+
+- The user accepts only some of them
+
+#### Then
+
+- Only explicitly accepted resolutions become active
+- Others remain rejected or under review
+
+#### Fail if
+
+- Implicit acceptance occurs
 
 ---
 
@@ -618,126 +669,189 @@ Implicit acceptance occurs
 - No local resolutions are altered
 
 ---
-# Section H - References
 
-AT-REF-01: Sessions May Reference External Areas Explicitly
-Given
-Area A-Product exists
-Area A-Finance exists
-Both Areas are initialized with Authority and Scope
-When
-A session S-1 is started in Area A-Product
-S-1 explicitly references Area A-Finance
-Then
-Session S-1 records the reference to A-Finance immutably
-No validation error occurs
-No Authority or Scope from A-Finance is applied
-Fail if
-Referenced Area influences decision mechanics
-Referenced Area Authority is evaluated
+## Section H - References
 
----
+### AT-REF-01: Sessions May Reference External Areas Explicitly
 
-AT-REF-02: Sessions May Reference External Resolutions Explicitly
-Given
-Area A-Finance has an active resolution R-Budget-7
-Area A-Product is initialized
-When
-A session S-2 is started in A-Product
-S-2 explicitly references resolution R-Budget-7
-Then
-Reference to R-Budget-7 is stored immutably in S-2
-R-Budget-7’s Area, Authority, and Scope are not applied
-Acceptance mechanics remain governed solely by A-Product
-Fail if
-Referenced resolution affects acceptance
-Referenced resolution is revalidated or enforced
+#### Given
+
+- Area A-Product exists
+- Area A-Finance exists
+- Both Areas are initialized with Authority and Scope
+
+#### When
+
+- A session S-1 is started in Area A-Product
+- S-1 explicitly references Area A-Finance
+
+#### Then
+
+- Session S-1 records the reference to A-Finance immutably
+- No validation error occurs
+- No Authority or Scope from A-Finance is applied
+
+#### Fail if
+
+- Referenced Area influences decision mechanics
+- Referenced Area Authority is evaluated
 
 ---
 
-AT-REF-03: Referenced Resolutions May Be Superseded Without Invalidating Sessions
-Given
-Session S-3 references resolution R-Infra-2
-R-Infra-2 is ACTIVE at session start
-When
-Another session supersedes R-Infra-2 with R-Infra-3
-Then
-S-3 remains valid but requires revalidation before acceptance
-No automatic invalidation occurs
-No retroactive change to S-3’s stored reference
-Fail if
-Session silently proceeds without revalidation
-Session is auto-closed or invalidated
+### AT-REF-02: Sessions May Reference External Resolutions Explicitly
+
+#### Given
+
+- Area A-Finance has an active resolution R-Budget-7
+- Area A-Product is initialized
+
+#### When
+
+- A session S-2 is started in A-Product
+- S-2 explicitly references resolution R-Budget-7
+
+#### Then
+
+- Reference to R-Budget-7 is stored immutably in S-2
+- R-Budget-7’s Area, Authority, and Scope are not applied
+- Acceptance mechanics remain governed solely by A-Product
+
+#### Fail if
+
+- Referenced resolution affects acceptance
+- Referenced resolution is revalidated or enforced
 
 ---
 
-AT-REF-04: Multiple References Are Allowed and Independent
-Given
-Session S-4 references:
-Area A-Legal
-Area A-Security
-Resolution R-Compliance-9
-When
-Session progresses normally
-Then
-All references are preserved
-No priority or ordering is inferred
-No conflict is detected by the engine
-Fail if
-Engine attempts to reconcile or rank references
+### AT-REF-03: Referenced Resolutions May Be Superseded Without Invalidating Sessions
+
+#### Given
+
+- Session S-3 references resolution R-Infra-2
+- R-Infra-2 is ACTIVE at session start
+
+#### When
+
+- Another session supersedes R-Infra-2 with R-Infra-3
+
+#### Then
+
+- S-3 remains valid but requires revalidation before acceptance
+- No automatic invalidation occurs
+- No retroactive change to S-3’s stored reference
+
+#### Fail if
+
+- Session silently proceeds without revalidation
+- Session is auto-closed or invalidated
 
 ---
 
-AT-REF-05: References Are Informational Only
-Given
-Session S-5 references Area A-HR
-A candidate clearly violates HR policy (semantically)
-When
-Authority rule is satisfied in S-5
-Then
-Resolution is accepted
-No engine-level blocking occurs
-Fail if
-Engine blocks acceptance based on referenced Area content
+### AT-REF-04: Multiple References Are Allowed and Independent
+
+#### Given
+
+- Session S-4 references:
+	- Area A-Legal
+	- Area A-Security
+	- Resolution R-Compliance-9
+
+#### When
+
+- Session progresses normally
+
+#### Then
+
+- All references are preserved
+- No priority or ordering is inferred
+- No conflict is detected by the engine
+
+#### Fail if
+
+- Engine attempts to reconcile or rank references
 
 ---
 
-AT-REF-06: Referenced Areas Do Not Require Initialization Compatibility
-Given
-Session S-6 in Area A-Engineering
-A-Future exists but is uninitialized
-When
-S-6 references Area A-Future
-Then
-Reference is accepted
-No validation error occurs
-Fail if
-Engine enforces governance completeness on referenced Areas
+### AT-REF-05: References Are Informational Only
+
+#### Given
+
+- Session S-5 references Area A-HR
+- A candidate clearly violates HR policy (semantically)
+
+#### When
+
+- Authority rule is satisfied in S-5
+
+#### Then
+
+- Resolution is accepted
+- No engine-level blocking occurs
+
+#### Fail if
+
+- Engine blocks acceptance based on referenced Area content
 
 ---
 
-AT-REF-07: References Are Immutable After Session Start
-Given
-Session S-7 is started with references to Area A-X
-When
-An attempt is made to add or remove references
-Then
-Operation is rejected
-Original references remain unchanged
-Fail if
-References mutate mid-session
+### AT-REF-06: Referenced Areas Do Not Require Initialization Compatibility
+
+#### Given
+
+- Session S-6 in Area A-Engineering
+- A-Future exists but is uninitialized
+
+#### When
+
+- S-6 references Area A-Future
+
+#### Then
+
+- Reference is accepted
+- No validation error occurs
+
+#### Fail if
+
+- Engine enforces governance completeness on referenced Areas
 
 ---
 
-AT-REF-08: References Are Preserved in Export and Import
-Given
-A session with references is exported
-The export is imported via RESTORE or CONSOLIDATE
-Then
-All references are preserved exactly
-No inference or reconciliation occurs
-Fail if
-References are dropped, normalized, or reinterpreted
+### AT-REF-07: References Are Immutable After Session Start
+
+#### Given
+
+- Session S-7 is started with references to Area A-X
+
+#### When
+
+- An attempt is made to add or remove references
+
+#### Then
+
+- Operation is rejected
+- Original references remain unchanged
+
+#### Fail if
+
+- References mutate mid-session
+
+---
+
+### AT-REF-08: References Are Preserved in Export and Import
+
+#### Given
+
+- A session with references is exported
+- The export is imported via RESTORE or CONSOLIDATE
+
+#### Then
+
+- All references are preserved exactly
+- No inference or reconciliation occurs
+
+#### Fail if
+
+- References are dropped, normalized, or reinterpreted
 
 ---
 
