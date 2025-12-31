@@ -350,6 +350,22 @@ References must never:
 All effects of references are external to the engine and strictly informational.
 
 ---
+
+## 23. Audit Scope Supremacy 
+
+All auditable events must be recorded in an audit scope whose lifecycle strictly outlives the subject of the event.
+
+Rules: 
+- No auditable action may rely solely on an audit scope that can be destroyed as part of that action.
+- Deletion, retirement, or loss of access to an entity must never erase the audit trail of that action.
+- Global audit scope must always exist and must never be deletable.
+
+Consequences: 
+- Area deletion must emit a Global audit event.
+- Area-scoped audit logs may be archived, frozen, or detached, but Global audit remains authoritative.
+- Object store entries may persist beyond Area lifecycle.
+
+---
 ## Frozen Boundary (Non-Goals)
 
 Charter Core explicitly does not provide:
