@@ -116,3 +116,89 @@ reflog | audit log
 commit | resolution
 index | active session
 stash | paused session
+
+---
+## Charter Core Reachability Graph
+
+This answers: “When is an object considered legitimate, reachable, or merely stored?”
+
+### Object Types (MVP)
+We’ll assume these object types exist in the object store:
+Area
+Session
+Resolution
+Candidate
+Vote
+(later: ExportBundle, ImportBundle, ReviewRecord)
+
+### Root Sets (Very Important)
+
+Reachability always starts from roots.
+
+Charter has two root sets, unlike Git which mostly has refs:
+
+#### Root Set A — Active Engine State
+
+These are current, live references:
+- All Areas in the ref store
+- All active Sessions in the session store
+- Global config (later)
+- Global audit log (later)
+
+#### Root Set B — Immutable History
+
+These are historical anchors:
+- All ACTIVE, SUPERSEDED, RETIRED Resolutions
+- All Sessions referenced by those resolutions
+
+⚠️ Sessions that never produced a resolution are not part of immutable history.
+
+---
+### Reachability Rules (Edges)
+
+Think of this as a directed graph.
+
+#### Area → Session
+An Area may reference many sessions
+Only sessions started in that Area
+#### Area → Resolution
+An Area references active Authority + Scope
+It does not reference every resolution explicitly (history is queried)
+#### Session → Candidate
+Candidates exist only inside sessions
+If the session disappears, candidates lose meaning
+#### Session → Vote
+Votes exist only inside sessions
+#### Session → Resolution (conditional)
+Only if a candidate was accepted
+Exactly one resolution per acceptance
+#### Resolution → Session (mandatory)
+Every resolution must reference its acceptance session
+#### Resolution → Resolution
+Supersedes / superseded_by links
+
+---
+### Reachability Classification
+
+After traversal, every object is in exactly one bucket:
+
+#### 1. Reachable (Healthy)
+- Reachable from root sets
+- Valid references
+- No invariant violations
+#### 2. Unattached (Safe, Non-Blocking)
+Equivalent to Git dangling objects.
+
+Examples:
+- Session created but never closed
+- Session closed without acceptance
+- Candidates in abandoned sessions
+
+These are allowed.
+#### 3. Broken (Invariant Violation)
+Examples:
+- Resolution references missing session
+- Area references missing authority
+- Session references superseded resolution without revalidation
+
+These are engine errors.
