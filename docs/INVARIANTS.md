@@ -366,6 +366,38 @@ Consequences:
 - Object store entries and audit records may outlive Area or Session lifecycles.
 
 ---
+## 24. Constraints Are Authority-Equivalent
+
+Any rule that changes who must agree, or how agreement is evaluated, is an authority change.
+
+Consequences:
+- Cannot change mid-session
+- Cannot change on resume
+- Requires its own session
+- Governed by the current authority
+
+---
+
+## 25. Resume Cannot Introduce New Legitimacy Conditions
+
+On resume:
+- Participants may change (reality)
+- Votes may be added
+- Authority and constraints may not
+
+---
+## 26. Constraints Must Be Declared at Session Start
+
+- Visible before any votes
+- Immutable for session lifetime
+- Recorded in session metadata
+
+Fail if:
+- Added after first vote
+- Changed after pause
+- Implied implicitly
+
+---
 ## Frozen Boundary (Non-Goals)
 
 Charter Core explicitly does not provide:
