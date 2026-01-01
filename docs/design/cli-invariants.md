@@ -252,3 +252,7 @@ do not affect local resolutions
 Fail if
 UNDER_REVIEW resolutions remain after close
 ABANDONED resolutions are treated as rejected or consolidated
+
+CLI-REV-01: Review Acceptance Is Mode-Constrained
+In solo mode, the CLI MAY allow direct acceptance or rejection of reviewed resolutions.
+In non-solo modes, the CLI MUST require session-mediated acceptance, or forbid acceptance entirely.
