@@ -256,3 +256,119 @@ ABANDONED resolutions are treated as rejected or consolidated
 CLI-REV-01: Review Acceptance Is Mode-Constrained
 In solo mode, the CLI MAY allow direct acceptance or rejection of reviewed resolutions.
 In non-solo modes, the CLI MUST require session-mediated acceptance, or forbid acceptance entirely.
+
+---
+
+CLI outside with no solo mode
+
+CLI-INV-V2-01: CLI Never Creates Consensus
+The CLI records decisions; it does not create them.
+Fail if:
+running a command implies agreement
+absence of data is treated as approval
+CLI-INV-V2-02: Non-Solo Authority Requires Explicit Participants
+If Authority ≠ SOLO:
+sessions must specify participants
+acceptance must validate against them
+Fail if:
+acceptance occurs without participant grounding
+CLI-INV-V2-03: Review Is a Governance Action
+Accepting or rejecting imported resolutions:
+is subject to Authority
+must be auditable
+must not bypass sessions
+Fail if:
+review behaves differently from normal decision-making
+CLI-INV-V2-04: CLI Is Honest About Its Limits
+The CLI must not pretend to know:
+who attended
+who agreed
+what was discussed
+Annotations may exist. Assertions may exist. Inferences may not.
+CLI-INV-V2-01: CLI Never Creates Consensus
+The CLI records decisions; it does not create them.
+Fail if:
+running a command implies agreement
+absence of data is treated as approval
+CLI-INV-V2-02: Non-Solo Authority Requires Explicit Participants
+If Authority ≠ SOLO:
+sessions must specify participants
+acceptance must validate against them
+Fail if:
+acceptance occurs without participant grounding
+
+CLI-INV-V2-03: Review Is a Governance Action
+Accepting or rejecting imported resolutions:
+is subject to Authority
+must be auditable
+must not bypass sessions
+Fail if:
+review behaves differently from normal decision-making
+CLI-INV-V2-04: CLI Is Honest About Its Limits
+The CLI must not pretend to know:
+who attended
+who agreed
+what was discussed
+Annotations may exist. Assertions may exist. Inferences may not.
+
+CLI-INV-REVIEW-01: Review Singularity
+Scope: CLI layer (process invariant, not engine invariant)
+Statement
+At most one Review may be active per Area at any given time in the CLI.
+Definition
+A Review is a bounded CLI construct representing the evaluation of an imported decision branch.
+A Review is active from charter review start until charter review close.
+Rules
+The CLI must reject attempts to start a new Review in an Area that already has an active Review.
+The CLI must surface the active Review clearly when commands are issued that would conflict with it.
+The CLI must guide the user to either:
+complete the current Review, or
+explicitly close it.
+Rationale
+Reviews represent focused deliberation, not background tasks.
+Allowing concurrent reviews creates implicit parallel legitimacy paths.
+Coordination required for multiple reviews exceeds CLI guarantees.
+Fail if
+Multiple Reviews can be active in the same Area without explicit user awareness.
+Imported resolutions from different Reviews are accepted without a clearly scoped evaluation context.
+Notes
+This invariant may be relaxed in hosted or server-based systems with participant coordination, ownership, and notification guarantees.
+The engine remains capable of supporting multiple Reviews; enforcement is purely CLI-level.
+
+CLI-INV-SESSION-RESUME-01: Participant Revalidation
+Statement
+On session resume, the CLI must explicitly revalidate participants and constraints before allowing votes or acceptance.
+Rules
+When charter session resume is issued:
+CLI must display:
+previous participant set
+current participant set
+CLI must require explicit confirmation:
+that the current participants are correct
+that the authority rule still applies
+that required approvers (if any) are present or knowingly absent
+Until confirmed:
+no voting
+no acceptance
+no candidate changes
+
+CLI-INV-PARTICIPANTS-01: Participants Are Explicit State
+The CLI must never infer participants
+Participant membership changes must be explicit commands
+Authority evaluation always uses the declared participant set
+Acceptance context must snapshot participants immutably
+This applies in:
+solo mode
+recorded meetings
+future multi-user systems
+
+CLI-ERG-02: Session Derivation Is Explicit and Non-Legitimizing
+The CLI may create a new session derived from a prior one
+The new session:
+has a new ID
+has no votes
+requires fresh acceptance
+Lineage is recorded for audit only
+Fail if:
+Votes or acceptance state are carried forward
+The new session auto-accepts anything

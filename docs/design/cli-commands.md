@@ -473,3 +473,18 @@ charter session accept C-1
 
 Note:
 CLI Ergonomic Invariant When the active Authority rule makes individual voting redundant (e.g., SOLO), the CLI may collapse vote + accept into a single user action, while preserving full mechanical history in the engine.
+
+---
+
+Extra
+
+charter session participants list
+charter session participants add <id>
+charter session participants remove <id>
+
+To confirm session resume:
+charter session participants set <id>
+
+With more than one participant:
+charter vote accept C-1 --by alice
+charter vote accept C-1 --by bob
