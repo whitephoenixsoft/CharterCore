@@ -865,3 +865,84 @@ These acceptance tests intentionally do not:
 - Require AI
 
 They define the legitimacy envelope of Charter Core.
+
+NEW
+
+AT-AUD-01 — Audit Scope Supremacy
+Given
+An Area A-1 exists
+Global Audit exists
+When
+Any auditable action occurs (session start, resolution acceptance, import, deletion)
+Then
+At least one audit record exists in a scope whose lifecycle outlives the subject
+No auditable action is recorded only inside a destructible scope
+Fail if
+An action’s audit trail is lost when its subject is deleted
+AT-AUD-02 — Area Deletion Emits Global Audit Event
+Given
+Area A-1 with existing sessions and resolutions
+When
+A-1 is deleted or replaced (explicitly or via RESTORE import)
+Then
+A Global Audit event records:
+Area ID
+Deletion or replacement reason
+Timestamp
+Area-scoped audit may terminate
+Fail if
+Area deletion removes the only audit record of the deletion
+AT-IMP-01 — Import Is Always Globally Audited
+Given
+A valid import blob
+When
+import_area is called in any mode
+Then
+Global Audit records:
+Import attempt
+Mode (RESTORE / CONSOLIDATE)
+Source fingerprint
+Result (success / failure)
+Fail if
+Import leaves no global audit record
+AT-IMP-02 — Consolidation Import Does Not Rewrite History
+Given
+Existing Area A-1 with active resolutions
+Import blob containing overlapping resolutions
+When
+Import is executed in CONSOLIDATE mode
+Then
+Imported resolutions enter UNDER_REVIEW
+Existing resolutions are unchanged
+Global Audit records import
+Area Audit records new UNDER_REVIEW entries
+Fail if
+Existing resolutions are superseded or altered automatically
+AT-IMP-03 — Restore Import Emits Replacement Audit
+Given
+Existing Area A-1
+Import blob containing a full Area history
+When
+Import is executed in RESTORE mode
+Then
+Existing Area A-1 is replaced
+Global Audit records:
+Replacement
+Old Area ID
+New Area ID
+Imported Area history is preserved
+Fail if
+Prior Area disappears without a global audit record
+AT-IMP-04 — Failed Import Does Not Mutate State
+Given
+Existing legitimate Areas and history
+A malformed or tampered import blob
+When
+Import is attempted
+Then
+Import fails deterministically
+No Areas, Sessions, or Resolutions are mutated
+Global Audit records the failed attempt
+Fail if
+Partial state is created
+Existing history is modified

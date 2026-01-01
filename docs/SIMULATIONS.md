@@ -475,3 +475,75 @@ No blocking
 Validated Invariants
 Import integrity
 Engine agnosticism
+
+Simulation — Consolidation Import with Conflicting Timeline
+Context
+Local system has:
+Area A-CORE
+Active Authority R-AUTH-1
+Resolution R-3 (active)
+External system exports:
+Same Area lineage
+Alternate resolution R′-5 that supersedes R-1 but diverges from R-3
+Step 1 — Import initiated
+Action
+Copy code
+
+import_area(blob, mode = CONSOLIDATE)
+Audit
+Global Audit
+IMPORT_STARTED
+Mode: CONSOLIDATE
+Source hash
+Timestamp
+Step 2 — Integrity verified
+Action
+Engine verifies internal consistency of the blob
+Audit
+Global Audit
+IMPORT_VERIFIED (or IMPORT_INTEGRITY_BYPASSED if forced)
+Step 3 — Imported objects materialized
+Action
+Imported resolutions are stored as objects
+Their original lifecycle states are preserved internally
+Locally, they are marked UNDER_REVIEW
+Audit
+Area Audit (A-CORE)
+RESOLUTION_IMPORTED_UNDER_REVIEW (R′-5)
+Global Audit
+IMPORT_OBJECTS_CREATED (count = N)
+Step 4 — User reviews imported resolution
+Observation
+R′-5 shows:
+Supersedes R′-2 (import timeline)
+Conflicts with local active R-3
+No state change yet.
+Audit
+None (read-only)
+Step 5 — User accepts imported resolution
+Action
+Engine creates a new local resolution R-4
+Content derived from R′-5
+Acceptance context is local
+R-3 is superseded
+Audit
+Area Audit
+RESOLUTION_ACCEPTED (R-4)
+RESOLUTION_SUPERSEDED (R-3)
+Global Audit
+IMPORT_RESOLUTION_CONSOLIDATED
+Imported ID: R′-5
+Local ID: R-4
+Imported object R′-5 remains:
+immutable
+historically preserved
+marked CONSOLIDATED
+Step 6 — Review closed
+Action
+Review is closed
+Remaining UNDER_REVIEW items become ABANDONED (if any)
+Audit
+Global Audit
+REVIEW_CLOSED
+Area Audit
+IMPORT_REVIEW_COMPLETED
