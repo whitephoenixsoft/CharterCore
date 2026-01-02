@@ -918,6 +918,7 @@ Global Audit records import
 Area Audit records new UNDER_REVIEW entries
 Fail if
 Existing resolutions are superseded or altered automatically
+
 AT-IMP-03 — Restore Import Emits Replacement Audit
 Given
 Existing Area A-1
@@ -946,3 +947,94 @@ Global Audit records the failed attempt
 Fail if
 Partial state is created
 Existing history is modified
+
+AT-24 — Constraints Are Authority-Equivalent
+Given
+An initialized Area with active Authority A-1
+A session S-1 started with:
+Authority rule: MAJORITY_PRESENT
+Constraint: “Security must approve”
+No votes have been cast yet
+When
+An attempt is made to:
+add a new required participant, or
+remove an existing required participant, or
+change how agreement is evaluated
+Then
+The operation is rejected
+Engine returns an explicit error:
+“Legitimacy constraints are authority-equivalent and cannot be changed mid-session.”
+And
+No session metadata is altered
+Fail if
+Constraints can be altered without a new session
+Constraint changes bypass authority
+AT-25 — Resume Cannot Introduce New Legitimacy Conditions
+Given
+A session S-1 started with:
+Authority rule: UNANIMOUS_PRESENT
+Required participants: Alice, Bob
+Session S-1 is paused
+No votes have been invalidated
+When
+On resume, an attempt is made to:
+add Charlie as a required approver, or
+change the authority rule, or
+add a new approval constraint
+Then
+Resume fails
+Session enters BLOCKED state
+Engine reports:
+“Resume cannot introduce new legitimacy conditions.”
+Allowed on Resume
+Updating participant presence
+Recording new stances
+Re-validating existing constraints
+Fail if
+Resume alters who must agree
+Resume alters how agreement is evaluated
+AT-26 — Constraints Must Be Declared at Session Start
+Given
+An initialized Area
+A new session S-1 is started
+When
+Session S-1 is created
+Then
+The session metadata must include:
+Authority rule
+Any required participants
+Any approval constraints
+And
+All constraints are visible before any stance is recorded
+And When
+Any attempt is made to:
+add constraints after session start, or
+imply constraints via later votes
+Then
+Operation is rejected explicitly
+Fail if
+Constraints are inferred
+Constraints are added after the first vote
+Constraints are hidden from session metadata
+AT-27 — Candidate Set Freezes on First Stance
+(Your wording is already excellent; this just formalizes it as a test.)
+Given
+A session S-1 with multiple candidates
+No stances recorded
+When
+A stance is recorded for any candidate
+Then
+The candidate set becomes immutable
+And When
+An attempt is made to:
+add a candidate
+remove a candidate
+edit candidate content
+Then
+Operation is rejected
+Engine returns:
+“Candidate set is frozen once voting has begun. Restart the session to change options.”
+Fail if
+Candidate mutation is allowed after voting starts
+Mutation occurs silently
+

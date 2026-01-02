@@ -398,6 +398,16 @@ Fail if:
 - Implied implicitly
 
 ---
+ ## 27. Candidate Set Freezes on First Stance
+
+Once any stance is recorded in a session:
+- candidates cannot be added
+- candidates cannot be removed
+- candidates cannot be edited
+
+Violation must fail explicitly.
+
+---
 ## Frozen Boundary (Non-Goals)
 
 Charter Core explicitly does not provide:
