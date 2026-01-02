@@ -52,6 +52,11 @@ Every resolution belongs to exactly one Area.
 
 ### 4. Authority Is a First-Class Resolution
 
+Authority is the explicit decision rule that determines how agreement is evaluated within a session.
+
+Authority does not represent identity, rank, permission, or power.
+It only defines the mechanical conditions under which a candidate may be accepted.
+
 Each Area must maintain **exactly one Active Authority resolution** at any given time.
 
 Authority:
@@ -72,6 +77,10 @@ Authority changes:
 ---
 
 ### 5. Scope Is a First-Class, Descriptive Resolution
+
+Scope defines the domain of applicability for a decision and is recorded for transparency and audit.
+
+Scope does not enforce, validate, or block decisions — it only documents intent and context.
 
 Each Area must have exactly one active Scope resolution at any time.
 
@@ -282,7 +291,7 @@ This mirrors established systems (Git, package managers, SBOMs):
 
 ---
 
-## 19. Concurrency Invariant
+### 19. Concurrency Invariant
 
 Charter Core allows multiple concurrent sessions within the same Area.
 
@@ -301,7 +310,7 @@ No session may continue under invalidated governing context.
 
 ---
 
-## 20. Explicit Dissent Invariant
+### 20. Explicit Dissent Invariant
 
 Charter Core must support explicit expression of disagreement within a session.
 
@@ -309,28 +318,28 @@ Silence or absence must never be interpreted as consent or rejection.
 
 ---
 
-## 21. Import Review Invariants
+### 21. Import Review Invariants
 
-### IR-1 — Chronological Review Invariant
+#### IR-1 — Chronological Review Invariant
 
 Imported resolutions MUST be reviewed in their original chronological order.
 No resolution type (including Authority or Scope) may be reviewed out of order.
 
-### IR-2 — Local Authority Governs Review
+#### IR-2 — Local Authority Governs Review
 
 Imported Authority and Scope resolutions do not govern the mechanics of review.
 All review acceptances are evaluated under the locally active Authority.
 
-### IR-3 — No Cascading Rejection
+#### IR-3 — No Cascading Rejection
 
 Rejecting an imported resolution MUST NOT implicitly invalidate or auto-reject later imported resolutions.
 
-### IR-4 — Context Preservation Without Reinterpretation
+#### IR-4 — Context Preservation Without Reinterpretation
 
 Imported acceptance context is preserved immutably for audit and reasoning but is never re-applied mechanically.
 
 ----
-## 22. References Are Informational Only
+### 22. References Are Informational Only
 
 Charter Core allows sessions and resolutions to explicitly reference other Areas, Scopes, or Resolutions.
 
@@ -351,7 +360,7 @@ All effects of references are external to the engine and strictly informational.
 
 ---
 
-## 23. Audit Scope Supremacy
+### 23. Audit Scope Supremacy
 
 All auditable events in Charter Core must be recorded in an audit scope whose lifecycle strictly outlives the subject of the event.
 
@@ -366,46 +375,66 @@ Consequences:
 - Object store entries and audit records may outlive Area or Session lifecycles.
 
 ---
-## 24. Constraints Are Authority-Equivalent
+### 24. Constraints Are Authority-Equivalent
 
-Any rule that changes who must agree, or how agreement is evaluated, is an authority change.
+Any rule that changes who must agree or how agreement is evaluated is authority-equivalent.
+
+This includes (non-exhaustive):
+- Required participants
+- Quorum definitions
+- Majority / unanimity rules
+- Required approvals (e.g. “Security must approve”)
 
 Consequences:
-- Cannot change mid-session
-- Cannot change on resume
-- Requires its own session
-- Governed by the current authority
+- Constraints cannot change mid-session
+- Constraints cannot change on resume
+- Constraints require their own decision session
+- Constraint changes are governed by the currently active Authority
+
+ Rationale:
+- Changing constraints changes legitimacy mechanics. Legitimacy mechanics must never shift without consent.
 
 ---
 
-## 25. Resume Cannot Introduce New Legitimacy Conditions
+### 25. Resume Cannot Introduce New Legitimacy Conditions
 
-On resume:
+When resuming a session:
 - Participants may change (reality)
 - Votes may be added
-- Authority and constraints may not
+- Authority may not change
+- Constraints may not change
+
+If legitimacy conditions differ from session start:
+- The session must enter a BLOCKED state
+- Explicit user action is required
+
+Resume restores context — it does not renegotiate it.
 
 ---
-## 26. Constraints Must Be Declared at Session Start
+### 26. Constraints Must Be Declared at Session Start
 
-- Visible before any votes
-- Immutable for session lifetime
+All legitimacy constraints must be:
+- Declared at session start
+- Visible before any stance is recorded
+- Immutable for the session’s lifetime
 - Recorded in session metadata
 
 Fail if:
-- Added after first vote
-- Changed after pause
-- Implied implicitly
+- Constraints are added after the first stance
+- Constraints change after pause
+- Constraints are inferred implicitly
 
 ---
- ## 27. Candidate Set Freezes on First Stance
-
+ ### 27. Candidate Set Freezes on First Stance
+ 
 Once any stance is recorded in a session:
-- candidates cannot be added
-- candidates cannot be removed
-- candidates cannot be edited
+- Candidates cannot be added
+- Candidates cannot be removed
+- Candidates cannot be edited
+- Violation must fail explicitly.
 
-Violation must fail explicitly.
+Rationale:
+- Changing options after voting begins invalidates consent.
 
 ---
 ## Frozen Boundary (Non-Goals)
