@@ -362,7 +362,7 @@ solo mode
 recorded meetings
 future multi-user systems
 
-CLI-ERG-02: Session Derivation Is Explicit and Non-Legitimizing
+CLI-ERG: Session Derivation Is Explicit and Non-Legitimizing
 The CLI may create a new session derived from a prior one
 The new session:
 has a new ID
@@ -372,3 +372,25 @@ Lineage is recorded for audit only
 Fail if:
 Votes or acceptance state are carried forward
 The new session auto-accepts anything
+
+CLI-INV: Constraint Enforcement Is Pre-Acceptance Only
+CLI may enforce arbitrary constraints
+CLI may block acceptance for ergonomic or policy reasons
+CLI must not encode constraint semantics into engine state
+Engine remains ignorant of why acceptance was blocked
+Fail if:
+engine behavior changes based on constraint metadata
+constraints alter engine evaluation rules
+This is exactly how git hooks, CI checks, and code review gates work.
+
+CLI-INV-SESSION-04: Restart Is Terminal
+restart-from:
+automatically closes the source session
+records linkage in audit history
+creates a new session with no carried votes
+
+CLI-INV-CAND-02: Candidate Editing Is Pre-Vote Only
+CLI must:
+allow candidate add/remove freely before voting
+block and explain once voting begins
+guide user toward restart-from
