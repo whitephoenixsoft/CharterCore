@@ -488,3 +488,182 @@ charter session participants set <id>
 With more than one participant:
 charter vote accept C-1 --by alice
 charter vote accept C-1 --by bob
+
+---
+CLI v2 audit commands 
+
+Recommended V2 Audit Command Additions
+1. charter audit participants
+Purpose:
+Summarize participation mechanically.
+Example output:
+Copy code
+Text
+Participant Summary (Area: platform)
+
+Alice
+  Sessions participated: 12
+  Votes recorded: 31
+  Resolutions accepted: 8
+  Authority changes participated in: 1
+
+Bob
+  Sessions participated: 7
+  Votes recorded: 14
+  Resolutions accepted: 2
+Notes:
+No scoring
+No ranking
+No value judgments
+2. charter audit by-participant <actor_id>
+Purpose:
+Answer: “What did this person participate in?”
+Output:
+Copy code
+Text
+Actor: Alice
+
+Session S-14
+  Problem: "Choose deployment strategy"
+  Stance: ACCEPT on C-2
+  Outcome: Resolution R-DEPLOY-3 accepted
+
+Session S-18
+  Problem: "Change on-call rotation"
+  Stance: REJECT on C-1
+  Outcome: No resolution
+This is incredibly useful during:
+retrospectives
+trust repair
+onboarding
+compliance reviews
+3. charter audit resolution --participants
+Adds a section:
+Copy code
+Text
+Participants at Acceptance
+  Alice — ACCEPT
+  Bob — ACCEPT
+  Carol — ABSTAIN
+
+Authority Rule:
+  Unanimous of present participants
+This already exists mechanically — V2 just surfaces it clearly.
+4. charter audit timeline --actors
+Timeline view with actors explicitly rendered:
+Copy code
+Text
+[2025-03-02] SESSION START S-22
+  Participants: Alice, Bob
+
+[2025-03-02] STANCE
+  Alice ACCEPT C-1
+
+[2025-03-02] STANCE
+  Bob ACCEPT C-1
+
+[2025-03-02] RESOLUTION ACCEPTED R-SEC-4
+This becomes grep-friendly and human-readable.
+---
+Participant Auditing — Locked for CLI V2 ✅
+These are valid, necessary, and aligned with the transparency goal. They are CLI audit surfaces over engine data.
+Locked Commands
+Copy code
+Bash
+charter audit participants
+Purpose
+List all known participants across sessions
+Show first-seen / last-seen timestamps
+Show session counts
+Copy code
+Bash
+charter audit by-participant <actor_id>
+Purpose
+Timeline view of everything a participant was involved in:
+Sessions joined
+Votes cast
+Acceptances participated in
+Resumes confirmed
+Copy code
+Bash
+charter audit resolution <resolution-id> --participants
+Purpose
+Show participant snapshot(s) relevant to a resolution:
+Session participants at acceptance
+Any resumes before acceptance
+Required approvers (if constraints existed)
+Copy code
+Bash
+charter audit timeline --actors
+Purpose
+Chronological audit stream including:
+Participant joins/leaves
+Resume confirmations
+Authority-relevant participant changes
+
+----
+Potential redo
+
+CLI Command Set (Consolidated & Agreed)
+Below is the current recommended CLI surface, reflecting everything we’ve agreed on.
+Area
+Copy code
+Bash
+charter init
+charter area create <name>
+charter area use <area>
+charter area status
+Session
+Copy code
+Bash
+charter session start
+charter session status
+charter session pause
+charter session resume
+charter session close
+charter session restart-from <session-id>
+Participants
+Copy code
+Bash
+charter session participants show
+charter session participants add <id>
+charter session participants remove <id>
+Candidates
+Copy code
+Bash
+charter candidate add
+charter candidate list
+charter candidate remove   # only before first stance
+Voting / Acceptance
+Copy code
+Bash
+charter vote <candidate> accept|reject|abstain
+charter session accept <candidate>   # solo-mode ergonomic collapse
+Authority & Scope
+Copy code
+Bash
+charter authority set
+charter scope set
+(each creates a session under the hood, per your design)
+Baseline Review (Imports)
+Copy code
+Bash
+charter import consolidate <file>
+charter import restore <file>
+
+charter baseline status
+charter baseline show
+charter baseline accept [--all] [--force]
+charter baseline reject [--all]
+charter baseline close
+Status & Audit
+Copy code
+Bash
+charter status
+charter status session
+charter status area
+
+# non-MVP but supported
+charter audit session
+charter audit resolution
+charter audit area
