@@ -1,13 +1,15 @@
+#[derive(Clone, PartialEq, Eq, Hash, Debug)]
+pub struct AreaId(pub String);
+
+
+/*
 use std::fmt;
 use std::sync::atomic::{AtomicU64, Ordering};
 
 static OBJECT_COUNTER: AtomicU64 = AtomicU64::new(1);
 
-pub type ExternalId = String;
-
 #[derive(Clone, Copy, PartialEq, Eq, Hash)]
 pub struct ObjectHash(pub [u8; 32]);
-
 impl fmt::Debug for ObjectHash {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "Object({})", self.to_hex())
@@ -34,10 +36,18 @@ impl ObjectHash {
     pub fn to_hex(&self) -> String {
         self.0.iter().map(|b| format!("{:02x}", b)).collect()
     }
+
+    /// Returns a hash from the data given
+    pub fn hash_bytes(bytes: &[u8]) -> ObjectHash {
+        use sha2::{sha256, Digest};
+
+        let mut hasher = Sha256::new();
+        hasher.update(bytes);
+
+        ObjectHash(hasher.finalize())
+    }
 }
 
-#[derive(Clone, PartialEq, Eq, Hash, Debug)]
-pub struct AreaId(pub String);
 
 #[derive(Clone, PartialEq, Eq, Hash, Debug)]
 pub struct SessionId(pub String);
@@ -50,4 +60,4 @@ pub struct CandidateId(pub String);
 
 #[derive(Clone, PartialEq, Eq, Hash, Debug)]
 pub struct ActorId(pub String);
-
+*/

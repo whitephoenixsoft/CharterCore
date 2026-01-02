@@ -1,3 +1,4 @@
+/*
 use super::candidate::Candidate;
 use super::vote::Vote;
 use crate::ids::{ObjectHash, ExternalId, ActorId};
@@ -50,3 +51,4 @@ pub enum AuthorityRule {
     UnanimousPresent,
     MajorityPresent,
 }
+*/

@@ -1,6 +1,9 @@
-use crate::ids::ObjectHash;
+use crate::types::ObjectHash;
+use super::core::CharterObject;
 
 pub trait ObjectStore {
 	fn put(&mut self, obj: Vec<u8>) -> ObjectHash;
-	fn get(&self, id: &ObjectHash) -> Option<Vec<u8>>;
+	fn get(&self, hash: &ObjectHash) -> Option<&CharterObject>;
+        //fn contains(&self, hash: &ObjectHash) -> bool;
+        //fn all_hashes(&self) -> Vec<ObjectHash>;
 }

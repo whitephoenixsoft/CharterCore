@@ -1,3 +1,4 @@
+/*
 use crate::ids::CandidateId;
 use crate::time::Timestamp;
 
@@ -13,3 +14,4 @@ pub struct Candidate {
 
     pub created_at: Timestamp,
 }
+*/

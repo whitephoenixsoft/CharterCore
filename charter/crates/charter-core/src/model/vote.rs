@@ -1,3 +1,4 @@
+/*
 use crate::ids::{ActorId, CandidateId};
 use crate::time::Timestamp;
 
@@ -23,3 +24,4 @@ pub enum VoteType {
     Reject,
     Abstain,
 }
+*/

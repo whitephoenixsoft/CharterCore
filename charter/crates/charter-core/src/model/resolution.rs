@@ -1,3 +1,4 @@
+/*
 use crate::ids::{ObjectHash, ExternalId, ActorId};
 use crate::time::Timestamp;
 
@@ -77,3 +78,4 @@ pub struct ResolutionTransition {
    pub occurred_at: Timestamp,
    pub session_id: Option<ObjectHash>, // can be marked under review without a session
 } 
+*/
