@@ -1,4 +1,6 @@
-use crate::model::area::AreaRoot;
+use crate::model::ids::AreaId;
+use crate::time::Timestamp;
+use serde::Serialize;
 //use crate::ids::ObjectHash;
 
 /*
@@ -24,4 +26,10 @@ pub enum CharterObjectKind {
 */
 pub enum CharterObject {
     AreaRoot(AreaRoot),
+}
+
+#[derive(Debug)]
+pub struct AreaRoot {
+    pub area_id: AreaId,
+    pub created_at: Timestamp,
 }

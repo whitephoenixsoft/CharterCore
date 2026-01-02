@@ -19,7 +19,3 @@ pub struct Area {
 }
 */
 
-pub struct AreaRoot {
-    pub area_id: AreaId,
-    pub created_at: Timestamp,
-}
