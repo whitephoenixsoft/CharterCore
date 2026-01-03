@@ -185,5 +185,5 @@ If you only remember one thing:
 
 If there are any questions, please read:
 
-- `FAQ`
+- `doc/FAQ`
 
