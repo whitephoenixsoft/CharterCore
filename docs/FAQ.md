@@ -1,201 +1,320 @@
-# Charter Core — Frequently Asked Questions (FAQ)
+# Charter Core — FAQ (Invariant-Oriented)
 
-This FAQ explains why Charter Core is intentionally minimal, and how certain design decisions preserve legitimacy, auditability, and long-term usefulness.
+This FAQ explains why Charter Core behaves the way it does.
+Each section corresponds to one or more **engine invariants**.
 
----
-## What problem does Charter Core solve?
-
-Charter Core preserves legitimate decisions over time.
-
-It records:
-- What was decided
-- By whom
-- Under what authority
-- Within what scope
-- And how decisions evolved
-
-It does **not** manage conversation, tasks, workflows, or execution.
+Charter Core is intentionally minimal.
+Anything not justified here belongs in higher layers (CLI, UI, workflow, AI).
 
 ---
-## Why does Charter Core require explicit acceptance?
+## Invariant Group: Explicit Legitimacy
+
+### Why does Charter Core require explicit acceptance?
 
 Because legitimacy cannot be inferred.
 
-If decisions could be implied (by silence, inactivity, or automation), the system would:
-- Lose auditability
-- Drift semantically
-- Become vulnerable to abuse
+Charter Core **never assumes agreement** from:
+- silence
+- inactivity
+- majority presence
+- automation
+- UI shortcuts
 
-Explicit acceptance is the foundation of trust.
+If acceptance could be implied, the system would:
+- lose auditability
+- become vulnerable to abuse
+- allow silent drift in governance
 
----
-
-## Why are Authority and Scope resolutions mandatory?
-
-Because decisions without governance context are meaningless.
-
-Authority answers:
-
-> Who is allowed to legitimize decisions, and by what mechanical rule?
-
-Scope answers:
-
-> What kinds of decisions belong here?
-
-Both must be explicit to prevent ambiguity and retroactive reinterpretation.
+**Explicit acceptance is the minimum requirement for trust.**
 
 ---
-## Why doesn’t Charter Core support roles (e.g. “Legal”, “Admin”, “Moderator”)?
+### Why can’t decisions be auto-accepted or inferred?
 
-Because roles introduce hidden semantics.
+Because inference destroys accountability.
 
-Roles require:
-- Identity systems
-- Membership tracking
-- Lifecycle rules
-- Semantic interpretation
+Charter Core records decisions, not outcomes.
+A decision exists only if someone explicitly accepts it under known conditions.
 
-Charter Core intentionally avoids this.
-
-Instead, it provides mechanical rules and explicit human decisions.
-Meaning stays with people, not the engine.
+Anything else is state, not legitimacy.
 
 ---
+## Invariant Group: Authority
 
-## Why is Authority purely mechanical?
+### What is Authority in Charter Core?
+
+**Authority is the decision rule.**
 
 Authority defines:
-- Who has standing in a session
-- How agreement is evaluated
+- who has standing in a session
+- how agreement is evaluated
 
-Authority does **not**:
-- Interpret content
-- Prioritize options
-- Judge correctness
+Authority does not:
+- interpret content
+- judge correctness
+- assign meaning
+- prioritize candidates
 
-This separation prevents politics from becoming implicit logic.
-
----
-
-## Why is there no veto power?
-
-Because veto implies roles.
-
-Instead of veto, Charter Core supports session constraints:
-- Declared explicitly at session start
-- Applied mechanically
-- Scoped only to that session
-
-This achieves the same effect without introducing identity semantics.
+This separation prevents political or social assumptions from becoming hidden logic.
 
 ---
+### Why is Authority purely mechanical?
 
-## What are Session Constraints?
+Because meaning belongs to humans, not the engine.
 
-Session constraints are explicit participation requirements declared when a session starts.
+If Authority interpreted content or intent, Charter Core would:
+- encode organizational politics
+- require role semantics
+- become non-deterministic
 
-Examples:
-- “All present participants must agree”
-- “At least 3 participants must accept”
-- “Acceptance requires confirmation from Alice”
-
-Constraints:
-- Apply only to the current session
-- Do not persist
-- Do not modify Authority
-- Are enforced by the engine
+Mechanical authority ensures:
+- determinism
+- auditability
+- portability across contexts
 
 ---
+### Why must Authority changes be their own resolutions?
 
-## Why are Session Constraints enforced by the engine?
+Because changing *how decisions are legitimized* is itself a decision.
 
-Because legitimacy cannot depend on UI behavior.
+Authority changes:
+- cannot occur mid-session
+- cannot occur on resume
+- cannot be implied
 
-If constraints were client-only:
-- A different client could bypass them
-- Decisions could be accepted prematurely
-- Auditability would be compromised
+They must be:
+- explicitly proposed
+- evaluated under the current authority
+- accepted like any other resolution
 
-Engine enforcement ensures consistency across all integrations.
-
----
-
-## Why doesn’t Charter Core infer conflicts between Areas?
-
-Because inference guesses intent.
-
-Charter Core only acts on:
-- Explicit Area references
-- Explicit Authority references
-- Explicit Scope references
-
-If overlap matters, humans must say so.
-
-This avoids accidental coupling and preserves clarity.
+This prevents silent shifts in power.
 
 ---
+## Invariant Group: Scope
 
-## Why doesn’t Charter Core require rationale (“why”)?
+### What is Scope in Charter Core?
 
-Because requiring justification creates performative compliance.
+Scope defines **what kinds of decisions belong in an Area**.
 
-Charter Core:
-- Never requires rationale to legitimize a decision
-- Preserves rationale if provided
-- Relies on the audit trail (sessions, candidates, supersession) to explain evolution
+Scope is:
+- explicit
+- informational
+- recorded at acceptance time
 
-Legitimacy comes from process, not prose.
-
----
-
-## Can Charter Core be used by a single person?
-
-Yes.
-
-Charter Core works with:
-- One person
-- Flat groups
-- Hierarchies
-- Machines acting as participants
-
-The rules do not change.
+Scope is **not**:
+- a validator
+- an enforcement mechanism
+- a semantic interpreter
 
 ---
+### Why doesn’t the engine enforce Scope?
 
-## What happens if these rules feel too strict?
+Because relevance is a human judgment.
 
-That’s intentional.
+If Charter Core enforced Scope, it would need to:
+- interpret meaning
+- infer intent
+- reject decisions based on semantics
 
-Charter Core optimizes for:
-- Long-term integrity
-- Auditability
-- Explicit intent
+That would make legitimacy dependent on guesswork.
 
-Convenience belongs in higher layers.
+Instead:
+- Scope is recorded
+- humans decide whether something belongs
+- history preserves what was actually decided
 
 ---
+## Invariant Group: Sessions
 
-## What happens if Authority or Scope changes make an old decision “no longer make sense”?
+### Why are Sessions required?
+
+Because legitimacy requires context.
+
+A resolution must be traceable to:
+- a specific problem
+- a known participant set
+- a known authority
+- a known scope
+- a specific moment in time
+
+Sessions provide that boundary.
+
+---
+### Why can’t sessions silently adapt to changes?
+
+Because that would rewrite history.
+
+If Authority, Scope, or constraints change:
+- sessions become blocked
+- explicit action is required
+- no retroactive reinterpretation occurs
+
+Charter Core **reacts**, it does not auto-correct.
+
+---
+## Why are sessions immutable once closed?
+
+Because closed sessions are historical facts.
+
+They:
+- cannot be resumed
+- cannot be edited
+- cannot be reused
+
+They may inform future sessions, but never govern them.
+
+---
+## Invariant Group: Candidates
+
+### Why are candidates neutral?
+
+Because options are not decisions.
+
+Candidates:
+- carry no intent
+- have no legitimacy
+- have no effect until accepted
+
+This allows ambiguity, exploration, and disagreement **without pressure to decide**.
+
+---
+### Why does the candidate set freeze after voting starts?
+
+Because changing options after evaluation begins corrupts legitimacy.
+
+Once any stance is recorded:
+- no candidates may be added
+- no candidates may be removed
+- no candidates may be edited
+
+If the problem changes, a **new session** is required.
+
+---
+## Invariant Group: Supersession & History
+
+### Why are resolutions immutable?
+
+Because history must not be rewritten.
+
+Once accepted, a resolution:
+- cannot be edited
+- cannot be deleted
+- cannot be reinterpreted
+
+It may only be **superseded** by a new resolution .
+
+---
+### What happens when a resolution is superseded?
+
+The old resolution remains:
+- queryable
+- auditable
+- historically valid
+
+Supersession explains evolution, not correction.
+
+---
+### Why doesn’t Charter Core auto-retire “irrelevant” decisions?
+
+Because relevance is contextual and temporal.
+
+Automatically retiring decisions would:
+- erase accountability
+- distort history
+- encode assumptions about intent
 
 Charter Core preserves decisions exactly as they were accepted.
 
-Later changes to Authority or Scope do not invalidate, reinterpret, or erase prior resolutions.
+---
+## Invariant Group: Import & External History
 
-If a decision is no longer applicable, users must explicitly:
-- Supersede it
-- Retire it
-- Or clarify its context through a new resolution
+### Why are imported resolutions marked UNDER_REVIEW?
 
-This ensures:
-- Auditability
-- Historical integrity
-- Protection against retroactive rewriting
+Because imported legitimacy cannot be assumed.
 
-Charter favors explicit correction over silent cleanup.
+Charter Core cannot know:
+- whether authority was equivalent
+- whether scope aligned
+- whether participants overlapped
+
+Marking imported resolutions UNDER_REVIEW forces explicit reconciliation.
 
 ---
+### Why doesn’t the engine auto-merge timelines?
 
-## Why doesn’t Charter automatically retire irrelevant decisions?
+Because merging is semantic, not mechanical.
 
-Because relevance is a human judgment, not a mechanical one.
-Automatically retiring decisions would erase accountability and distort history.
+Charter Core records facts.
+Humans decide meaning.
+
+---
+## Invariant Group: Auditability
+
+### Why is the audit trail immutable?
+
+Because legitimacy depends on traceability.
+
+Audit records must:
+- outlive the entities they describe
+- never disappear due to cleanup
+- never be rewritten
+
+This ensures accountability even after structural change.
+
+---
+### Why doesn’t the engine provide opinions in audits?
+
+Because audits report facts, not judgments.
+
+Charter Core audits answer:
+- *what happened*
+- *when*
+- *under what conditions*
+
+They never answer:
+- *was this correct*
+- *was this a mistake*
+- *should this have happened*
+
+---
+## Invariant Group: Minimalism
+
+### Why doesn’t Charter Core support roles, permissions, or identities?
+
+Because those introduce hidden semantics.
+
+Roles require:
+- identity systems
+- lifecycle management
+- interpretation of meaning
+
+Charter Core avoids all of this.
+
+Participants are identifiers.
+Authority is mechanical.
+Meaning remains external.
+
+---
+### What if these rules feel too strict?
+
+That is intentional.
+
+Charter Core optimizes for:
+- long-term integrity
+- explicit intent
+- auditability under pressure
+
+Convenience, ergonomics, and workflow belong in higher layers.
+
+---
+## Summary
+
+Charter Core exists to answer one question reliably:
+
+> “Why was this allowed?”
+
+Everything in the engine exists to preserve that answer over time.
+
+If a proposed change makes that answer weaker, ambiguous, or inferential,
+it violates a core invariant — even if it feels convenient.
+
+That boundary is the product.
