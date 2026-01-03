@@ -1,549 +1,489 @@
-
-# Charter Core — Canonical Simulations
+# Charter Core — Canonical Simulations (Engine Only)
 
 ## Purpose
 
-This document records design-validation simulations for Charter Core.
+This document records **design-validation simulations** for Charter Core.
 
 These are:
+
 - not tests
 - not UI flows
 - not product promises
 
 They answer one question:
 
-> Does Charter Core preserve legitimacy, determinism, and historical integrity under real pressure?
+**Does Charter Core preserve legitimacy, determinism, and historical integrity under real pressure?**
 
-If any simulation fails, the engine has violated a core invariant.
+If any simulation fails, the engine has violated a **core invariant**.
 
---- 
+---
 
-## Simulation 1 — Area Initialization (Mandatory Bootstrap)
+## I. Bootstrap & Governance Formation
 
-### Context
+### Simulation 1 — Area Initialization (Mandatory Bootstrap)
 
+**Context**  
 A new Area is created. No decisions are allowed until governance exists.
-### Actors
-- Alice
-- Bob
-### Flow
-1. Area A-Design-Project is created
+
+**Actors**  
+- Alice  
+- Bob  
+
+**Flow**
+1. Area `A-Design-Project` is created
 2. System requires an initialization session
 3. Authority candidates are proposed
 4. Scope candidates are proposed
 5. Authority and Scope are accepted
 6. Area becomes initialized
-### Outcome
+
+**Outcome**
 - One active Authority resolution
 - One active Scope resolution
 - All future sessions reference these
-### Validated Invariants
+
+**Validated Invariants**
 - Areas require explicit governance
 - Authority and Scope are first-class resolutions
 - No silent defaults
 
-## Simulation 2 — Flat Authority Collaboration (Students)
+---
 
-### Context
+## II. Basic Decision Making
 
+### Simulation 2 — Flat Authority Collaboration (Students)
+
+**Context**  
 Two students collaborate with no hierarchy.
 
-Flow
-Session opened in initialized Area
-Multiple candidates proposed
-Both students agree on one candidate
-Resolution is accepted
-Later sessions supersede it with more detail
-Outcome
-Legitimate decisions without hierarchy
-Clear decision lineage
-Validated Invariants
-Explicit acceptance
-Supersession preserves history
-Authority need not be hierarchical
-Simulation 3 — Single-User Governance
-Context
+**Flow**
+1. Session opened in initialized Area
+2. Multiple candidates proposed
+3. Both students agree on one candidate
+4. Resolution is accepted
+5. Later session supersedes it with more detail
+
+**Outcome**
+- Legitimate decisions without hierarchy
+- Clear supersession lineage
+
+**Validated Invariants**
+- Explicit acceptance
+- Supersession preserves history
+- Authority need not be hierarchical
+
+---
+
+### Simulation 3 — Single-User Governance
+
+**Context**  
 A solo founder uses Charter Core as a decision journal.
-Flow
-Founder defines self-authority and scope
-Writes multiple candidates
-Explicitly accepts one
-Months later supersedes it
-Outcome
-Full audit trail
-No shortcuts
-Validated Invariants
-Scale independence
-Explicit acceptance even without oversight
-Immutable decision memory
-Simulation 4 — Normal Decision Session (Baseline)
-Context
+
+**Flow**
+1. Founder defines self-authority and scope
+2. Writes multiple candidates
+3. Explicitly accepts one
+4. Months later supersedes it
+
+**Outcome**
+- Full audit trail
+- No shortcuts
+- No implicit legitimacy
+
+**Validated Invariants**
+- Scale independence
+- Explicit acceptance even without oversight
+- Immutable decision memory
+
+---
+
+### Simulation 4 — Normal Decision Session (Baseline)
+
+**Context**  
 A team chooses an architecture.
-Flow
-Session opened
-Candidates proposed
-Positions recorded
-Authority rule satisfied
-Resolution created
-Outcome
+
+**Flow**
+1. Session opened
+2. Candidates proposed
+3. Positions recorded
+4. Authority rule satisfied
+5. Resolution created
+
+**Outcome**
 Resolution references:
-Area
-Authority
-Scope
-Validated Invariants
-Sessions are the unit of legitimacy
-Authority evaluated mechanically
-Scope recorded, not enforced
-Simulation 5 — Partial Acceptance (Sprint Goals)
-Context
+- Area
+- Authority
+- Scope
+
+**Validated Invariants**
+- Sessions are the unit of legitimacy
+- Authority evaluated mechanically
+- Scope recorded, not enforced
+
+---
+
+### Simulation 5 — Partial Acceptance (Sprint Goals)
+
+**Context**  
 Multiple sprint goals are proposed.
-Flow
-Candidates proposed
-Some accepted
-Others rejected or left undecided
-Outcome
-Only accepted candidates become resolutions
-No implied decisions
-Validated Invariants
-Explicit acceptance only
-Rejection ≠ resolution
-Undecided ≠ failure
-Simulation 6 — Deadlock Without Abuse
-Context
+
+**Flow**
+1. Candidates proposed
+2. Some accepted
+3. Others rejected or left undecided
+
+**Outcome**
+- Only accepted candidates become resolutions
+- No implied decisions
+
+**Validated Invariants**
+- Explicit acceptance only
+- Rejection ≠ resolution
+- Undecided ≠ failure
+
+---
+
+## III. Blocking, Disagreement, and Reality
+
+### Simulation 6 — Deadlock Without Abuse
+
+**Context**  
 Unanimous authority, three participants disagree.
-Flow
-Votes split
-Authority rule not satisfied
-Session becomes blocked
-Outcome
-No decision created
-No forced closure
-Validated Invariants
-Deterministic evaluation
-No coercion
-Blocking is explicit
-Simulation 7 — Participant Leaves Mid-Session
-Context
+
+**Flow**
+1. Votes split
+2. Authority rule not satisfied
+3. Session becomes BLOCKED
+
+**Outcome**
+- No resolution created
+- No forced closure
+
+**Validated Invariants**
+- Deterministic evaluation
+- No coercion
+- Blocking is explicit
+
+---
+
+### Simulation 7 — Participant Leaves Mid-Session
+
+**Context**  
 A deadlocked session changes composition.
-Flow
-Alice, Bob, Charlie present
-Charlie leaves the session
-Authority rule re-evaluated
-Remaining votes satisfy rule
-Outcome
-Resolution accepted legitimately
-Departure recorded
-Validated Invariants
-Authority evaluated on present participants
-No reinterpretation of past votes
-Simulation 8 — Authority Change Requires a Session
-Context
+
+**Flow**
+1. Alice, Bob, Charlie present
+2. Charlie leaves
+3. Authority rule re-evaluated
+4. Remaining votes satisfy rule
+
+**Outcome**
+- Resolution accepted legitimately
+- Departure recorded
+
+**Validated Invariants**
+- Authority evaluated on present participants
+- No reinterpretation of past votes
+
+---
+
+## IV. Authority & Scope Evolution
+
+### Simulation 8 — Authority Change Requires a Session
+
+**Context**  
 A team wants faster decisions.
-Flow
-New session opened
-New Authority candidate proposed
-Old Authority governs the change
-New Authority accepted
-Old Authority superseded
-Outcome
-Authority evolves explicitly
-History preserved
-Validated Invariants
-Authority mutable only via resolutions
-Non-retroactivity
-Simulation 9 — Scope Awareness Without Enforcement
-Context
+
+**Flow**
+1. New session opened
+2. New Authority candidate proposed
+3. Old Authority governs the change
+4. New Authority accepted
+5. Old Authority superseded
+
+**Outcome**
+- Authority evolves explicitly
+- History preserved
+
+**Validated Invariants**
+- Authority mutable only via resolutions
+- Non-retroactivity
+
+---
+
+### Simulation 9 — Scope Awareness Without Enforcement
+
+**Context**  
 A candidate is clearly outside scope.
-Flow
-Candidate proposed
-Participants recognize mismatch
-Candidate rejected manually
-Outcome
-No mechanical enforcement
-Human judgment preserved
-Validated Invariants
-Scope is informational
-Engine does not interpret semantics
-Simulation 10 — Referencing Multiple Areas (Awareness Only)
-Context
+
+**Flow**
+1. Candidate proposed
+2. Participants recognize mismatch
+3. Candidate rejected manually
+
+**Outcome**
+- No mechanical enforcement
+- Human judgment preserved
+
+**Validated Invariants**
+- Scope is informational
+- Engine does not interpret semantics
+
+---
+
+## V. References & Cross-Area Awareness
+
+### Simulation 10 — Referencing Multiple Areas (Awareness Only)
+
+**Context**  
 A decision touches multiple domains.
-Flow
-Session opened in primary Area
-Additional Areas’ Scopes explicitly referenced
-Acceptance governed only by primary Area Authority
-Outcome
-Participants are informed
-Authority remains singular
-Validated Invariants
-Primary vs referenced Areas
-No authority leakage
-Simulation 11 — Late Discovery of Overlap (Hindsight)
-Context
+
+**Flow**
+1. Session opened in primary Area
+2. Additional Areas referenced explicitly
+3. Acceptance governed only by primary Authority
+
+**Outcome**
+- Participants are informed
+- Authority remains singular
+
+**Validated Invariants**
+- Primary vs referenced Areas
+- No authority leakage
+
+---
+
+### Simulation 11 — Late Discovery of Overlap (Hindsight)
+
+**Context**  
 Months later, a decision affects another domain.
-Flow
-Session paused
-New Authority or Scope created elsewhere
-Original session resumed or closed
-Outcome
-No retroactive invalidation
-Explicit correction
-Validated Invariants
-Context preservation
-Pause vs close distinction
-Simulation 12 — Legitimate Pause vs Required Closure
-Legitimate Pause
-Same problem
-Missing clarification
-Resume later
-Required Closure
-Problem definition changes
-New session required
-Validated Invariants
-Sessions represent one problem
-Integrity over convenience
-Simulation 13 — Anti-Abuse Guardrail
-Context
-User attempts to bypass legitimacy.
-Flow
-Session paused
-Authority or Scope changed elsewhere
-Session resumed blindly
-System Response
-Context change detected
-User must revalidate or close
-Validated Invariants
-No pause abuse
-Determinism preserved
-Simulation 14 — Closed Sessions Are Historical Only
-Context
+
+**Flow**
+1. Session paused
+2. New Authority or Scope created elsewhere
+3. Original session resumed or closed
+
+**Outcome**
+- No retroactive invalidation
+- Explicit correction
+
+**Validated Invariants**
+- Context preservation
+- Pause vs close distinction
+
+---
+
+### Simulation 12 — Closed Sessions Are Historical Only
+
+**Context**  
 A closed session is referenced later.
-Flow
-Notes reference prior session
-No mechanical linkage
-Outcome
-History informs
-Does not govern
-Validated Invariants
-Sessions are not reusable
-Resolutions carry legitimacy
-Simulation 15 — Separate Areas, Separate Authorities
-Context
+
+**Flow**
+1. Notes reference prior session
+2. No mechanical linkage
+
+**Outcome**
+- History informs
+- Does not govern
+
+**Validated Invariants**
+- Sessions are not reusable
+- Resolutions carry legitimacy
+
+---
+
+## VI. Structural Separation
+
+### Simulation 13 — Separate Areas, Separate Authorities
+
+**Context**  
 Engineering and Finance coexist.
-Flow
-Independent Areas
-Independent decisions
-Outcome
-No inferred overlap
-Validated Invariants
-Areas are hard boundaries
-No semantic inference
-Simulation 16 — Blanket Authority Statement (Ignored Unless Referenced)
-Context
+
+**Flow**
+1. Independent Areas
+2. Independent decisions
+
+**Outcome**
+- No inferred overlap
+
+**Validated Invariants**
+- Areas are hard boundaries
+- No semantic inference
+
+---
+
+### Simulation 14 — Blanket Authority Statement (Ignored Unless Referenced)
+
+**Context**  
 High-level authority exists elsewhere.
-Flow
-Decision proceeds without reference
-No conflict raised
-Outcome
-No guessing
-No inference
-Validated Invariants
-Authority is opt-in
-Silence has no meaning
-Simulation 17 — Explicit Authority Conflict Resolution
-Context
+
+**Flow**
+1. Decision proceeds without reference
+
+**Outcome**
+- No conflict raised
+- No guessing
+
+**Validated Invariants**
+- Authority is opt-in
+- Silence has no meaning
+
+---
+
+### Simulation 15 — Explicit Authority Conflict Resolution
+
+**Context**  
 User explicitly references multiple Authorities.
-Flow
-Engine detects conflict
-User must resolve
-New Authority supersedes prior ones
-Outcome
-Conflict resolved explicitly
-Validated Invariants
-No silent precedence
-Intent must be declared
-Simulation 18 — Why Streams Are Not Required
-Observation
-Policy streams would:
-Still require human assignment
-Still require conflict resolution
-Outcome
-Charter defers meaning instead of encoding it
-Validated Invariants
-Minimalism
-Explicitness over taxonomy
-Simulation 19 — Area Names Are Non-Semantic
-Context
-Terminology changes, governance does not.
-Flow
-Area renamed without a session
-No Authority or Scope change
-Outcome
-No re-evaluation
-No retroactive impact
-Validated Invariants
-Names carry no authority
-Only resolutions define meaning
-Simulation 20 — Fresh Import from Flat Resolution List
-Context
-An organization adopts Charter for the first time.
-They have:
-A flat list of existing decisions
-No sessions
-No candidates
-No recorded Authority or Scope
-Flow
-Import executed in CONSOLIDATE mode
-Flat list contains only resolutions
-System Behavior
-All imported resolutions are created
-All are marked UNDER_REVIEW
-No Authority or Scope is inferred
-No resolution becomes ACTIVE
-Outcome
-History preserved
-Legitimacy explicitly unresolved
-Users must validate via sessions
-Validated Invariants
-Legitimacy is session-bound
-Import never fabricates governance
-Under-review is explicit, not punitive
-Simulation 21 — Concurrent Sessions with Late Supersession
-Context
-Area: Product Architecture
-Active Resolution: R-ARCH-1 (“Monolith”)
-Flow
-Session S-1 references R-ARCH-1
-Session S-2 proposes R-ARCH-2 (“Microservices”)
-S-2 accepts R-ARCH-2
-System Response
-R-ARCH-1 superseded
-S-1 flagged for revalidation
-Outcome
-No silent continuation
-No retroactive invalidation
-Validated Invariants
-Concurrency isolation
-Supersession requires revalidation
-Legitimacy preserved
 
-Simulation — Import in RESTORE Mode (Full History Rehydration)
-Context
-An organization migrates from another Charter Core instance or a verified backup.
-The export includes:
-Areas
-Sessions
-Candidates
-Votes / stances
-Resolutions
-Authority & Scope history
-Supersession chains
-Preconditions
-Export was produced by Charter Core tooling
-Export has not been modified
-Flow
-import_area(export_blob, mode = RESTORE)
-Engine verifies:
-Referential integrity
-Hashes / signatures (if present)
-Session → Resolution links
-Authority and Scope timelines
-Import succeeds
-System Behavior
-All sessions are recreated exactly
-All resolutions retain:
-original IDs
-original lifecycle states
-original Authority and Scope references
-No resolution is marked UNDER_REVIEW
-No authority or scope is revalidated
-No sessions are re-evaluated
-Outcome
-Historical state is identical to export
-Future sessions proceed from restored state
-No new legitimacy is created during import
-Failure Case (Same Simulation)
-If any of the following occur:
-Missing referenced session
-Broken supersession chain
-Authority active before creation
-Resolution accepted without a session
-Then:
-Import fails deterministically
-No partial state is created
-Existing system state remains unchanged
-Validated Invariants
-Immutable history
-No retroactive legitimacy
-Import does not fabricate authority
-Determinism over convenience
+**Flow**
+1. Engine detects conflict
+2. User must resolve
+3. New Authority supersedes prior ones
 
-Simulation — Divergent Authority With Rejection
-Context
+**Outcome**
+- Conflict resolved explicitly
+
+**Validated Invariants**
+- No silent precedence
+- Intent must be declared
+
+---
+
+## VII. Imports, Divergence, and History
+
+### Simulation 16 — Fresh Import from Flat Resolution List
+
+**Context**  
+Organization adopts Charter for the first time.
+
+**Flow**
+1. Import executed in CONSOLIDATE mode
+2. Flat list contains only resolutions
+
+**System Behavior**
+- All resolutions created
+- All marked UNDER_REVIEW
+- No Authority or Scope inferred
+- No resolution becomes ACTIVE
+
+**Outcome**
+- History preserved
+- Legitimacy explicitly unresolved
+
+**Validated Invariants**
+- Legitimacy is session-bound
+- Import never fabricates governance
+
+---
+
+### Simulation 17 — Concurrent Sessions with Late Supersession
+
+**Context**
+- Active Resolution: R-ARCH-1 (“Monolith”)
+
+**Flow**
+1. Session S-1 references R-ARCH-1
+2. Session S-2 accepts R-ARCH-2 (“Microservices”)
+
+**System Response**
+- R-ARCH-1 superseded
+- S-1 flagged for revalidation
+
+**Outcome**
+- No silent continuation
+- No retroactive invalidation
+
+**Validated Invariants**
+- Concurrency isolation
+- Supersession requires revalidation
+
+---
+
+### Simulation 18 — Import in RESTORE Mode (Full History Rehydration)
+
+**Context**
+A verified Charter Core export is restored.
+
+**Flow**
+1. Import executed in RESTORE mode
+2. Referential integrity verified
+3. Import succeeds
+
+**System Behavior**
+- All sessions recreated exactly
+- All resolutions retain original IDs and context
+- No UNDER_REVIEW states created
+
+**Outcome**
+- Historical state identical to export
+- No new legitimacy created
+
+**Failure Case**
+If integrity fails:
+- Import fails deterministically
+- No partial state created
+
+**Validated Invariants**
+- Immutable history
+- Import does not fabricate authority
+
+---
+
+### Simulation 19 — Divergent Authority With Rejection
+
+**Context**
 Two machines diverge.
-Imported Timeline (Machine B)
-R-AUTH-2
-Authority changed to MAJORITY
-R-X
-Decision passed 2/3 under MAJORITY
-R-Y
-Another decision passed 2/3 under MAJORITY
-All imported into Machine A as UNDER_REVIEW
-Local Context (Machine A)
-Active Authority: R-AUTH-LOCAL (SOLO)
-No imported Authority accepted yet
-Review Flow
-Step 1 — Review R-AUTH-2
-User rejects R-AUTH-2
-Result:
-Local Authority unchanged
-R-AUTH-2 remains visible as rejected import
-Step 2 — Review R-X
-User reviews R-X Engine shows:
-Imported Authority: R-AUTH-2 (rejected locally)
-Imported Scope references (if any)
-User explicitly accepts R-X
-Result:
-R-X becomes active under local Authority
-Imported context preserved immutably
-Step 3 — Review R-Y
-User rejects R-Y
-Final State
-Resolution
-Status
-R-AUTH-2
-REJECTED (imported)
-R-X
-ACTIVE
-R-Y
-REJECTED
-No retroactive changes
-No mechanical replay
-Full audit clarity
-Validated Invariants
-Chronological review
-Authority non-retroactivity
-Explicit legitimacy
-No cascading effects
-Auditability across divergent timelines
 
-Simulation 20 — Cross-Area Awareness Without Authority Leakage
-Context A decision in Product affects Finance but is not governed by Finance.
-Flow
-Product Area session references Finance Area
-Product Authority governs acceptance
-Resolution is accepted
-Outcome
-Finance is aware (via reference)
-Product retains full authority
-Validated Invariants
-Explicit reference
-No authority leakage
-No inference
-Simulation 21 — Precision Reference to Historical Decision
-Context A new decision depends on a prior decision elsewhere.
-Flow
-Session references a specific external resolution
-That resolution is later superseded
-Session is flagged for revalidation
-Outcome
-Historical awareness preserved
-No retroactive invalidation
-Validated Invariants
-Context preservation
-Supersession handling
-Determinism
-Simulation 22 — Over-Referencing Without Penalty
-Context Team references many Areas “just in case.”
-Flow
-Session references 6 Areas and 3 resolutions
-No conflicts exist mechanically
-Outcome
-Engine remains neutral
-Humans bear cognitive load, not engine
-Validated Invariants
-Minimalism
-No semantic inference
-Simulation 23 — Import With External References
-Context Imported decisions reference Areas that do not exist locally.
-Flow
-Import in CONSOLIDATE mode
-Referenced Areas missing locally
-Outcome
-Import succeeds
-References preserved as opaque IDs
-No blocking
-Validated Invariants
-Import integrity
-Engine agnosticism
+**Flow**
+1. Imported Authority rejected
+2. Imported Resolution accepted under local Authority
+3. Other imported resolutions rejected
 
-Simulation — Consolidation Import with Conflicting Timeline
-Context
-Local system has:
-Area A-CORE
-Active Authority R-AUTH-1
-Resolution R-3 (active)
-External system exports:
-Same Area lineage
-Alternate resolution R′-5 that supersedes R-1 but diverges from R-3
-Step 1 — Import initiated
-Action
-Copy code
+**Outcome**
+- No retroactive changes
+- No mechanical replay
+- Full audit clarity
 
-import_area(blob, mode = CONSOLIDATE)
-Audit
-Global Audit
-IMPORT_STARTED
-Mode: CONSOLIDATE
-Source hash
-Timestamp
-Step 2 — Integrity verified
-Action
-Engine verifies internal consistency of the blob
-Audit
-Global Audit
-IMPORT_VERIFIED (or IMPORT_INTEGRITY_BYPASSED if forced)
-Step 3 — Imported objects materialized
-Action
-Imported resolutions are stored as objects
-Their original lifecycle states are preserved internally
-Locally, they are marked UNDER_REVIEW
-Audit
-Area Audit (A-CORE)
-RESOLUTION_IMPORTED_UNDER_REVIEW (R′-5)
-Global Audit
-IMPORT_OBJECTS_CREATED (count = N)
-Step 4 — User reviews imported resolution
-Observation
-R′-5 shows:
-Supersedes R′-2 (import timeline)
-Conflicts with local active R-3
-No state change yet.
-Audit
-None (read-only)
-Step 5 — User accepts imported resolution
-Action
-Engine creates a new local resolution R-4
-Content derived from R′-5
-Acceptance context is local
-R-3 is superseded
-Audit
-Area Audit
-RESOLUTION_ACCEPTED (R-4)
-RESOLUTION_SUPERSEDED (R-3)
-Global Audit
-IMPORT_RESOLUTION_CONSOLIDATED
-Imported ID: R′-5
-Local ID: R-4
-Imported object R′-5 remains:
-immutable
-historically preserved
-marked CONSOLIDATED
-Step 6 — Review closed
-Action
-Review is closed
-Remaining UNDER_REVIEW items become ABANDONED (if any)
-Audit
-Global Audit
-REVIEW_CLOSED
-Area Audit
-IMPORT_REVIEW_COMPLETED
+**Validated Invariants**
+- Chronological review
+- Authority non-retroactivity
+- Explicit legitimacy
+
+---
+
+### Simulation 20 — Consolidation Import with Conflicting Timeline
+
+**Context**
+Local active resolution conflicts with imported alternate path.
+
+**Flow**
+1. Import in CONSOLIDATE mode
+2. Imported resolution marked UNDER_REVIEW
+3. User accepts imported resolution
+4. New local resolution created
+5. Local resolution superseded
+
+**Outcome**
+- Imported objects preserved immutably
+- Local legitimacy explicit
+- Clear consolidation audit trail
+
+**Validated Invariants**
+- No silent supersession
+- Imported history preserved
+- Local acceptance context dominates
+
+---
+
+## Final Observation
+
+Charter Core does not optimize for speed, convenience, or agreement.
+
+It optimizes for:
+
+- legitimacy
+- determinism
+- historical integrity
+
+These simulations demonstrate that even under pressure,
+**nothing happens unless someone explicitly decides it should.**
