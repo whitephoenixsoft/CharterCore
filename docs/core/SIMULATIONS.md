@@ -474,6 +474,64 @@ Local active resolution conflicts with imported alternate path.
 - Local acceptance context dominates
 
 ---
+Simulation — Export With Active Sessions (Safety Boundary)
+Context
+A team is mid-decision when an export is requested.
+Flow
+Session S-1 is ACTIVE
+Export is generated
+Outcome
+S-1 is excluded
+Export represents only legitimate history
+Validated Invariants
+Legitimacy cannot be forked
+Mid-process decisions are non-portable
+Export is a historical snapshot, not a continuation tool
+Simulation — Forking Attempt via Private Export (Prevented)
+Context
+A participant attempts to complete a decision privately.
+Flow
+Session active on Machine A
+Export copied to Machine B
+User attempts to accept candidate
+Outcome
+No session exists to accept under
+Acceptance is rejected
+Validated Invariants
+Sessions are the unit of legitimacy
+Authority is contextual and social
+Engine blocks legitimacy laundering
+Simulation — Divergent Consolidation Without Deliberation Replay
+Context
+Two systems diverge deeply.
+Flow
+Import in CONSOLIDATE mode
+Imported resolutions marked UNDER_REVIEW
+Local sessions recreate legitimacy deliberately
+Outcome
+History preserved
+No mechanical replay
+No ambiguity about what was decided locally
+Validated Invariants
+Consolidation preserves outcomes, not process
+Explicit legitimacy only
+Determinism over convenience
+Simulation — Audit-Friendly but Legitimacy-Safe Import
+Context
+Audit team reviews imported history.
+Flow
+Imported resolutions visible
+Supersession chains visible
+Session history absent or non-authoritative
+Outcome
+Audit clarity preserved
+No governance leakage
+Validated Invariants
+Separation of legitimacy and explanation
+Engine minimalism
+Future audit extensions remain possible
+
+---
 
 ## Final Observation
 

@@ -37,8 +37,12 @@ Clients (CLI, UI, integrations) MUST NOT redefine or extend its structure.
    Nothing in an export implies deletion, mutation, or rewriting of history.
 
 5. **Deterministic Integrity**  
-   Every exported object includes a deterministic `object_hash` derived from its
-   canonical serialized form.
+   Every exported object includes a deterministic `object_hash` derived from its canonical serialized form.
+    Canonical serialization uses:
+    - UTF-8
+    - Stable field ordering
+    - No insignificant whitespace
+    - Explicit nulls where applicable
 
 ---
 
@@ -112,7 +116,8 @@ Resolution Types
 GENERAL
 AUTHORITY
 SCOPE
-Types are informational.
+Types are informational. 
+While types are informational for semantic interpretation, the engine enforces uniqueness and activation rules for AUTHORITY and SCOPE resolutions.
 Legitimacy rules are enforced by engine invariants, not by type.
 Resolution Lifecycle States
 ```
@@ -161,10 +166,13 @@ Sessions capture how legitimacy was created.
 }
 ```
 Notes
+Sessions are included solely to document how legitimacy was created. They are never replayed or re-evaluated during import.
 Authority and constraints are fixed at session start
 References are informational and immutable
 Candidate set freezes on first stance
-Outcome may include zero, one, or many accepted candidates
+Outcome may include zero or more accepted candidates as permitted by the Authority rule governing the session.
+Export Rule 
+Only sessions with "state": "CLOSED" may appear in an export. ACTIVE, PAUSED, or BLOCKED sessions MUST NOT be exported as legitimacy-bearing artifacts.
 Candidate Object
 Candidates are neutral options scoped to a session.
 ```
@@ -205,12 +213,15 @@ Typical modes:
 RESTORE — recreate full history verbatim
 CONSOLIDATE — import objects as UNDER_REVIEW
 The same export file may be used for both.
+
 Integrity & Hashing Rules
 Every object includes object_hash
 Hashes are computed from a canonical, ordered serialization
 Parent hashes do not replace child hashes
 Importers MAY verify hashes
 Importers MUST NOT auto-correct hash mismatches
+object_hash is an integrity and identity mechanism only. It does not confer legitimacy, authority, or precedence.
+
 Guarantees
 This format guarantees:
 Full reconstruction of governance history

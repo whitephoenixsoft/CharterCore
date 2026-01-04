@@ -217,6 +217,53 @@ CLI-ERG-03: Next Actions Are Always Shown
 After any command, CLI must show valid next actions.
 Fail if:
 User is left without guidance
+CLI-EXP-01 — Export Ignores Non-Closed Sessions With Warning
+When exporting:
+CLOSED sessions are exported normally
+ACTIVE, PAUSED, or BLOCKED sessions are:
+Excluded from the export
+Explicitly reported to the user as ignored
+The export must still succeed.
+The CLI must warn:
+Session IDs ignored
+Session states
+That ignored sessions are not part of the exported history
+Fail if:
+The CLI silently drops sessions
+The CLI exports active sessions as if legitimate
+CLI-EXP-02 — No Implicit Session Closure
+The CLI must never:
+Auto-close sessions
+Convert paused or blocked sessions into closed ones
+Fabricate legitimacy for convenience
+Fail if:
+Export causes a state transition
+Closure occurs without a decision session
+CLI-IMP-01 — Consolidation Is a Singular, Long-Lived Process
+When charter import consolidate is invoked:
+A baseline review process is created
+Other sessions must be at minimum PAUSED
+No second consolidation may begin concurrently
+Fail if:
+Multiple baselines overlap
+Consolidation can be interleaved with normal decision sessions
+CLI-IMP-02 — Baseline Review Is Persistent
+Baseline review state must persist across time:
+Accepted resolutions may be reviewed one at a time
+Each acceptance may create a local session (solo or multi-user)
+Review progress is resumable
+Fail if:
+Baseline state is ephemeral
+Progress is lost between commands
+CLI-AUD-01 — Baseline Actions Are Auditable
+Baseline review must produce an auditable trail:
+Imports attempted
+Resolutions accepted or rejected
+Review opened and closed
+Consolidation completion
+Fail if:
+Baseline outcomes cannot be reconstructed later
+
 
 Final Note
 These invariants define the behavioral contract of the Charter CLI.

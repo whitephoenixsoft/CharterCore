@@ -437,6 +437,64 @@ Rationale:
 - Changing options after voting begins invalidates consent.
 
 ---
+### 28. Export Invariants 
+
+#### EXP-01 — Only Closed Sessions Are Legitimate Artifacts
+
+- Only sessions in state CLOSED are eligible to participate in any legitimacy-bearing export.
+- ACTIVE, PAUSED, or BLOCKED sessions are not legitimate historical artifacts
+- Legitimacy cannot exist mid-deliberation
+- The engine must never treat an unfinished session as portable governance state
+
+Fail if:
+- An active session can influence imported legitimacy
+- Partial deliberation is replayed mechanically
+
+#### EXP-02 — Exported Resolutions Must Originate from Closed Sessions
+
+Every exported resolution must reference a CLOSED session.
+
+Fail if:
+- A resolution references an open or paused session
+- A resolution exists without a fully closed decision process
+
+### 29. Import Invariants
+
+#### IMP-01 — Consolidation Preserves Legitimacy, Not Deliberation
+
+In CONSOLIDATE mode:
+- Imported resolutions are preserved as historical artifacts
+- Imported sessions, candidates, and votes have no legitimacy in the local system
+- No imported deliberation is mechanically replayed
+
+Fail if:
+- Imported votes affect acceptance
+- Imported sessions are evaluated as legitimate decision processes
+
+#### IMP-02 — Imported Session History Is Non-Authoritative
+
+If session-like artifacts are ever preserved (future versions), they must be:
+- Explicitly marked as non-legitimizing
+- Read-only
+- Never evaluated by the engine
+
+Fail if:
+- Imported deliberation alters legitimacy
+- Historical context is mistaken for authority
+
+---
+### 30. Legitimacy Cannot Be Forked Mid-Process
+
+Legitimacy is contextual and social.
+
+The engine must prevent:
+- Forking an active decision process into a private copy
+- Completing a decision outside its original context
+
+Fail if:
+- A user can “finish” someone else’s in-progress session elsewhere
+
+---
 ## Frozen Boundary (Non-Goals)
 
 Charter Core explicitly does not provide:

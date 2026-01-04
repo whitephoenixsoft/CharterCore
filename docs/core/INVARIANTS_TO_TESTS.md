@@ -408,6 +408,123 @@ They intentionally do **not** specify UX, CLI flags, or workflow ergonomics.
 ### AT-27 — Candidate Set Freezes on First Stance
 
 ---
+Section J — Session Export Legitimacy
+AT-EXP-01 — Active Sessions Are Not Exportable as Legitimate Artifacts
+Given
+An Area with:
+One CLOSED session S-1
+One ACTIVE session S-2
+When
+An export is generated
+Then
+S-1 is included in the export
+S-2 is excluded from the export
+No placeholder or partial representation of S-2 exists
+Fail if
+An active or paused session appears in the export
+Partial deliberation is serialized
+AT-EXP-02 — Exported Resolutions Must Reference Closed Sessions
+Given
+A resolution R-1 referencing session S-1
+And S-1 is CLOSED
+When
+An export is generated
+Then
+R-1 is exported normally
+And Given
+A resolution R-2 referencing session S-2
+And S-2 is ACTIVE or PAUSED
+When
+An export is generated
+Then
+Export fails deterministically
+Fail if
+A resolution references a non-closed session
+Resolution legitimacy is preserved without a closed session
+AT-EXP-03 — Export Does Not Mutate Session State
+Given
+An Area with an ACTIVE or PAUSED session
+When
+An export is generated
+Then
+Session state remains unchanged
+No session is auto-closed
+No timestamps or metadata change
+Fail if
+Export causes any session state transition
+
+---
+Section K — Import & Consolidation Legitimacy Boundaries
+AT-IMP-LEG-01 — Imported Deliberation Has No Mechanical Effect
+Given
+An import blob containing:
+Sessions
+Candidates
+Votes
+Accepted resolutions
+When
+Import is executed in CONSOLIDATE mode
+Then
+Imported resolutions are materialized as UNDER_REVIEW
+Imported sessions, candidates, and votes are ignored by the engine
+No imported vote contributes to acceptance
+Fail if
+Imported deliberation affects local legitimacy
+Votes are replayed or evaluated
+AT-IMP-LEG-02 — Legitimacy Cannot Be Forked Mid-Session
+Given
+System A with an ACTIVE session S-1
+System B imports an export from A
+When
+Export is generated while S-1 is active
+Then
+S-1 does not appear in the export
+No continuation of S-1 is possible in B
+Fail if
+A decision can be completed outside its original context
+AT-IMP-LEG-03 — Imported Sessions Are Non-Authoritative
+Given
+An import blob containing closed sessions
+When
+Imported into a local system
+Then
+Imported sessions are not eligible for evaluation
+Imported sessions do not govern acceptance
+Only locally created sessions may create legitimacy
+Fail if
+Imported sessions can accept candidates
+Imported sessions influence authority evaluation
+
+---
+Section L — Determinism & History Preservation
+AT-HIST-01 — Consolidation Preserves Resolution History, Not Deliberation
+Given
+An import blob containing:
+Multiple superseded resolutions
+Complex authority evolution
+Session history
+When
+Imported in CONSOLIDATE mode
+Then
+Resolution lineage is preserved
+Supersession chains remain intact
+Deliberation history is not reactivated
+Fail if
+Engine attempts to reconcile deliberation
+Imported session history is treated as authoritative
+AT-HIST-02 — No Implicit Reconstruction of Governance
+Given
+Imported resolutions without locally accepted Authority or Scope
+When
+Review begins
+Then
+No Authority or Scope is inferred
+No resolution becomes ACTIVE without a local session
+Fail if
+Governance is assumed
+Legitimacy is fabricated for convenience
+
+---
 
 ## Final Note
 
