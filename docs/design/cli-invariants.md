@@ -394,3 +394,26 @@ CLI must:
 allow candidate add/remove freely before voting
 block and explain once voting begins
 guide user toward restart-from
+
+CLI-INV-01: Single Active Session (Solo Mode)
+Only one active session may exist at a time.
+Starting another requires pause or close.
+CLI-INV-02: Explicit Context
+Area, session, and baseline context must be explicit or selected.
+The CLI must never guess.
+CLI-INV-03: Next Action Disclosure
+If an action leaves the system in a valid next state, the CLI must display available next actions.
+CLI-INV-04: No Silent Legitimacy Change
+Any action that affects authority, constraints, or acceptance conditions must block or require explicit confirmation.
+CLI-INV-05: Ergonomic Collapse Is Allowed
+The CLI may collapse steps (e.g., vote + accept in solo authority) but must preserve full engine history.
+CLI-INV-06: Single Active Baseline Review
+Only one baseline review may be active at a time.
+It must be explicitly closed.
+
+CLI-AUD-05: Participants Are Auditable First-Class Entities
+Statement
+Participant involvement must be auditable independently of sessions and resolutions.
+Fail if
+A resolution can be audited without visibility into who was involved
+Participant changes are only visible inside session-local views

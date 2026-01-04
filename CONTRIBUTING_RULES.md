@@ -19,10 +19,10 @@ If a contribution violates a long-term invariant, it will not be accepted, even 
 
 Please read:
 - `README.md`
-- `PRODUCT_BRIEF_CORE.md`
-- `INVARIANTS.md`
-- `MENTAL_MODEL.md`
-- `SIMULATIONS.md`
+- `doc/PRODUCT_BRIEF_CORE.md`
+- `doc/core/INVARIANTS.md`
+- `doc/core/MENTAL_MODEL.md`
+- `doc/core/SIMULATIONS.md`
 
 If your change affects decision-making, authority, or scope, it **must** align with those documents.
 

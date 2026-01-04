@@ -179,3 +179,11 @@ If you only remember one thing:
 > State answers “what is true.”
 > Charter answers “why it is allowed.”
 
+---
+
+## Further Questions 
+
+If there are any questions, please read:
+
+- `doc/FAQ`
+

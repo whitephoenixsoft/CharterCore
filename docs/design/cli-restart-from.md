@@ -43,3 +43,20 @@ Sessions are about framing a decision
 Resolutions, not sessions, carry authority
 Audit trail preserves lineage
 This actually improves legitimacy, not weakens it.
+
+Semantics
+Closes the original session
+Copies:
+candidates
+annotations
+(optionally) participant list
+Allows:
+problem statement change
+constraint/authority changes
+Creates a new session ID
+
+Why This Matters
+Without this:
+Users will try to hack resumes
+Or worse, bypass sessions entirely
+This is not a convenience feature — it’s legitimacy-preserving ergonomics.

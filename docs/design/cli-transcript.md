@@ -266,3 +266,116 @@ Freeze v1 CLI command surface
 Rewrite this as docs/cli/quickstart.md
 You’re building something unusually principled.
 This transcript shows it’s also practical.
+
+
+----
+Status illustrations
+
+```
+Charter Status
+────────────────────────────────────────────────────────
+
+Workspace
+  Initialized:        Yes
+  Charter Core:       v0.4.0
+  Repository:         ./charter
+
+Current Area
+  Name:               Production Operations
+  Area ID:            AREA-7F3A
+  Description:        Decisions affecting live customer systems
+  Status:             Active
+
+Session
+  Active Session:     Yes
+  Session ID:         SES-19C2
+  Started:            2026-01-03 14:22 UTC
+  Purpose:            Decide deployment rules for Service X
+  State:              Open
+
+Participants
+  Authority Mode:     Multi-participant
+  Authority Rule:     Majority of listed participants
+  Participants:
+    - alice
+    - bob
+    - ci-bot
+
+Scope
+  Active Scope:       Customer-facing services
+  Scope ID:           SCOPE-02B1
+
+Candidates
+  Proposed Decisions: 3
+    [C-1] Allow Service X production deploys during weekdays
+          Status: Voting in progress
+    [C-2] Require two approvals for hotfix deploys
+          Status: Not yet voted
+    [C-3] Disable manual production access
+          Status: Accepted (pending session close)
+
+Votes
+  alice:              Accepted C-3
+  bob:                Accepted C-3
+  ci-bot:             Abstained
+
+Baseline / Imports
+  Pending Imports:    Yes
+  Under Review:       2 resolutions
+  Baseline State:     Open
+
+Audit Integrity
+  Unresolved Authority: No
+  Ambiguous Scope:      No
+  Blocking Issues:      None
+
+Next Valid Actions
+  - Continue voting:        charter vote <candidate> accept|reject|abstain
+  - Add a candidate:       charter candidate add
+  - Close session:         charter session close
+  - Review imports:        charter baseline show
+
+───────────────────────────────────────────────────────
+```
+Charter records legitimacy, not intent.
+Nothing is final until a session is closed.
+
+Why This Works (Ergonomically)
+Emotionally
+This output quietly says:
+You’re not lost
+Nothing happened behind your back
+You are allowed to proceed
+No judgment. No pressure. Just facts.
+Cognitively
+It answers, in order:
+Where am I? (Workspace, Area)
+Am I in the middle of something? (Session)
+Who’s involved and how does agreement work? (Participants / Authority)
+What’s being decided? (Candidates)
+Is anything dangerous or broken? (Audit Integrity)
+What can I do next without messing up? (Next Valid Actions)
+This mirrors how humans actually orient themselves.
+
+---
+
+When no session is active
+Copy code
+
+Session
+  Active Session:     No
+
+Suggestion
+  Start a session with: charter session start
+When authority is missing
+Copy code
+
+Audit Integrity
+  Unresolved Authority: Yes
+
+Blocking Issues
+  - No active authority defined for this area
+
+Action Required
+  Define authority with: charter authority set
+These moments are where Charter teaches without lecturing.
