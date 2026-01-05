@@ -670,3 +670,36 @@ charter audit area
 
 ----
 
+Another iteration of commands 
+
+CLI Command Set (Locked)
+This is the frozen baseline command set.
+Context & Storage
+charter init
+charter context use <context>
+charter context status
+Area
+charter area create
+charter area use
+charter area status
+Sessions
+charter session start
+charter session pause
+charter session resume
+charter session close
+charter session restart-from <session_id>
+Import / Baseline
+charter baseline preview <file>
+charter import consolidate <file>
+charter import restore <file>
+Baseline Review
+charter baseline status
+charter baseline show
+charter baseline accept [<id>] [--all] [--force]
+charter baseline reject [<id>] [--all]
+charter baseline close
+Audit
+charter audit timeline
+charter audit participants
+charter audit by-participant <actor_id>
+charter audit resolution --participants

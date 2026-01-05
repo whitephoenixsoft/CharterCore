@@ -272,3 +272,76 @@ Transparency over speed
 Legitimacy over convenience
 Determinism over cleverness
 Anything not covered here is intentionally left to higher layers.
+
+---
+New
+
+CLI-INV-01: Context Is Explicit
+The CLI must never guess:
+Area
+Session
+Baseline (review)
+Context must be:
+explicitly selected, or
+explicitly qualified
+CLI-INV-02: Context Switching Is Visible
+Changing:
+area
+active session
+active baseline review
+Must require an explicit command.
+CLI-INV-03: Single Active Session (Solo Mode)
+In solo mode:
+only one active session may exist at a time
+new sessions require pause or close
+CLI-INV-04: Single Active Baseline Review
+Only one baseline (import review) may be active at a time.
+CLI-INV-05: Baseline Requires Session Pause
+If:
+a session is active Then:
+baseline start or import must pause it
+CLI-INV-06: Baseline Is a Mutable Workspace
+Until baseline close:
+accept/reject is reversible
+no imported resolution is final
+On close:
+remaining UNDER_REVIEW → ABANDONED
+CLI-INV-07: Review Does Not Create Legitimacy
+Baseline review:
+never evaluates authority
+never votes
+never blocks sessions directly
+All acceptance still occurs via sessions (explicit or hidden).
+CLI-INV-08: Batch Operations Are Explicit
+Batch accept/reject must:
+operate only on the active baseline
+require force flags for superseding behavior
+CLI-INV-09: Next Actions Are Always Shown
+After every state-changing command, the CLI must list:
+valid next actions
+no illegal or blocked actions
+CLI-INV-10: Labels Are Ergonomic Only
+Labels:
+never replace engine IDs
+never encode meaning
+are area-scoped by default
+CLI-INV-11: Audits Are Read-Only
+Audit commands:
+never mutate state
+never infer correctness
+report facts only
+CLI-INV-12: Export Ignores Active Sessions
+On export:
+active or paused sessions are ignored
+warning is shown
+only closed sessions are exported
+CLI-INV-13: Import RESTORE Is Destructive and Explicit
+RESTORE:
+replaces the Area entirely
+closes all sessions and baselines
+requires explicit confirmation
+CLI-INV-14: Baseline Preview Is Non-Mutating
+Preview commands:
+perform validation only
+create no objects
+write no audit entries

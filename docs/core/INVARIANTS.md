@@ -19,14 +19,13 @@ Its sole responsibility is to ensure that decisions are:
 
 ## Engine Invariants (Frozen)
 
----
-
 ### 1. Explicit Decisions Only
 
 No decision is legitimate unless it is explicitly accepted within a session.
 - Silence is not consent
 - Metadata is not acceptance
 - Automation is not authority
+- Inactivity has not meaning 
 
 ---
 
@@ -88,6 +87,7 @@ Scope:
 - Describes what kinds of decisions belong in the Area
 - Is descriptive, not enforcing
 - Exists to inform humans and block obvious misuse
+- Is immutable per resolution 
 
 Scope changes:
 - Require a decision session
@@ -458,6 +458,7 @@ Fail if:
 - A resolution references an open or paused session
 - A resolution exists without a fully closed decision process
 
+---
 ### 29. Import Invariants
 
 #### IMP-01 — Consolidation Preserves Legitimacy, Not Deliberation
@@ -493,6 +494,26 @@ The engine must prevent:
 
 Fail if:
 - A user can “finish” someone else’s in-progress session elsewhere
+
+---
+#### 31. Deterministic Evaluation
+
+Given identical:
+- participants
+- stances
+- authority
+- constraints
+
+The outcome must be identical.
+
+---
+### 32. Storage Isolation
+
+Each engine instance operates over a single, explicit storage root.
+
+- No cross-root visibility
+- No shared implicit global state
+- No legitimacy leakage across roots
 
 ---
 ## Frozen Boundary (Non-Goals)
