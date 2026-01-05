@@ -525,6 +525,81 @@ Governance is assumed
 Legitimacy is fabricated for convenience
 
 ---
+Section M — Storage Isolation & Instance Integrity
+AT-28 — Storage Root Isolation
+Invariant: ENG-INV-13 — Storage Isolation
+Given
+Two Charter Core instances:
+Instance A with storage root /data/charter/A
+Instance B with storage root /data/charter/B
+Each instance initializes an Area with identical labels but different engine IDs
+When
+A session and resolution are created in Instance A
+Instance B performs any query (list areas, sessions, resolutions)
+Then
+Instance B sees no objects from Instance A
+No shared IDs, references, or audit entries exist
+Fail if
+Any object created in one storage root is visible in another
+Engine assumes a global singleton store
+AT-29 — Cross-Root Reference Is Rejected
+Invariant: ENG-INV-13 — Storage Isolation
+Given
+Resolution R-A exists in storage root A
+Session S-B exists in storage root B
+When
+An attempt is made to reference R-A from S-B
+Then
+The engine rejects the reference
+Error indicates: “Referenced object not found in storage root”
+Fail if
+Engine allows cross-root references
+Engine treats external IDs as opaque but valid
+AT-30 — Storage Root Is Explicit
+Invariant: ENG-INV-13 — Storage Isolation
+Given
+An engine API invocation without a resolved storage root
+When
+Any mutating or query operation is attempted
+Then
+The engine rejects the operation
+Error indicates missing or undefined storage context
+Fail if
+Engine falls back to an implicit default store
+Engine silently initializes a new store
+
+--+
+Section N — Audit Scope Supremacy (Extension)
+(These complement earlier audit tests but apply to the new storage boundary.)
+AT-31 — Global Audit Survives Storage Object Loss
+Invariant: ENG-INV-14 — Audit Scope Supremacy
+Given
+An Area A-1 exists in a storage root
+Global audit scope exists
+A session and resolution are created in A-1
+When
+Area A-1 is deleted or replaced
+Then
+Global audit still records:
+Area deletion or replacement
+IDs of affected objects
+No audit record is lost
+Fail if
+Deleting an Area removes the only audit trail of its deletion
+AT-32 — Audit Cannot Be Scoped Only to a Destructible Object
+Invariant: ENG-INV-14 — Audit Scope Supremacy
+Given
+A session S-1 exists
+An audit event is emitted for S-1
+When
+S-1 is deleted or becomes unreachable
+Then
+At least one audit record for that event still exists
+Audit is recoverable via a surviving scope
+Fail if
+Audit data is only stored inside the deleted session
+
+---
 
 ## Final Note
 

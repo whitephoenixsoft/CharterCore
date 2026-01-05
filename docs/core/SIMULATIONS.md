@@ -532,6 +532,60 @@ Engine minimalism
 Future audit extensions remain possible
 
 ---
+Simulation 24 — Two Worlds That Never Touch
+Context A developer uses Charter Core for two unrelated efforts.
+Flow
+Instance A governs a product roadmap
+Instance B governs personal decisions
+Both create Areas named “Planning”
+Both create Authority and Scope
+Outcome
+No collision
+No ambiguity
+No shared history
+Validated Invariants
+Storage isolation
+Identity is engine-scoped, not label-scoped
+No global singleton assumption
+Simulation 25 — Accidental Copy Is Not Authority
+Context A user copies a resolution ID from one instance into another.
+Flow
+Resolution ID pasted into a session reference elsewhere
+Engine attempts to resolve it
+Outcome
+Reference fails explicitly
+User must import properly
+Validated Invariants
+No implicit federation
+Explicit import is required for legitimacy transfer
+Simulation 26 — Audit Outlives the Thing It Audits
+Context An Area is deleted during a governance cleanup.
+Flow
+Area contains years of decisions
+Area is removed intentionally
+Later audit review occurs
+Outcome
+Global audit shows:
+Area existed
+Area was deleted
+When and why
+No silent erasure
+Validated Invariants
+Audit scope supremacy
+Deletion is itself auditable
+Simulation 27 — Engine Without a Home Refuses to Act
+Context A misconfigured integration calls Charter Core without storage context.
+Flow
+API call attempts to create a session
+No storage root is defined
+Outcome
+Engine refuses operation
+No implicit state is created
+Validated Invariants
+Storage root explicitness
+No hidden state creation
+
+---
 
 ## Final Observation
 
