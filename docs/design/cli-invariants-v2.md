@@ -426,6 +426,40 @@ Fail if:
 CLI-only assumptions block shared or remote storage
 Context semantics cannot map to multi-user environments
 
+CLI-INV-FLAT-01: Flat Imports Never Create Legitimacy
+Flat file imports must never result in accepted or active resolutions without explicit review and acceptance.
+Fail if:
+Any imported resolution becomes ACTIVE automatically
+CLI-INV-FLAT-02: All Flat Imports Enter Baseline Review
+Every flat file import must create a baseline review context.
+Fail if:
+Imported resolutions appear outside a review
+Review context is implicit or hidden
+CLI-INV-FLAT-03: Foreign Provenance Is Preserved
+Imported resolutions must retain clear provenance indicating they originated externally.
+Fail if:
+Imported resolutions are indistinguishable from local ones
+CLI-INV-FLAT-04: Content Matching Is Ergonomic Only
+The CLI may detect identical content between imported and local resolutions, but this must not alter legitimacy behavior.
+Fail if:
+Identical content is auto-accepted
+Sessions are skipped due to matching
+CLI-INV-FLAT-05: Acceptance Always Produces Sessions
+Accepting an imported resolution must correspond to a session (explicit or hidden).
+Fail if:
+A resolution appears accepted without a session in audit
+CLI-INV-FLAT-06: Batch Acceptance Is Explicit
+Batch accept or reject commands must:
+Operate only within the active baseline review
+Require explicit flags (e.g. --all, --unchanged)
+Fail if:
+Batch operations act implicitly or globally
+CLI-INV-FLAT-07: Baseline Review Is Persistent
+Baseline reviews may remain open across CLI invocations.
+Fail if:
+Review state is lost without explicit close
+Review is implicitly abandoned
+
 Lock Statement
 These invariants are frozen.
 Any future feature (server mode, UI, multi-user collaboration, auditing enhancements) must:
