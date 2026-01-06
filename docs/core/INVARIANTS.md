@@ -516,6 +516,49 @@ Each engine instance operates over a single, explicit storage root.
 - No legitimacy leakage across roots
 
 ---
+ENG-STOR-01 — Engine Is Storage-Location Agnostic
+The Charter Core engine must not assume or encode any filesystem location for persistence.
+The engine:
+Receives a storage root from its host (CLI, server, test harness)
+Treats storage as an opaque persistence boundary
+Fail if:
+Engine logic depends on current working directory
+Engine infers paths or storage location internally
+ENG-STOR-02 — Stable Object Identity Is Independent of Filesystem
+All engine objects (Areas, Sessions, Resolutions, Audits) must have identities that are:
+Stable across restarts
+Stable across exports and imports
+Independent of filesystem paths or host environment
+Fail if:
+Object identity changes when storage location changes
+Filesystem layout affects object identity
+ENG-STOR-03 — Audit Scope Must Outlive Subject Scope
+For any auditable action, at least one audit record must exist in a scope whose lifecycle is strictly longer than the subject being acted upon.
+Examples:
+Area deletion must emit a global audit record
+Import replacement must emit a global audit record
+Fail if:
+Deleting an Area, Session, or Resolution can delete the only audit record of that action
+ENG-STOR-04 — Engine Never Deletes History Implicitly
+The engine must never delete historical objects as a side effect of:
+Import
+Restore
+Consolidation
+Supersession
+History may only become inactive, superseded, or abandoned — never erased.
+Fail if:
+Any engine operation removes historical objects without explicit replacement semantics and audit
+ENG-STOR-05 — Export Is a Complete Logical Snapshot
+An engine export must represent a complete logical snapshot of the selected Areas, including:
+All referenced objects
+All lifecycle states
+All audit-relevant context
+The engine must not emit partial exports that require external context to interpret.
+Fail if:
+An export cannot be deterministically rehydrated
+Referential integrity depends on external state
+
+---
 ## Frozen Boundary (Non-Goals)
 
 Charter Core explicitly does not provide:

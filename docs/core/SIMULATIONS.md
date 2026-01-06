@@ -585,6 +585,152 @@ Validated Invariants
 Storage root explicitness
 No hidden state creation
 
+Simulation E1 — Storage Location Is Irrelevant
+Context
+The same Charter data is stored in two different filesystem locations.
+Flow
+Engine A loads data from Storage Path X
+Engine B loads identical data from Storage Path Y
+Identical queries are executed against both engines
+Outcome
+All object IDs match
+All resolution states match
+All audit records match
+Validated Invariants
+Engine storage agnosticism
+Object identity independence from filesystem paths
+Simulation E2 — Storage Relocation Without Identity Loss
+Context
+A user moves Charter data to a new disk or directory.
+Flow
+Engine loads Area A with full history
+Storage directory is moved
+Engine is restarted pointing to the new location
+Outcome
+Area IDs unchanged
+Resolution IDs unchanged
+Supersession chains intact
+No revalidation occurs
+Validated Invariants
+Object identity stability
+Storage relocation safety
+Simulation E3 — Export as a Complete Logical Snapshot
+Context
+An Area contains:
+Authority history
+Scope history
+Multiple closed sessions
+Superseded resolutions
+Flow
+Engine generates an export
+Export is inspected without engine context
+Outcome
+Export contains all referenced objects
+No dangling references
+No implied defaults
+Validated Invariants
+Export completeness
+Referential self-sufficiency
+Simulation E4 — Restore Import Without New Legitimacy
+Context
+An organization restores a verified backup.
+Flow
+Engine imports export in RESTORE mode
+No sessions are evaluated
+No votes are replayed
+Outcome
+All resolutions retain original states
+No new audit entries imply acceptance
+Future sessions proceed from restored state
+Validated Invariants
+Import does not fabricate legitimacy
+Historical determinism
+Simulation E5 — Failed Import Is Side-Effect Free
+Context
+An export is corrupted or partially modified.
+Flow
+Engine attempts import
+Integrity verification fails
+Outcome
+Import aborts deterministically
+No Areas, Sessions, or Resolutions are created
+Global audit records the failed attempt
+Validated Invariants
+Side-effect-free failure
+Audit durability
+Simulation E6 — Active Sessions Are Ignored on Import
+Context
+An export contains:
+Closed sessions
+Active sessions with votes
+Paused sessions awaiting resumption
+Flow
+Engine processes the export
+Outcome
+Only closed sessions are imported
+Active and paused sessions are ignored
+No resolution outcome depends on them
+Validated Invariants
+Session legitimacy cannot be forked
+Closed-session immutability
+Simulation E7 — Ignored Sessions Cannot Influence Outcomes
+Context
+An ignored active session contains:
+A candidate that would otherwise pass authority
+Flow
+Export imported
+Resolution graph queried
+Outcome
+No resolution is created
+No supersession occurs
+No audit trail suggests partial continuation
+Validated Invariants
+Legitimacy is session-bound
+Ignored state is inert
+Simulation E8 — Supersession Preserves Full History
+Context
+Resolution R-1 is ACTIVE
+Resolution R-2 supersedes R-1
+Flow
+Supersession occurs via a session
+Engine queries historical state
+Outcome
+R-1 remains queryable
+R-1 marked SUPERSEDED
+R-2 references R-1 explicitly
+Validated Invariants
+No implicit history deletion
+Supersession transparency
+Simulation E9 — Area Replacement Emits Durable Audit
+Context
+An Area is replaced via RESTORE import.
+Flow
+Engine replaces Area A-OLD with A-NEW
+Outcome
+Global audit records:
+Old Area ID
+New Area ID
+Replacement reason
+Timestamp
+Area-local audit may terminate
+Validated Invariants
+Audit scope supremacy
+Deletion transparency
+Simulation E10 — Determinism Across Independent Restores
+Context
+Two independent machines restore the same export.
+Flow
+Machine A restores export
+Machine B restores export
+Queries executed on both
+Outcome
+Identical resolution graphs
+Identical audit records
+Identical authority timelines
+Validated Invariants
+Deterministic rehydration
+Engine neutrality
+
 ---
 
 ## Final Observation
@@ -599,3 +745,14 @@ It optimizes for:
 
 These simulations demonstrate that even under pressure,
 **nothing happens unless someone explicitly decides it should.**
+
+These simulations intentionally do not cover:
+CLI warnings or prompts
+User confirmations
+UX affordances
+Context switching commands
+
+They validate only the engine’s invariants, ensuring that:
+Legitimacy cannot be cloned
+History cannot be silently lost
+Storage decisions cannot corrupt meaning

@@ -345,3 +345,91 @@ Preview commands:
 perform validation only
 create no objects
 write no audit entries
+
+---
+CLI-STOR-01 — Charter Data Is Never Stored in Working Directories
+The CLI must never store authoritative Charter data inside user working directories.
+Working directories may contain only:
+Non-authoritative context pointers
+Metadata required to locate a context
+Fail if:
+Deleting a project directory deletes Charter history
+Charter data is colocated with source files
+CLI-STOR-02 — Authoritative Data Lives in a Durable User Scope
+All authoritative Charter data must be stored in a durable, user-scoped location (e.g., user profile).
+This location must:
+Outlive individual projects
+Be independent of repository lifecycle
+Be suitable for long-term audit retention
+Fail if:
+Data durability depends on project folders
+Moving or deleting folders breaks legitimacy history
+CLI-CTX-01 — Context Binding Is Explicit and Observable
+A working directory may bind to a Charter context only via an explicit pointer.
+The binding must be:
+Inspectable (charter context show)
+Changeable only via explicit command
+Never inferred implicitly
+Fail if:
+Context is guessed from directory structure
+Multiple contexts are implicitly merged
+CLI-CTX-02 — One Active Context per Invocation
+At any time, a CLI invocation operates against exactly one active Charter context.
+Fail if:
+Commands act on multiple contexts implicitly
+Context ambiguity exists without explicit user intent
+CLI-CTX-03 — Context Switching Never Moves or Duplicates Data
+Switching contexts must not:
+Move Charter data
+Copy Charter data
+Reinitialize storage
+Context switching only changes which storage root the CLI targets.
+Fail if:
+context use mutates stored history
+Data duplication occurs silently
+CLI-IMP-01 — Consolidation Is a Long-Lived, Exclusive Process
+When a CONSOLIDATE import is initiated:
+Exactly one consolidation baseline exists
+All normal decision sessions must be paused or blocked
+Consolidation state is persisted until closed or aborted
+Fail if:
+Multiple consolidations run concurrently
+Consolidation can be silently abandoned
+CLI-IMP-02 — Preview Does Not Mutate State
+Any preview or inspection command (e.g., baseline preview) must:
+Perform zero mutations
+Create no audit records
+Leave engine state unchanged
+Fail if:
+Preview alters history
+Preview leaves persistent artifacts
+CLI-IMP-03 — Closed Sessions Only Are Imported
+On export and import:
+Only CLOSED sessions may be included
+ACTIVE or PAUSED sessions are ignored with a warning
+Rationale:
+Prevents private forks of legitimacy
+Preserves session integrity
+Fail if:
+Active sessions are imported
+Exporting active sessions enables legitimacy bypass
+CLI-UX-01 — Folder Deletion Must Be Safe
+Deleting a working directory must never delete Charter history.
+At worst, deletion may remove:
+A local context pointer
+Fail if:
+Folder deletion destroys authoritative data
+User can accidentally erase governance history
+CLI-FWD-01 — Server Mode Compatibility Is Preserved
+CLI storage and context behavior must be forward-compatible with a future server or daemon mode.
+Fail if:
+CLI-only assumptions block shared or remote storage
+Context semantics cannot map to multi-user environments
+
+Lock Statement
+These invariants are frozen.
+Any future feature (server mode, UI, multi-user collaboration, auditing enhancements) must:
+Build on these invariants
+Extend them explicitly
+Never weaken them implicitly
+If an implementation choice violates an invariant, the implementation is wrong — not the invariant.

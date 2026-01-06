@@ -408,40 +408,53 @@ They intentionally do **not** specify UX, CLI flags, or workflow ergonomics.
 ### AT-27 — Candidate Set Freezes on First Stance
 
 ---
-Section J — Session Export Legitimacy
-AT-EXP-01 — Active Sessions Are Not Exportable as Legitimate Artifacts
-Given
-An Area with:
-One CLOSED session S-1
-One ACTIVE session S-2
-When
-An export is generated
-Then
-S-1 is included in the export
-S-2 is excluded from the export
-No placeholder or partial representation of S-2 exists
-Fail if
-An active or paused session appears in the export
-Partial deliberation is serialized
-AT-EXP-02 — Exported Resolutions Must Reference Closed Sessions
+## Section J — Session Export Legitimacy
+
+### AT-EXP-01 — Active Sessions Are Not Exportable as Legitimate Artifacts
+**Given**
+- An Area with:
+    - One CLOSED session S-1
+    - One ACTIVE session S-2
+
+**When**
+- An export is generated
+
+**Then**
+- S-1 is included in the export
+- S-2 is excluded from the export
+- No placeholder or partial representation of S-2 exists
+
+**Fail if**
+- An active or paused session appears in the export
+- Partial deliberation is serialized
+
+---
+### AT-EXP-02 — Exported Resolutions Must Reference Closed Sessions
 Given
 A resolution R-1 referencing session S-1
 And S-1 is CLOSED
+
 When
 An export is generated
+
 Then
 R-1 is exported normally
+
 And Given
 A resolution R-2 referencing session S-2
 And S-2 is ACTIVE or PAUSED
+
 When
 An export is generated
+
 Then
 Export fails deterministically
+
 Fail if
 A resolution references a non-closed session
 Resolution legitimacy is preserved without a closed session
-AT-EXP-03 — Export Does Not Mutate Session State
+
+### AT-EXP-03 — Export Does Not Mutate Session State
 Given
 An Area with an ACTIVE or PAUSED session
 When
@@ -454,8 +467,9 @@ Fail if
 Export causes any session state transition
 
 ---
-Section K — Import & Consolidation Legitimacy Boundaries
-AT-IMP-LEG-01 — Imported Deliberation Has No Mechanical Effect
+## Section K — Import & Consolidation Legitimacy Boundaries
+
+### AT-IMP-LEG-01 — Imported Deliberation Has No Mechanical Effect
 Given
 An import blob containing:
 Sessions
@@ -471,7 +485,8 @@ No imported vote contributes to acceptance
 Fail if
 Imported deliberation affects local legitimacy
 Votes are replayed or evaluated
-AT-IMP-LEG-02 — Legitimacy Cannot Be Forked Mid-Session
+
+### AT-IMP-LEG-02 — Legitimacy Cannot Be Forked Mid-Session
 Given
 System A with an ACTIVE session S-1
 System B imports an export from A
@@ -482,7 +497,8 @@ S-1 does not appear in the export
 No continuation of S-1 is possible in B
 Fail if
 A decision can be completed outside its original context
-AT-IMP-LEG-03 — Imported Sessions Are Non-Authoritative
+
+### AT-IMP-LEG-03 — Imported Sessions Are Non-Authoritative
 Given
 An import blob containing closed sessions
 When
@@ -496,8 +512,9 @@ Imported sessions can accept candidates
 Imported sessions influence authority evaluation
 
 ---
-Section L — Determinism & History Preservation
-AT-HIST-01 — Consolidation Preserves Resolution History, Not Deliberation
+## Section L — Determinism & History Preservation
+
+### AT-HIST-01 — Consolidation Preserves Resolution History, Not Deliberation
 Given
 An import blob containing:
 Multiple superseded resolutions
@@ -512,7 +529,8 @@ Deliberation history is not reactivated
 Fail if
 Engine attempts to reconcile deliberation
 Imported session history is treated as authoritative
-AT-HIST-02 — No Implicit Reconstruction of Governance
+
+### AT-HIST-02 — No Implicit Reconstruction of Governance
 Given
 Imported resolutions without locally accepted Authority or Scope
 When
@@ -525,8 +543,9 @@ Governance is assumed
 Legitimacy is fabricated for convenience
 
 ---
-Section M — Storage Isolation & Instance Integrity
-AT-28 — Storage Root Isolation
+## Section M — Storage Isolation & Instance Integrity
+
+### AT-28 — Storage Root Isolation
 Invariant: ENG-INV-13 — Storage Isolation
 Given
 Two Charter Core instances:
@@ -542,7 +561,8 @@ No shared IDs, references, or audit entries exist
 Fail if
 Any object created in one storage root is visible in another
 Engine assumes a global singleton store
-AT-29 — Cross-Root Reference Is Rejected
+
+### AT-29 — Cross-Root Reference Is Rejected
 Invariant: ENG-INV-13 — Storage Isolation
 Given
 Resolution R-A exists in storage root A
@@ -555,7 +575,8 @@ Error indicates: “Referenced object not found in storage root”
 Fail if
 Engine allows cross-root references
 Engine treats external IDs as opaque but valid
-AT-30 — Storage Root Is Explicit
+
+### AT-30 — Storage Root Is Explicit
 Invariant: ENG-INV-13 — Storage Isolation
 Given
 An engine API invocation without a resolved storage root
@@ -568,10 +589,11 @@ Fail if
 Engine falls back to an implicit default store
 Engine silently initializes a new store
 
---+
-Section N — Audit Scope Supremacy (Extension)
-(These complement earlier audit tests but apply to the new storage boundary.)
-AT-31 — Global Audit Survives Storage Object Loss
+---
+## Section N — Audit Scope Supremacy (Extension)
+*(These complement earlier audit tests but apply to the new storage boundary.)*
+
+### AT-31 — Global Audit Survives Storage Object Loss
 Invariant: ENG-INV-14 — Audit Scope Supremacy
 Given
 An Area A-1 exists in a storage root
@@ -586,7 +608,8 @@ IDs of affected objects
 No audit record is lost
 Fail if
 Deleting an Area removes the only audit trail of its deletion
-AT-32 — Audit Cannot Be Scoped Only to a Destructible Object
+
+### AT-32 — Audit Cannot Be Scoped Only to a Destructible Object
 Invariant: ENG-INV-14 — Audit Scope Supremacy
 Given
 A session S-1 exists
@@ -601,6 +624,151 @@ Audit data is only stored inside the deleted session
 
 ---
 
+Section J — Storage Agnosticism & Identity
+AT-ENG-STOR-01 — Engine Is Storage-Location Agnostic
+Given
+The engine is initialized with two different storage roots
+Both storage roots contain identical logical Charter data
+When
+Identical engine operations are executed against each storage root
+Then
+All object identities, resolution outcomes, and audit records are identical
+Fail if
+Filesystem paths affect object identity
+Engine behavior depends on current working directory
+AT-ENG-STOR-02 — Object Identity Survives Storage Relocation
+Given
+An Area with Sessions, Resolutions, and Audit records
+The underlying storage is moved or re-mounted
+When
+The engine is restarted pointing to the new location
+Then
+All object IDs remain unchanged
+All references resolve correctly
+Fail if
+Object IDs change due to storage relocation
+References break due to path changes
+Section K — Audit Durability
+AT-ENG-AUD-01 — Audit Scope Outlives Subject Scope
+Given
+An Area A-1 with Sessions and Resolutions
+When
+Area A-1 is deleted or replaced
+Then
+At least one audit record exists outside A-1’s scope
+The deletion or replacement is permanently recorded
+Fail if
+Deleting A-1 removes the only audit record of the deletion
+AT-ENG-AUD-02 — Import Replacement Is Globally Audited
+Given
+An existing Area A-OLD
+A valid RESTORE import replacing it with Area A-NEW
+When
+The import succeeds
+Then
+A global audit record exists containing:
+Old Area ID
+New Area ID
+Timestamp
+Operation type (RESTORE / REPLACEMENT)
+Fail if
+The prior Area disappears without a durable audit trail
+Section L — History Preservation
+AT-ENG-HIST-01 — No Implicit History Deletion
+Given
+An Area with historical Sessions and Resolutions
+When
+Any of the following occur:
+Supersession
+CONSOLIDATE import
+RESTORE import
+Then
+Historical objects remain queryable
+Objects may change lifecycle state but are never erased
+Fail if
+Any historical object is deleted implicitly
+AT-ENG-HIST-02 — Supersession Does Not Remove Prior Resolutions
+Given
+Resolution R-1 is ACTIVE
+When
+Resolution R-2 supersedes R-1
+Then
+R-1 remains queryable
+R-1 state becomes SUPERSEDED
+R-2 references R-1 explicitly
+Fail if
+R-1 disappears or loses identity
+Section M — Export Integrity
+AT-ENG-EXP-01 — Export Is a Complete Logical Snapshot
+Given
+An Area with interlinked Sessions, Resolutions, and Authority history
+When
+An export is generated
+Then
+The export contains all referenced objects
+No external engine state is required to interpret it
+Fail if
+Importing the export requires missing context
+Referential integrity depends on external state
+AT-ENG-EXP-02 — Export Is Deterministically Rehydratable
+Given
+An export generated from Engine Instance A
+When
+The export is restored into a clean Engine Instance B
+Then
+The logical state of Areas, Resolutions, Sessions, and lifecycle states is identical
+Fail if
+Rehydration produces different legitimacy outcomes
+Object relationships differ
+Section N — Determinism Across Imports
+AT-ENG-IMP-01 — Restore Import Creates No New Legitimacy
+Given
+A valid export containing accepted resolutions
+When
+The export is imported in RESTORE mode
+Then
+No new sessions are created
+No resolutions are re-evaluated
+No audit records imply new acceptance
+Fail if
+Import creates legitimacy beyond what existed
+AT-ENG-IMP-02 — Failed Import Is Side-Effect Free
+Given
+Existing Areas and legitimate history
+A malformed or tampered export
+When
+Import is attempted
+Then
+Import fails deterministically
+No Areas, Sessions, Resolutions, or Audits are mutated
+Fail if
+Partial state is created
+Existing history is altered
+Section O — Closed-Session Enforcement (Engine Perspective)
+AT-ENG-SES-01 — Active Sessions Are Not Imported
+Given
+An export containing CLOSED, ACTIVE, and PAUSED sessions
+When
+The engine processes the import
+Then
+Only CLOSED sessions are materialized
+ACTIVE and PAUSED sessions are ignored
+Fail if
+Active sessions are imported
+Session legitimacy can be forked privately
+AT-ENG-SES-02 — Ignored Sessions Do Not Affect Legitimacy
+Given
+An export where an ACTIVE session references candidates and votes
+When
+The export is imported
+Then
+No resolution outcome depends on the ignored session
+No audit record implies its continuation
+Fail if
+Ignored sessions influence acceptance or supersession
+
+---
+
 ## Final Note
 
 These acceptance tests intentionally do **not**:
@@ -610,8 +778,12 @@ These acceptance tests intentionally do **not**:
 - infer semantics
 - require rationale
 - require AI
+- define filesystem layout
+- define server or daemon behavior
 
 They define the **legitimacy envelope** of Charter Core.
 
 If these pass, the engine is trustworthy.
+If any test fails, the engine is incorrect — regardless of usability gains.
+
 Everything else is a client concern.
