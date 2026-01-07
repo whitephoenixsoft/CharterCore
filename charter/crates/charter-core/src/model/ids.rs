@@ -1,4 +1,6 @@
-#[derive(Clone, PartialEq, Eq, Hash, Debug)]
+use serde::Serialize;
+
+#[derive(Clone, PartialEq, Eq, Hash, Debug, Serialize)]
 pub struct AreaId(pub String);
 
 

@@ -1,20 +1,16 @@
 use crate::model::ids::AreaId;
 use crate::time::Timestamp;
 use serde::Serialize;
-//use crate::ids::ObjectHash;
+use crate::ids::ObjectHash;
+use crate::types:hash_object;
 
-/*
+#[derive(Debug, Serialize)]
 pub trait CharterObject {
-    /// Canonical bytes used for hashing and storage
-    pub fn canonical_bytes(&self) -> Vec<u8>;
-
-    /// Deterministic object hash
-    pub fn object_hash(&self) -> ObjectHash {
-        hash_bytes(&self.canonical_bytes())
-    }
+    /// Canonical byte representation used for hashing
+    fn canonical_bytes(&self) -> Vec<u8>;
 
     /// Logical object kind (for debugging / tooling)
-    pub fn kind(&self) -> CharterObjectKind;
+    fn kind(&self) -> CharterObjectKind;
 }
 
 pub enum CharterObjectKind {
@@ -23,13 +19,21 @@ pub enum CharterObjectKind {
     Candidate,
     Resolution,
 }
-*/
-pub enum CharterObject {
-    AreaRoot(AreaRoot),
-}
 
-#[derive(Debug)]
+
+#[derive(Debug, Serialize)]
 pub struct AreaRoot {
     pub area_id: AreaId,
     pub created_at: Timestamp,
+}
+
+impl CharterObject for AreaRoot {
+    fn canonical_bytes(&self) -> Vec<u8> {
+        serde_json::to_vec(self)
+            .expect("AreaRoot must serialize deterministically")
+    }
+
+    fn kind(&self) -> CharterObjectKind {
+        CharterObjectKind::Area
+    }
 }
