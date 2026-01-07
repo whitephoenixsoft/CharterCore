@@ -1,11 +1,11 @@
-# Charter Core — Formal Engine Invariants & Boundaries 
+# Charter Core — Formal Engine Invariants & Boundaries
 
-> Status: FINALIZING 
-> Changes to these invariants require explicit justification and new simulations demonstrating preserved legitimacy.
+**Status: LOCKED (V1)**  
+Changes to these invariants require explicit justification and new simulations demonstrating preserved legitimacy.
 
 ---
 
-## Core Principle
+## I. Core Principle
 
 Charter Core is a **legitimacy engine**, not a reasoning engine, workflow engine, or collaboration tool.
 
@@ -13,102 +13,21 @@ Its sole responsibility is to ensure that decisions are:
 - Explicit
 - Auditable
 - Governed
+- Deterministic
 - Non-retroactive
 
 ---
 
-## Engine Invariants (Frozen)
-
----
+## II. Decision & Legitimacy Invariants
 
 ### 1. Explicit Decisions Only
-
 No decision is legitimate unless it is explicitly accepted within a session.
 - Silence is not consent
 - Metadata is not acceptance
 - Automation is not authority
+- Inactivity has no meaning
 
----
-
-### 2. Immutable History
-
-Once accepted, a resolution is immutable.
-
-- Resolutions are never edited
-- Corrections require superseding resolutions
-- History is append-only
-
----
-
-### 3. Areas Are Hard Governance Boundaries
-
-Every resolution belongs to exactly one Area.
-
-- Areas do not implicitly overlap
-- Areas do not inherit authority or scope
-- Cross-area relevance must be explicitly referenced
-
----
-
-### 4. Authority Is a First-Class Resolution
-
-Authority is the explicit decision rule that determines how agreement is evaluated within a session.
-
-Authority does not represent identity, rank, permission, or power.
-It only defines the mechanical conditions under which a candidate may be accepted.
-
-Each Area must maintain **exactly one Active Authority resolution** at any given time.
-
-Authority:
-- Defines who has standing in a session
-- Defines the deterministic decision rule for the agreement
-- Is purely mechanical
-
-Authority does **not**:
-- Interpret content
-- Judge correctness
-- Assign roles
-- Apply semantic meaning
-
-Authority changes:
-- Require a decision session
-- Never rewrite history
-
----
-
-### 5. Scope Is a First-Class, Descriptive Resolution
-
-Scope defines the domain of applicability for a decision and is recorded for transparency and audit.
-
-Scope does not enforce, validate, or block decisions — it only documents intent and context.
-
-Each Area must have exactly one active Scope resolution at any time.
-
-Scope:
-- Describes what kinds of decisions belong in the Area
-- Is descriptive, not enforcing
-- Exists to inform humans and block obvious misuse
-
-Scope changes:
-- Require a decision session
-- Never invalidate prior resolutions
-
----
-
-### 6. Context Preservation (Authority & Scope)
-
-Every session and every accepted resolution must permanently record:
-- The active Authority resolution at the time of acceptance
-- The active Scope resolution at the time of acceptance
-- Any additional Scopes explicitly referenced during the session
-
-Later changes to Authority or Scope must never invalidate, reinterpret, suppress, or alter previously accepted resolutions.
-Relevance, applicability, or correction may only be expressed through new resolutions.
-
----
-
-### 7. Sessions Are the Unit of Legitimacy
-
+### 2. Sessions Are the Unit of Legitimacy
 Resolutions may only be accepted within sessions.
 
 Sessions:
@@ -117,101 +36,325 @@ Sessions:
 - Enforce session constraints
 - Produce zero or more resolutions
 
+### 3. Legitimacy Is Evaluated at Acceptance Time
+A resolution’s legitimacy is determined solely by:
+- The Authority active at acceptance
+- The Scope active at acceptance
+- The decision rule satisfied at acceptance
+
+No future change may retroactively affect legitimacy.
+
+### 4. Deterministic Evaluation
+Given identical:
+- participants
+- stances
+- authority
+- constraints
+
+The outcome must be identical.
+
+### 5. Explicit Dissent Invariant
+Charter Core must support explicit expression of disagreement.
+- Silence or absence must never be interpreted as consent or rejection
+
 ---
 
-### 8. Candidates Are Neutral
+## III. History & Immutability Invariants
 
-Candidates are options under consideration.
+### 6. Immutable History
+Once accepted, a resolution is immutable.
+- Resolutions are never edited
+- Corrections require superseding resolutions
+- History is append-only
 
-They:
-- Imply no intent
-- Imply no endorsement
-- May be abandoned without consequence
-
-Candidates have no lifecycle outside a session and no legitimacy unless accepted.
-
-Rejection and removal are non-semantic and must not affect engine state.
-
-Only accepted candidates become resolutions.
-
----
-
-### 9. Explicit Resolution Lifecycle
-
+### 7. Explicit Resolution Lifecycle
 Resolutions transition only through explicit states:
-- Active
-- Under Review
-- Superseded
-- Retired
+- ACTIVE
+- UNDER_REVIEW
+- SUPERSEDED
+- RETIRED
 
 Rules:
 - No resolution is ever removed
-- A resolution under review may not be accepted
+- UNDER_REVIEW resolutions may not govern authority or scope
 - All transitions are auditable
-- Resolution legitimacy states (Active, Superseded, Retired) may only change through the acceptance of a decision within a session.
-- Non-legitimacy workflow states (e.g. Under Review) may be modified directly but must not affect authority, scope, or decision validity.
+- Legitimacy states change only via session acceptance
+- Workflow states must not affect legitimacy
+
+### 8. Relevance Is Human, Not Mechanical
+Charter Core does not determine relevance.
+Relevance is expressed only through:
+- Supersession
+- Retirement
+- Clarifying resolutions
+
+The engine must never auto-retire or suppress decisions.
 
 ---
 
-### 10. Session Constraints Are Engine-Enforced
+## IV. Areas, Authority, and Scope
 
-Sessions may declare explicit constraints at creation time.
+### 9. Areas Are Hard Governance Boundaries
+Every resolution belongs to exactly one Area.
+- No implicit overlap
+- No inheritance
+- Cross-area relevance must be explicit
 
+### 10. Area Initialization Requirement
+An Area must have:
+- Exactly one active Authority resolution
+- Exactly one active Scope resolution
+
+Until then:
+- The Area is UNINITIALIZED
+- Only Authority/Scope-defining sessions are permitted
+
+### 11. Authority Is a First-Class Resolution
+Authority defines the mechanical rule for agreement.
+
+Authority:
+- Defines who has standing
+- Defines how acceptance is evaluated
+- Is purely mechanical
+
+Authority does **not**:
+- Interpret content
+- Assign roles
+- Judge correctness
+- Encode semantics
+
+Rules:
+- Exactly one active Authority per Area
+- Changes require a session
+- Changes never rewrite history
+
+### 12. Scope Is a First-Class, Descriptive Resolution
+Scope documents applicability and intent.
+
+Scope:
+- Is descriptive, not enforcing
+- Exists for audit and human clarity
+- Is immutable per resolution
+
+Rules:
+- Exactly one active Scope per Area
+- Changes require a session
+- Changes never invalidate prior resolutions
+
+### 13. Context Preservation (Authority & Scope)
+Every session and resolution must permanently record:
+- Authority active at acceptance
+- Scope active at acceptance
+- Any explicitly referenced scopes
+
+Later changes must never reinterpret past decisions.
+
+---
+
+## V. Sessions, Constraints, and Candidates
+
+### 14. Candidates Are Neutral
+Candidates:
+- Imply no intent
+- Imply no endorsement
+- Have no legitimacy unless accepted
+
+Rejection or abandonment has no semantic meaning.
+
+### 15. Candidate Set Freezes on First Stance
+After any stance is recorded:
+- No candidate may be added, removed, or edited
+- Violations must fail explicitly
+
+### 16. Session Constraints Are Engine-Enforced
 Constraints:
-- Apply only to the current session
-- Are enforced mechanically by the engine
-- Must be satisfied before acceptance
+- Are declared at session start
+- Apply only to that session
+- Are enforced mechanically
 - Do not modify Authority or Scope
 
-Constraints prevent premature or illegitimate acceptance.
+### 17. Constraints Are Authority-Equivalent
+Any rule that changes how agreement is evaluated is authority-equivalent.
+
+Consequences:
+- Constraints cannot change mid-session
+- Constraints require a governing decision session
+- Constraints are governed by active Authority
+
+### 18. Constraints Must Be Declared at Session Start
+Fail if:
+- Constraints are added after first stance
+- Constraints change after pause or resume
+- Constraints are inferred implicitly
+
+### 19. Session Blocking and Pausing
+If authority or constraints cannot be satisfied:
+- Session enters BLOCKED or PAUSED
+
+On resume:
+- Authority and Scope are revalidated
+- If legitimacy conditions differ → BLOCKED
+
+Resume restores context; it does not renegotiate it.
+
+### 20. Resume Cannot Introduce New Legitimacy Conditions
+On resume:
+- Participants may change
+- Votes may change
+- Authority and constraints may not
 
 ---
 
-### 11. Session Blocking and Pausing Are Explicit
+## VI. Concurrency & Isolation
 
-If a session cannot satisfy its Authority rule or constraints, it must:
-- Enter a blocked or paused state
+### 21. Concurrency Invariant
+Multiple sessions may exist concurrently in an Area.
 
-When resuming:
-- Active Authority is revalidated
-- Active Scope is revalidated
+Interference occurs only if a resolution:
+- Changes Authority
+- Changes Scope
+- Supersedes an active resolution
 
-If context has materially changed, explicit handling is required.
+Affected sessions must be revalidated, paused, or blocked.
 
----
+### 22. Legitimacy Cannot Be Forked Mid-Process
+The engine must prevent:
+- Forking active sessions
+- Completing decisions outside original context
 
-### 12. Rationale Is Optional but Preservable
-
-Charter Core must never require rationale to legitimize a decision.
-
-However:
-- Any rationale provided must be preserved
-- The audit trail (sessions, candidates, supersession) explains why decisions evolved
-
-Legitimacy comes from process, not prose.
+Fail if:
+- In-progress sessions can be finalized elsewhere
 
 ---
 
-### 13. No Semantic Inference
+## VII. Imports, Exports, and Review
 
+### 23. Export Invariants
+
+#### EXP-01 — Only Closed Sessions Are Legitimate Artifacts
+- Only CLOSED sessions may participate in legitimacy-bearing exports
+- Active or paused sessions must be ignored (with warning)
+
+#### EXP-02 — Exported Resolutions Must Originate from Closed Sessions
+Fail if:
+- A resolution references an open or paused session
+
+### 24. Import Invariants
+
+#### IMP-01 — Consolidation Preserves Legitimacy, Not Deliberation
+In CONSOLIDATE mode:
+- Imported resolutions are historical artifacts
+- Imported deliberation is non-authoritative
+
+Fail if:
+- Imported votes or sessions affect acceptance
+
+#### IMP-02 — Imported Session History Is Non-Authoritative
+If preserved:
+- Must be read-only
+- Must never govern legitimacy
+
+### 25. Import Review Invariants
+
+- **IR-1 — Chronological Review**
+  Imported resolutions must be reviewed in original order.
+
+- **IR-2 — Local Authority Governs Review**
+  Imported Authority/Scope never govern review mechanics.
+
+- **IR-3 — No Cascading Rejection**
+  Rejecting one imported resolution does not affect others.
+
+- **IR-4 — Context Preservation Without Reinterpretation**
+  Imported context is preserved for audit only.
+
+---
+
+## VIII. References & Semantics
+
+### 26. References Are Informational Only
+References:
+- Grant no authority
+- Imply no approval
+- Create no precedence
+- Trigger no enforcement
+
+All effects are external to the engine.
+
+### 27. No Semantic Inference
 Charter Core must never infer:
 - Authority overlap
 - Scope overlap
 - Role equivalence
 - Intent
 
-All meaning is explicit or human-interpreted.
+---
+
+## IX. Audit & Integrity
+
+### 28. Audit Scope Supremacy
+All auditable events must be recorded in a scope that outlives the subject.
+
+Rules:
+- At least one non-deletable Global Audit exists
+- Deleting an entity must not erase its audit trail
+
+### 29. Verifiable Export Integrity
+Exports must allow detection of:
+- Structural tampering
+- Content modification
+
+On failure:
+- Reject import or mark UNDER_REVIEW
+
+This is detection, not cryptographic trust.
 
 ---
 
-### 14. AI Is Outside the Engine Boundary
+## X. Storage & Persistence Invariants
 
-Charter Core must be fully functional without AI.
+### 30. Storage Isolation
+Each engine instance operates over a single explicit storage root.
+- No cross-root visibility
+- No implicit global state
 
-If integrated:
-- AI may suggest
-- AI may annotate
-- AI may warn
+### 31. Engine Is Storage-Location Agnostic (ENG-STOR-01)
+The engine:
+- Receives a storage root from its host
+- Treats storage as opaque
+
+Fail if:
+- Engine depends on filesystem layout or CWD
+
+### 32. Stable Object Identity (ENG-STOR-02)
+Object identities must be:
+- Stable across restarts
+- Stable across exports/imports
+- Independent of filesystem paths
+
+### 33. Audit Scope Outlives Subject (ENG-STOR-03)
+Fail if:
+- Deleting an entity deletes the only audit record
+
+### 34. No Implicit History Deletion (ENG-STOR-04)
+The engine must never delete history implicitly.
+History may only be superseded or abandoned with audit.
+
+### 35. Export Is a Complete Logical Snapshot (ENG-STOR-05)
+Exports must be:
+- Complete
+- Referentially intact
+- Deterministically rehydratable
+
+---
+
+## XI. AI Boundary
+
+### 36. AI Is Outside the Engine Boundary
+AI may:
+- Suggest
+- Annotate
+- Warn
 
 AI may never:
 - Accept decisions
@@ -221,233 +364,16 @@ AI may never:
 
 ---
 
-### 15. Legitimacy Is Evaluated at Acceptance Time
+## XII. Frozen Non-Goals (Boundaries)
 
-A resolution’s legitimacy is determined solely by:
-- The Authority active at acceptance
-- The Scope active at acceptance
-- The decision rule satisfied at acceptance
-
-No future state change may retroactively affect legitimacy.
-
----
-
-### 16. Relevance Is Human, Not Mechanical
-
-Charter Core does not determine whether a resolution is still relevant.
-
-Relevance is expressed only through:
-- Supersession
-- Retirement
-- Clarifying resolutions
-
-Charter Core must not auto-retire or suppress resolutions based on context drift.
-
----
-
-### 17. Area Initialization Requirement
-
-An Area must have exactly one active Authority resolution and exactly one active Scope resolution before any other resolution may be accepted within that Area.
-
-Until both are present:
-- The Area is considered uninitialized
-- Only sessions whose sole purpose is to establish Authority and/or Scope are permitted
-- All other sessions must be blocked
-
----
-
-### 18. Verifiable Export Integrity
-
-Charter Core must provide a deterministic mechanism to verify the integrity of exported data.
-
-- Exports must include sufficient information to detect:
-    - Structural tampering
-    - Content modification outside Charter Core
-- On import, Charter Core must never silently accept altered data as legitimate history.
-- If integrity verification fails, imported content must:
-    - Be rejected or
-    - Enter an explicit Under Review state requiring human confirmation
-
-This invariant applies only at import/export boundaries.
-
-It does **not** affect:
-- Authority semantics
-- Scope semantics
-- Session mechanics
-- Resolution legitimacy rules
-
-Charter Core remains a legitimacy engine, not a cryptographic trust system.
-
-#### Rationale (Why This Exists)
-
-- Charter already guarantees logical integrity internally.
-- Import/export introduces an external trust boundary.
-- Silent tampering would undermine auditability and legitimacy.
-- Detection is required; prevention is not.
-
-This mirrors established systems (Git, package managers, SBOMs):
-- History remains immutable inside
-- External artifacts are verified on entry
-
----
-
-### 19. Concurrency Invariant
-
-Charter Core allows multiple concurrent sessions within the same Area.
-
-Sessions are isolated while active and do not interfere with one another.
-
-Interference may occur only after the acceptance of a resolution that:
-- Changes Authority
-- Changes Scope
-- Supersedes an active Resolution
-
-When such a change occurs, any affected active sessions must be:
-- Re-validated, or
-- Explicitly paused or blocked
-
-No session may continue under invalidated governing context.
-
----
-
-### 20. Explicit Dissent Invariant
-
-Charter Core must support explicit expression of disagreement within a session.
-
-Silence or absence must never be interpreted as consent or rejection.
-
----
-
-### 21. Import Review Invariants
-
-#### IR-1 — Chronological Review Invariant
-
-Imported resolutions MUST be reviewed in their original chronological order.
-No resolution type (including Authority or Scope) may be reviewed out of order.
-
-#### IR-2 — Local Authority Governs Review
-
-Imported Authority and Scope resolutions do not govern the mechanics of review.
-All review acceptances are evaluated under the locally active Authority.
-
-#### IR-3 — No Cascading Rejection
-
-Rejecting an imported resolution MUST NOT implicitly invalidate or auto-reject later imported resolutions.
-
-#### IR-4 — Context Preservation Without Reinterpretation
-
-Imported acceptance context is preserved immutably for audit and reasoning but is never re-applied mechanically.
-
-----
-### 22. References Are Informational Only
-
-Charter Core allows sessions and resolutions to explicitly reference other Areas, Scopes, or Resolutions.
-
-References:
-- Do not grant authority
-- Do not imply approval
-- Do not create precedence
-- Do not impose obligations
-- Do not affect acceptance, rejection, or blocking
-
-References must never:
-- Alter decision rules
-- Affect legitimacy
-- Trigger enforcement
-- Cause implicit conflicts
-
-All effects of references are external to the engine and strictly informational.
-
----
-
-### 23. Audit Scope Supremacy
-
-All auditable events in Charter Core must be recorded in an audit scope whose lifecycle strictly outlives the subject of the event.
-
-Rules:
-- No auditable action may be recorded only within a scope that can be destroyed, retired, or made inaccessible as part of that action.
-- Destruction, retirement, or loss of access to an entity must never erase or invalidate the audit record of that event.
-- Charter Core must maintain at least one non-deletable, non-retirable audit scope (“Global Audit”).
-
-Consequences:
-- Area deletion must emit an event into the Global Audit scope.
-- Area-scoped audit data may be archived, frozen, or detached, but must never be the sole record of an auditable action.
-- Object store entries and audit records may outlive Area or Session lifecycles.
-
----
-### 24. Constraints Are Authority-Equivalent
-
-Any rule that changes who must agree or how agreement is evaluated is authority-equivalent.
-
-This includes (non-exhaustive):
-- Required participants
-- Quorum definitions
-- Majority / unanimity rules
-- Required approvals (e.g. “Security must approve”)
-
-Consequences:
-- Constraints cannot change mid-session
-- Constraints cannot change on resume
-- Constraints require their own decision session
-- Constraint changes are governed by the currently active Authority
-
- Rationale:
-- Changing constraints changes legitimacy mechanics. Legitimacy mechanics must never shift without consent.
-
----
-
-### 25. Resume Cannot Introduce New Legitimacy Conditions
-
-When resuming a session:
-- Participants may change (reality)
-- Votes may be added
-- Authority may not change
-- Constraints may not change
-
-If legitimacy conditions differ from session start:
-- The session must enter a BLOCKED state
-- Explicit user action is required
-
-Resume restores context — it does not renegotiate it.
-
----
-### 26. Constraints Must Be Declared at Session Start
-
-All legitimacy constraints must be:
-- Declared at session start
-- Visible before any stance is recorded
-- Immutable for the session’s lifetime
-- Recorded in session metadata
-
-Fail if:
-- Constraints are added after the first stance
-- Constraints change after pause
-- Constraints are inferred implicitly
-
----
- ### 27. Candidate Set Freezes on First Stance
- 
-Once any stance is recorded in a session:
-- Candidates cannot be added
-- Candidates cannot be removed
-- Candidates cannot be edited
-- Violation must fail explicitly.
-
-Rationale:
-- Changing options after voting begins invalidates consent.
-
----
-## Frozen Boundary (Non-Goals)
-
-Charter Core explicitly does not provide:
+Charter Core explicitly does **not** provide:
 - Chat systems
 - Workflow orchestration
 - Task execution
 - Role management
 - Identity systems
 - Semantic reasoning
-- Conflict resolution by inference
-- UX patterns (rounds, turns, moderation)
+- Inferred conflict resolution
+- UX patterns (rounds, moderation, facilitation)
 
 These belong to higher layers.
-

@@ -1,28 +1,28 @@
-# Review Process
+# Baseline Review Process
 
-> Review is not just about new resolutions — it is about resolving conflicts between timelines.
+> A baseline review is not just about new resolutions — it is about resolving conflicts between proposal updates
 
 ## Command Set
 
 ```bash
-charter review list
-charter review open <import-id>
-charter review status
-charter review show [resolution-label]
-charter review accept <resolution-label> | <import-id> [--force]
-charter review reject <resolution-label> | <import-id>
-charter review close
-charter review purge <import-id>
+charter baseline list
+charter baseline open <import-id>
+charter baseline status
+charter baseline show [resolution-label]
+charter baseline accept <resolution-label> | <import-id> [--force]
+charter baseline reject <resolution-label> | <import-id>
+charter baseline close
+charter baseline purge <import-id>
 ```
 
 ## Command Semantics & Messages
 
-### 1. charter review list
+### 1. charter baseline list
 
 Lists all known imports.
 
 ```text
-$ charter review list
+$ charter baseline list
 
 IMPORTS
 I-1  alice-laptop.json      12 resolutions  UNDER_REVIEW
@@ -30,8 +30,8 @@ I-2  ci-backup.json         38 resolutions  UNDER_REVIEW
 I-3  prod-restore.json      42 resolutions  APPLIED
 
 Next actions:
-- charter review use I-1
-- charter review use I-2
+- charter baseline use I-1
+- charter baseline use I-2
 ```
 Rules
 - Sorted by import time (newest first)
@@ -39,12 +39,12 @@ Rules
 - No mutation
 
 ---
-### 2. charter review open \<import-id>
+### 2. charter baseline open \<import-id>
 
 Enters a scoped review context.
 
 ```text
-$ charter review open I-1
+$ charter baseline open I-1
 
 Entered review context:
 Import: I-1
@@ -52,10 +52,10 @@ Source: alice-laptop.json
 Resolutions under review: 12
 
 Next actions:
-- charter review show
-- charter review accept <resolution>
-- charter review reject <resolution>
-- charter review close
+- charter baseline show
+- charter baseline accept <resolution>
+- charter baseline reject <resolution>
+- charter baseline close
 ```
 
 Rules:
@@ -70,21 +70,21 @@ Behavior:
 
 Error if fails due to another review 
 ```
-error: review I-4 already active
+error: baseline I-4 already active
 next actions:
-  - charter review show
-  - charter review accept I-4
-  - charter review reject I-4
-  - charter review close I-4
+  - charter baseline show
+  - charter baseline accept I-4
+  - charter baseline reject I-4
+  - charter baseline close I-4
 ```
 
 ---
-### 3. charter review status
+### 3. charter baseline status
 
 Shows progress for the active review context.
 
 ```text
-$ charter review status
+$ charter baseline status
 
 REVIEW CONTEXT
 Import: I-1
@@ -99,9 +99,9 @@ Blocking notes:
 - Authority change pending review
 
 Next actions:
-- charter review show
-- charter review accept <resolution>
-- charter review reject <resolution>
+- charter baseline show
+- charter baseline accept <resolution>
+- charter baseline reject <resolution>
 ```
 Rules:
 - Fails if no review context
@@ -115,6 +115,7 @@ Must clearly display:
     - CONSOLIDATED
     - REJECTED
     - HISTORICAL (superseded on import)
+    - ACTIVE (active in local area)
 - Supersession info (if applicable):
     - “Supersedes local: R-3”
 - Optional provenance:
@@ -124,14 +125,14 @@ Must clearly display:
  No semantic diff. No judgment.
 
 ---
-### 4. charter review show \[resolution-label]
+### 4. charter baseline show \[resolution-label]
 
 #### Without argument
 
 Shows all remaining items under review.
 
 ```text
-$ charter review show
+$ charter baseline show
 
 UNDER REVIEW
 R-ARCH-2   "Adopt microservices"
@@ -139,12 +140,12 @@ R-SCOPE-5  "Expand deployment scope"
 R-DB-3     "Switch to PostgreSQL"
 
 Next actions:
-- charter review accept <resolution>
-- charter review reject <resolution>
+- charter baseline accept <resolution>
+- charter baseline reject <resolution>
 ```
 With supersession aware output:
 ```
-$ charter review show
+$ charter baseline show
 
 UNDER REVIEW (Import: I-2)
 
@@ -154,9 +155,9 @@ R-ARCH-5  "Adopt microservices"
 R-SCOPE-2 "Expand deployment responsibility"
 
 Next actions:
-- charter review show R-ARCH-5
-- charter review accept <resolution>
-- charter review reject <resolution>
+- charter baseline show R-ARCH-5
+- charter baseline accept <resolution>
+- charter baseline reject <resolution>
 ```
 
 #### With argument
@@ -164,7 +165,7 @@ Next actions:
 Shows full details.
 
 ```text
-$ charter review show R-ARCH-2
+$ charter baseline show R-ARCH-2
 
 RESOLUTION (IMPORTED)
 Label: R-ARCH-2
@@ -177,7 +178,7 @@ Status: UNDER_REVIEW
 ```
 With supersession aware output:
 ```
-$ charter review show R-ARCH-5
+$ charter baseline show R-ARCH-5
 
 IMPORTED RESOLUTION
 Label: R-ARCH-5
@@ -209,12 +210,12 @@ Key points:
 This preserves Charter’s philosophy while making review humane.
 
 ---
-### 5. charter review accept \<resolution-label>
+### 5. charter baseline accept \<resolution-label>
 
 Accepts one resolution from the active import.
 
 ```text
-$ charter review accept R-ARCH-5
+$ charter baseline accept R-ARCH-5
 
 Accepting imported resolution R-ARCH-5
 From import: I-2
@@ -234,26 +235,26 @@ R-ARCH-5 → ACTIVE
 R-ARCH-3 → SUPERCEDED
 
 Next actions:
-- charter review show
-- charter review close
+- charter baseline show
+- charter baseline close
 ```
 
 Rules
-Fails if:
-no review context
-resolution not in that import
-resolution already handled
+- Fails if:
+    - no review context
+    - resolution not in that import
+    - resolution already handled
 
 Why this is important:
-Makes supersession a conscious act
-Prevents accidental history rewrites
-Aligns with your “no silent legitimacy shifts” rule
+- Makes supersession a conscious act
+- Prevents accidental history rewrites
+- Aligns with your “no silent legitimacy shifts” rule
 
 Creates a local resolution with full provenance
 
-#### charter review accept \<import-id>
+#### charter baseline accept \<import-id>
 ```
-$ charter review accept I-4
+$ charter baseline accept I-4
 
 3 resolutions eligible for batch acceptance:
 - R-DOC-1
@@ -271,9 +272,9 @@ Accepted 3 resolutions.
 4 remaining UNDER_REVIEW.
 
 Next actions:
-- charter review show
-- charter review accept --force I-4
-- charter review close
+- charter baseline show
+- charter baseline accept --force I-4
+- charter baseline close
 ```
 ##### Meaning
 - Accept only imported resolutions that have no local equivalent
@@ -308,7 +309,7 @@ Resulting state:
 
 #### Forced Batch Accept (--force)
 ```
-$ charter review accept I-4 --force
+$ charter baseline accept I-4 --force
 
 WARNING: This will accept all imported resolutions, including those that:
 - Supersede existing local resolutions
@@ -338,28 +339,28 @@ Rules:
 - Strong confirmation required
 
 ---
-### 6. charter review reject \<resolution-label>
+### 6. charter baseline reject \<resolution-label>
 
 Explicitly rejects an imported resolution.
 
 ```text
-$ charter review reject R-SCOPE-5
+$ charter baseline reject R-SCOPE-5
 
 Rejected resolution R-SCOPE-5
 Imported from: I-1
 Status: REJECTED (local)
 
 Next actions:
-- charter review show
-- charter review accept <resolution>
+- charter baseline show
+- charter baseline accept <resolution>
 ```
 Rules
-Rejection is explicit and auditable
-Rejected resolutions remain visible in audit
+- Rejection is explicit and auditable
+- Rejected resolutions remain visible in audit
 
-####  charter review reject \<import-id>
+####  charter baseline reject \<import-id>
 ```
-$ charter review reject I-4
+$ charter baseline reject I-4
 
 This will:
 - Reject 7 imported resolutions
@@ -377,8 +378,8 @@ Import I-4 status:
 - CONSOLIDATED: 0
 
 Next actions:
-- charter review close
-- charter review show --rejected
+- charter baseline close
+- charter baseline show --rejected
 ```
 This Means:
 - For import I-4
@@ -396,7 +397,7 @@ Rules:
 - Reversible until review is closed
 
 ---
-### 7. charter review close 
+### 7. charter baseline close 
 
 Leaves review mode safely.
 
@@ -404,7 +405,7 @@ Leaves review mode safely.
 > Close is final.
 
 ```bash
-$ charter review close I-4
+$ charter baseline close I-4
 
 Closing review for import I-4.
 
@@ -416,7 +417,7 @@ Final status:
 This review can no longer be modified.
 
 Next actions:
-- charter import purge I-4
+- charter baseline purge I-4
 - charter audit area
 ```
 Rules
@@ -431,7 +432,7 @@ Rules
     - CONSOLIDATED → final
 - Review workspace is archived
 - Import can now be purged
-#### While Review Is Open
+#### While Baseline Review Is Open
 
 - REJECTED resolutions:
     - can be accepted later
@@ -450,29 +451,29 @@ Rules:
 There is no undo, only supersession — which is exactly Charter’s philosophy.
 
 ---
-### 8. charter review purge \<import-id>
+### 8. charter baseline purge \<import-id>
 
 Removes an import only if no resolutions remain under review.
 
 ```text
-$ charter review purge I-1
+$ charter baseline purge I-1
 
 Cannot purge import I-1
 Reason: 6 resolutions still under review
 
 Next actions:
-- charter review use I-1
+- charter baseline use I-1
 ```
 
 Successful case:
 ```text
-$ charter review purge I-3
+$ charter baseline purge I-3
 
 Purged import I-3
 (All resolutions previously applied)
 
 Next actions:
-- charter review list
+- charter baseline list
 ```
 
 ---
@@ -501,12 +502,12 @@ All resolutions marked: UNDER_REVIEW
 Import ID: I-4
 
 Next actions:
-- charter review use I-4
-- charter review list
+- charter baseline use I-4
+- charter baseline list
 ```
 Step 2 — Enter Review Mode
 ```
-$ charter review use I-4
+$ charter baseline use I-4
 
 Entered review context:
 Import: I-4
@@ -514,11 +515,11 @@ Source: decisions.json
 Resolutions under review: 27
 
 Next actions:
-- charter review show
+- charter baseline show
 ```
 Step 3 — Inspect
 ```
-$ charter review show
+$ charter baseline show
 
 UNDER REVIEW
 R-1   "Adopt PostgreSQL"
@@ -526,13 +527,13 @@ R-2   "Use AWS ECS"
 R-3   "Deprecate legacy API"
 
 Next actions:
-- charter review show R-1
-- charter review accept <resolution>
-- charter review reject <resolution>
+- charter baseline show R-1
+- charter baseline accept <resolution>
+- charter baseline reject <resolution>
 ```
 Step 4 — Accept & Reject
 ```
-$ charter review accept R-1
+$ charter baseline accept R-1
 
 Accepted resolution R-1
 Imported from: I-4
@@ -540,7 +541,7 @@ Status: ACTIVE
 ```
 
 ```
-$ charter review reject R-2
+$ charter baseline reject R-2
 
 Rejected resolution R-2
 Imported from: I-4
@@ -548,35 +549,35 @@ Status: REJECTED
 ```
 Step 5 — Progress Check
 ```
-$ charter review status
+$ charter baseline status
 
 Accepted: 1
 Rejected: 1
 Remaining: 25
 
 Next actions:
-- charter review show
+- charter baseline show
 ```
 Step 6 — Close Review
 ```
-$ charter review close
+$ charter baseline close
 
-Exited review context: I-4
+Exited baseline context: I-4
 
 Next actions:
-- charter review list
+- charter baseline list
 - charter status
 ```
 Step 7 — Purge (Later)
 ```
-$ charter review purge I-4
+$ charter baseline purge I-4
 
 Cannot purge import I-4
 Reason: resolutions still under review
 ```
 After completion:
 ```
-$ charter review purge I-4
+$ charter baseline purge I-4
 
 Purged import I-4
 ```
@@ -584,13 +585,15 @@ Purged import I-4
 ---
 ## Imported Resolution States
 
-| State        | Meaning                                           |
-| :----------- | :------------------------------------------------ |
-| UNDER_REVIEW | Imported, unresolved locally                      |
-| CONSOLIDATED | Explicitly accepted into local timeline           |
-| REJECTED     | Explicitly rejected locally                       |
-| HISTORICAL   | Was already superseded within the import timeline |
-| ABANDONED    | Rejected by default due to a closed review        |
+| State        | Meaning                                                                                         |
+| :----------- | :---------------------------------------------------------------------------------------------- |
+| UNDER_REVIEW | Imported, unresolved locally                                                                    |
+| CONSOLIDATED | Explicitly accepted into local timeline                                                         |
+| REJECTED     | Explicitly rejected locally                                                                     |
+| HISTORICAL   | Was already superseded within the import timeline                                               |
+| ABANDONED    | Rejected by default due to a closed review                                                      |
+| ACTIVE       | The resolution is active already in the local area                                              |
+| UNCHANGED    | (CLI only) For flat files. The wording of the resolution of the imported baseline are the same. |
 ### How HISTORICAL Works
 
 Example:
