@@ -111,27 +111,32 @@ You don’t want:
 ## 3️⃣ When You Might Not Need Versioned Hashes (Yet)
 
 If:
-You are experimenting locally
-You are pre-MVP
-You don’t export/import yet
+- You are experimenting locally
+- You are pre-MVP
+- You don’t export/import yet
+
 Then versioning can feel like overkill.
+
 But once any export leaves the machine, you’ve crossed the line where:
-hashes become a public contract
+- hashes become a public contract
+
 Your own invariants already require:
-“Deterministic object_hash derived from canonical serialized form”
+
+> “Deterministic object_hash derived from canonical serialized form”
+
 That is a promise across time.
 So yes — you will need versioned hashes.
 
 ## 4️⃣ How to Implement This Cleanly (Minimal, Not Overengineered)
 
 🎯 Design goals
-Simple
-Explicit
-Git-like
-Forward-compatible
-No magic
+- Simple
+- Explicit
+- Git-like
+- Forward-compatible
+- No magic
 
-Step 1 — Define object kinds (you already have this)
+### Step 1 — Define object kinds (you already have this)
 ```Rust
 #[derive(Debug, Clone, Copy)]
 pub enum CharterObjectKind {
@@ -142,7 +147,7 @@ pub enum CharterObjectKind {
 }
 ```
 
-Step 2 — Define a hash version enum
+### Step 2 — Define a hash version enum
 ```Rust
 #[derive(Debug, Clone, Copy)]
 pub enum HashVersion {
@@ -151,7 +156,7 @@ pub enum HashVersion {
 ```
 You only need V1 for now.
 
-Step 3 — Build the prefixed byte stream
+### Step 3 — Build the prefixed byte stream
 ```Rust
 pub fn build_hash_bytes(
     version: HashVersion,
@@ -183,14 +188,14 @@ fn kind_string(kind: CharterObjectKind) -> &'static str {
 }
 ```
 ✔ Prefix includes:
-system (charter)
-version (v1)
-object kind
-byte length
+- system (charter)
+- version (v1)
+- object kind
+- byte length
 
 This gives you strong guarantees.
 
-Step 4 — Use it in the object store
+### Step 4 — Use it in the object store
 ```Rust
 fn put(&mut self, obj: Box<dyn CharterObject>) -> ObjectHash {
     let content = obj.canonical_bytes();
@@ -212,107 +217,137 @@ Your export spec already says:
 - “Every exported object includes a deterministic object_hash”
 
 With versioned + prefixed hashes:
-Imports can verify exact engine semantics
-Divergent histories are detectable at the root
-Old exports remain verifiable forever
+- Imports can verify exact engine semantics
+- Divergent histories are detectable at the root
+- Old exports remain verifiable forever
+
 You can support future upgrades without rewriting history
+
 Import behavior becomes safe:
-Same hash → identical object
-Different hash → explicit divergence
-Hash mismatch → under review or reject
-🧠 Final Intuition
+- Same hash → identical object
+- Different hash → explicit divergence
+- Hash mismatch → under review or reject
+
+## 🧠 Final Intuition
+
 Think of the hash as:
-The engine’s signature on reality
+
+> The engine’s signature on reality
+
 Prefixing answers:
-“What kind of reality is this?”
+
+> “What kind of reality is this?”
+
 Versioning answers:
-“Under which rules was this reality signed?”
+
+> “Under which rules was this reality signed?”
+
 Without those two, you’re building on sand.
-If you want next, I can:
-Design fsck rules using this hash format
-Show how to support short-hash resolution safely
-Walk through a future HashVersion::V2 migration
-Tie this directly into your import review workflow
-You’re designing this exactly right.
 
 ---
 
-Perfect — these are the right pressure points. I’ll do exactly what you asked:
-Show you the first 3 points, and answer your 3 numbered questions inline, tying them together so this “clicks” as a system rather than isolated rules.
-1️⃣ fsck-equivalent design (Charter terms)
+## 1️⃣ fsck-equivalent design (Charter terms)
+
 Think of charter fsck as answering one question:
-“Does the stored history form a valid, internally consistent legitimacy graph under the engine’s rules?”
+
+> “Does the stored history form a valid, internally consistent legitimacy graph under the engine’s rules?”
+
 Git checks object graph integrity.
 Charter must check legitimacy graph integrity.
-Charter fsck checks (translated)
-A. Object integrity (lowest level)
+
+### Charter fsck checks (translated)
+
+#### A. Object integrity (lowest level)
+
 Equivalent to Git’s loose object verification.
 Checks:
-Object hash matches its canonical serialization
-Object kind matches expected prefix
-Object is parseable
+- Object hash matches its canonical serialization
+- Object kind matches expected prefix
+- Object is parseable
+
 Failures:
-CORRUPT_OBJECT
-HASH_MISMATCH
-UNKNOWN_OBJECT_KIND
+- `CORRUPT_OBJECT`
+- `HASH_MISMATCH`
+- `UNKNOWN_OBJECT_KIND`
+
 🔑 This is where prefixes + versioned hashes matter.
-B. Referential integrity (graph structure)
+
+#### B. Referential integrity (graph structure)
+
 Equivalent to Git’s dangling tree / missing blob checks.
+
 Checks:
-Every Resolution references an existing Session
-Every Session references an existing Area
-Authority/Scope references exist
-Supersession links point to valid resolutions
+- Every Resolution references an existing Session
+- Every Session references an existing Area
+- Authority/Scope references exist
+- Supersession links point to valid resolutions
+
 Failures:
-DANGLING_RESOLUTION
-MISSING_SESSION
-BROKEN_SUPERSESSION_CHAIN
+- `DANGLING_RESOLUTION`
+- `MISSING_SESSION`
+- `BROKEN_SUPERSESSION_CHAIN`
+
 Note:
-A dangling object is not illegal — it’s just unreferenced.
-C. Legitimacy invariants (Charter-specific)
+- A dangling object is not illegal — it’s just unreferenced.
+
+#### C. Legitimacy invariants (Charter-specific)
+
 This is where Charter diverges from Git.
+
 Checks:
-Exactly one ACTIVE Authority per Area
-Exactly one ACTIVE Scope per Area
-No resolution accepted outside a session
-No legitimacy state transitions without sessions
-No session continues under invalidated authority/scope
+- Exactly one ACTIVE Authority per Area
+- Exactly one ACTIVE Scope per Area
+- No resolution accepted outside a session
+- No legitimacy state transitions without sessions
+- No session continues under invalidated authority/scope
+
 Failures:
-MULTIPLE_ACTIVE_AUTHORITIES
-SESSION_INVALID_CONTEXT
-ILLEGAL_LIFECYCLE_TRANSITION
-D. Audit scope integrity (your invariant #23)
+- `MULTIPLE_ACTIVE_AUTHORITIES`
+- `SESSION_INVALID_CONTEXT`
+- `ILLEGAL_LIFECYCLE_TRANSITION`
+
+#### D. Audit scope integrity (your invariant #23)
+
 Checks:
-Every auditable event exists in a non-deletable audit scope
-Area deletion emits a global audit event
+- Every auditable event exists in a non-deletable audit scope
+- Area deletion emits a global audit event
+
 Failures:
-AUDIT_SCOPE_VIOLATION
+- AUDIT_SCOPE_VIOLATION
+
 What fsck does not do
-No semantic interpretation
-No auto-repair
-No merging
-No guessing intent
+- No semantic interpretation
+- No auto-repair
+- No merging
+- No guessing intent
+
 It reports, it does not decide.
-2️⃣ Short-hash resolution (Git-style, safely)
+
+## 2️⃣ Short-hash resolution (Git-style, safely)
+
 This addresses power-user ergonomics without breaking integrity.
-How Git does it (conceptually)
+### How Git does it (conceptually)
+
 When you type:
 Copy code
-
+```sh
 git show abc12
+```
 Git:
-Scans all object hashes
-Finds hashes starting with abc12
-Fails if ambiguous
-Succeeds if exactly one match
-Charter equivalent
-You do not decode type from the hash string itself.
-Instead:
-Hash is an opaque identifier
-Type knowledge comes from the object store index
-Resolution algorithm
-Copy code
+- Scans all object hashes
+- Finds hashes starting with abc12
+- Fails if ambiguous
+- Succeeds if exactly one match
+### Charter equivalent
 
+You do not decode type from the hash string itself.
+
+Instead:
+- Hash is an opaque identifier
+- Type knowledge comes from the object store index
+
+#### Resolution algorithm
+```python
 resolve_object(input: String) ->
     if full_hash exists:
         return object
@@ -321,119 +356,140 @@ resolve_object(input: String) ->
         if matches == 0: error NOT_FOUND
         if matches > 1: error AMBIGUOUS
         return the single match
-🔑 Answer to your Question #1
-How does the system know what type it is from the hash?
+```
+
+### How does the system know what type it is from the hash?
+
 It doesn’t — and shouldn’t.
+
 The hash prefix is used for:
-integrity validation
-fsck
-corruption detection
+- integrity validation
+- fsck
+- corruption detection
+
 But runtime resolution uses:
-the object index (hash → object)
-stored object metadata (kind)
+- the object index (hash → object)
+- stored object metadata (kind)
+
 This separation is intentional:
-Hash = identity
-Store/index = meaning
-3️⃣ Hash versioning & migration (the subtle part)
-This is where your intuition is exactly right.
-First: what versioned hashes are not
+- Hash = identity
+- Store/index = meaning
+
+## 3️⃣ Hash versioning & migration (the subtle part)
+
+### First: what versioned hashes are not
+
 They are not:
-About runtime conflicts
-About “choosing the right version”
-About mixing versions freely
+- About runtime conflicts
+- About “choosing the right version”
+- About mixing versions freely
+
 They are about historical stability.
-🔑 Answer to your Question #2
-“When two different hash versions conflict, does it only matter if data is migrated?”
+### “When two different hash versions conflict, does it only matter if data is migrated?”
+
 Yes — exactly.
+
 Important consequences:
-Old data keeps old hashes forever
-New data uses new hashes
-They can coexist safely
-No conflict unless you try to compare or consolidate
+- Old data keeps old hashes forever
+- New data uses new hashes
+- They can coexist safely
+- No conflict unless you try to compare or consolidate
+
 Hash version differences are not errors — they’re facts.
-Where hash versions do matter
+#### Where hash versions do matter
+
 A. Import / review
-You already identified this.
 B. Deduplication
-Two logically identical objects with different hash versions must not be auto-merged.
+    Two logically identical objects with different hash versions must not be auto-merged.
 C. fsck
-fsck must validate using the hash rules declared by the object, not the engine version.
-🔑 Answer to your Question #3 (this is important)
-“During review it makes sense to pick a baseline and rehash — preferably the import.”
+    fsck must validate using the hash rules declared by the object, not the engine version.
+### “During review it makes sense to pick a baseline and rehash — preferably the import.”
+
 Yes — but only in one direction.
+
 Correct rule
-Never rehash historical local objects.
-Rehash imported objects into the local hash version.
+- Never rehash historical local objects.
+- Rehash imported objects into the local hash version.
+
 This preserves:
-local history immutability
-deterministic review
-future reproducibility
-How this works mechanically
-Import pipeline (CONSOLIDATE mode)
-Load import bundle
-Verify hashes using import’s declared hash version
-Store imported objects in a quarantine namespace
-During review:
-Canonicalize imported object
-Rehash using local hash version
-Compare against local objects
+- local history immutability
+- deterministic review
+- future reproducibility
+#### How this works mechanically
+
+##### Import pipeline (CONSOLIDATE mode)
+- Load import bundle
+- Verify hashes using import’s declared hash version
+- Store imported objects in a quarantine namespace
+
+During baseline  review:
+- Canonicalize imported object
+- Rehash using local hash version
+- Compare against local objects
+
 Decide:
-CONSOLIDATE (new resolution)
-REJECT
-MARK HISTORICAL
+- CONSOLIDATE (new resolution)
+- REJECT
+- MARK HISTORICAL
+- ACTIVE (active in local area)
+
 Original hashes are preserved for audit.
-Why this mirrors Git rebase
+#### Why this mirrors Git rebase
+
 Git does the same thing:
-Commits keep their original hashes
-Rebased commits get new hashes
-Old hashes remain valid in history
-New hashes represent local legitimacy
+- Commits keep their original hashes
+- Rebased commits get new hashes
+- Old hashes remain valid in history
+- New hashes represent local legitimacy
+
 Charter review = legitimacy rebase.
-Mental model summary (lock this in)
+#### Mental model summary
+
 Hash ≠ meaning
 Prefix = integrity
 Index = type
 Version = historical contract
 Rehashing = explicit, directional, auditable
+
 If you remember only one sentence:
-Hashes identify objects, engines interpret them, reviews legitimize them.
-Where we can go next (your choice)
-We’re at a very solid conceptual foundation. Next natural steps:
-Show how fsck walks the supersession graph
-Design the object index structure
-Write pseudocode for import → review → consolidate
-Tie this back to your Rust trait design cleanly
-You’re doing excellent systems thinking here — this is not accidental design anymore, it’s deliberate architecture.
+
+> Hashes identify objects, engines interpret them, baseline reviews legitimize them.
 
 ---
+## How does the system know it’s a different versioned hash?
 
-Great question — this is the exact crux of versioned hashing.
-Short answer: the hash tells you. Longer answer below, step by step, and tied directly to Charter (not abstract crypto theory).
-The core rule
+### The core rule
+
 A hash is never “just a hash”. It is always a tuple:
-(hash_version, algorithm, canonicalization rules, digest)
+
+`(hash_version, algorithm, canonicalization rules, digest)`
+
 The system knows the version because the version is explicitly encoded, not inferred.
+
 There are three sane ways to do this. Only one scales cleanly for Charter.
-Option A (RECOMMENDED): Self-describing hash prefix
+
+### Option A (RECOMMENDED): Self-describing hash prefix
+
 This is how Git, OCI, Nix, and modern content-addressed systems work.
 Example
-Copy code
-
+```hash
 charter-v1:sha256:3f8a9c...
 charter-v2:sha256:91ab42...
+```
 Or more compact:
 Copy code
-
+```hash
 v1-3f8a9c...
 v2-91ab42...
-What this gives you
-The engine can parse the version before touching storage
-fsck knows how to validate the object
-Imports can mix versions safely
-Reviews can rehash deterministically
-Rust type (idiomatic, explicit)
-Copy code
-Rust
+```
+#### What this gives you
+- The engine can parse the version before touching storage
+- fsck knows how to validate the object
+- Imports can mix versions safely
+- Reviews can rehash deterministically
+
+#### Rust type (idiomatic, explicit)
+```Rust
 #[derive(Clone, PartialEq, Eq, Hash, Debug)]
 pub struct ObjectHash {
     pub version: HashVersion,
@@ -445,42 +501,52 @@ pub enum HashVersion {
     V1,
     V2,
 }
-Serialized form (canonical)
-Copy code
+```
 
+#### Serialized form (canonical)
+```
 v1:3f8a9c...
+```
 or
-Copy code
-
+```
 charter/v1/3f8a9c...
-Option B: Version stored alongside object (NOT sufficient alone)
+```
+
+### Option B: Version stored alongside object (NOT sufficient alone)
 Example:
-Copy code
-Json
+```Json
 {
   "hash": "3f8a9c...",
   "hash_version": 1
 }
-Why this is dangerous
-Hash validation depends on already trusting the object
-fsck can’t verify without loading content
-Corruption can lie about its own version
+```
+
+#### Why this is dangerous
+- Hash validation depends on already trusting the object
+- fsck can’t verify without loading content
+- Corruption can lie about its own version
+
 ❌ This violates your Verifiable Export Integrity invariant.
-Option C: Infer from length or algorithm (DON’T)
+
+### Option C: Infer from length or algorithm (DON’T)
 Example:
-64 hex chars → sha256
-128 hex chars → sha512
-Why this fails long-term
-Canonicalization changes without algorithm change
-You will want v2 without changing SHA
-Ambiguous and brittle
+- 64 hex chars → sha256
+- 128 hex chars → sha512
+
+#### Why this fails long-term
+- Canonicalization changes without algorithm change
+- You will want v2 without changing SHA
+- Ambiguous and brittle
+
 ❌ This breaks deterministic audit guarantees.
-Final answer to your question
-How does the system know it’s a different versioned hash?
+
+> How does the system know it’s a different versioned hash?
+
 Precisely:
-The hash string is self-describing
-The prefix declares the hash version
-The engine parses the prefix
+- The hash string is self-describing
+- The prefix declares the hash version
+- The engine parses the prefix
+
 The engine selects the correct:
 canonical serializer
 hashing rules
