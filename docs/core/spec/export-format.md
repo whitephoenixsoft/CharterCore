@@ -62,12 +62,14 @@ Clients (CLI, UI, integrations) MUST NOT redefine or extend its structure.
 ```
 
 Notes
-object_hash at the top level covers all nested content
-Hash algorithm is engine-defined but MUST be deterministic and documented
-Importers may verify hashes but must not reinterpret content
-Area Object
-Each Area is exported independently but may reference other Areas by ID.
-```
+- object_hash at the top level covers all nested content
+- Hash algorithm is engine-defined but MUST be deterministic and documented
+- Importers may verify hashes but must not reinterpret content
+
+## Area Object
+
+- Each Area is exported independently but may reference other Areas by ID.
+```json
 {
   "area_id": "A-ENG-001",
   "object_hash": "hash-of-area-object",
@@ -86,12 +88,14 @@ Each Area is exported independently but may reference other Areas by ID.
 }
 ```
 Notes
-Area identity is stable and immutable
-Area names, labels, or descriptions must be represented as resolutions
-Area deletion or replacement is handled outside the export (import semantics)
-Resolution Object
+- Area identity is stable and immutable
+- Area names, labels, or descriptions must be represented as resolutions
+- Area deletion or replacement is handled outside the export (import semantics)
+
+## Resolution Object
+
 Resolutions are immutable legitimacy artifacts.
-```
+```json
 {
   "resolution_id": "R-ARCH-004",
   "object_hash": "hash-of-resolution",
@@ -113,13 +117,16 @@ Resolutions are immutable legitimacy artifacts.
 }
 ```
 Resolution Types
-GENERAL
-AUTHORITY
-SCOPE
+- GENERAL
+- AUTHORITY
+- SCOPE
+
 Types are informational. 
+
 While types are informational for semantic interpretation, the engine enforces uniqueness and activation rules for AUTHORITY and SCOPE resolutions.
+
 Legitimacy rules are enforced by engine invariants, not by type.
-Resolution Lifecycle States
+### Resolution Lifecycle States
 ```
 ACTIVE
 UNDER_REVIEW
@@ -127,13 +134,15 @@ SUPERSEDED
 RETIRED
 ```
 Rules:
-Lifecycle transitions are explicit and auditable
-No resolution is ever removed
-UNDER_REVIEW resolutions may not govern Authority or Scope
-Supersession is directional and permanent
-Session Object
+- Lifecycle transitions are explicit and auditable
+- No resolution is ever removed
+- UNDER_REVIEW resolutions may not govern Authority or Scope
+- Supersession is directional and permanent
+
+## Session Object
+
 Sessions capture how legitimacy was created.
-```
+```json
 {
   "session_id": "S-ARCH-002",
   "object_hash": "hash-of-session",
@@ -166,16 +175,19 @@ Sessions capture how legitimacy was created.
 }
 ```
 Notes
-Sessions are included solely to document how legitimacy was created. They are never replayed or re-evaluated during import.
-Authority and constraints are fixed at session start
-References are informational and immutable
-Candidate set freezes on first stance
-Outcome may include zero or more accepted candidates as permitted by the Authority rule governing the session.
-Export Rule 
+- Sessions are included solely to document how legitimacy was created. They are never replayed or re-evaluated during import.
+- Authority and constraints are fixed at session start
+- References are informational and immutable
+- Candidate set freezes on first stance
+- Outcome may include zero or more accepted candidates as permitted by the Authority rule governing the session.
+### Export Rule 
+
 Only sessions with "state": "CLOSED" may appear in an export. ACTIVE, PAUSED, or BLOCKED sessions MUST NOT be exported as legitimacy-bearing artifacts.
-Candidate Object
+
+## Candidate Object
+
 Candidates are neutral options scoped to a session.
-```
+```json
 {
   "candidate_id": "C-DB-POSTGRES",
   "object_hash": "hash-of-candidate",
@@ -187,12 +199,14 @@ Candidates are neutral options scoped to a session.
 }
 ```
 Notes
-rationale is optional
-Candidates have no meaning outside their session
-Candidate content is never interpreted by the engine
-Stance Object (Vote / Acknowledgement)
+- rationale is optional
+- Candidates have no meaning outside their session
+- Candidate content is never interpreted by the engine
+
+## Stance Object (Vote / Acknowledgement)
+
 Stances are purely mechanical records of action.
-```
+```json
 {
   "actor_id": "alice",
   "candidate_id": "C-DB-POSTGRES",
@@ -202,46 +216,58 @@ Stances are purely mechanical records of action.
 }
 ```
 Stance Types
-ACCEPT
-REJECT
-ABSTAIN
+- ACCEPT
+- REJECT
+- ABSTAIN
+
 Presence is derived from recorded stances, not from participant lists.
-Import Semantics (Informative)
+
+## Import Semantics (Informative)
+
 The export file does not encode intent.
 Intent is provided at import time.
+
 Typical modes:
-RESTORE — recreate full history verbatim
-CONSOLIDATE — import objects as UNDER_REVIEW
+- RESTORE — recreate full history verbatim
+- CONSOLIDATE — import objects as UNDER_REVIEW
+
 The same export file may be used for both.
 
-Integrity & Hashing Rules
-Every object includes object_hash
-Hashes are computed from a canonical, ordered serialization
-Parent hashes do not replace child hashes
-Importers MAY verify hashes
-Importers MUST NOT auto-correct hash mismatches
-object_hash is an integrity and identity mechanism only. It does not confer legitimacy, authority, or precedence.
+## Integrity & Hashing Rules
 
-Guarantees
+- Every object includes object_hash
+- Hashes are computed from a canonical, ordered serialization
+- Parent hashes do not replace child hashes
+- Importers MAY verify hashes
+- Importers MUST NOT auto-correct hash mismatches
+- object_hash is an integrity and identity mechanism only. It does not confer legitimacy, authority, or precedence.
+
+## Guarantees
+
 This format guarantees:
-Full reconstruction of governance history
-Deterministic rehydration
-No loss of legitimacy context
-Git-friendly diffs
-Long-term forward compatibility
-Non-Goals
+- Full reconstruction of governance history
+- Deterministic rehydration
+- No loss of legitimacy context
+- Git-friendly diffs
+- Long-term forward compatibility
+
+## Non-Goals
+
 The export format does NOT:
-Merge conflicting histories
-Infer semantic equivalence
-Enforce permissions
-Resolve authority disputes
-Invent governance
-Those actions require explicit sessions after import.
-Why This Matters
+- Merge conflicting histories
+- Infer semantic equivalence
+- Enforce permissions
+- Resolve authority disputes
+- Invent governance
+- Those actions require explicit sessions after import.
+
+## Why This Matters
+
 This export format is what makes Charter Core:
-A governance ledger
-A source-controlled decision system
-A portable legitimacy engine
-A foundation for CLI, UI, AI, and integrations
+- A governance ledger
+- A source-controlled decision system
+- A portable legitimacy engine
+- A foundation for CLI, UI, AI, and integrations
+
 Without this format, Charter Core is a database.
 With it, Charter Core becomes institutional memory with rules.
