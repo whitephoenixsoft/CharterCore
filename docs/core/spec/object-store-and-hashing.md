@@ -7,20 +7,24 @@ Change Policy: Any change requires a new hash version and explicit migration
 ---
 ## 1. Object Identity Model
 
-Rule OS-01 — Object Identity Is Hash-Based
-Every persisted object in Charter Core is identified solely by a deterministic cryptographic hash.
-Object identity MUST NOT depend on:
-Filesystem path
-Filename
-Storage root
-Import source
-Runtime context
-The same canonical object content MUST always produce the same object hash.
-Fail if:
-Object identity changes without explicit migration
-Identity depends on storage location or runtime state
+### Rule OS-01 — Object Identity Is Hash-Based
 
-Rule OS-02 — Hash Is Not Part of the Domain Model
+Every persisted object in Charter Core is identified solely by a deterministic cryptographic hash.
+
+Object identity MUST NOT depend on:
+- Filesystem path
+- Filename
+- Storage root
+- Import source
+- Runtime context
+
+The same canonical object content MUST always produce the same object hash.
+
+Fail if:
+- Object identity changes without explicit migration
+- Identity depends on storage location or runtime state
+
+### Rule OS-02 — Hash Is Not Part of the Domain Model
 Domain models (Area, Session, Resolution, Candidate, Stance, Audit, etc.):
 MUST NOT contain their own hash
 MUST NOT compute hashes internally
