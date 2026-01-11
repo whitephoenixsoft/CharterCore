@@ -25,46 +25,56 @@ Fail if:
 - Identity depends on storage location or runtime state
 
 ### Rule OS-02 — Hash Is Not Part of the Domain Model
+
 Domain models (Area, Session, Resolution, Candidate, Stance, Audit, etc.):
-MUST NOT contain their own hash
-MUST NOT compute hashes internally
-MUST NOT self-reference by hash
+- MUST NOT contain their own hash
+- MUST NOT compute hashes internally
+- MUST NOT self-reference by hash
+
 The object hash is strictly:
-A storage concern
-A verification concern
-An import/export concern
+- A storage concern
+- A verification concern
+- An import/export concern
+
 Rationale:
-Prevents circular dependencies
-Prevents mutation ambiguity
-Prevents hash-version lock-in
+- Prevents circular dependencies
+- Prevents mutation ambiguity
+- Prevents hash-version lock-in
 
 ---
 ## 2. Hash Versioning
 
-Rule OS-03 — Hash Version Is Explicit
-Every object hash MUST be computed under an explicit Charter hash version.
-Initial version: v1
-Future changes require:
-A new version identifier (v2, v3, …)
-Explicit rehash logic
-Parallel coexistence of versions
-Fail if:
-Hash version is inferred implicitly
-Hash version changes without migration
+### Rule OS-03 — Hash Version Is Explicit
 
-Rule OS-04 — Multiple Hash Versions May Coexist
+Every object hash MUST be computed under an explicit Charter hash version.
+
+Initial version: v1
+
+Future changes require:
+- A new version identifier (v2, v3, …)
+- Explicit rehash logic
+- Parallel coexistence of versions
+
+Fail if:
+- Hash version is inferred implicitly
+- Hash version changes without migration
+
+### Rule OS-04 — Multiple Hash Versions May Coexist
+
 The engine MUST:
-Accept objects with different hash versions
-Preserve original hashes during import
-Treat hash version as part of object identity
+- Accept objects with different hash versions
+- Preserve original hashes during import
+- Treat hash version as part of object identity
+
 The engine MUST NOT:
-Assume a single global hash version
-Auto-upgrade hashes implicitly
+- Assume a single global hash version
+- Auto-upgrade hashes implicitly
 
 ---
 ## 3. Canonical Hash Input (Digest) — v1
 
-Rule OS-05 — Hash Input Is Canonical and Deterministic
+### Rule OS-05 — Hash Input Is Canonical and Deterministic
+
 For hash version v1, the digest input MUST be the following byte sequence:
 ```
 charter:<hash_version>\n
@@ -78,7 +88,8 @@ Where:
 - `byte_length` = length (in bytes) of `<canonical_json_bytes>`
 - `<canonical_json_bytes>` is UTF-8 encoded
 
-Rule OS-06 — Canonical JSON Rules (v1)
+### Rule OS-06 — Canonical JSON Rules (v1)
+
 Canonical JSON serialization MUST obey:
 UTF-8 encoding
 Lexicographically sorted object keys

@@ -3,7 +3,7 @@
 
 ## This Is Still Not a Tool
 
-If the previous document made you nod, this one gives names to what you were already feeling.
+If the previous documents made you nod, this one gives names to what you were already feeling.
 
 No commands.
 No software.
