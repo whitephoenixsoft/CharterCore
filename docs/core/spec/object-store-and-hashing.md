@@ -91,25 +91,29 @@ Where:
 ### Rule OS-06 — Canonical JSON Rules (v1)
 
 Canonical JSON serialization MUST obey:
-UTF-8 encoding
-Lexicographically sorted object keys
-No insignificant whitespace
-No pretty-print formatting
-Arrays preserve order
-Numbers serialized unambiguously
-These rules MUST be implemented once and reused everywhere.
-Fail if:
-Different serializations produce different hashes
-Canonicalization logic diverges across components
+- UTF-8 encoding
+- Lexicographically sorted object keys
+- No insignificant whitespace
+- No pretty-print formatting
+- Arrays preserve order
+- Numbers serialized unambiguously
 
-Rule OS-07 — Hash Algorithm (v1)
+These rules MUST be implemented once and reused everywhere.
+
+Fail if:
+- Different serializations produce different hashes
+- Canonicalization logic diverges across components
+
+### Rule OS-07 — Hash Algorithm (v1)
+
 Algorithm: sha256
 Output: lowercase hexadecimal string
 
 ---
 ## 4. Stored Object Envelope
 
-Rule OS-08 — Objects Are Stored with an Explicit Envelope
+### Rule OS-08 — Objects Are Stored with an Explicit Envelope
+
 Objects MUST be persisted as self-describing envelopes:
 ```Json
 {
@@ -121,103 +125,125 @@ Objects MUST be persisted as self-describing envelopes:
 }
 ```
 
-Rule OS-09 — Envelope Is Not Hashed
+### Rule OS-09 — Envelope Is Not Hashed
+
 The envelope itself:
-MUST NOT be part of the hash input
-Exists solely for storage, validation, and tooling
+- MUST NOT be part of the hash input
+- Exists solely for storage, validation, and tooling
+
 The engine MUST verify:
-object_hash matches recomputed digest
-Envelope metadata matches digest headers
+- object_hash matches recomputed digest
+- Envelope metadata matches digest headers
+
 Mismatch is a fsck error.
 
 ---
 ## 5. Object Store Semantics
 
-Rule OS-10 — Object Store Is Append-Only
-The object store MUST be append-only.
-Objects are never mutated
-Objects are never deleted implicitly
-Duplicate inserts with identical hashes are no-ops
-Fail if:
-Any engine operation deletes stored objects
-History is rewritten implicitly
+### Rule OS-10 — Object Store Is Append-Only
 
-Rule OS-11 — Supersession Is Logical, Not Physical
+The object store MUST be append-only.
+- Objects are never mutated
+- Objects are never deleted implicitly
+- Duplicate inserts with identical hashes are no-ops
+
+Fail if:
+- Any engine operation deletes stored objects
+- History is rewritten implicitly
+
+### Rule OS-11 — Supersession Is Logical, Not Physical
+
 Supersession:
-Creates new objects
-Updates refs
-NEVER removes or overwrites old objects
+- Creates new objects
+- Updates refs
+- NEVER removes or overwrites old objects
+
 Historical objects MUST remain accessible indefinitely.
 
 ---
 ## 6. Import & Export Interaction
 
-Rule OS-12 — Export Preserves Object Identity
-Exports:
-MUST include object_hash
-MUST preserve envelope metadata
-MUST NOT recompute or reinterpret hashes
-Fail if:
-Export alters object identity
+### Rule OS-12 — Export Preserves Object Identity
 
-Rule OS-13 — Import Does Not Rewrite Hashes
-During import:
-Objects retain their original hash
-Rehashing is permitted only when:
-Importing across hash versions
-Explicitly requested or required
-Recorded in audit metadata
-If rehashed:
-Original hash MUST be preserved as historical reference
-New hash becomes authoritative locally
+Exports:
+- MUST include object_hash
+- MUST preserve envelope metadata
+- MUST NOT recompute or reinterpret hashes
+
 Fail if:
-Import implicitly rehashes objects
+- Export alters object identity
+
+### Rule OS-13 — Import Does Not Rewrite Hashes
+
+During import:
+- Objects retain their original hash
+- Rehashing is permitted only when:
+- Importing across hash versions
+- Explicitly requested or required
+- Recorded in audit metadata
+
+If rehashed:
+- Original hash MUST be preserved as historical reference
+- New hash becomes authoritative locally
+
+Fail if:
+- Import implicitly rehashes objects
 
 ---
 ## 7. Hash Migration & Auditing
 
-Rule OS-14 — Hash Migration Is Explicit and Auditable
+### Rule OS-14 — Hash Migration Is Explicit and Auditable
+
 Hash upgrades:
-MUST be explicitly initiated
-MUST NOT occur at startup
-MUST NOT mutate existing objects
+- MUST be explicitly initiated
+- MUST NOT occur at startup
+- MUST NOT mutate existing objects
+
 A migration:
-Writes new objects
-Rebinds refs explicitly
-Emits global and area-level audit records
+- Writes new objects
+- Rebinds refs explicitly
+- Emits global and area-level audit records
+
 Fail if:
-Objects are rewritten in place
-Hashes change without audit events
+- Objects are rewritten in place
+- Hashes change without audit events
 
 ---
 ## 8. Refs and Object Liveness
 
-Rule OS-15 — Refs Define Liveness
+### Rule OS-15 — Refs Define Liveness
+
 An object is considered live only if reachable from a ref.
+
 Unreferenced objects:
-May exist indefinitely
-MUST NOT affect legitimacy
-MAY be reported by fsck
+- May exist indefinitely
+- MUST NOT affect legitimacy
+- MAY be reported by fsck
+
 Fail if:
-Mere object existence affects engine behavior
+- Mere object existence affects engine behavior
 
 ---
 ## 9. Validation & fsck
 
-Rule OS-16 — Validation Is Mechanical
-Validation consists of:
-Recomputing object digests
-Verifying envelope metadata
-Verifying referential integrity
-Validation MUST NOT:
-Infer semantics
-Modify objects
-Rewrite storage
+### Rule OS-16 — Validation Is Mechanical
 
-Rule OS-17 — fsck Is Read-Only
+Validation consists of:
+- Recomputing object digests
+- Verifying envelope metadata
+- Verifying referential integrity
+
+Validation MUST NOT:
+- Infer semantics
+- Modify objects
+- Rewrite storage
+
+### Rule OS-17 — fsck Is Read-Only
+
 fsck:
-MUST be read-only
-MUST NOT repair, rewrite, or delete data
-MAY emit diagnostics or audit warnings
+- MUST be read-only
+- MUST NOT repair, rewrite, or delete data
+- MAY emit diagnostics or audit warnings
+
 Fail if:
-fsck mutates engine state
+- fsck mutates engine state
