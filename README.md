@@ -1,16 +1,30 @@
 # Charter Core
 
-Charter Core is a deterministic governance engine for recording, evolving, and auditing agreed decisions within explicit authority and scope.
+Charter Core is a deterministic governance engine for recording, evolving, and auditing decisions made under explicit authority and scope.
 
-Charter Core is designed to preserve institutional integrity by making decisions explicit, immutable, and reviewable over time.
+It is designed to preserve institutional integrity by making decisions:
+- explicit
+- immutable
+- reviewable over time
 
-It does not provide chat, AI facilitation, or user experience features.
-Those are intentionally handled by separate layers.
+Charter Core does not provide chat, AI facilitation, or user experience features.
+Those concerns are intentionally handled by higher layers.
 
-Charter Core is designed to be fully deterministic and testable: the same inputs always produce the same outcomes.
+The engine is fully deterministic and testable:
+the same inputs always produce the same outcomes.
+
+---
+
 ## Status
 
-**EARLY DEVELOPMENT**
+EARLY DEVELOPMENT
+
+The engine is under active construction.
+APIs, storage layout, and integrations are still evolving.
+
+The conceptual model, however, is stable and documented.
+
+---
 
 ## Intended Usage
 
@@ -20,28 +34,34 @@ It is intended to be embedded into:
 - CLIs
 - developer tools
 - internal systems
-- games or simulations
 - governance-aware applications
+- simulations or games
 
-All user experience, collaboration, and workflow concerns are intentionally handled outside the engine.
+All UX, collaboration, and workflow concerns live outside the engine by design.
+
+---
+
 ## What Charter Core Does
 
 - Defines governance Areas
 - Records Authority and Scope as first-class decisions
-- Facilitates structured decision sessions
+- Facilitates explicit decision sessions
 - Captures candidates and accepted resolutions
 - Preserves immutable decision history
-- Supports review, supersession, and retirement of decisions
+- Supports supersession and retirement without rewriting history
+
+---
 
 ## What Charter Core Does NOT Do
 
 - Monitor conversations
-- Infer decisions
+- Infer intent or consensus
 - Provide user interfaces
 - Require AI
 - Enforce workflows beyond decision legitimacy
 
-Charter Core is intentionally boring, explicit, and trustworthy — by design, not convention.
+Charter Core is intentionally boring, explicit, and trustworthy —
+by design, not convention.
 
 ---
 
@@ -51,16 +71,14 @@ Charter Core is intentionally boring, explicit, and trustworthy — by design, n
 
 Most systems encode decisions as flags, fields, or enums:
 
-
-```Code
-feature_enabled = true
-is_admin = true
-policy_version = 3
+```c#
+feature_enabled = true  
+is_admin = true  
+policy_version = 3  
 ```
-
 These explain what is currently true.
 
-They do *not* explain:
+They do not explain:
 - who decided this
 - under what authority
 - within what scope
@@ -68,56 +86,58 @@ They do *not* explain:
 - why it is legitimate
 - what it replaced
 
-As systems grow, this creates familiar problems:
+As systems grow, this creates familiar questions:
+
 - “Who changed this?”
 - “Was this approved?”
 - “Is this still valid?”
 - “Why does prod differ from staging?”
 - “Can we undo this safely?”
 
-These questions are not bugs — they are missing decision memory.
+These are not bugs.
+They are missing decision memory.
 
 ---
 
-###  Charter Is a Decision Ledger, Not a State Store
+## Charter Is a Decision Ledger, Not a State Store
 
 Charter does not replace your state.
 
 It replaces implicit legitimacy.
 
 Instead of this:
-```Code
-is_leader = true
-```
-Charter records:
-```Text
-Resolution R-17:
-“User X is the leader”
-Accepted under Authority R-AUTH-3
-Within Scope R-SCOPE-4
-In Area ‘Team Governance’
-```
 
+`is_leader = true`
+
+Charter records:
+
+```
+Resolution R-17:  
+“User X is the leader”  
+Accepted under Authority R-AUTH-3  
+Within Scope R-SCOPE-4  
+In Area “Team Governance”
+```
 Your system may still derive flags from this —
 but the source of truth is the decision, not the boolean.
 
 ---
 
-### Why This Matters
+## Why This Matters
 
-Flags can be changed silently.
+Flags can be changed silently.  
 Resolutions cannot.
 
-Flags lose context.
+Flags lose context.  
 Resolutions preserve it.
 
-Flags explain what.
+Flags explain what.  
 Resolutions explain why.
 
 Once a decision is accepted:
 - it is immutable
 - it is auditable
-- it can be superseded but never rewritten
+- it may be superseded, but never rewritten
 
 This makes systems:
 - safer to evolve
@@ -127,7 +147,7 @@ This makes systems:
 
 ---
 
-### Where Charter Fits
+## Where Charter Fits
 
 Charter is useful wherever:
 - humans make decisions
@@ -135,25 +155,46 @@ Charter is useful wherever:
 - authority matters
 - history should not be rewritten
 
-Examples:
+Examples include:
 - feature gates
 - policy enforcement
 - configuration governance
-- multiplayer rules
 - workflow approvals
 - infrastructure changes
+- multiplayer or simulation rules
 
-If you’ve ever added:
+If you’ve ever written:
 
-```Code
-# TODO: document this decision
-```
+`//TODO: document this decision`
 
 Charter is what that TODO was pointing at.
 
 ---
 
-### What Charter Is Not
+## Conceptual Guide (Recommended Reading)
+
+Charter Core can be used without reading anything else.
+
+However, if you want to understand why it is shaped this way —  
+or apply the same thinking without software — see the guides in:
+
+/doc/guide
+
+The suggested starting point are the Orientation Guides in:
+
+  - /doc/guide/00-orientation
+  - /doc/guide/01-thinking-models 
+  - /doc/guide/02-practitioners
+  - /doc/guide/03-charter 
+
+And read them in order.
+
+These documents introduce the mental models Charter enforces —
+without requiring the engine to exist.
+
+---
+
+## What Charter Is Not
 
 - not a workflow engine
 - not a rules engine
@@ -163,27 +204,28 @@ Charter is what that TODO was pointing at.
 
 Charter is intentionally narrow:
 
-> It records explicit decisions and preserves their legitimacy over time.
+It records explicit decisions and preserves their legitimacy over time.
 
 Everything else stays decoupled.
 
 ---
 
-### The Design Pattern
+## The Design Pattern
 
-Use flags for **execution**.
-Use Charter for **legitimacy**.
+Use flags for execution.  
+Use Charter for legitimacy.
 
-If you only remember one thing:
+If you remember only one thing:
 
-> State answers “what is true.”
+> State answers “what is true.”  
 > Charter answers “why it is allowed.”
 
 ---
 
-## Further Questions 
+## Further Reading
 
-If there are any questions, please read:
+See:
+/doc/FAQ
 
-- `doc/FAQ`
-
+or the conceptual guide under:
+/doc/guide
