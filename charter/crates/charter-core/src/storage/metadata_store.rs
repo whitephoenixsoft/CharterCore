@@ -1,5 +1,9 @@
-use crate::types::{Label, DisplayName, Annotation};
-use crate::model::ids::AreaId;
+use crate::model::ids::{
+    AreaId,
+    Label,
+    DisplayName,
+    Annotation,
+};
 
 pub struct AreaMetadata {
     label: Label,
