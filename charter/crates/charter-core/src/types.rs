@@ -1,14 +1,15 @@
-#[derive(Clone, PartialEq, Eq, Hash, Debug)]
-pub struct ObjectHash(pub String);
 
-pub type Label = String;
-pub type DisplayName = String;
-pub type Annotation = String;
+#[derive(Debug, Clone, Copy)]
+pub enum CharterObjectType {
+    Area,
+    Session,
+    Resolution,
+}
 
-pub fn hash_bytes(bytes: &[u8]) -> String {
-    use sha2::{Sha256, Digest};
-
-    let mut hasher = Sha256::new();
-    hasher.update(bytes);
-    format!("{:x}", hasher.finalize())
+fn charter_object_type_string(object_type: CharterObjectType) -> &'static str {
+    match object_type{
+        CharterObjectType::Area => "area",
+        CharterObjectType::Session => "session",
+        CharterObjectType::Resolution => "resolution",
+    }
 }
