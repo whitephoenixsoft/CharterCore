@@ -42,7 +42,7 @@ They define the mental model Charter enforces.
 ### Core Engine Contract
 These documents define what must never break:
 
-- `doc/core/INVARIANTS.md`
+- `doc/core/invariants/*`
 - `doc/core/SIMULATIONS.md`
 - `doc/core/MENTAL_MODEL.md`
 
