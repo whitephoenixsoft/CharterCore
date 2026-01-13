@@ -1,15 +1,15 @@
+use serde::Serialize;
+use strum_macros::Display;
 
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Serialize)]
+pub trait CharterObject {
+    fn object_type(&self) -> CharterObjectType;
+}
+
+#[derive(Debug, Clone, Copy, Display)]
+#[strum(serialize_all = "lowercase")]
 pub enum CharterObjectType {
     Area,
     Session,
     Resolution,
-}
-
-fn charter_object_type_string(object_type: CharterObjectType) -> &'static str {
-    match object_type{
-        CharterObjectType::Area => "area",
-        CharterObjectType::Session => "session",
-        CharterObjectType::Resolution => "resolution",
-    }
 }

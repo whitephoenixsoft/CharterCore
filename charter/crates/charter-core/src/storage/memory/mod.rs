@@ -1,11 +1,11 @@
-use std::collections::HashMap;
+/*use std::collections::HashMap;
 use crate::types::ObjectHash;
 use crate::types::hash_object;
 use crate::storage::core::CharterObject;
 use crate::storage::object_store::ObjectStore;
 
 pub struct MemoryObjectStore {
-    objects: HashMap<ObjectHash, Box<dyn CharterObject>>;
+    objects: HashMap<ObjectHash, Box<dyn CharterObject>>,
 }
 
 impl MemoryObjectStore {
@@ -34,4 +34,4 @@ impl ObjectStore for MemoryObjectStore {
         self.objects.get(hash)
     }
 }
-
+*/

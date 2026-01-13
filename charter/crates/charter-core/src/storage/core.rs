@@ -5,6 +5,8 @@ use serde::Serialize;
 #[derive(Clone, PartialEq, Eq, Hash, Debug)]
 pub struct ObjectHash(pub String);
 
+pub type ObjectData = String;
+
 #[derive(Debug, Serialize)]
 pub struct AreaRoot {
     pub area_id: AreaId,
