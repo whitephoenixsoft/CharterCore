@@ -23,4 +23,4 @@ This project attempts to:
 Before the software enforces this:
 The documents do.
 
-This folder is where that discipline lives.
+This folder is where we try to practice that discipline.
