@@ -1,20 +1,13 @@
-# Making Decisions Real  
+# Making Decisions Real
 *A practical mental model for decisions that don’t quietly fall apart*
 
 ## This Is Still Not a Tool
-
-If the previous documents made you nod, this one gives names to what you were already feeling.
-
-No commands.
-No software.
-No bureaucracy.
+If the previous documents made you nod, this one gives names to what you were already feeling.  
+No commands. No software. No bureaucracy.
 
 Just a clearer mental model you can use immediately — alone or with others.
 
----
-
 ## The Core Insight
-
 Most problems blamed on “communication” are actually problems of **decision shape**.
 
 A decision that has no clear shape:
@@ -25,10 +18,7 @@ A decision that has no clear shape:
 
 So let’s give decisions a shape.
 
----
-
 ## What a Decision Actually Is (and Is Not)
-
 A decision is **not**:
 - a discussion
 - a document
@@ -37,37 +27,30 @@ A decision is **not**:
 - a plan
 
 A decision *is*:
-> **An explicit choice that becomes legitimate at a specific moment, under known conditions.**
 
-That’s it.
+**An explicit choice that becomes legitimate at a specific moment, under known conditions.**
 
+That’s it.  
 Everything else is support material.
 
----
-
 ## Four Things Every Durable Decision Needs
-
-You don’t need process.  
+You don’t need heavy process.  
 You need **clarity on four dimensions**.
 
 ### 1. A Moment — *When did this become real?*
-
 If you can’t point to *when* a decision was accepted, it’s not stable.
 
 Examples:
-- “We talked about it” ❌
-- “We agreed sometime last sprint” ❌
-- “On Tuesday, we accepted option B” ✅
+- “We talked about it” ❌  
+- “We agreed sometime last sprint” ❌  
+- “On Tuesday, we accepted option B” ✅  
 
 Without a moment:
 - nothing can be superseded
 - nothing can be corrected cleanly
 - everything stays debatable forever
 
----
-
 ### 2. A Boundary — *Where does this apply?*
-
 Decisions always live **somewhere**:
 - this family
 - this team
@@ -77,18 +60,15 @@ Decisions always live **somewhere**:
 Problems arise when boundaries are implicit.
 
 Example failure:
-> “I thought that only applied to that project.”
+“I thought that only applied to that project.”
 
 Clear boundaries prevent:
 - accidental overreach
 - silent exceptions
 - endless “does this apply here?” debates
 
----
-
 ### 3. A Rule — *How was agreement evaluated?*
-
-Not every decision needs consensus.
+Not every decision needs consensus.  
 Not every decision needs hierarchy.
 
 But **every decision needs a known rule**:
@@ -99,14 +79,10 @@ But **every decision needs a known rule**:
 
 If the rule isn’t explicit, people reverse-engineer legitimacy later — usually emotionally.
 
----
-
 ### 4. A Way to Change It — *How does this stop being true?*
-
 This is the most overlooked part.
 
-Decisions don’t die naturally.
-They only:
+Decisions don’t die naturally. They only:
 - get replaced
 - get explicitly retired
 - or rot in place
@@ -120,10 +96,42 @@ Then the system is punishing honesty.
 
 A healthy model makes change **explicit, not awkward**.
 
----
+## Seeing All Four at Once (A Concrete Example)
+Let’s make this real.
+
+Imagine a team deciding how deployments work.
+
+They say:
+> “We don’t deploy on Fridays.”
+
+At first, this sounds simple — but watch what happens when the four dimensions are made explicit.
+
+**Moment**  
+“We agreed to this last Thursday after the outage review.”
+
+**Boundary**  
+“This applies to production deployments for this team.”
+
+**Rule**  
+“The tech lead decides, after consulting the on-call engineer.”
+
+**Way to Change It**  
+“This stands until we explicitly replace it with a new deployment policy.”
+
+Now compare that to the unshaped version:
+> “I thought we didn’t deploy on Fridays.”  
+> “I didn’t know that still applied.”  
+> “I thought that was just a suggestion.”  
+> “Why are we arguing about this again?”
+
+Nothing about the rule changed.  
+Nothing about the people changed.
+
+Only the **shape** did.
+
+That shape is what turns a sentence into a decision.
 
 ## Why “Just Write It Down” Isn’t Enough
-
 Documentation helps — but documents lie politely.
 
 They:
@@ -136,41 +144,32 @@ That’s why teams have:
 - docs no one trusts
 - decisions that exist only as arguments
 
-The problem isn’t writing.
+The problem isn’t writing.  
 It’s **legitimacy without structure**.
-
----
 
 ## This Applies Everywhere (Again)
 
 ### Self
 You can say:
-> “I decided this — and later I changed it.”
+“I decided this — and later I changed it.”
 
-No guilt.
-No rewriting history.
+No guilt.  
+No rewriting history.  
 Just two explicit moments.
-
----
 
 ### Friends & Family
 You can say:
-> “We decided this before. Are we changing it, or still honoring it?”
+“We decided this before. Are we changing it, or still honoring it?”
 
 That question only works if decisions are real things.
 
----
-
 ### Work
 You can say:
-> “This was accepted under these conditions. If they’ve changed, we need a new decision.”
+“This was accepted under these conditions. If they’ve changed, we need a new decision.”
 
 That removes blame instantly.
 
----
-
 ## What This Model Deliberately Avoids
-
 This way of thinking does **not**:
 - judge correctness
 - optimize outcomes
@@ -179,14 +178,11 @@ This way of thinking does **not**:
 
 It only does one thing:
 
-> **It separates deciding from drifting.**
+**It separates deciding from drifting.**
 
 That alone removes an enormous amount of friction.
 
----
-
 ## Why This Matters Before Tools, Specs, or Software
-
 If you skip this mental model and jump straight to tools:
 - everything feels heavy
 - people resist
@@ -197,20 +193,17 @@ If you start here:
 - explicitness feels kind
 - change feels safe
 
-Software can come later.
+Software can come later.  
 Process can come later.
 
 Clarity comes first.
 
----
-
 ## What Comes Next
-
 The next step is not:
-> “Apply this everywhere.”
+“Apply this everywhere.”
 
 It’s:
-> “Choose one place where decisions currently dissolve — and try making just one decision explicit.”
+“Choose one place where decisions currently dissolve — and try making just one decision explicit.”
 
 From there:
 - specifications make sense

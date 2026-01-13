@@ -121,4 +121,6 @@ It’s a release valve.
 Once teams see that unspoken rules are doing the damage,
 they can stop blaming people for playing by rules no one ever wrote.
 
+Most ‘dominant personalities’ become much quieter once the rules stop requiring them to dominate.
+
 And that’s where real change becomes possible.

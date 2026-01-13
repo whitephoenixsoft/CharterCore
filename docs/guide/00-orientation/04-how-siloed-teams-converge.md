@@ -263,9 +263,3 @@ You create a system where:
 - convergence is inevitable — not accidental
 
 Everything else is noise.
-
----
-
-*Next up:*  
-How to use this way of thinking **even without tools**, processes, or permission —  
-as a personal and team-level thinking aid.
