@@ -117,7 +117,7 @@ These decisions:
 - determine what blocks or allows action  
 
 They don’t decide *what* happens.  
-They decide *how decisions happen*.
+They decide how future disagreements get resolved.
 
 **Examples**
 
