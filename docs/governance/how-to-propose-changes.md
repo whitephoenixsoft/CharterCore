@@ -20,6 +20,8 @@ Decision changes are not.
 
 This process exists to make decisions visible *before* they become irreversible.
 
+*Note: Small documentation fixes, typos, and obvious bugs do not require this process. The assumption is that it's a correction to an already existing decision.*
+
 ---
 
 ## Step 1: Identify the Kind of Change
