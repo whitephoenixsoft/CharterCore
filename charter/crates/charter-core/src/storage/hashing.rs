@@ -1,6 +1,7 @@
 use super::core::ObjectHash;
 use crate::types::CharterObjectType;
 use serde::Serialize;
+use serde_json_canonicalizer::to_vec;
 
 #[derive(Debug, Clone, Copy)]
 pub enum HashVersion {
@@ -22,8 +23,11 @@ struct HashInput<'a> {
 fn get_canonical_json<T: Serialize>(value: &T) -> Result<Vec<u8>, String> {
     // single implementation
     // sorted keys, no whitespace, stable
-    let json = serde_json::to_vec(value).map_err(|e| e.to_string())?;
-    Ok(json)
+    let result = to_vec(value);
+    match result {
+        Ok(json) => Ok(json),
+        Err(e) => Err(e.to_string())
+    }
 }
 
 fn compute_hash(input: &HashInput) -> Result<ObjectHash, String> {
@@ -33,7 +37,7 @@ fn compute_hash(input: &HashInput) -> Result<ObjectHash, String> {
     bytes.extend(format!("len:{:?}\n", input.canonical_json.len()).as_bytes());
     bytes.extend(&*input.canonical_json);
 
-    let mut object_hash: ObjectHash;
+    let object_hash: ObjectHash;
     match input.algorithm {
         HashAlgorithm::Sha256 => {
             use sha2::{Digest, Sha256};
@@ -97,7 +101,7 @@ mod tests {
         };
 
         //let result_bytes = to_vec(&state).expect("Failed to canonicalize");
-        let result_bytes = get_canonical_json(&state);
+        let result_bytes = get_canonical_json(&state).expect("Failed to canonicalize");
         let result_str = std::str::from_utf8(&result_bytes).expect("Not valid UTF-8");
 
         // REQUIREMENT CHECK:
