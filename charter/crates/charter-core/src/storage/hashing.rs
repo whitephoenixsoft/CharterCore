@@ -1,5 +1,5 @@
 use super::core::ObjectHash;
-use super::types::CharterObjectType;
+use crate::types::CharterObjectType;
 use serde::Serialize;
 
 #[derive(Debug, Clone, Copy)]

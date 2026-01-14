@@ -1,7 +1,6 @@
 use serde::Serialize;
-use strum_macros::Display;
+use strum::Display;
 
-#[derive(Debug, Serialize)]
 pub trait CharterObject {
     fn object_type(&self) -> CharterObjectType;
 }
