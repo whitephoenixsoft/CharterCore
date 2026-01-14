@@ -2,6 +2,7 @@ pub mod engine;
 pub mod storage;
 pub mod model;
 pub mod errors;
+pub mod spec;
 pub mod time;
 pub mod types;
 

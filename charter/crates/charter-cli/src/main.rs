@@ -23,7 +23,7 @@ enum Commands {
 }
 
 fn main() {
-    println!("NOT OFFICIAL CLI; PLACEHOLDER CODE")
+    println!("NOT OFFICIAL CLI; PLACEHOLDER CODE");
     println!("charter-cli 0.1.0; {}", charter_core::engine_version());
     
     let cli = Cli::parse();

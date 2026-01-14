@@ -65,8 +65,10 @@ pub fn hash_object<T: Serialize>(hash_version: HashVersion, hash_algorithm: Hash
     compute_hash(&input)
 }
 
+/*
 #[cfg(test)]
 mod tests {
     use super::*; // Imports everything from the parent module
 
 }
+*/
