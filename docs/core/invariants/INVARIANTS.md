@@ -377,3 +377,114 @@ Charter Core explicitly does **not** provide:
 - UX patterns (rounds, moderation, facilitation)
 
 These belong to higher layers.
+
+---
+NEW
+
+# Charter Core — Engine Invariants
+Status: FROZEN
+Applies to: Charter Core Engine
+Violations indicate a correctness failure.
+
+## 1. Identity & Immutability
+
+ENG-INV-01: Accepted Resolutions Are Immutable  
+Once a resolution is accepted:
+- Its content must never change
+- Its acceptance context must never change
+- It may only be superseded or retired explicitly
+
+ENG-INV-02: Canonical Engine IDs  
+All engine entities must have stable, canonical IDs.
+IDs must not change due to:
+- relabeling
+- formatting changes
+- storage reorganization
+
+## 2. Authority & Legitimacy
+
+ENG-INV-03: Legitimacy Is Explicit  
+A resolution is legitimate only if:
+- accepted via a session
+- evaluated under a declared authority
+- within an explicit scope
+
+ENG-INV-04: Authority Is Evaluated Mechanically  
+Authority evaluation must:
+- be deterministic
+- rely only on recorded session state
+- never infer intent or silence
+
+ENG-INV-05: Participant Snapshot Is Binding  
+The participant set at first stance:
+- is frozen for legitimacy evaluation
+- must be auditable
+- must not be inferred or reconstructed
+
+## 3. Temporal Semantics
+
+ENG-INV-06: Acceptance Has a Moment  
+Every accepted resolution must have:
+- a single, explicit acceptance moment
+- no retroactive effect
+
+ENG-INV-07: Non-Retroactivity  
+New rules, authorities, or specs:
+- must not reinterpret accepted history
+- apply only to future sessions
+
+ENG-INV-08: Supersession Is Explicit  
+A resolution may only stop being active via:
+- explicit supersession
+- explicit retirement
+Never by deletion or mutation.
+
+## 4. Scope & Isolation
+
+ENG-INV-09: Areas Are Isolated  
+No resolution may:
+- implicitly affect another Area
+- be evaluated across Areas without explicit linkage
+
+ENG-INV-10: Scope Is Declarative  
+Scope determines applicability.
+Scope must never be inferred from content or labels.
+
+## 5. Baseline & Import Semantics
+
+ENG-INV-11: Baseline Is Non-Legitimizing  
+Baseline review:
+- does not evaluate authority
+- does not create legitimacy
+- prepares resolutions for explicit acceptance only
+
+ENG-INV-12: Acceptance Always Occurs via Sessions  
+No resolution may become ACTIVE without a session.
+
+ENG-INV-13: Restore Is Destructive and Explicit  
+RESTORE:
+- replaces all engine state
+- terminates all sessions and baselines
+- emits an auditable global event
+
+## 6. Determinism & Audit
+
+ENG-INV-14: Deterministic Evaluation  
+Given the same inputs:
+- the engine must produce the same outputs
+
+ENG-INV-15: Audits Are Read-Only  
+Audit operations must never mutate state.
+
+## 7. Embedded Specs
+
+ENG-INV-16: Specs Are Immutable per Version  
+Embedded specs:
+- must not change without an engine version bump
+- are authoritative for that binary
+
+ENG-INV-17: Spec Verification Is Mechanical  
+Spec verification must:
+- detect missing enforcement
+- detect altered locked specs
+- fail deterministically

@@ -417,3 +417,82 @@ Participant involvement must be auditable independently of sessions and resoluti
 Fail if
 A resolution can be audited without visibility into who was involved
 Participant changes are only visible inside session-local views
+
+---
+
+# Charter CLI — Invariants
+Status: FROZEN
+Applies to: Charter CLI
+Violations indicate a CLI correctness failure.
+
+## 1. Context Safety
+
+CLI-INV-01: Context Is Explicit  
+The CLI must never guess:
+- Area
+- Session
+- Baseline
+
+CLI-INV-02: Context Switching Is Visible  
+All context changes require explicit commands.
+
+## 2. Mode Separation
+
+CLI-INV-03: Modes Are Distinct  
+Normal work, sessions, and baselines must feel different.
+No implicit blending is allowed.
+
+## 3. Session Constraints
+
+CLI-INV-04: Single Active Session (Solo Mode)  
+Solo mode allows only one active session.
+
+CLI-INV-05: Candidate Mutation Is Pre-Vote Only  
+Once any stance exists:
+- candidates are frozen
+
+CLI-INV-06: Resume Requires Revalidation  
+Resuming a session requires explicit confirmation of participants.
+
+## 4. Baseline Behavior
+
+CLI-INV-07: Single Active Baseline  
+Only one baseline may exist per Area.
+
+CLI-INV-08: Baseline Is Persistent  
+Baseline state must survive restarts.
+
+CLI-INV-09: Baseline Preview Is Non-Mutating  
+Preview commands must not alter state or emit audits.
+
+## 5. Audit Presentation
+
+CLI-INV-10: Audits Are Deterministic  
+Same input → same output.
+
+CLI-INV-11: Grep-Friendliness Is Mandatory  
+Audit output must:
+- be line-based
+- include engine IDs
+- have stable ordering
+
+## 6. Export & Import UX
+
+CLI-INV-12: Export Ignores Active Sessions  
+Only CLOSED sessions may be exported.
+
+CLI-INV-13: No Implicit Closure  
+Export must not alter session state.
+
+## 7. Storage Safety
+
+CLI-INV-14: No Authoritative Data in Working Directories  
+Working directories may contain pointers only.
+
+CLI-INV-15: Folder Deletion Is Safe  
+Deleting a folder must not delete Charter history.
+
+## 8. Forward Compatibility
+
+CLI-INV-16: Server Compatibility Preserved  
+CLI storage assumptions must map to future shared or remote modes.
