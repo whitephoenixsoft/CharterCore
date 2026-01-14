@@ -1,6 +1,6 @@
 //! Rule OS-06 — Canonical JSON Rules (v1)
 //!
-//! # Invariant
+//! # Description
 //! Canonical JSON serialization MUST be deterministic and stable.
 //!
 //! ## Guarantees
