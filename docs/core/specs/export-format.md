@@ -54,7 +54,8 @@ Clients (CLI, UI, integrations) MUST NOT redefine or extend its structure.
   "exported_at": "2025-12-24T18:42:00Z",
   "engine_metadata": {
     "generator": "charter-core",
-    "generator_version": "0.1.0"
+    "generator_version": "0.1.0",
+    "spec_set_hash": "abc123..."
   },
   "object_hash": "hash-of-entire-export",
   "areas": [ ... ]
@@ -65,6 +66,11 @@ Notes
 - object_hash at the top level covers all nested content
 - Hash algorithm is engine-defined but MUST be deterministic and documented
 - Importers may verify hashes but must not reinterpret content
+- spec_set_hash is used for verifying the engine spec differences before the import is verified.
+- spec_set_hash is computed over:
+    - The ordered list of spec IDs + spec hashes
+    - Not the spec text itself
+    - Deterministic ordering
 
 ## Area Object
 
