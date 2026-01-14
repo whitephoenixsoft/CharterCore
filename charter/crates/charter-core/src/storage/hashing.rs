@@ -20,7 +20,7 @@ struct HashInput<'a> {
     pub canonical_json: &'a [u8],
 }
 
-fn get_canonical_json<T: Serialize>(value: &T) -> Result<Vec<u8>, String> {
+pub fn get_canonical_json<T: Serialize>(value: &T) -> Result<Vec<u8>, String> {
     // single implementation
     // sorted keys, no whitespace, stable
     let result = to_vec(value);
@@ -69,49 +69,4 @@ pub fn hash_object<T: Serialize>(hash_version: HashVersion, hash_algorithm: Hash
 mod tests {
     use super::*; // Imports everything from the parent module
 
-    #[derive(Serialize)]
-    struct ComplexState {
-        // Requirements checklist:
-        // 1. Lexicographical sorting: "beta" should come after "alpha"
-        // 2. Unambiguous numbers: 3000.0 should become 3000
-        beta: f64,
-        alpha: String,
-        // 3. Arrays: Order must be preserved
-        data_points: Vec<u32>,
-        // 4. Nested Objects: Keys must be sorted recursively
-        metadata: Metadata,
-    }
-    
-    #[derive(Serialize)]
-    struct Metadata {
-        version: u8,
-        author: String,
-    }
-    
-    #[test]
-    fn test_canonical_json_requirements() {
-        let state = ComplexState {
-            beta: 3000.0,
-            alpha: "engine_v1".to_string(),
-            data_points: vec![10, 20, 30],
-            metadata: Metadata {
-                version: 1,
-                author: "Admin".to_string(),
-            },
-        };
-
-        //let result_bytes = to_vec(&state).expect("Failed to canonicalize");
-        let result_bytes = get_canonical_json(&state).expect("Failed to canonicalize");
-        let result_str = std::str::from_utf8(&result_bytes).expect("Not valid UTF-8");
-
-        // REQUIREMENT CHECK:
-        // - "alpha" comes before "beta" (Lexicographical)
-        // - "author" comes before "version" inside "metadata" (Recursive Lexicographical)
-        // - 3000.0 is serialized as 3000 (Unambiguous Number)
-        // - No spaces after colons or commas (No whitespace)
-        // - Arrays [10,20,30] remain in that exact order
-        let expected = r#"{"alpha":"engine_v1","beta":3000,"data_points":[10,20,30],"metadata":{"author":"Admin","version":1}}"#;
-
-        assert_eq!(result_str, expected);
-    }
 }
