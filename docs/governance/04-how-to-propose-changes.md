@@ -1,8 +1,8 @@
 # How to Propose Changes
 (Charter-Aligned Contribution Process)
 
-This document defines how changes are proposed, evaluated, and accepted
-*before* Charter is fully implemented.
+This document describes how legitimacy works once a change is ready to be considered.
+It is not a requirement for experimentation or early ideas.
 
 It exists to preserve legitimacy, reduce ambiguity, and prevent silent decision-making.
 

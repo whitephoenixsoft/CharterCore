@@ -1,11 +1,12 @@
-# Decision Promotion
-From Idea → Change → History
+# Decision Promotion (From Issue to Memory)
 
 This document explains how ideas become changes — or don’t.
 
 It is not a workflow.
 It is not a guarantee.
 It is a set of simulations showing how legitimacy is earned, blocked, or deliberately rejected.
+
+Most attempts do not result in promotion — and that is the healthy default.
 
 If a promotion feels uncomfortable, that discomfort is usually the signal.
 
@@ -36,6 +37,8 @@ What This Teaches
 Legitimacy Preserved  
 By *not* promoting something unnecessarily.
 
+Stopping a promotion attempt early is often a success, not an abandonment.
+
 ---
 
 ## Simulation 2 — Clarification Without Change
@@ -51,7 +54,7 @@ Flow
 
 Outcome  
 - Documentation updated
-- No decision superseded
+- No decision superseded or created
 - No new authority created
 
 What This Teaches  
@@ -174,7 +177,18 @@ What This Teaches
 - Blocking is protective, not hostile
 
 ---
+## Where This Shows Up in Practice (Lightly)
 
+In practice, these simulations often play out across:
+- issues
+- discussions
+- pull requests
+- design notes
+
+The medium doesn’t matter.
+The *promotion decision* does.
+
+---
 ## The Rule of Promotion
 
 If a change:

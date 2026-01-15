@@ -37,6 +37,15 @@ It is a shared way to think about *when something becomes worth remembering*.
 
 > **When in doubt, leave it informal. Promotion is irreversible.**
 
+Promotion doesn’t mean “forever” or “unchangeable.”
+It simply means moving a change into a place where it can be found again.
+
+Some promoted decisions are temporary.
+Some are replaceable.
+Some are just reference points.
+
+Very few are permanent.
+
 That sentence exists to reduce fear — not to enforce correctness.
 
 Judgment beats process here.
@@ -91,6 +100,9 @@ They’re simply worth noticing.
 - A workaround becomes “the way we do things”
 - Multiple areas or components are now coupled
 - You find yourself explaining the same rationale repeatedly
+
+These signals don’t mean “formalize now.”
+They mean “this might belong somewhere more durable than memory.”
 
 None of these force promotion.
 
@@ -177,6 +189,11 @@ the system is wrong.
 
 We can fix process.
 We can’t recover lost curiosity.
+
+Later documents describe where promoted decisions live and how they differ.
+You don’t need that yet.
+This document is only about recognizing the moment.
+This helps readers trust that the system won’t spring complexity
 
 ---
 
