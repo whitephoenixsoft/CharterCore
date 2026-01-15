@@ -35,6 +35,8 @@ This project is designed so you can:
 
 No guilt. No ownership traps.
 
+If you’re here to explore or learn, you’re already a valid contributor.
+
 ---
 
 ## What “Promotion” Means (In Plain English)
