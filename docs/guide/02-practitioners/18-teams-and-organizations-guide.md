@@ -37,6 +37,7 @@ In most organizations, convergence happens through a messy combination of:
 
 - hallway conversations
 - Slack threads no one bookmarks
+- Teams channel posts or chats
 - “FYI” emails sent too late
 - documents no one knows are canonical
 - meetings where half the people are there “just in case”
