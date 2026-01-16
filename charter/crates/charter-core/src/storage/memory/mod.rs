@@ -1,37 +1,30 @@
-/*use std::collections::HashMap;
-use crate::types::ObjectHash;
-use crate::types::hash_object;
-use crate::storage::core::CharterObject;
-use crate::storage::object_store::ObjectStore;
+use super::core::{
+	   ObjectHash
+};
+use super::object_store::ObjectStore;
+use std::collections::HashMap;
+use std::cell::RefCell;
 
-pub struct MemoryObjectStore {
-    objects: HashMap<ObjectHash, Box<dyn CharterObject>>,
+
+pub struct MemoryStore {
+    storage: RefCell<HashMap<ObjectHash, String>>,
 }
 
-impl MemoryObjectStore {
-    pub fn new() {
-        Self {
-            HashMap::new()
-        }
+impl MemoryStore {
+    pub fn new() -> Self {
+        Self { storage: RefCell::new(HashMap::new()) }
     }
 }
 
-impl ObjectStore for MemoryObjectStore {
-    pub fn put(&mut self, obj: Box<dyn CharterObject>) -> ObjectHash {
-        let content = obj.canonical_bytes();
-        let bytes = build_hash_bytes(
-            HashVersion::V1,
-            obj.kind(),
-            &content,
-        );
-
-        let hash = hash_bytes(&bytes);
-        self.objects.insert(hash.clone(), obj);
-        hash
+impl ObjectStore for MemoryStore {
+    fn put(&mut self, hash: ObjectHash, data: String) -> Result<(), String> {
+        self.storage.borrow_mut().insert(hash, data);
+        Ok(())
     }
 
-    pub fn get(&self, hash: &ObjectHash) -> Option<Box<dyn CharterObject>> {
-        self.objects.get(hash)
+    fn get(&self, hash: &ObjectHash) -> Result<String, String> {
+        self.storage.borrow().get(hash)
+            .cloned()
+            .ok_or_else(|| "Hash not found".to_string())
     }
 }
-*/

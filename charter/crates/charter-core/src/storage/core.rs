@@ -6,6 +6,7 @@ use serde::Serialize;
 pub struct ObjectHash(pub String);
 
 pub type ObjectData = String;
+pub type StoreError = String;
 
 #[derive(Debug, Serialize)]
 pub struct AreaRoot {
