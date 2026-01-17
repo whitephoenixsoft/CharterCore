@@ -4,13 +4,13 @@ use super::core::{
 use super::hashing::{
     HashVersion, HashAlgorithm, hash_object
 };
-use crate::types::CharterObjectType;
+use crate::types::CharterObjectKind;
 use serde::Serialize;
 
 pub struct ObjectEnvelope<T: Serialize> {
     pub hash_version: HashVersion,
     pub hash_algorithm: HashAlgorithm,
-    pub object_type: CharterObjectType,
+    pub object_type: CharterObjectKind,
     pub object_hash: ObjectHash,
     pub object: T,
 }
@@ -18,7 +18,7 @@ pub struct ObjectEnvelope<T: Serialize> {
 impl<T> ObjectEnvelope<T> where T : Serialize {
     pub fn new(
         self,
-        object_type: CharterObjectType,
+        object_type: CharterObjectKind,
         value: T,
     ) -> Self {
     	   let hash_version = HashVersion::V1;

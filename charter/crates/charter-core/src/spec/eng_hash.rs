@@ -1,9 +1,57 @@
-//! Rule OS-06 — Canonical JSON Rules (v1)
+//! # Charter Core — Object Store & Hashing Specification
+//! Status: LOCKED (v1)
+//! Scope: Engine-internal
+//! Change Policy: Any change requires a new hash version and explicit migration
 //!
-//! # Description
+//! ## Rule OS-05 — Hash Input Is Canonical and Deterministic (v1)
+//!
+//! ### Description
+//! For hash version v1, the digest input MUST be the following byte sequence:
+//! ```
+//! charter:<hash_version>\n
+//! type:<object_type>\n
+//! len:<byte_length>\n
+//! <canonical_json_bytes>
+//! ```
+//! Where:
+//! - `hash_version` = "v1"
+//! - `object_type` ∈ { area, session, resolution, candidate, stance, audit, … }
+//! - `byte_length` = length (in bytes) of `<canonical_json_bytes>`
+//! - `<canonical_json_bytes>` is UTF-8 encoded
+//!
+//! ### Executable Specification
+//!
+//! ```rust
+//! use serde::Serialize;
+//! use charter_core::storage::hashing::HashInput;
+//! use charter_core::storage::hashing::HashVersion;
+//! use charter_core::storage::hashing::HashAlgorithm;
+//! use charter_core::types::CharterObjectKind;
+//!
+//! let fields = HashInput {
+//!     version: HashVersion::V1,
+//!     algorithm: HashAlgorithm::Sha256,
+//!     object_type: CharterObjectKind::Area,
+//!     canonical_json: b"{\"value\":42}",
+//! }.as_bytes();
+//!
+//! let expected = "charter:v1\n\
+//! type:area\n\
+//! len:13\n\
+//! {\"value\":42}";
+//!
+//! assert_eq!(fields, expected);
+//! ```
+//!
+//! Any deviation in header order, newline placement, or length calculation
+//! invalidates object identity.
+//!
+//! ## Rule OS-06 — Canonical JSON Rules (v1)
+//!
+//! ### Description
 //! Canonical JSON serialization MUST be deterministic and stable.
 //!
-//! ## Guarantees
+//! ### Guarantees
 //! 1. Canonical JSON serialization MUST obey:
 //!    - UTF-8 encoding
 //!    - Lexicographically sorted object keys
@@ -14,7 +62,7 @@
 //!
 //! 2. These rules MUST be implemented once and reused across the engine.
 //!
-//! ## Executable Specification
+//! ### Executable Specification
 //! The following test MUST pass for any compliant implementation.
 //!
 //! ```rust
@@ -56,7 +104,7 @@
 //! assert_eq!(result_str, expected);
 //! ```
 //!
-//! ## Failure Modes
+//! ### Failure Modes
 //! - Different serializations produce different hashes
 //! - Canonicalization logic diverges across components
 //! - Any deviation invalidates object identity 

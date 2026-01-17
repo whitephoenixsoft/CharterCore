@@ -1,23 +1,40 @@
 use super::core::ObjectHash;
-use crate::types::CharterObjectType;
+use crate::types::CharterObjectKind;
 use serde::Serialize;
 use serde_json_canonicalizer::to_vec;
+use strum::Display;
+use std::fmt;
 
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone, Copy, Display)]
+#[strum(serialize_all = "lowercase")]
 pub enum HashVersion {
     V1,
 }
 
-#[derive(Clone, Copy, PartialEq, Eq, Hash, Debug)]
+#[derive(Clone, Copy, PartialEq, Eq, Hash, Debug, Display)]
+#[strum(serialize_all = "lowercase")]
 pub enum HashAlgorithm {
     Sha256,
 }
 
-struct HashInput<'a> {
+pub struct HashInput<'a> {
     pub version: HashVersion,
     pub algorithm: HashAlgorithm,
-    pub object_type: CharterObjectType,
+    pub object_type: CharterObjectKind,
     pub canonical_json: &'a [u8],
+}
+
+impl<'a> HashInput<'a> {
+    fn as_bytes(&self) -> Vec<u8> {
+        let mut bytes = Vec::new();
+        
+        bytes.extend(format!("charter:{:?}\n", self.version).as_bytes());
+        bytes.extend(format!("type:{:?}\n", self.object_type).as_bytes());
+        bytes.extend(format!("len:{:?}\n", self.canonical_json.len()).as_bytes());
+        bytes.extend(&*self.canonical_json);
+        
+        bytes
+    }
 }
 
 pub fn get_canonical_json<T: Serialize>(value: &T) -> Result<Vec<u8>, String> {
@@ -30,12 +47,8 @@ pub fn get_canonical_json<T: Serialize>(value: &T) -> Result<Vec<u8>, String> {
     }
 }
 
-fn compute_hash(input: &HashInput) -> Result<ObjectHash, String> {
-    let mut bytes = Vec::new();
-    bytes.extend(format!("charter:{:?}\n", input.version).as_bytes());
-    bytes.extend(format!("type:{:?}\n", input.object_type.to_string()).as_bytes());
-    bytes.extend(format!("len:{:?}\n", input.canonical_json.len()).as_bytes());
-    bytes.extend(&*input.canonical_json);
+pub fn compute_hash(input: &HashInput) -> Result<ObjectHash, String> {
+    let bytes = input.as_bytes();
 
     let object_hash: ObjectHash;
     match input.algorithm {
@@ -52,7 +65,7 @@ fn compute_hash(input: &HashInput) -> Result<ObjectHash, String> {
     Ok(object_hash)
 }
 
-pub fn hash_object<T: Serialize>(hash_version: HashVersion, hash_algorithm: HashAlgorithm, object_type: CharterObjectType, value: &T) -> Result<ObjectHash, String> {
+pub fn hash_object<T: Serialize>(hash_version: HashVersion, hash_algorithm: HashAlgorithm, object_type: CharterObjectKind, value: &T) -> Result<ObjectHash, String> {
     let json = get_canonical_json(value)?;
 
     let input = HashInput {
