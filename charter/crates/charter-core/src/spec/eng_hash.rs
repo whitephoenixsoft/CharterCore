@@ -7,12 +7,12 @@
 //!
 //! ### Description
 //! For hash version v1, the digest input MUST be the following byte sequence:
-//! ```
+//!    
 //! charter:<hash_version>\n
 //! type:<object_type>\n
 //! len:<byte_length>\n
 //! <canonical_json_bytes>
-//! ```
+//!    
 //! Where:
 //! - `hash_version` = "v1"
 //! - `object_type` ∈ { area, session, resolution, candidate, stance, audit, … }
@@ -35,10 +35,7 @@
 //!     canonical_json: b"{\"value\":42}",
 //! }.as_bytes();
 //!
-//! let expected = "charter:v1\n\
-//! type:area\n\
-//! len:13\n\
-//! {\"value\":42}";
+//! let expected = b"charter:v1\ntype:area\nlen:12\n{\"value\":42}";
 //!
 //! assert_eq!(fields, expected);
 //! ```

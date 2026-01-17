@@ -25,12 +25,12 @@ pub struct HashInput<'a> {
 }
 
 impl<'a> HashInput<'a> {
-    fn as_bytes(&self) -> Vec<u8> {
+    pub fn as_bytes(&self) -> Vec<u8> {
         let mut bytes = Vec::new();
         
-        bytes.extend(format!("charter:{:?}\n", self.version).as_bytes());
-        bytes.extend(format!("type:{:?}\n", self.object_type).as_bytes());
-        bytes.extend(format!("len:{:?}\n", self.canonical_json.len()).as_bytes());
+        bytes.extend(format!("charter:{}\n", self.version.to_string()).as_bytes());
+        bytes.extend(format!("type:{}\n", self.object_type.to_string()).as_bytes());
+        bytes.extend(format!("len:{}\n", self.canonical_json.len()).as_bytes());
         bytes.extend(&*self.canonical_json);
         
         bytes
@@ -78,10 +78,19 @@ pub fn hash_object<T: Serialize>(hash_version: HashVersion, hash_algorithm: Hash
     compute_hash(&input)
 }
 
-/*
+
 #[cfg(test)]
 mod tests {
     use super::*; // Imports everything from the parent module
 
+    #[test]
+    pub fn test_hashversion_v1() {
+        assert_eq!("v1", HashVersion::V1.to_string());
+    }
+
+    #[test]
+    pub fn test_hastalgorithm_sha256() {
+        assert_eq!("sha256", HashAlgorithm::Sha256.to_string());
+    }
 }
-*/
+
