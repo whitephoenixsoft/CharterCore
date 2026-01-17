@@ -2,7 +2,7 @@
 
 Status: **FROZEN**  
 Applies to: **Charter CLI behavior layered over Charter Core**  
-Does NOT define: UX guarantees, permissions, roles, or engine internals
+Does NOT define: UX guarantees, permissions, roles, or engine internals  
 
 These simulations validate that the **CLI preserves engine legitimacy while enforcing cognitive safety and operational discipline**.
 
@@ -13,7 +13,7 @@ They are:
 
 They answer one question only:
 
-> **Does the CLI ever allow a human to bypass, dilute, or accidentally fabricate legitimacy?**
+**Does the CLI ever allow a human to bypass, dilute, or accidentally fabricate legitimacy?**
 
 If any simulation fails, a **CLI invariant has been violated**.
 
@@ -30,7 +30,7 @@ A new Area cannot function until governance exists.
 1. `charter init`
 2. Area `A-1` created
 3. Area status: `UNINITIALIZED`
-4. CLI blocks all sessions except Authority / Scope definition
+4. CLI blocks all sessions except Authority and Scope definition
 
 **Authority Definition**
 - Session started: “Define Authority”
@@ -50,10 +50,10 @@ A new Area cannot function until governance exists.
 - Exactly one active Scope resolution
 
 **Validated CLI Invariants**
-- Areas require explicit governance
-- Authority and Scope are first-class resolutions
+- Governance is explicit
 - No implicit defaults
-- Participants are never inferred by the CLI
+- Authority and Scope are first-class
+- Participants are never inferred
 
 ---
 
@@ -78,9 +78,9 @@ Two peers collaborate without hierarchy.
 - Participant set frozen at first stance
 
 **Validated CLI Invariants**
-- Explicit unanimity only
-- Participant presence is mechanical, not assumed
+- Explicit unanimity
 - No silent acceptance
+- Mechanical authority evaluation
 
 ---
 
@@ -94,19 +94,18 @@ A solo founder uses Charter as a decision journal.
 2. Candidate proposed
 3. `session accept` used without explicit voting
 
-**Engine Reality (Exposed by CLI Audit)**
-- Participant list = `[founder]`
-- Stance = `ACCEPT`
+**Engine Reality (via audit)**
+- Participant list: `[founder]`
+- Stance recorded: `ACCEPT`
 - Authority evaluated normally
 
 **Outcome**
 - Full audit trail preserved
-- No shortcuts at the engine layer
+- No engine shortcuts
 
 **Validated CLI Invariants**
 - Scale independence
-- Explicit acceptance even in solo mode
-- Ergonomic collapse does not weaken legitimacy
+- Ergonomic collapse preserves legitimacy
 
 ---
 
@@ -133,8 +132,8 @@ A team chooses an architecture.
 
 **Validated CLI Invariants**
 - Abstention is first-class
-- Majority is computed mechanically
-- No semantic inference by CLI
+- Majority computed mechanically
+- No semantic inference
 
 ---
 
@@ -146,11 +145,9 @@ A team chooses an architecture.
 Unanimous authority with disagreement.
 
 **Flow**
-- Participants: Alice, Bob, Carol
-- Votes:
-  - Alice: ACCEPT
-  - Bob: REJECT
-  - Carol: ACCEPT
+- Alice: ACCEPT
+- Bob: REJECT
+- Carol: ACCEPT
 - Attempt to accept fails
 
 **Outcome**
@@ -161,7 +158,7 @@ Unanimous authority with disagreement.
 **Validated CLI Invariants**
 - Deterministic blocking
 - No coercion
-- No implicit failure state
+- No implicit failure
 
 ---
 
@@ -177,19 +174,17 @@ Deadlocked unanimous session reflects reality.
 - Session: `BLOCKED`
 
 **Change**
-- Bob removed explicitly from participant list
-
-**CLI / Engine Response**
-- Authority re-evaluated
-- Remaining participants: Alice, Carol
+- Bob removed explicitly from participants
 
 **Outcome**
+- Authority re-evaluated
+- Remaining participants satisfy unanimity
 - Resolution accepted legitimately
 
 **Validated CLI Invariants**
-- Authority evaluates present participants only
+- Participant changes are explicit
 - No vote reinterpretation
-- Participant changes are explicit and auditable
+- Authority evaluates present participants only
 
 ---
 
@@ -201,23 +196,23 @@ Deadlocked unanimous session reflects reality.
 Team wants faster decisions.
 
 **Flow**
-1. New session started under existing Authority
+1. New session started under current Authority
 2. New Authority candidate proposed
 3. Accepted under old Authority
 
 **Outcome**
 - Old Authority superseded
 - New Authority becomes active
-- No retroactive impact
+- No retroactive effect
 
 **Validated CLI Invariants**
 - Authority mutable only via sessions
 - Non-retroactivity
-- Governance evolves explicitly
+- Explicit governance evolution
 
 ---
 
-## V. CLI-Specific Cognitive Constraints
+## V. CLI Cognitive Constraints
 
 ### Simulation CLI-8 — Concurrent Sessions (Solo Mode Constraint)
 
@@ -229,13 +224,12 @@ Solo mode limits cognitive load.
 - User attempts to start Session B
 
 **Outcome**
-- CLI rejects the action
+- CLI blocks the action
 - Engine state unchanged
 
 **Validated CLI Invariants**
-- CLI enforces ergonomic limits
-- Engine remains neutral
-- One-session rule respected
+- One active session in solo mode
+- Ergonomic constraint without semantic impact
 
 ---
 
@@ -249,18 +243,18 @@ External history imported for consolidation.
 **Flow**
 1. `charter import consolidate legacy.json`
 2. Baseline created
-3. All imported resolutions marked `UNDER_REVIEW`
-4. All active sessions paused
+3. Imported resolutions marked `UNDER_REVIEW`
+4. Active sessions paused
 
 **Outcome**
 - No local legitimacy created
 - No authority inferred
-- Baseline is sole active review process
+- One baseline active
 
 **Validated CLI Invariants**
-- Consolidation is non-destructive
-- Import does not legitimize decisions
-- One baseline at a time
+- Import never creates legitimacy
+- Baseline is review-only
+- Session separation enforced
 
 ---
 
@@ -273,47 +267,43 @@ Solo user reviews imported history.
 - Baseline opened
 - User accepts resolutions one at a time
 - Each acceptance creates a hidden session
-- Authority evaluated locally
 
 **Outcome**
 - Accepted resolutions become `ACTIVE`
-- Rejected or skipped ones remain non-active
-- Baseline persists until explicitly closed
+- Full audit trail exists
+- Baseline remains open
 
 **Validated CLI Invariants**
 - Acceptance always occurs via sessions
-- Ergonomic batching does not weaken legitimacy
-- Baseline is controlled and auditable
+- Ergonomic batching preserves legitimacy
 
 ---
 
 ### Simulation CLI-11 — Baseline Acceptance (Multi-User, Long-Running)
 
 **Context**  
-Departments review external decisions over time.
+Departments review imported decisions over time.
 
 **Flow**
 - Baseline opened
-- Resolution-by-resolution deliberation
+- Deliberation occurs over days
 - Baseline paused and resumed
-- Sessions occur across days or weeks
+- Sessions created as needed
 
 **Outcome**
-- Baseline persists across time
 - Partial progress preserved
-- Audit shows full deliberation timeline
+- Audit timeline intact
 
 **Validated CLI Invariants**
 - Baselines are durable
-- Legitimacy is never time-dependent
-- Audit integrity across pauses
+- Legitimacy is not time-dependent
 
 ---
 
 ### Simulation CLI-12 — Baseline Close
 
 **Context**  
-Review process is complete.
+Review process completes.
 
 **Flow**
 - `baseline close`
@@ -321,7 +311,7 @@ Review process is complete.
 **Outcome**
 - Remaining `UNDER_REVIEW` → `ABANDONED`
 - Baseline becomes immutable
-- Normal sessions may resume
+- Sessions may resume
 
 **Validated CLI Invariants**
 - Explicit closure
@@ -340,19 +330,14 @@ User restores a verified export.
 **Flow**
 - `charter import restore backup.json`
 
-**CLI / Engine Behavior**
-- Existing Area replaced entirely
-- All sessions and baselines terminated
-- Global audit records replacement
-
 **Outcome**
-- Restored history is authoritative
-- No merging
-- No reinterpretation
+- Area replaced entirely
+- All sessions and baselines terminated
+- Global audit emitted
 
 **Validated CLI Invariants**
 - Restore is destructive and explicit
-- Audit scope supremacy
+- No partial mutation
 - Deterministic replacement
 
 ---
@@ -365,19 +350,14 @@ User exports while sessions are active.
 **Flow**
 - Export requested
 
-**Behavior**
-- Closed sessions included
-- Active / paused sessions ignored
-- CLI emits explicit warning
-
 **Outcome**
-- No legitimacy fork
-- Export safe to share
+- Closed sessions exported
+- Active/paused sessions ignored
+- CLI emits explicit warning
 
 **Validated CLI Invariants**
 - Sessions cannot be cloned
-- Closed sessions are immutable history
-- CLI warns but does not block
+- No implicit closure
 
 ---
 
@@ -386,29 +366,24 @@ User exports while sessions are active.
 ### Simulation CLI-15 — First-Time Bootstrap from Flat File
 
 **Context**  
-Team adopts Charter with existing business rules.
+Team adopts Charter with existing rules.
 
 **Flow**
-1. Flat file import executed
-2. Baseline review opens
-3. All resolutions marked `UNDER_REVIEW`
+1. Flat file import
+2. Baseline opened
+3. All resolutions `UNDER_REVIEW`
 4. User batch-accepts all
-5. Sessions created behind the scenes
+5. Sessions created
 6. Baseline closed
 
 **Outcome**
-- Area initialized with legitimate resolutions
+- Area initialized legitimately
 - No inferred authority
-- Full audit trail exists
-
-**Validated CLI Invariants**
-- Explicit legitimacy
-- Flat imports are non-authoritative
-- Review-first workflow
+- Full audit preserved
 
 ---
 
-### Simulation CLI-16 — Repeated Consultation with Unchanged Rules
+### Simulation CLI-16 — Repeated Consultation (Unchanged Rules)
 
 **Context**  
 External team sends identical rules again.
@@ -416,18 +391,12 @@ External team sends identical rules again.
 **Flow**
 - Flat file imported
 - CLI detects identical content
-- Items labeled `UNCHANGED`
-- User batch-accepts unchanged items
-- Sessions recorded
+- Items marked `UNCHANGED`
+- User batch-accepts
 
 **Outcome**
-- Legitimacy reaffirmed explicitly
-- No silent trust of foreign data
-- Minimal cognitive load
-
-**Validated CLI Invariants**
-- Content matching is ergonomic only
-- Explicit reaffirmation over inference
+- Explicit reaffirmation
+- No silent trust
 
 ---
 
@@ -437,22 +406,15 @@ External team sends identical rules again.
 Some rules unchanged, some modified.
 
 **Flow**
-- Flat file imported
-- CLI highlights unchanged vs modified
+- Import executed
+- CLI highlights differences
 - User batch-accepts unchanged
-- User deliberates modified items individually
-- Baseline remains open across days
-- Baseline closed explicitly
+- Modified items reviewed individually
+- Baseline closed
 
 **Outcome**
 - Only deliberate changes affect governance
-- Stable rules remain stable
-- Audit shows exactly what changed and when
-
-**Validated CLI Invariants**
-- Granular acceptance
-- Review persistence
-- Historical clarity
+- Audit shows exact evolution
 
 ---
 
@@ -462,23 +424,99 @@ Some rules unchanged, some modified.
 User expects unchanged imports to auto-activate.
 
 **Flow**
-- Flat file imported
-- User skips review and checks status
+- Import executed
+- User skips review
 
 **CLI Response**
-- All imported resolutions remain `UNDER_REVIEW`
-- CLI displays next actions:
-  - `baseline show`
-  - `baseline accept`
-  - `baseline close`
+- All items remain `UNDER_REVIEW`
+- CLI displays valid next actions
 
 **Outcome**
 - No silent legitimacy
 - User guided explicitly
 
+---
+
+## IX. Participant Defaults & Safety (NEW)
+
+### Simulation CLI-19 — Default Participant Is Explicit, Not Inferred
+
+**Context**  
+User starts a session without specifying participants.
+
+**Flow**
+1. `session start`
+2. CLI inserts current user as participant
+3. CLI displays participant list
+
+**Outcome**
+- Participant set is explicit
+- User may remove themselves before first stance
+
 **Validated CLI Invariants**
-- CLI honesty
-- No convenience over correctness
+- Participant state is explicit
+- Defaults do not create legitimacy
+
+---
+
+### Simulation CLI-20 — Empty Participant Set Blocks Acceptance
+
+**Context**  
+All participants removed.
+
+**Flow**
+- User attempts to vote or accept
+
+**Outcome**
+- CLI blocks action
+- No engine mutation
+
+**Validated CLI Invariants**
+- Authority requires participants
+- CLI never fabricates legitimacy
+
+---
+
+## X. Labels & Identity (NEW)
+
+### Simulation CLI-21 — Auto-Generated Labels Are Non-Semantic
+
+**Context**  
+CLI generates labels automatically.
+
+**Flow**
+- Labels assigned
+- Labels renamed
+- Cross-area references used
+
+**Outcome**
+- Engine behavior unchanged
+- Engine IDs remain canonical
+
+**Validated CLI Invariants**
+- Labels are ergonomic only
+- Identity is engine-owned
+
+---
+
+## XI. Spec Verification (NEW)
+
+### Simulation CLI-22 — Spec Verification Is Read-Only
+
+**Context**  
+User verifies specs and invariants.
+
+**Flow**
+- `charter spec verify`
+
+**Outcome**
+- Pass/fail reported
+- No state mutation
+- No audits emitted
+
+**Validated CLI Invariants**
+- Verification is non-legitimizing
+- Analysis does not equal decision
 
 ---
 
@@ -487,9 +525,9 @@ User expects unchanged imports to auto-activate.
 The Charter CLI does not optimize for speed, automation, or trust.
 
 It optimizes for:
-- **Explicit intent**
-- **Cognitive safety**
-- **Audit clarity**
-- **Legitimacy preservation**
+- explicit intent
+- cognitive safety
+- audit clarity
+- legitimacy preservation
 
 These simulations define what must **never break**, even as ergonomics evolve.

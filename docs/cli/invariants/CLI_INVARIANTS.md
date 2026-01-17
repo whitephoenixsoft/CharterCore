@@ -1,498 +1,481 @@
-# CLI Invariants — Naming, Identity, Audit, and Ergonomics
-
-These are CLI-layer invariants only.
-Violations do not imply engine bugs, but CLI correctness failures.
-
-## Identity & Naming
-
-### CLI-INV-01: Engine Identity Is Canonical
-
-Every Area, Session, Resolution, and Scope has a canonical **engine ID***.
-
-Engine IDs are:
-- Content-addressed hashes when possible
-- UUIDs otherwise
-Rules:
-- CLI-visible labels NEVER replace engine IDs
-- All engine operations ultimately resolve to engine IDs
-#### Fail if
-- Any CLI operation relies on a label as authoritative identity
-
-### CLI-INV-02: Labels Are Ergonomic, Not Semantic
-
-Labels exist only for human usability.
-
-Rules:
-- Labels do not encode meaning
-- Labels do not affect legitimacy
-- Labels do not affect authority or scope
-#### Fail if
-- CLI logic interprets label structure or naming patterns
-
-### CLI-INV-03: Labels Are Area-Scoped by Default
-
-User-assigned labels (e.g. R-1, Auth-Core, Scope-Infra) must be unique **within an Area**.
-
-Rules:
-- CLI must never assume global label uniqueness
-- Cross-area operations require explicit qualification
-#### Fail if
-- A label collision across Areas causes ambiguity or hidden coupling
-
-#### CLI-INV-04: Area Context Is Required for Unqualified Labels
-
-If a command references a label without an Area qualifier:
-- The CLI must have an active Area context, OR
-- The command must fail with a disambiguation prompt
-
-#### Pass examples
-```Bash
-charter area use platform
-charter resolution show R-2
-```
-#### Fail example
-```Bash
-charter resolution show R-2
-error: label ambiguous without area context
-```
-
-### CLI-INV-05: Global Disambiguation Is Always Explicit
-
-When listing or searching across Areas, labels MUST be rendered as:
-
-`<area>/<label>`
-
-#### Example
-```
-platform/R-3
-finance/R-1
-security/R-7
-```
-#### Fail if
-- Bare labels appear in a global view
-
-### CLI-INV-06: Global Label Uniqueness Is Optional and Explicit
-
-The CLI MAY support an optional configuration for globally unique labels.
-
-Rules:
-- Must be opt-in
-- Must be reversible
-- Must be documented as increasing merge/import friction
-#### Fail if
-- Global uniqueness is silently enforced
-
----
-
-## Audit Invariants
-
-### CLI-AUD-01: Audits Are Read-Only
-
-No audit command may mutate state.
-
-### CLI-AUD-02: Audits Do Not Infer Meaning
-
-Audit commands must not:
-- Judge correctness
-- Flag violations
-- Infer scope breaches
-
-They may only report **recorded facts**.
-
-### CLI-AUD-03: Audits Are Deterministic
-
-Same input → same output.
-
-No timestamps, randomness, or reordering unless explicitly requested.
-
-### CLI-AUD-04: Grep-Friendliness Is a First-Class Constraint
-
-- Audit output must obey:
-    - One event per line
-    - Stable field order
-- Explicit keywords:
-    - AREA
-    - SESSION
-    - RESOLUTION
-    - AUTH
-    - SCOPE
-    - REVIEW 
-- Never wrap lines
-- Engine IDs always included
-
-This is **non-negotiable**.
-
----
-## Ergonomics & Authority Awareness
-
-### CLI-ERG-01: Authority-Aware Command Collapsing
-
-When the active Authority rule makes individual voting redundant (e.g. SOLO):
-- The CLI MAY collapse vote + accept into a single user action
-- The engine must still record:
-    - Vote(s)
-    - Acceptance
-    - Authority context
-#### Fail if
-- Mechanical history is skipped or elided
-
-### CLI-ERG-02: Explicitness Beats Convenience
-
-The CLI may reduce keystrokes, but must never:
-- Skip legitimacy checks
-- Infer intent
-- Apply defaults that create decisions
-#### Fail if
-- A resolution can be accepted without a conscious user action
-
----
-## Context & Safety
-
-### CLI-CTX-01: Context Switching Is Explicit
-
-Area switches, session pauses, or review mode entry must be explicit commands.
-#### Fail if
-- The CLI silently changes context
-### CLI-CTX-02: Import and Review Are Separate Mental Modes
-
-The CLI must visually and structurally distinguish:
-- Normal decision-making
-- Import review / consolidation
-#### Fail if
-- Imported resolutions feel indistinguishable from locally created ones
-
-CLI-INV-SOLO-01: Single Active Session in Solo Mode
-In solo mode, the CLI must allow at most one ACTIVE session at a time.
-If a session is active:
-Starting a new session must fail unless the current session is paused or closed.
-The CLI must guide the user to pause or close explicitly.
-Fail condition
-CLI allows multiple active sessions in solo mode.
-
-CLI-ERG-02: Status Commands Must Suggest Legal Next Actions
-Every status output must:
-List zero or more valid next actions
-Never suggest illegal or blocked actions
-Never auto-execute them
-
-CLI-INV-REVIEW-01: Review Actions Require Explicit Import Context
-A review accept or reject command must either:
-be executed within an active review context, or
-explicitly qualify the import ID.
-Fail if provenance is ambiguous.
-
-CLI-IO-02: Forced Imports Must Explicitly Mark All Resolutions UNDER_REVIEW
-
-CLI-OUT-01: Human-Readable Output Is Default; Machine Output Requires Flags
-
-CLI-INV-06: Review Is a Mutable Workspace Until Closed
-Accepting or rejecting during review is reversible
-Closing a review is irreversible
-Fail if:
-Review decisions are final before review close
-
-CLI-INV-07: Batch Operations Must Be Explicit
-Batch accept/reject must operate only on:
-current import
-current review
-Force flags required for superseding behavior
-Fail if:
-CLI silently supersedes local resolutions
-
-CLI-INV-08: Provenance Is Always Visible in Review
-For every imported resolution, the CLI must be able to show:
-Import ID
-Original area label (if any)
-Original session problem statement (read-only)
-Superseded local resolution (if applicable)
-Fail if:
-User cannot tell where a resolution came from
-
-CLI-INV-09: Review Commands Never Mutate Engine Without Sessions
-Every accepted resolution must:
-correspond to a session (even if hidden)
-have an acceptance context
-Batch operations may hide sessions, not eliminate them
-Fail if:
-Resolution appears without a session in audit
-
-CLI-INV-10: Review Is Not a Session
-Review does not:
-vote
-evaluate authority
-block or pause sessions
-Review only prepares or applies resolutions
-Fail if:
-Review alters active sessions directly
-
-CLI-INV-11: Next Actions Are Always Shown
-After every review command, CLI must show:
-Valid next steps (contextual) Examples:
-review show
-review accept
-review reject
-review close
-Fail if:
-User is left without guidance
-
-CLI-INV-12: Single Active Review (Solo Mode)
-In solo mode, the CLI must allow at most one active review at a time.
-Starting a new review requires closing the current review explicitly.
-Fail if
-User can open review open I-2 while I-1 is still active
-
-CLI-INV-13: Review Closure Semantics
-When charter review close is executed, any imported resolution still in UNDER_REVIEW must be transitioned to ABANDONED.
-Properties
-ABANDONED resolutions:
-are immutable
-are queryable in audit
-may be re-imported later
-do not affect local resolutions
-Fail if
-UNDER_REVIEW resolutions remain after close
-ABANDONED resolutions are treated as rejected or consolidated
-
-CLI-REV-01: Review Acceptance Is Mode-Constrained
-In solo mode, the CLI MAY allow direct acceptance or rejection of reviewed resolutions.
-In non-solo modes, the CLI MUST require session-mediated acceptance, or forbid acceptance entirely.
-
----
-
-CLI outside with no solo mode
-
-CLI-INV-V2-01: CLI Never Creates Consensus
-The CLI records decisions; it does not create them.
-Fail if:
-running a command implies agreement
-absence of data is treated as approval
-CLI-INV-V2-02: Non-Solo Authority Requires Explicit Participants
-If Authority ≠ SOLO:
-sessions must specify participants
-acceptance must validate against them
-Fail if:
-acceptance occurs without participant grounding
-CLI-INV-V2-03: Review Is a Governance Action
-Accepting or rejecting imported resolutions:
-is subject to Authority
-must be auditable
-must not bypass sessions
-Fail if:
-review behaves differently from normal decision-making
-CLI-INV-V2-04: CLI Is Honest About Its Limits
-The CLI must not pretend to know:
-who attended
-who agreed
-what was discussed
-Annotations may exist. Assertions may exist. Inferences may not.
-CLI-INV-V2-01: CLI Never Creates Consensus
-The CLI records decisions; it does not create them.
-Fail if:
-running a command implies agreement
-absence of data is treated as approval
-CLI-INV-V2-02: Non-Solo Authority Requires Explicit Participants
-If Authority ≠ SOLO:
-sessions must specify participants
-acceptance must validate against them
-Fail if:
-acceptance occurs without participant grounding
-
-CLI-INV-V2-03: Review Is a Governance Action
-Accepting or rejecting imported resolutions:
-is subject to Authority
-must be auditable
-must not bypass sessions
-Fail if:
-review behaves differently from normal decision-making
-CLI-INV-V2-04: CLI Is Honest About Its Limits
-The CLI must not pretend to know:
-who attended
-who agreed
-what was discussed
-Annotations may exist. Assertions may exist. Inferences may not.
-
-CLI-INV-REVIEW-01: Review Singularity
-Scope: CLI layer (process invariant, not engine invariant)
-Statement
-At most one Review may be active per Area at any given time in the CLI.
-Definition
-A Review is a bounded CLI construct representing the evaluation of an imported decision branch.
-A Review is active from charter review start until charter review close.
-Rules
-The CLI must reject attempts to start a new Review in an Area that already has an active Review.
-The CLI must surface the active Review clearly when commands are issued that would conflict with it.
-The CLI must guide the user to either:
-complete the current Review, or
-explicitly close it.
-Rationale
-Reviews represent focused deliberation, not background tasks.
-Allowing concurrent reviews creates implicit parallel legitimacy paths.
-Coordination required for multiple reviews exceeds CLI guarantees.
-Fail if
-Multiple Reviews can be active in the same Area without explicit user awareness.
-Imported resolutions from different Reviews are accepted without a clearly scoped evaluation context.
-Notes
-This invariant may be relaxed in hosted or server-based systems with participant coordination, ownership, and notification guarantees.
-The engine remains capable of supporting multiple Reviews; enforcement is purely CLI-level.
-
-CLI-INV-SESSION-RESUME-01: Participant Revalidation
-Statement
-On session resume, the CLI must explicitly revalidate participants and constraints before allowing votes or acceptance.
-Rules
-When charter session resume is issued:
-CLI must display:
-previous participant set
-current participant set
-CLI must require explicit confirmation:
-that the current participants are correct
-that the authority rule still applies
-that required approvers (if any) are present or knowingly absent
-Until confirmed:
-no voting
-no acceptance
-no candidate changes
-
-CLI-INV-PARTICIPANTS-01: Participants Are Explicit State
-The CLI must never infer participants
-Participant membership changes must be explicit commands
-Authority evaluation always uses the declared participant set
-Acceptance context must snapshot participants immutably
-This applies in:
-solo mode
-recorded meetings
-future multi-user systems
-
-CLI-ERG: Session Derivation Is Explicit and Non-Legitimizing
-The CLI may create a new session derived from a prior one
-The new session:
-has a new ID
-has no votes
-requires fresh acceptance
-Lineage is recorded for audit only
-Fail if:
-Votes or acceptance state are carried forward
-The new session auto-accepts anything
-
-CLI-INV: Constraint Enforcement Is Pre-Acceptance Only
-CLI may enforce arbitrary constraints
-CLI may block acceptance for ergonomic or policy reasons
-CLI must not encode constraint semantics into engine state
-Engine remains ignorant of why acceptance was blocked
-Fail if:
-engine behavior changes based on constraint metadata
-constraints alter engine evaluation rules
-This is exactly how git hooks, CI checks, and code review gates work.
-
-CLI-INV-SESSION-04: Restart Is Terminal
-restart-from:
-automatically closes the source session
-records linkage in audit history
-creates a new session with no carried votes
-
-CLI-INV-CAND-02: Candidate Editing Is Pre-Vote Only
-CLI must:
-allow candidate add/remove freely before voting
-block and explain once voting begins
-guide user toward restart-from
-
-CLI-INV-01: Single Active Session (Solo Mode)
-Only one active session may exist at a time.
-Starting another requires pause or close.
-CLI-INV-02: Explicit Context
-Area, session, and baseline context must be explicit or selected.
-The CLI must never guess.
-CLI-INV-03: Next Action Disclosure
-If an action leaves the system in a valid next state, the CLI must display available next actions.
-CLI-INV-04: No Silent Legitimacy Change
-Any action that affects authority, constraints, or acceptance conditions must block or require explicit confirmation.
-CLI-INV-05: Ergonomic Collapse Is Allowed
-The CLI may collapse steps (e.g., vote + accept in solo authority) but must preserve full engine history.
-CLI-INV-06: Single Active Baseline Review
-Only one baseline review may be active at a time.
-It must be explicitly closed.
-
-CLI-AUD-05: Participants Are Auditable First-Class Entities
-Statement
-Participant involvement must be auditable independently of sessions and resolutions.
-Fail if
-A resolution can be audited without visibility into who was involved
-Participant changes are only visible inside session-local views
-
----
-
 # Charter CLI — Invariants
-Status: FROZEN
-Applies to: Charter CLI
-Violations indicate a CLI correctness failure.
+Status: FROZEN  
+Applies to: Charter CLI (all versions)  
+Does NOT apply to: Charter Core engine semantics
 
-## 1. Context Safety
+Violations indicate a CLI correctness failure, not an engine bug.
 
-CLI-INV-01: Context Is Explicit  
+These invariants define the behavioral contract of the Charter CLI.
+They ensure that human-facing ergonomics never compromise legitimacy,
+determinism, or auditability.
+
+---
+
+## I. Identity & Naming
+
+### CLI-ID-01 — Engine Identity Is Canonical
+Every Area, Session, Resolution, Candidate, Scope, Authority, and Participant
+has a canonical engine ID.
+
+Rules:
+- Engine IDs are content-addressed hashes when possible, UUIDs otherwise
+- CLI-visible labels never replace engine IDs
+- All CLI operations ultimately resolve to engine IDs
+
+Fail if:
+- Any CLI command treats a label as authoritative identity
+
+---
+
+### CLI-ID-02 — Labels Are Ergonomic Only
+Labels exist solely for human usability.
+
+Rules:
+- Labels never encode meaning
+- Labels do not affect authority, scope, or legitimacy
+- Labels do not influence engine evaluation
+- Labels are Area-scoped by default
+
+Fail if:
+- CLI logic interprets label structure or naming conventions
+
+---
+
+### CLI-ID-03 — Area Context Is Required for Unqualified Labels
+If a label is used without Area qualification:
+- An active Area context must exist, or
+- The command must fail with a disambiguation error
+
+Fail if:
+- CLI guesses the Area implicitly
+
+---
+
+### CLI-ID-04 — Global Disambiguation Is Always Explicit
+When listing across Areas:
+- Labels must render as area/label
+
+Fail if:
+- Bare labels appear in global output
+
+---
+
+## II. Context & Mode Safety
+
+### CLI-CTX-01 — Context Is Explicit
 The CLI must never guess:
 - Area
 - Session
-- Baseline
+- Baseline (review)
 
-CLI-INV-02: Context Switching Is Visible  
-All context changes require explicit commands.
+Context must be explicitly selected or explicitly qualified.
 
-## 2. Mode Separation
+Fail if:
+- Any command executes under inferred context
 
-CLI-INV-03: Modes Are Distinct  
-Normal work, sessions, and baselines must feel different.
-No implicit blending is allowed.
+---
 
-## 3. Session Constraints
+### CLI-CTX-02 — Context Switching Is Visible
+Changing:
+- Area
+- Active session
+- Active baseline
 
-CLI-INV-04: Single Active Session (Solo Mode)  
-Solo mode allows only one active session.
+Requires an explicit command.
 
-CLI-INV-05: Candidate Mutation Is Pre-Vote Only  
-Once any stance exists:
-- candidates are frozen
+Fail if:
+- Context changes silently
 
-CLI-INV-06: Resume Requires Revalidation  
-Resuming a session requires explicit confirmation of participants.
+---
 
-## 4. Baseline Behavior
+### CLI-CTX-03 — One Active Context per Invocation
+A CLI invocation operates against exactly one Charter context.
 
-CLI-INV-07: Single Active Baseline  
-Only one baseline may exist per Area.
+Fail if:
+- Commands act on multiple contexts implicitly
+- Context ambiguity exists without explicit user intent
 
-CLI-INV-08: Baseline Is Persistent  
-Baseline state must survive restarts.
+---
 
-CLI-INV-09: Baseline Preview Is Non-Mutating  
-Preview commands must not alter state or emit audits.
+### CLI-CTX-04 — Context Switching Never Moves Data
+Context switching must not:
+- Move Charter data
+- Copy Charter data
+- Reinitialize storage
 
-## 5. Audit Presentation
+Fail if:
+- History mutates due to context switching
 
-CLI-INV-10: Audits Are Deterministic  
+---
+
+## III. Session Handling (CLI Layer)
+
+### CLI-SES-01 — Single Active Session (Solo Mode)
+In solo mode:
+- Only one active session may exist
+- New sessions require pause or close
+
+Fail if:
+- Multiple active sessions exist
+
+---
+
+### CLI-SES-02 — Candidate Editing Is Pre-Vote Only
+Candidates may be edited freely until the first stance is recorded.
+
+After first stance:
+- No add
+- No remove
+- No edit
+
+Fail if:
+- Candidate mutation occurs after voting begins
+
+---
+
+### CLI-SES-03 — Restart-From Is Terminal
+restart-from:
+- Closes the source session
+- Creates a new session with no votes
+- Records lineage for audit only
+
+Fail if:
+- Votes or acceptance carry forward
+
+---
+
+### CLI-SES-04 — Participant State Is Explicit
+Participants are explicit session state.
+
+Rules:
+- CLI never infers participants
+- Participant changes require explicit commands
+- Acceptance snapshots participants immutably
+
+Fail if:
+- Participants are implied or inferred
+
+---
+
+### CLI-SES-05 — Resume Requires Participant Revalidation
+On resume, CLI must:
+- Display prior participants
+- Display current participants
+- Require explicit confirmation
+
+Until confirmed:
+- No votes
+- No acceptance
+- No candidate changes
+
+Fail if:
+- Resume proceeds silently
+
+---
+
+## IV. Authority & Constraints (CLI Layer)
+
+### CLI-AUTH-01 — Constraints Are Authority-Equivalent
+Any rule that changes:
+- Who must agree
+- How agreement is evaluated
+
+Is authority-equivalent.
+
+Rules:
+- Cannot change mid-session
+- Cannot change on resume
+- Requires its own decision session
+
+Fail if:
+- Constraints mutate without authority governance
+
+---
+
+### CLI-AUTH-02 — Constraints Must Be Declared at Session Start
+All constraints must be:
+- Declared before any stance
+- Visible in session metadata
+- Immutable for the session lifetime
+
+Fail if:
+- Constraints are added after voting begins
+
+---
+
+### CLI-AUTH-03 — CLI Never Creates Consensus
+The CLI records decisions; it never creates them.
+
+Fail if:
+- Running a command implies agreement
+- Silence is treated as approval
+
+---
+
+### CLI-AUTH-04 — Ergonomic Collapse Preserves History
+The CLI may collapse steps (e.g., vote + accept in solo mode),
+but votes, acceptance, and authority context must still be recorded.
+
+Fail if:
+- Mechanical history is skipped
+
+---
+
+### CLI-AUTH-05 — CLI Is Honest About Its Limits
+The CLI must not claim to know:
+- Who attended
+- Who agreed
+- What was discussed
+
+Annotations may exist. Inferences may not.
+
+---
+
+## V. Baseline (Import Review / Consolidation)
+
+### CLI-BL-01 — Single Active Baseline
+At most one baseline may be active per Area.
+
+Fail if:
+- Multiple baselines exist concurrently
+
+---
+
+### CLI-BL-02 — Baseline Requires Session Pause
+If a session is active:
+- Baseline start or import must pause it
+
+Fail if:
+- Sessions and baseline interleave
+
+---
+
+### CLI-BL-03 — Baseline Is a Mutable Workspace
+Until baseline close:
+- Accept/reject is reversible
+
+On close:
+- Remaining UNDER_REVIEW → ABANDONED
+- Baseline becomes immutable
+
+Fail if:
+- Outcomes finalize implicitly
+
+---
+
+### CLI-BL-04 — Baseline Does Not Create Legitimacy
+Baseline review:
+- Never evaluates authority
+- Never votes
+- Never creates legitimacy directly
+
+All acceptance still occurs via sessions.
+
+Fail if:
+- Baseline behaves like a session
+
+---
+
+### CLI-BL-05 — Baseline Accept Always Creates Sessions
+Every accepted resolution:
+- Corresponds to a session
+- Is auditable
+- Has explicit acceptance context
+
+Fail if:
+- Resolution appears without a session
+
+---
+
+### CLI-BL-06 — Preview Is Read-Only
+Preview commands must:
+- Perform validation only
+- Create no objects
+- Emit no audits
+- Mutate no state
+
+Fail if:
+- Preview leaves artifacts
+
+---
+
+### CLI-BL-07 — Baseline Is Fully Auditable
+Baseline lifecycle must be auditable:
+- Start
+- Accept
+- Reject
+- Close
+
+Fail if:
+- Progress cannot be reconstructed
+
+---
+
+### CLI-BL-08 — No Implicit Carryover Between Baselines
+Each baseline is independent.
+
+Fail if:
+- Prior baseline affects new baseline implicitly
+
+---
+
+## VI. Flat File Import Rules
+
+### CLI-FLAT-01 — Flat Imports Never Create Legitimacy
+Flat imports must never result in accepted decisions
+without explicit review and acceptance.
+
+Fail if:
+- Imported resolutions become ACTIVE automatically
+
+---
+
+### CLI-FLAT-02 — All Flat Imports Enter Baseline Review
+Every flat file import must create a baseline.
+
+Fail if:
+- Imported resolutions bypass review
+
+---
+
+### CLI-FLAT-03 — Foreign Provenance Is Preserved
+Imported resolutions must retain clear external provenance.
+
+Fail if:
+- Imported and local resolutions are indistinguishable
+
+---
+
+### CLI-FLAT-04 — Content Matching Is Ergonomic Only
+Identical content detection:
+- Must not alter legitimacy behavior
+- Must not skip sessions
+
+Fail if:
+- Identical content auto-accepts
+
+---
+
+### CLI-FLAT-05 — Batch Operations Are Explicit
+Batch accept/reject must:
+- Operate only within the active baseline
+- Require explicit flags
+
+Fail if:
+- Batch operations act implicitly
+
+---
+
+## VII. Export & Import Safety
+
+### CLI-EXP-01 — Export Ignores Non-Closed Sessions With Warning
+On export:
+- CLOSED sessions are exported
+- ACTIVE / PAUSED sessions are ignored with warnings
+
+Fail if:
+- Sessions are silently dropped
+- Active sessions are exported as legitimate
+
+---
+
+### CLI-EXP-02 — No Implicit Session Closure
+Export must never:
+- Auto-close sessions
+- Convert paused or blocked sessions
+
+Fail if:
+- Export causes state transitions
+
+---
+
+### CLI-IMP-01 — RESTORE Is Destructive and Explicit
+RESTORE:
+- Replaces the Area entirely
+- Closes all sessions and baselines
+- Requires explicit confirmation
+- Emits a global audit
+
+Fail if:
+- Restore partially mutates state
+
+---
+
+## VIII. Audit Guarantees (CLI)
+
+### CLI-AUD-01 — Audits Are Read-Only
+Audit commands:
+- Never mutate state
+- Never infer correctness
+
+---
+
+### CLI-AUD-02 — Audits Are Deterministic
 Same input → same output.
 
-CLI-INV-11: Grep-Friendliness Is Mandatory  
+Ordering and aggregation must be explicit.
+
+---
+
+### CLI-AUD-03 — Grep-Friendliness Is Mandatory
 Audit output must:
-- be line-based
-- include engine IDs
-- have stable ordering
+- One event per line
+- Stable field order
+- Explicit keywords:
+  AREA, SESSION, RESOLUTION, AUTH, SCOPE, BASELINE
+- Always include engine IDs
 
-## 6. Export & Import UX
+Non-negotiable.
 
-CLI-INV-12: Export Ignores Active Sessions  
-Only CLOSED sessions may be exported.
+---
 
-CLI-INV-13: No Implicit Closure  
-Export must not alter session state.
+### CLI-AUD-04 — Participant Audits Are First-Class
+CLI must support:
+- Audit by participant
+- Participant timelines
+- Resolution participation views
 
-## 7. Storage Safety
+Fail if:
+- Participant involvement cannot be reconstructed
 
-CLI-INV-14: No Authoritative Data in Working Directories  
-Working directories may contain pointers only.
+---
 
-CLI-INV-15: Folder Deletion Is Safe  
-Deleting a folder must not delete Charter history.
+## IX. Storage & Durability
 
-## 8. Forward Compatibility
+### CLI-STOR-01 — No Authoritative Data in Working Directories
+Working directories may contain only:
+- Context pointers
+- Metadata
 
-CLI-INV-16: Server Compatibility Preserved  
-CLI storage assumptions must map to future shared or remote modes.
+Fail if:
+- Deleting a folder deletes Charter history
+
+---
+
+### CLI-STOR-02 — Authoritative Data Lives in Durable User Scope
+Authoritative data must:
+- Live in durable, user-scoped storage
+- Outlive project directories
+
+Fail if:
+- Durability depends on project folders
+
+---
+
+## X. Forward Compatibility
+
+### CLI-FWD-01 — Server Compatibility Is Preserved
+CLI behavior must remain compatible with:
+- Server mode
+- Shared or remote storage
+
+Fail if:
+- CLI assumptions block multi-user futures
+
+---
+
+## Lock Statement
+These invariants are frozen.
+
+If an implementation violates an invariant,
+the implementation is wrong — not the invariant.
