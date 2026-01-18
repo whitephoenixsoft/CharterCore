@@ -1,7 +1,7 @@
-# Charter CLI → Engine Command Map
+# Charter CLI → Engine Command Map (V3)
 *A canonical map of human actions to engine effects*
 
-Status: DRAFT (living, authoritative)
+Status: FROZEN
 Audience: Core maintainers, CLI implementers, future collaborators
 
 This document is the **single source of truth** for how Charter CLI commands interact with the Charter engine.
@@ -21,21 +21,6 @@ It is a **map**, not a recipe.
 
 ---
 
-## How to Read This Document
-
-Each command is described across five dimensions:
-
-1. **Purpose** — why the command exists
-2. **Engine Interaction** — what it touches (if anything)
-3. **Invariants Touched** — CLI or engine rules it must obey
-4. **Version Introduction** — when it becomes available
-5. **Notes & Constraints** — what it must never do
-
-If a command is listed here, it is intentional.
-If a behavior is not listed here, it is not guaranteed.
-
----
-
 ## Legend
 
 - **CLI-only**: Ergonomic or navigational; no engine mutation
@@ -44,7 +29,7 @@ If a behavior is not listed here, it is not guaranteed.
 - **Version tags**:
   - V1 — Minimum viable governance
   - V2 — Multi-participant and voting mechanics
-  - V3 — Advanced workflows and integrations
+  - V3 — Advanced workflows, nested deliberation, breakouts
 
 ---
 
@@ -55,13 +40,12 @@ If a behavior is not listed here, it is not guaranteed.
 Bootstrap a new Charter workspace.
 
 **Engine Interaction**  
-- Creates an empty engine store
-- Creates no Areas
-- Creates no governance
+- Creates empty engine store
+- No Areas
+- No governance
 
 **Invariants Touched**
-- CLI-CTX-01 (Context is explicit)
-- CLI-STOR-02 (Durable storage)
+- CLI-CTX-01, CLI-STOR-02
 
 **Introduced**  
 V1
@@ -69,27 +53,45 @@ V1
 **Notes & Constraints**
 - Must not create default Areas
 - Must not infer Authority or Scope
-- Resulting state is intentionally unusable until governance exists
+- Workspace intentionally unusable until governance exists
 
 ---
 
-### charter context use <name>
+### charter context use / switch <name>
 **Purpose**  
 Switch the active workspace context.
 
 **Engine Interaction**  
-CLI-only.
+CLI-only
 
 **Invariants Touched**
-- CLI-CTX-02 (Context switching is visible)
-- CLI-CTX-04 (No data movement)
+- CLI-CTX-02, CLI-CTX-04
 
 **Introduced**  
-V1
+V1 (switch shortcut in V3)
 
 **Notes & Constraints**
 - Must never copy or migrate data
 - Must never auto-create missing contexts
+
+---
+
+### charter context clone <name>
+**Purpose**  
+Copy context for experimentation
+
+**Engine Interaction**  
+CLI-only
+
+**Invariants Touched**
+- CLI-CTX-01, CLI-STOR-02
+
+**Introduced**  
+V3
+
+**Notes & Constraints**
+- Creates new context, no legitimacy
+- Useful for sandboxed deliberation
 
 ---
 
@@ -100,38 +102,31 @@ V1
 Create a new governance boundary.
 
 **Engine Interaction**  
-- Creates a new Area entity
-- Area starts in UNINITIALIZED state
+- Creates a new Area entity (UNINITIALIZED)
 
 **Invariants Touched**
-- Engine invariant: Areas require explicit Authority and Scope
-- CLI-ID-01 (Canonical engine IDs)
+- CLI-ID-01, Engine invariant: Areas require explicit Authority/Scope
 
 **Introduced**  
 V1
 
 **Notes & Constraints**
-- Area cannot host sessions until initialized
 - CLI must guide user toward Authority/Scope definition
 
 ---
 
-### charter area use <area>
+### charter area reference <area>/<label>
 **Purpose**  
-Set active Area context.
+Reference a resolution from another area.
 
 **Engine Interaction**  
-CLI-only.
+CLI-only (reference mapping for sessions/baselines)
 
 **Invariants Touched**
-- CLI-ID-03 (Area context required for labels)
+- CLI-ID-03, CLI-FLAT-03
 
 **Introduced**  
-V1
-
-**Notes & Constraints**
-- Must fail if area is ambiguous
-- Must surface Area status (INITIALIZED / UNINITIALIZED)
+V3
 
 ---
 
@@ -142,226 +137,222 @@ V1
 Begin deliberation toward a decision.
 
 **Engine Interaction**  
-- Creates a new session
+- Creates session
 - Declares participants
 - Declares authority context
 
 **Invariants Touched**
-- CLI-SES-01 (Single active session in solo mode)
-- CLI-SES-04 (Participants explicit)
-- Engine session invariants
+- CLI-SES-01, CLI-SES-04, Engine session invariants
 
 **Introduced**  
 V1
 
 **Notes & Constraints**
-- Current user is auto-added as participant
-- Additional participants optional (V2+)
-- No candidates implied
+- Current user auto-added (default-participant)
+- No implied candidates
 
 ---
 
 ### charter session restart-from <session_id>
 **Purpose**  
-Abandon a path and restart deliberation cleanly.
+Restart session while preserving lineage.
 
 **Engine Interaction**  
 - Closes source session
-- Creates new session with lineage
+- Creates new session
 
 **Invariants Touched**
-- CLI-SES-03 (Restart is terminal)
+- CLI-SES-03
 
 **Introduced**  
 V1
-
-**Notes & Constraints**
-- Votes and acceptance never carry forward
-- Lineage is audit-only
 
 ---
 
 ## Authority & Scope Commands
 
-### charter authority set
+### charter authority set / scope set
 **Purpose**  
-Define or change how decisions are evaluated.
+Define Area governance and decision boundaries.
 
 **Engine Interaction**  
-- Creates an Authority resolution
-- Supersedes prior Authority
+- Creates Authority or Scope resolutions
 
 **Invariants Touched**
-- Engine invariant: Authority is first-class
-- CLI-AUTH-01 (Authority equivalence)
+- CLI-AUTH-01, Engine invariants
 
 **Introduced**  
 V1
 
-**Notes & Constraints**
-- Requires its own session
-- Non-retroactive by definition
-
 ---
 
-### charter scope set
-**Purpose**  
-Define what an Area governs.
-
-**Engine Interaction**  
-- Creates a Scope resolution
-
-**Invariants Touched**
-- Engine scope invariants
-
-**Introduced**  
-V1
-
-**Notes & Constraints**
-- Scope is descriptive, not permissive
-- Does not grant authority
-
----
-
-## Voting & Participation (Future)
+## Voting & Participation Commands
 
 ### charter participant add / remove
 **Purpose**  
-Explicitly manage session participants.
+Explicit participant management
 
 **Engine Interaction**  
 - Mutates session participant set
 
 **Invariants Touched**
-- CLI-SES-04 (Participants explicit)
-- CLI-SES-05 (Resume revalidation)
+- CLI-SES-04, CLI-SES-05
 
 **Introduced**  
 V2
-
-**Notes & Constraints**
-- Removal may unblock authority
-- Changes are auditable events
 
 ---
 
 ### charter vote <accept|reject|abstain>
 **Purpose**  
-Record explicit stance.
+Explicit voting
 
 **Engine Interaction**  
 - Records stance
 - Triggers authority evaluation
 
 **Invariants Touched**
-- Engine authority invariants
-- CLI-AUTH-03 (CLI never creates consensus)
+- CLI-AUTH-03
 
 **Introduced**  
 V2
 
-**Notes & Constraints**
-- Abstention is first-class
-- No implicit votes
-
 ---
 
-## Baseline (Import / Consolidation)
+## Deliberate / Breakouts (V3)
 
-### charter import consolidate <file>
+### charter deliberate start <epic>
 **Purpose**  
-Introduce external history for review.
+Start nested, exploratory multi-session workflow.
 
 **Engine Interaction**  
-- Creates baseline
-- Imports resolutions as UNDER_REVIEW
+- CLI-only
+- Prepares structure for breakouts/options
 
 **Invariants Touched**
-- CLI-BL-01 through CLI-BL-08
-- Flat import invariants
+- CLI-DEL-01 through CLI-DEL-10
+- CLI-BRK-01 through CLI-BRK-05
+- CLI-SYN-01 through CLI-SYN-05
 
-**Introduced**  
-V1
-
-**Notes & Constraints**
-- Must pause active sessions
-- Creates no legitimacy
+**Notes**
+- Pauses any active session or baseline
+- Declares Epic for synthesis and option tracking
 
 ---
 
-### charter baseline accept
+### charter deliberate add-option <description>
 **Purpose**  
-Accept imported resolutions deliberately.
+Add a new option/problem for the current Deliberate
 
 **Engine Interaction**  
-- Creates hidden sessions
-- Applies authority rules
+- CLI-only until baseline review
 
-**Invariants Touched**
-- CLI-BL-05 (Acceptance always via sessions)
-
-**Introduced**  
-V1 (solo), V2 (multi-user)
-
-**Notes & Constraints**
-- Batch requires explicit flags
-- No auto-accept
+**Notes**
+- Option initially IN_PROGRESS until finalized
 
 ---
 
-## Audit & Introspection
-
-### charter audit timeline
+### charter breakout start <deliberate-id> [--participants <group>]
 **Purpose**  
-Expose immutable history.
+Start nested exploration
 
 **Engine Interaction**  
-Read-only.
+- CLI-only, artifacts stored for synthesis
 
-**Invariants Touched**
-- CLI-AUD-01 through CLI-AUD-04
-
-**Introduced**  
-V1
-
-**Notes & Constraints**
-- Deterministic output
-- Grep-friendly by design
+**Notes**
+- No authority or acceptance
+- Multiple breakouts may exist sequentially (one active at a time)
 
 ---
 
-## Spec Verification
-
-### charter spec verify
+### charter breakout complete <breakout-id>
 **Purpose**  
-Verify engine self-consistency.
+Finish breakout, push artifacts to synthesis
 
 **Engine Interaction**  
-- Evaluates embedded specs
-- No state mutation
-
-**Invariants Touched**
-- Engine spec invariants
-- CLI-AUD-01 (read-only)
-
-**Introduced**  
-V1
-
-**Notes & Constraints**
-- Failure blocks destructive operations
-- Identity verification only, not trust enforcement
+- CLI-only; prepares silent synthesis
 
 ---
 
-## Closing Notes
+### charter breakout close <breakout-id>
+**Purpose**  
+Abandon breakout, discard outputs
 
-This map is deliberately conservative.
+---
 
-If:
-- a command feels convenient but unclear
-- a behavior feels implicit
-- a shortcut feels tempting
+### charter breakout restart-from <breakout-id>
+**Purpose**  
+Restart breakout while preserving lineage
 
-Assume it is wrong until proven otherwise.
+---
 
-Charter optimizes for **legitimacy over speed**, **clarity over comfort**, and **memory over momentum**.
+### charter deliberate declare-complete
+**Purpose**  
+Finalize Deliberate → triggers baseline review
+
+**Engine Interaction**  
+- CLI-only; creates foreign baseline-style review
+
+**Notes**
+- Only finalized options marked READY enter baseline review
+
+---
+
+### Draft Candidates & Participant Groups
+**Purpose**  
+Reusable support structures
+
+**Engine Interaction**  
+- CLI-only
+
+Commands:
+- `charter draft-candidate create|list|show|delete`
+- `charter participant-group create|list|show|delete`
+
+---
+
+### Option States
+**Purpose**  
+Track lifecycle of Deliberate options
+
+**Engine Interaction**  
+- CLI-only until baseline review
+
+Commands:
+- `charter option list <deliberate-id>` — list options with states
+- `charter option set-state <option-id> <state>` — adjust state (READY, IN_PROGRESS, OPEN_ISSUE, DEFERRED)
+
+---
+
+## Baseline / Import / Export
+
+- `charter baseline preview` / `preview-unchanged` / `highlight-changes`
+- `charter baseline open|accept|reject|close|purge`
+- `charter import consolidate-auto|restore-auto`  
+- `charter import` / `charter export`
+- `charter deliberate export|import` — share Deliberate artifacts (foreign treatment)
+
+**Engine Interaction**
+- Hidden sessions created via accept
+- Baseline review enforces authority
+
+---
+
+## Audit & Spec Verification
+
+- `charter audit timeline|participants|by-participant|by-area|by-resolution`
+- `charter spec list|show|verify|diff`
+
+**Engine Interaction**
+- Read-only
+- Deterministic, auditable
+
+---
+
+## Notes / Constraints
+
+- Nested workflows (Deliberate → Breakouts → Options → Baseline Review) are **CLI-level only** until baseline acceptance
+- One active Deliberate / Breakout per workspace
+- Sessions / Baseline must be paused when Deliberate is active
+- Silent synthesis categorizes options automatically; state can be manually adjusted
+- Draft candidates and participant groups are global, reusable, CLI-only supports
