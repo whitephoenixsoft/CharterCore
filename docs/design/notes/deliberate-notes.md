@@ -1025,3 +1025,431 @@ or the Deliberate invariants
 or the Audit scaling model (yes, the yikes part 😄)
 But structurally?
 You’re standing on solid ground.
+
+---
+Great questions. You’re circling the last hard conceptual layer before everything snaps into place. I’ll go point-by-point, but I’m also going to zoom out and give you a unifying mental model, because several of these questions are actually the same problem seen from different angles.
+1. Audit: what it covers (conceptually), across all features
+Forget output shape for now. Think in terms of what must be reconstructible.
+Audit exists to answer four timeless questions
+Audit must always be able to reconstruct:
+What existed
+What happened
+Who was involved
+What became legitimate (and what didn’t)
+Everything else is implementation detail.
+Audit layers (this is the important structure)
+A. Structural events (existence)
+These answer “what objects came into being?”
+Area created
+Authority defined / superseded
+Scope defined / superseded
+Session started / paused / resumed / closed
+Baseline opened / closed
+Deliberate started / closed
+Breakout created / restarted / abandoned
+Draft candidate list created
+Participant group created
+These events are non-negotiable audit facts.
+B. Procedural events (movement)
+These answer “what process steps occurred?”
+Votes cast
+Accept attempts (success or failure)
+Rejections
+Pauses
+Restarts
+Imports
+Consolidation actions
+Review accept / reject
+Synthesis step executed
+These are how reality unfolded, not whether it “worked.”
+C. Legitimacy events (law)
+These answer “what changed the world?”
+Resolution accepted
+Resolution superseded
+Resolution abandoned
+Authority changed
+Scope redefined
+This is the constitutional layer.
+Everything else serves this.
+D. Referential events (memory glue)
+These answer “how are things connected?”
+“This supersedes that”
+“This derived from that”
+“This breakout fed into that synthesis”
+“This session used this draft list”
+“This baseline produced these resolutions”
+Without this, audit becomes a pile of logs instead of a story.
+Key insight
+Breakouts, drafts, participant groups, deliberates do not need special audit rules.
+They need:
+identity
+lifecycle events
+lineage
+Audit doesn’t care what they are — only that they existed, changed, and influenced legitimacy or not.
+2. Breakouts without voting: how do we decide their artifact?
+You’re feeling tension because you’re trying to make breakouts decisions.
+They’re not.
+Breakouts are write-only sensemaking tools
+They exist to:
+explore
+generate
+reduce ambiguity
+produce material for later judgment
+They must not decide anything.
+That’s why voting feels wrong here.
+Breakout output should be deliberately weak
+A breakout produces artifacts, not resolutions.
+Possible artifact types:
+Draft resolution text
+Option list
+Tradeoff summary
+Risk analysis
+Open questions
+Recommendations
+“Do not do X” warnings
+Requests for more participants
+These artifacts:
+have identity
+are auditable
+can be referenced
+but carry zero legitimacy
+This solves your discomfort.
+A breakout never answers “what do we do?”
+It answers “what did we learn?”
+Why limiting it to “multiple things” is correct
+Yes — breakouts must be allowed to produce multiple artifacts.
+Otherwise:
+you force premature convergence
+you recreate voting pressure
+you smuggle legitimacy in through structure
+Breakouts should feel loose but traceable.
+3. Draft lists & participant groups need labels — agreed (and safe)
+You’re right, and this is safe because:
+Labels here are referential
+Not authority-bearing
+Not legitimacy-bearing
+Label rules (simple and consistent)
+Draft candidate lists: DRAFT-CAND/<area>/<label>
+Participant groups: GROUP/<area>/<label>
+Rules:
+Area-scoped
+Ergonomic only
+Never interpreted by the engine
+Never imply authority
+Audit records:
+creation
+usage
+modification
+retirement
+They are tools, not law.
+4. Synthesis: how breakouts rebase into something real
+This is the missing keystone.
+Synthesis is the bridge between exploration and legitimacy
+Synthesis:
+consumes breakout artifacts
+produces proposal candidates
+does not decide
+does not accept
+does not vote
+Think of synthesis as:
+“Turning raw thought into something that could be judged.”
+Mental model (very important)
+Breakouts = parallel exploration
+Synthesis = convergence
+Baseline / Session = judgment
+Synthesis outputs:
+one or more proposals
+each proposal references:
+which breakouts informed it
+what alternatives were discarded
+what uncertainty remains
+This is why synthesis must be auditable.
+5. Restart-from for breakouts — yes, but lighter than sessions
+You’re correct to want this.
+Breakout restart semantics (lighter than sessions)
+restart-from:
+closes the old breakout
+preserves its artifacts
+creates a new breakout with:
+new ID
+clean artifact set
+explicit lineage
+No votes. No acceptance. No authority checks.
+Why this matters:
+prevents artifact drift
+preserves learning
+avoids overwriting thought
+It’s the same shape as session restart — but without legitimacy.
+6. Breakout output as action items or questions — absolutely correct
+This is the strongest insight in your list.
+A breakout artifact can be:
+“We need legal input”
+“We don’t understand constraint X”
+“This decision depends on Y”
+“We recommend deferring”
+These are coordination signals, not decisions.
+They feed into:
+synthesis
+future sessions
+participant group expansion
+new breakouts
+This mirrors real human meetings frighteningly well — and that’s a good sign.
+Pulling it all together (the clean mental model)
+Here’s the hierarchy you were searching for:
+Exploration layer (no legitimacy)
+Deliberates
+Breakouts
+Draft candidates
+Participant groups
+Convergence layer (still no legitimacy)
+Synthesis
+Proposal formation
+Baseline preparation
+Legitimacy layer
+Sessions
+Authority evaluation
+Acceptance
+Supersession
+Audit spans all layers, but legitimacy only exists at the bottom.
+Why this works (and why you were stuck)
+You were trying to:
+preserve human realism
+avoid hidden authority
+keep auditability
+not invent fake voting
+The solution is:
+Not everything needs a way to “decide.”
+Some things only need a way to be remembered.
+Breakouts don’t decide. They inform.
+Once you let that go, everything becomes simpler and more honest.
+If you want next, we can:
+formalize breakout invariants
+write synthesis simulations
+or define audit queries that make this usable
+You’re very close to the core being done.
+
+---
+Now, your synthesis questions — clarified
+You’re thinking in exactly the right direction. Here’s a clean framing that aligns with everything you’ve already built.
+1. Synthesis outputs = Options
+Yes — options is the right word.
+Each option is:
+a structured proposal candidate
+derived from breakout artifacts
+explicitly non-authoritative
+Options are what could be decided.
+2. The four lists make sense — with one adjustment
+Your instinct is right. I’d formalize them like this:
+Ready
+Options clear enough to enter sessions or baseline review
+In Progress
+Options actively being refined
+May spawn new breakouts
+Open Issues
+Known blockers, unanswered questions, missing info
+Deferred
+Explicitly not pursuing now
+Preserved, not discarded
+“Discarded” is dangerous — defer is safer and more honest.
+3. Restart-from absolutely applies to breakouts
+Yes.
+Restarting a breakout:
+preserves prior artifacts
+creates a new exploratory moment
+keeps audit continuity
+avoids silent mutation
+This keeps breakouts simple and honest.
+4. Declaring an Epic (Deliberate Goal)
+This is a first-class requirement.
+When a deliberate starts:
+an explicit Epic (goal) is declared
+all breakouts, options, and synthesis work reference it
+This prevents:
+scope drift
+artifact ambiguity
+post-hoc reinterpretation
+It also massively improves audit clarity.
+5. Labels over hierarchy
+You’re right to hesitate on strict structure.
+Use:
+labels
+references
+provenance
+Avoid:
+forced trees
+implicit workflows
+Let synthesis shape meaning — not enforce it.
+
+---
+Yes… this is definitely a big shift. What you’re realizing is that V3 isn’t just new commands — it’s a whole new lifecycle layer on top of the engine. Let me break down your points and give a structured mental model before we try to codify commands. I’ll also highlight decisions we can lock in versus things that may remain configurable.
+1. Breakout Join / Leave / Close
+Your intuition is right. “Join” and “Leave” make sense only if participants can independently enter and exit.
+Since breakouts are governed by explicit participant groups or session-level invitations, we can simplify:
+breakout complete → marks the breakout as finished and passes artifacts to synthesis
+breakout close → abandons it (discard outputs)
+Rejoin is unnecessary if participants are preassigned.
+✅ Decision: lock in complete/close semantics. Remove join/leave as CLI commands.
+2. Nested Workflows
+Active Deliberate → single active breakout at a time.
+Sessions and Baseline Reviews must be paused during Deliberate.
+Conversely, pausing a deliberate should allow sessions or baseline reviews to continue.
+Ensures engine legitimacy invariants are preserved.
+✅ Decision: lock in nested exclusivity and pausing rules.
+3. Drafts & Participant Groups
+Draft candidates and participant groups are available globally:
+For sessions
+For baseline reviews
+For breakouts / deliberates
+✅ Decision: lock in global availability of drafts and groups.
+4. Synthesis Command
+I agree: exposing a synth command to the user is conceptually misleading.
+Instead:
+All breakouts automatically synthesize outputs internally (silent)
+Categorize outputs into states:
+READY → can enter baseline review immediately
+IN_PROGRESS → needs more discussion/research
+OPEN_ISSUE → deferred
+DEFERRED → explicit skip
+Users can update states if needed (e.g., to redo or reclassify)
+✅ Decision: lock synthesis as internal to Deliberate, only allow state adjustments.
+5. Options in Deliberate
+Deliberate can add new options, which may spawn new breakouts.
+Breakouts can only produce options; options are not yet legitimate resolutions.
+Only finalized (READY) options can enter baseline review.
+✅ Decision: options are first-class, breakouts feed into them.
+6. Multiple Epics
+You may have multiple simultaneous epics.
+Artifacts for each epic must be stored until all are ready.
+Baseline review cannot start until the epic is explicitly declared complete.
+✅ Decision: support multi-epic artifact storage.
+7. Export / Import
+Makes sense for collaboration, sharing, or persisting multi-machine deliberations.
+Similar rules as baseline review: exports are foreign material, must be reviewed before legitimacy.
+✅ Decision: lock in export/import for Deliberates, treated as foreign material.
+8. Mental Model Summary
+Layer
+Active
+Outputs
+Auditable
+Legitimacy
+Session
+Yes
+Resolution
+Fully
+Yes
+Baseline Review
+Yes
+Resolution batch
+Fully
+Yes
+Deliberate
+Yes
+Options / Epics / Breakouts
+Fully
+No
+Breakout
+Yes (nested in Deliberate)
+Draft options
+Fully
+No
+Key rules:
+Only one Deliberate active at a time
+Only one Breakout active within a Deliberate
+Sessions / Baselines paused during Deliberate
+Synthesis silent, only categorization and state adjustments visible
+Export/import allowed for collaboration
+All actions fully auditable, but legitimacy flows only after baseline review
+9. Next Steps / Suggested Command Adjustments
+Breakout: replace join/leave with complete and close
+Deliberate: explicit add-option, declare-complete for epics
+Option states: READY, IN_PROGRESS, OPEN_ISSUE, DEFERRED
+Export/Import: deliberate export <file>, deliberate import <file>
+If you want, I can draft a new V3 CLI commands document reflecting all of these nested workflows, internal synthesis, and new option states, in a clean, frozen markdown format suitable for your governance folder. It would be fully aligned with these new rules and ready for specification.
+Do you want me to do that next?
+
+---
+
+Got it! Let’s reason through each point carefully and tie it to V3 principles.
+1. Deliberate Export / Import Concept
+Goal: Allow a single Deliberate (with all its breakouts, draft candidates, participant groups, and options) to be serialized, shared, or restored, while never creating legitimacy prematurely.
+Key points:
+Top-level unit: The file represents one deliberate. Each deliberate has a unique label or ID.
+Nested content: All breakouts, options, synthesis states, draft candidates, and participant groups are included.
+Breakouts: include participants (if any), artifacts, timestamps.
+Options: include current state (READY, IN_PROGRESS, OPEN_ISSUE, DEFERRED).
+Draft candidates & participant groups: included as supporting structures.
+CLI-only: Nothing in the export is engine-active. Import does not auto-activate or create sessions; it just reconstructs the Deliberate in the CLI workspace.
+Integrity / validation:
+Include hash/ID of the entire Deliberate content.
+Optional per-breakout hashes to ensure completeness.
+No authority check needed—foreign material is never trusted automatically.
+Multiple Deliberates: The workspace can have multiple deliberates paused/ready. Each import/export acts on one deliberate. Labels prevent collisions.
+Suggested commands:
+Copy code
+Bash
+charter deliberate export <deliberate-label> --file <filename> [--hash]
+charter deliberate import <filename> [--label <new-label>] [--verify-hash]
+Behavior:
+export:
+Serializes all nested artifacts.
+Optional hash generation for integrity.
+File contains metadata: deliberate ID, Epic, options, breakouts, participants, timestamps.
+import:
+Restores a Deliberate into CLI (CLI-only, no legitimacy created).
+Optionally renames label to prevent collisions.
+Optionally verifies hash for corruption or tampering.
+2. File Format Concept
+We want human-readable but machine-verifiable, similar to baseline JSON export.
+Structure (JSON / YAML example):
+Copy code
+Json
+{
+  "deliberate_id": "d1234",
+  "label": "feature-x-workshop",
+  "epic": "Define Feature X Goals",
+  "created_at": "2026-01-18T12:34:56Z",
+  "options": [
+    {
+      "option_id": "o001",
+      "description": "Explore database migration",
+      "state": "IN_PROGRESS"
+    },
+    {
+      "option_id": "o002",
+      "description": "Design API endpoints",
+      "state": "READY"
+    }
+  ],
+  "breakouts": [
+    {
+      "breakout_id": "b001",
+      "participants": ["alice", "bob"],
+      "artifacts": ["artifact1.md", "artifact2.json"],
+      "timestamps": {"start":"...","end":"..."}
+    }
+  ],
+  "draft_candidates": [
+    {"candidate_id":"c001","description":"Option template A"}
+  ],
+  "participant_groups": [
+    {"group_id":"g001","members":["alice","bob"]}
+  ],
+  "hash": "sha256:abcdef123456..."
+}
+Notes:
+Everything optional except top-level deliberate ID/label.
+Nested elements maintain their lineage IDs for auditing.
+Hash ensures the file is intact but does not imply legitimacy.
+3. Integrity Considerations
+Yes, we should hash, but only for file consistency, not authority.
+Deliberates remain CLI-only until synthesized → baseline review → sessions.
+Per-breakout hashes are optional but useful if collaborators want to detect corruption.
+Hashing also allows future plugins (e.g., syncing deliberates across machines) without trusting engine state prematurely.
+4. Workflow Summary
+charter deliberate export <label> → serialize deliberate + all nested artifacts + hash.
+Share file or store for later.
+charter deliberate import <file> → restores into workspace CLI.
+User can continue breakouts, add options, synthesize, or declare complete → triggers baseline review.
+This mirrors the baseline import/export workflow but respects the nested, non-legitimacy nature of deliberates.
+I can also draft this as a new “Deliberate Export / Import Spec” document in markdown with recommended CLI commands, file format, invariants, and examples, so we can plug it directly into your V3 docs.
+Do you want me to do that next?
