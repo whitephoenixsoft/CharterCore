@@ -473,6 +473,149 @@ Fail if:
 - CLI assumptions block multi-user futures
 
 ---
+## Deliberate (CLI Layer) — Invariants
+
+These invariants apply to the Deliberate feature and all related CLI affordances
+(workshops, breakouts, drafts, synthesis).
+
+Violations indicate a CLI correctness failure, not an engine bug.
+
+### CLI-DEL-01 — Deliberate Creates No Legitimacy
+A Deliberate must never:
+- accept resolutions
+- activate resolutions
+- supersede existing resolutions
+- evaluate authority
+
+Fail if:
+- any Deliberate action results in ACTIVE or ACCEPTED engine state
+- legitimacy appears without a baseline review or session
+
+---
+
+### CLI-DEL-02 — Deliberate Artifacts Are Non-Authoritative
+Artifacts created during Deliberate (drafts, notes, syntheses):
+- have no authority
+- have no scope
+- have no acceptance state
+
+They are inputs to review only.
+
+Fail if:
+- drafts behave like candidates
+- syntheses behave like resolutions
+
+---
+
+### CLI-DEL-03 — Deliberate Always Terminates in a Baseline Review
+Every Deliberate must end in exactly one of:
+- an explicit synthesis that creates a baseline review, or
+- explicit abandonment
+
+Fail if:
+- Deliberate artifacts can persist indefinitely without closure
+- outputs bypass baseline review
+
+---
+
+### CLI-DEL-04 — Participation Does Not Imply Authority
+Participation in:
+- a Deliberate
+- a breakout
+- a synthesis
+
+Does not imply:
+- session participation
+- voting rights
+- acceptance eligibility
+
+Fail if:
+- deliberation participants are implicitly treated as decision-makers
+
+---
+
+### CLI-DEL-05 — Breakouts Are Isolated and Non-Legitimizing
+Breakouts:
+- may produce drafts
+- may revise drafts
+- may merge drafts
+
+They must not:
+- accept anything
+- modify engine state
+- affect sessions directly
+
+Fail if:
+- breakout activity mutates authoritative data
+
+---
+
+### CLI-DEL-06 — Synthesis Is Explicit and Auditable
+Synthesis of Deliberate output must be:
+- an explicit CLI action
+- auditable
+- reproducible
+
+Fail if:
+- synthesis happens implicitly
+- synthesis outcome cannot be reconstructed from audit
+
+---
+
+### CLI-DEL-07 — Deliberate Is Time-Independent
+Deliberate:
+- may pause and resume
+- may span arbitrary time
+
+Legitimacy must never depend on:
+- duration
+- inactivity
+- implied consensus over time
+
+Fail if:
+- time passage changes outcomes
+
+---
+
+### CLI-DEL-08 — Deliberate Does Not Replace Sessions
+Deliberate may:
+- prepare
+- cluster
+- explore
+
+It must not:
+- replace sessions
+- weaken session authority
+- reduce acceptance explicitness
+
+Fail if:
+- Deliberate becomes a shortcut to avoid sessions
+
+---
+
+### CLI-DEL-09 — Receipts Exist for All Deliberate Actions
+All Deliberate actions must emit audit records:
+- open
+- join
+- breakout creation
+- draft creation or revision
+- synthesis
+- close or abandon
+
+Fail if:
+- any deliberation step is unauditable
+
+---
+
+### CLI-DEL-10 — Deliberate Is a CLI-Level Construct Only
+The engine:
+- is unaware of Deliberate semantics
+- stores only resulting imports and sessions
+
+Fail if:
+- engine behavior depends on Deliberate metadata
+
+---
 
 ## Lock Statement
 These invariants are frozen.
