@@ -1453,3 +1453,389 @@ User can continue breakouts, add options, synthesize, or declare complete → tr
 This mirrors the baseline import/export workflow but respects the nested, non-legitimacy nature of deliberates.
 I can also draft this as a new “Deliberate Export / Import Spec” document in markdown with recommended CLI commands, file format, invariants, and examples, so we can plug it directly into your V3 docs.
 Do you want me to do that next?
+
+---
+This is a very strong tightening pass. I’ll go point-by-point, explain why your instincts are right, and then resolve the open ambiguity in (8) because that’s the only place where there could be a conceptual knot if left vague.
+I’ll also explicitly call out what should now be locked in as invariants or design commitments, versus what can stay as “implementation freedom”.
+1. Partial acceptance → explicitly disallowed ✅
+You’re exactly right, and this should be locked in.
+Decision (lock it):
+Baseline review outcomes are pass / fail only per proposal.
+No partial acceptance.
+No field-level or section-level acceptance.
+Why this matters:
+Partial acceptance collapses decision boundaries.
+It forces interpretation (what part was accepted?) → legitimacy erosion.
+It makes audit reconstruction impossible without narrative.
+Correct pattern (what you described):
+Reject the original proposal.
+Create a new proposal (possibly inspired by the rejected one).
+Audit trail preserves lineage without mutating intent.
+➡️ This applies to:
+Import baseline reviews
+Deliberate → baseline handoff
+Deliberate imports
+Any future consolidation endpoint
+This matches Charter’s core mental model:
+Decisions are atomic; refinement requires a new decision.
+2. Superseding rules (foreign vs local) → clean separation ✅
+Your instinct here is spot-on and very Charter-aligned.
+Foreign baseline (import, deliberate import)
+Exactly one proposal may supersede a local resolution.
+Superseding exists only to:
+Mark the old resolution as historical
+Preserve audit lineage
+Why no internal supersession inside foreign baselines:
+It collapses the baseline into a shadow authority space.
+It encourages “decision laundering” outside sessions.
+It creates a parallel governance layer without legitimacy.
+Lock this rule:
+Supersession is a boundary-crossing operation only
+Foreign → local
+Never foreign → foreign
+Never deliberate → deliberate
+Everything else:
+Is just a new proposal
+May reference prior resolutions as inspiration (non-authoritative metadata)
+That directly prevents the “shadow area” concern you raised.
+3. Paused baselines → treat like paused sessions ✅
+You’re right: this doesn’t need special casing.
+Standardized rule (lock it):
+When a baseline resumes from pause:
+Context is revalidated
+Participants are re-shown
+No implicit continuation
+Only explicit actions advance it again
+Why this is correct:
+Time never creates legitimacy
+Silence never creates consent
+Consistency with session semantics prevents subtle drift
+This also means:
+We don’t need “in-progress” sub-states beyond UNDER_REVIEW
+The audit log is sufficient to reconstruct pauses
+4. Hashing invariants for exports → yes, absolutely ✅
+This is an important maturity step.
+You’re not granting legitimacy — you’re granting integrity guarantees.
+Two hashes should be locked in:
+Content hash
+Covers all exported artifacts
+Detects tampering or accidental mutation
+Local spec hash
+Captures:
+Charter version
+Spec version
+Invariant set version
+Answers: “Under what rules was this produced?”
+Why this matters:
+Protects against silent drift
+Enables warnings on import
+Preserves trust without enforcing correctness
+Crucially:
+Hash mismatch = warning, not failure (except restore)
+Legitimacy is still established only through review + sessions
+This fits Charter’s philosophy perfectly.
+5. Breakout synthesis failure → fail early, audit once ✅
+You’re correct: keep it simple.
+Rule (lock it):
+Breakouts are validated at synthesis time.
+Synthesis is pass / fail, not corrective.
+Failure emits:
+An audit event
+A blocking error
+No partial synthesis.
+Why this works:
+Breakouts are exploratory, not authoritative
+Errors should surface immediately
+Audit records that synthesis failed — not why it “should have worked”
+Narrative belongs in notes, not engine logic.
+6. Re-importing the same deliberate → allowed by design ✅
+You nailed the intent.
+Design stance (lock it):
+The same deliberate export may be imported multiple times.
+Charter does not attempt to “be smart” about intent.
+Hash comparison may warn:
+“Identical content”
+“Diverged content”
+Why this is correct:
+Supports:
+Forking
+Copying
+Replaying
+Keeps Charter deterministic and boring
+Avoids magical merge behavior
+Rejection is always available. That’s the safety valve.
+7. Historical vs abandoned baselines → already sufficient ✅
+Agreed.
+Historical: foreign superseded lineage
+Abandoned: closed without acceptance (implicitly rejected)
+No new state explosion needed. The existing lifecycle is expressive enough.
+This is a good example of not over-modeling.
+8. Internal baseline consolidation vs sessions → important clarification 🔑
+This is the one place where confusion is understandable — and important to resolve cleanly.
+Short answer
+There is no circular dependency, but there are two layers:
+Sessions are the only place legitimacy is created.
+Baseline reviews are orchestration layers that create sessions under the hood.
+Key distinction (lock this mental model):
+Visible sessions = human-initiated governance
+Hidden sessions = mechanical legitimacy enforcement
+Baseline reviews (import, deliberate handoff, etc.):
+Never accept directly
+Always materialize acceptance via sessions
+May hide those sessions for ergonomics
+Must still emit full audit lineage
+So:
+Baselines do not “replace” sessions
+Baselines schedule and batch sessions
+This is exactly the same pattern you already accepted for:
+Import reviews
+Flat file consolidation
+Deliberate simply becomes another producer of foreign material that feeds the same machinery.
+No façade. No shadow engine. Just orchestration.
+Final sanity check: have we missed any angle?
+At this point?
+No major conceptual gaps remain.
+What’s left is:
+Specification polish
+Naming consistency
+Implementation sequencing
+You’ve successfully:
+Unified human workflows with formal governance
+Prevented shadow legitimacy
+Kept the engine boring and correct
+Built a system that scales without collapsing trust
+You’re also right about your earlier observation:
+“It’s amazing how many times we need baseline review.”
+That’s not a flaw — it’s the structural insight of Charter:
+Any time meaning crosses a boundary, legitimacy must be re-earned.
+That’s the heart of the system.
+If you want, next we can:
+Extract a generic “Convergence Pattern” spec
+Or lock in naming for proposals / candidates / options
+Or freeze the deliberate → baseline → session pipeline as a canonical flow
+Just say where you want to go next.
+
+---
+
+Good call. Locking the flow now is exactly the right move before naming, specs, or code.
+I’ll give you:
+The canonical end-to-end sequencing (what happens, in what order)
+Where boundaries harden (what must pause what)
+Where legitimacy is created (and where it never is)
+A list of ambiguous terms that are now visible and should be resolved later
+This is a map, not a CLI script.
+Charter Canonical Flow (Locked v3 Mental Model)
+This is the only legitimate path from exploration to accepted governance.
+Nothing skips steps.
+Nothing collapses layers.
+0. Preconditions (Always True)
+An Area exists
+Authority and Scope are defined (or explicitly absent and blocking)
+Audit is enabled and immutable
+Exactly one of the following may be active at a time:
+Session
+Baseline Review
+Deliberate (with optional Breakout)
+This exclusivity is foundational.
+1. Exploration Layer (Non-Legitimizing)
+1.1 Deliberate (Optional, Pre-Governance)
+Purpose
+Explore a complex problem space without authority pressure.
+Creates
+Epic (goal / problem statement)
+Options (initial, unvalidated)
+Breakouts (bounded exploration units)
+Drafts, notes, artifacts
+Does NOT create
+Proposals
+Resolutions
+Authority
+Scope
+Legitimacy
+State
+OPEN
+PAUSED
+COMPLETED
+ABANDONED
+Invariant
+Deliberate is memory without power.
+1.2 Breakouts (Optional, Nested Under Deliberate)
+Purpose
+Isolate exploration of one option, question, or research thread.
+Creates
+Artifacts (notes, draft text, references)
+Context snapshots
+Audit records
+Rules
+Write-only
+Time-bounded
+Restart-from required to change outputs
+Does NOT
+Vote
+Decide
+Mutate engine state
+Output
+Zero or more candidate artifacts
+Success or failure at synthesis time (pass/fail)
+1.3 Silent Synthesis (Implicit, Deterministic)
+Purpose
+Collect and categorize breakout outputs.
+Occurs
+Automatically when breakouts close
+Automatically when deliberate resumes or completes
+Produces
+Options with explicit state:
+READY
+IN_PROGRESS
+OPEN_ISSUE
+DEFERRED
+Rules
+No human judgment implied
+No collapsing of disagreement
+Failure blocks progress (audited)
+Invariant
+Synthesis organizes; it never decides.
+2. Consolidation Boundary (Legitimacy Firewall)
+2.1 Deliberate Completion
+Action
+User explicitly marks deliberate as COMPLETED
+System Response
+Validates:
+At least one READY option (or none, explicitly)
+All synthesis is successful
+Freezes deliberate artifacts
+Prepares foreign material bundle
+Key Point
+This is not acceptance.
+It is a handoff.
+3. Baseline Review Layer (Legitimacy Preparation)
+Baseline review is the only gateway into governance.
+This applies to:
+Flat file imports
+Deliberate outputs
+Deliberate imports
+Future batch sources
+3.1 Baseline Creation
+Input
+Foreign material bundle (deliberate, import, etc.)
+Creates
+Baseline review
+Entries in UNDER_REVIEW state
+Rules
+No authority evaluation
+No votes
+No acceptance
+State
+ACTIVE
+PAUSED
+CLOSED
+3.2 Baseline Evaluation (Human, Explicit)
+For each proposal:
+ACCEPT
+REJECT
+Rules
+No partial acceptance
+No implicit transformation
+Supersession allowed only:
+One local resolution per proposal
+Boundary-crossing only
+Batching
+Allowed with explicit flags
+Still recorded individually
+4. Legitimacy Creation Layer (Sessions)
+4.1 Hidden or Visible Sessions
+For each ACCEPTED baseline proposal:
+A session is created
+Authority is applied
+Participants are explicit
+Votes (V2+) are recorded
+Acceptance is explicit
+Important
+Baseline never creates legitimacy
+Sessions always do
+Visibility
+CLI may hide these sessions
+Audit never does
+4.2 Session Outcomes
+Each session results in exactly one:
+ACCEPTED resolution
+REJECTED resolution
+CLOSED without outcome
+All are auditable.
+5. Post-Acceptance State
+5.1 Resolution Lifecycle
+ACTIVE (current governance)
+SUPERSEDED (by later accepted resolution)
+HISTORICAL (foreign, non-authoritative)
+No resolution disappears.
+5.2 Audit as Final Authority
+Audit can reconstruct:
+Deliberate → breakouts → synthesis
+Synthesis → baseline
+Baseline → sessions
+Sessions → acceptance
+If it can’t be audited, it didn’t happen.
+Locked Exclusivity Rules (Critical)
+These are non-negotiable:
+Active Session ⇒ no Baseline, no Deliberate
+Active Baseline ⇒ no Session, no Deliberate
+Active Deliberate ⇒ no Session, no Baseline
+Active Breakout ⇒ Deliberate active
+Pause is the only legal transition.
+Ambiguous Terms (Now Visible)
+These should be resolved later, but must not drift silently:
+6. Proposal
+Used for:
+Baseline entries
+Session inputs
+Question:
+Is proposal always pre-session?
+Or is it a generic “decision candidate”?
+⚠️ Needs naming clarity.
+7. Candidate
+Used historically for:
+Session vote options
+Drafts
+Now overlaps with:
+Options
+Proposals
+⚠️ High collision risk.
+8. Option
+Currently:
+Output of synthesis
+Pre-proposal artifact
+Question:
+Is an option promotable to a proposal?
+Or is it informational only?
+9. Draft
+Appears in:
+Breakouts
+Deliberate artifacts
+Session prep
+Question:
+Is a draft just text?
+Or a structured object?
+10. Session (Visible vs Hidden)
+Conceptually unified
+Ergonomically different
+⚠️ Needs documentation clarity, not semantic change.
+11. Baseline Review
+Used for:
+Import
+Deliberate handoff
+Future consolidation
+This is good — but worth naming as a pattern, not a feature.
+Final Lock Statement
+This flow is now coherent, closed, and complete.
+You can:
+Spec against it
+Code against it
+Teach against it
+Pause thinking without fear of collapse
+Naming, ergonomics, and UX can evolve later.
+The structure is sound.
+If you want next:
+We can freeze terminology
+Or extract baseline review as a generic convergence spec
+Or reduce this into a one-page “Charter Decision Pipeline” diagram (textual)
+Just point.
