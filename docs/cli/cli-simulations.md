@@ -519,6 +519,109 @@ User verifies specs and invariants.
 - Analysis does not equal decision
 
 ---
+# Charter CLI — Canonical Simulations (Frozen)
+
+Status: **FROZEN**  
+Applies to: **Charter CLI behavior layered over Charter Core**  
+Does NOT define: UX guarantees, permissions, roles, or engine internals  
+
+These simulations validate that the **CLI preserves engine legitimacy while enforcing cognitive safety and operational discipline**.
+
+They are:
+- not tests
+- not UX walkthroughs
+- not promises of convenience
+
+They answer one question only:
+
+**Does the CLI ever allow a human to bypass, dilute, or accidentally fabricate legitimacy?**
+
+If any simulation fails, a **CLI invariant has been violated**.
+
+---
+
+## XII. Extreme User Perspective Simulations (Scientists & Monks)
+
+**Purpose**  
+These simulations do not validate workflow or UX. They validate whether the CLI produces outputs that survive **scrutiny by the strictest possible users**: scientists (reproducible, auditable) and monks (canonically preserved, historically defensible).  
+
+**Context**  
+CLI artifacts (sessions, baselines, breakouts, syntheses, proposals) must be **legible, auditable, and defensible** regardless of whether such users ever interact with the system.
+
+**Rationale**  
+- These simulations **codify extreme scrutiny** as a contributor-facing guideline.  
+- They help future developers understand why the CLI behaves conservatively, why authority is never inferred, and why audit and legitimacy separation is critical
+---
+
+### Simulation CLI-23 — Scientist Perspective
+
+**Scenario**  
+A researcher reviews decisions to ensure reproducibility.
+
+**Flow**
+1. Inspect all accepted resolutions in an Area.
+2. Trace resolution provenance through:
+   - Baseline reviews
+   - Sessions
+   - Synthesis artifacts
+   - Breakouts
+3. Confirm all authority, participant sets, and stances are recorded explicitly.
+
+**Outcome**
+- Any resolution can be reconstructed step-by-step.
+- No inference, no assumption, no retroactive legitimacy.
+- CLI audit provides full timeline.
+
+**Validated CLI Invariants**
+- ENG-INV-03, ENG-INV-06, CLI-AUD-01–07  
+- Legitimacy is explicit and reconstructible.
+
+---
+
+### Simulation CLI-24 — Monastic / Canonical Perspective
+
+**Scenario**  
+A monastic archivist ensures decisions could survive centuries.
+
+**Flow**
+1. Examine all historical artifacts.
+2. Confirm:
+   - Supersession and retirement are explicit
+   - No silent deletions
+   - Baseline reviews and syntheses are fully auditable
+3. Check whether any authority, acceptance, or candidate state was inferred or skipped.
+
+**Outcome**
+- Historical continuity preserved.
+- Any future reader can see decision lineage and context.
+- CLI enforces audit permanence.
+
+**Validated CLI Invariants**
+- ENG-INV-01, ENG-INV-08, CLI-STOR-02, CLI-BL-07  
+- Immutable history is maintained.
+
+---
+
+### Simulation CLI-25 — Developer-as-Converted-Scientist Perspective
+
+**Scenario**  
+A software developer evaluates whether decisions can be explained and defended.
+
+**Flow**
+1. Examine all session votes and stances.
+2. Trace proposals to synthesis outputs.
+3. Ensure any external or imported material was reviewed explicitly.
+4. Check that no “shortcuts” or inferred consensus affected legitimacy.
+
+**Outcome**
+- Every decision has clear reasoning.
+- Every resolution could be audited by a third party.
+- Dissent and abstention are preserved.
+
+**Validated CLI Invariants**
+- CLI-SES-01–05, CLI-AUTH-03, CLI-DEL-01–05, CLI-BL-01–08
+
+---
 
 ## Closing Observation
 
