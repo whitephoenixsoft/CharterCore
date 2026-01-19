@@ -533,3 +533,118 @@ They validate only the **engine’s invariants**.
 
 If these simulations hold, Charter Core is trustworthy.
 If any fail, the engine is incorrect.
+
+---
+
+# Charter Core — Canonical Engine Simulations
+## Blocking & Non-Coercive Legitimacy
+
+Status: FROZEN  
+Purpose: Demonstrate engine behavior under legitimacy pressure
+
+---
+
+## SIM-ENG-01 — Majority Satisfied, No Acceptance
+
+**Context**
+- Authority: MAJORITY_PRESENT
+- Votes:
+  - Alice: ACCEPT
+  - Bob: ACCEPT
+  - Carol: ABSTAIN
+
+**Observation**
+- Authority would pass if evaluated
+
+**Outcome**
+- No resolution exists
+- Session remains open
+- Engine records evaluation only
+
+**Validated Invariant**
+- Votes do not create legitimacy
+
+---
+
+## SIM-ENG-02 — Failed Acceptance Blocks Cleanly
+
+**Context**
+- Authority: UNANIMOUS_PRESENT
+- Votes:
+  - Alice: ACCEPT
+  - Bob: REJECT
+
+**Action**
+- Acceptance attempted
+
+**Outcome**
+- Acceptance rejected
+- Session remains open
+- No side effects
+
+**Validated Invariant**
+- Authority gate is enforced at acceptance time
+
+---
+
+## SIM-ENG-03 — Authority Satisfied After Vote Change
+
+**Context**
+- Same as SIM-ENG-02
+
+**Action**
+- Bob changes vote to ACCEPT
+- Acceptance attempted
+
+**Outcome**
+- Resolution accepted
+- Session closed
+- Votes frozen
+
+**Validated Invariant**
+- Vote mutability before acceptance
+
+---
+
+## SIM-ENG-04 — Political Pressure Scenario
+
+**Context**
+- All votes ACCEPT
+- No one invokes acceptance
+
+**Outcome**
+- No decision exists
+- Engine does not advance state
+- History reflects hesitation accurately
+
+**Validated Invariant**
+- Engine does not rush humans
+
+---
+
+## SIM-ENG-05 — Attempted Shortcut
+
+**Context**
+- Interface attempts to auto-accept on vote threshold
+
+**Outcome**
+- Engine rejects action
+- No legitimacy created
+- Audit records invalid attempt
+
+**Validated Invariant**
+- Engine boundary is protected
+
+---
+
+## Closing Observation
+
+The engine:
+- evaluates only when asked
+- commits only when commanded
+- blocks legitimacy without coercion
+
+This ensures Charter remains:
+- politically neutral
+- temporally accurate
+- defensible under audit

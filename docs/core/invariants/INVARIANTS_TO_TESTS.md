@@ -493,3 +493,127 @@ They define the **legitimacy envelope** of Charter Core.
 
 If these pass, the engine is trustworthy.
 If any fail, the engine is incorrect — regardless of usability gains.
+
+---
+
+# Charter Core — Acceptance Tests
+## Voting & Acceptance Semantics
+
+Status: CANONICAL  
+Applies to: Charter Core Engine  
+Test Type: Black-box legitimacy validation
+
+---
+
+## AT-01 — Votes Without Acceptance Create No Legitimacy
+
+**Given**
+- A session with valid authority
+- Participants have all voted ACCEPT
+
+**When**
+- No acceptance action is executed
+
+**Then**
+- No resolution becomes ACTIVE
+- Session remains open
+- Audit shows votes only
+
+---
+
+## AT-02 — Acceptance Fails If Authority Not Satisfied
+
+**Given**
+- Authority: UNANIMOUS_PRESENT
+- Participants: Alice, Bob
+- Votes:
+  - Alice: ACCEPT
+  - Bob: REJECT
+
+**When**
+- Acceptance is attempted
+
+**Then**
+- Acceptance is rejected
+- Session remains open
+- No resolution is created
+- Audit records failed acceptance attempt
+
+---
+
+## AT-03 — Vote Change Enables Later Acceptance
+
+**Given**
+- Same setup as AT-02
+
+**When**
+- Bob changes vote to ACCEPT
+- Acceptance is attempted
+
+**Then**
+- Authority evaluates to satisfied
+- Resolution is accepted
+- Session closes
+- Votes are frozen
+
+---
+
+## AT-04 — Acceptance Freezes Votes
+
+**Given**
+- A session where acceptance has occurred
+
+**When**
+- A participant attempts to change a vote
+
+**Then**
+- Engine rejects the mutation
+- Audit records attempted mutation
+- Resolution remains unchanged
+
+---
+
+## AT-05 — Authority Evaluated Only at Acceptance
+
+**Given**
+- Votes fluctuate over time
+- Authority would sometimes pass and sometimes fail
+
+**When**
+- No acceptance is attempted
+
+**Then**
+- No legitimacy is created
+- No blocking occurs
+- Session remains evaluative only
+
+---
+
+## AT-06 — Acceptance Cannot Be Replayed
+
+**Given**
+- A session where acceptance has occurred
+
+**When**
+- Acceptance is attempted again
+
+**Then**
+- Engine rejects the action
+- No additional resolutions are created
+- Audit records invalid attempt
+
+---
+
+## AT-07 — Acceptance Uses Frozen Participant Set
+
+**Given**
+- Participants frozen at first stance
+- Votes satisfy authority
+
+**When**
+- Acceptance is attempted
+
+**Then**
+- Authority evaluation uses frozen participants only
+- Late joiners are ignored
+- Outcome is deterministic

@@ -603,3 +603,143 @@ These invariants are frozen.
 
 If an implementation violates an invariant,
 **the implementation is wrong — not the invariant.**
+
+---
+
+### ENG-AREA-03 — Governance Precondition
+No action that can create, affect, or validate legitimacy may occur unless the Area has:
+
+- Exactly **one active Authority resolution**
+- Exactly **one active Scope resolution**
+
+---
+
+# Charter Core — Voting & Acceptance Invariants
+Status: FROZEN  
+Applies to: Charter Core Engine  
+Violations indicate a correctness failure
+
+---
+
+## Purpose
+
+This document defines the **engine-level separation** between:
+
+- evaluation (stances / votes)
+- commitment (acceptance)
+
+The engine must never infer commitment from evaluation.
+Legitimacy is created only by explicit acceptance.
+
+---
+
+## Core Principle
+
+> **Evaluation is mutable.  
+> Commitment is explicit.  
+> Legitimacy occurs at one irreversible moment.**
+
+Votes express current evaluation.
+Acceptance records a decision.
+
+These are mechanically and temporally distinct.
+
+---
+
+## ENG-INV-VOTE-01 — Votes Are Evaluative Only
+
+Recorded stances:
+- ACCEPT
+- REJECT
+- ABSTAIN
+
+Votes:
+- create no legitimacy
+- may change prior to acceptance
+- are fully auditable
+- have no automatic effect
+
+The engine must never:
+- auto-accept based on votes
+- close a session due to vote thresholds
+- infer consensus
+
+---
+
+## ENG-INV-ACCEPT-01 — Explicit Acceptance Required
+
+A resolution becomes legitimate **only if**:
+
+- an explicit acceptance action occurs
+- within a session
+- under declared authority
+- within declared scope
+
+If no acceptance action occurs:
+- no decision exists
+- regardless of votes
+
+---
+
+## ENG-INV-ACCEPT-02 — Authority Gate at Acceptance Time
+
+At the moment acceptance is attempted:
+
+- Authority MUST be evaluated
+- Using current recorded stances
+- Using the frozen participant set
+
+If authority evaluation fails:
+- acceptance MUST be rejected
+- session MUST remain open
+- engine state MUST NOT mutate
+
+---
+
+## ENG-INV-ACCEPT-03 — Vote Mutability Before Acceptance
+
+Before acceptance:
+- votes may be changed freely
+- authority is not continuously evaluated
+
+After acceptance:
+- votes are frozen
+- authority context is sealed
+- legitimacy is immutable
+
+---
+
+## ENG-INV-ACCEPT-04 — Single Commitment Moment
+
+For a given proposal in a session:
+- acceptance may occur at most once
+- rejection does not close legitimacy
+- re-evaluation requires a new session
+
+There is:
+- no provisional acceptance
+- no conditional legitimacy
+- no implicit closure
+
+---
+
+## ENG-INV-ACCEPT-05 — Non-Retroactivity
+
+Changes to:
+- votes
+- authority
+- scope
+after acceptance:
+- MUST NOT reinterpret legitimacy
+- MUST NOT alter the accepted outcome
+
+---
+
+## Engine Boundary
+
+These invariants:
+- apply regardless of interface
+- are independent of CLI ergonomics
+- must hold in all embeddings
+
+Any interface that bypasses them is incorrect by definition.

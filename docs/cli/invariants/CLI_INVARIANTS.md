@@ -623,3 +623,33 @@ These invariants are frozen.
 
 Future features may extend them explicitly,
 but must never weaken them implicitly.
+
+---
+
+### CLI-AREA-01 — Governance Precondition
+No action that can create, affect, or validate legitimacy may occur unless the Area has:
+
+- Exactly **one active Authority resolution**
+- Exactly **one active Scope resolution**
+
+#### Enforcement Points
+- Baseline creation or opening
+- Session acceptance (explicit or hidden)
+- Import consolidation or restore
+- Deliberate → Baseline handoff
+
+#### CLI / Library Behavior
+- If a user attempts an operation in an Area without Authority or Scope:
+  - CLI/library must **reject the action**
+  - Emit **explicit error** indicating missing governance
+
+#### Rationale
+- Ensures **all governance decisions are grounded**
+- Preserves **legitimacy firewall principle**
+- Prevents **silent creation or misinterpretation** of legitimacy
+
+#### Notes
+- Applies **Area-wide**, not per baseline, session, or deliberate
+- Supports both **solo users** and **agile/multi-user teams**
+- Future extensions may add power-user overrides, but only explicitly
+-
