@@ -42,7 +42,7 @@ A session:
 - declares an authority
 - declares constraints
 - records explicit participants
-- evaluates explicit proposals
+- evaluates explicit candidates 
 - records explicit stances
 - terminates explicitly
 

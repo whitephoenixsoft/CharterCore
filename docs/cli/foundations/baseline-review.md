@@ -1,11 +1,12 @@
 # Baseline Review v2
-Status: DRAFT → FROZEN (Target)
+Status: DRAFT → FROZEN (Target)  
 Applies to: Charter CLI and Charter Core interaction layer
 
 ## Purpose
 
-Baseline Review is the mechanism by which **foreign proposals** are evaluated
-and either integrated into Charter history or explicitly rejected.
+Baseline Review is the mechanism by which **foreign or external proposals**
+are evaluated and either integrated into Charter history
+or explicitly rejected.
 
 It exists to prevent:
 - silent trust of external data
@@ -40,6 +41,7 @@ A Baseline Review is:
 - mutable until closed
 - auditable in full
 - isolated from active decision-making
+- non-legitimizing by design
 
 ---
 
@@ -52,8 +54,10 @@ Baseline Review does NOT:
 - create consensus
 - accept decisions directly
 - modify existing resolutions
+- reinterpret imported legitimacy
 
 Any appearance of legitimacy is a CLI abstraction only.
+All legitimacy is created through sessions.
 
 ---
 
@@ -65,8 +69,10 @@ A Baseline Review is created by:
 
 - flat file import
 - consolidate import
-- restore preparation (pre-confirmation)
-- Deliberate handoff (future)
+- Deliberate handoff
+
+Restore operations **do not** create baselines.
+Restore replaces the Area entirely and bypasses review.
 
 On creation:
 
@@ -87,8 +93,10 @@ During review:
   - marked unchanged / modified (ergonomic only)
 
 No authority is evaluated at this stage.
+No legitimacy is created.
 
-Acceptance and rejection are *preparatory actions*.
+Acceptance and rejection are **reversible preparatory actions**
+until the baseline is closed.
 
 ---
 
@@ -103,11 +111,12 @@ When a proposal is accepted:
 
 Batch acceptance:
 - creates multiple sessions
-- does not collapse legitimacy into one event
+- does not collapse legitimacy into a single event
 
 Rejected proposals:
 - remain auditable
-- do not affect local state
+- do not affect local legitimacy
+- carry no semantic meaning beyond “not accepted”
 
 ---
 
@@ -120,6 +129,7 @@ When `baseline close` is executed:
 - Paused sessions may resume
 
 Closure is irreversible.
+Unaccepted proposals do not linger ambiguously.
 
 ---
 
@@ -130,14 +140,16 @@ Closure is irreversible.
 - No proposal becomes active implicitly
 - Review history must be reconstructible end-to-end
 - Authority evaluation is never bypassed
+- Baselines never reinterpret imported authority or scope
 
 ---
 
 ## Relationship to Other Constructs
 
-- **Import**: creates a Baseline Review
+- **Import (consolidate / flat)**: creates a Baseline Review
 - **Deliberate**: may produce a Baseline Review
 - **Session**: the only source of legitimacy
+- **Restore**: replaces state, bypasses review entirely
 - **Audit**: must show full baseline lineage
 
 ---

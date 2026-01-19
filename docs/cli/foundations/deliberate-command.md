@@ -31,6 +31,7 @@ Deliberate is:
 - resumable across time
 - compatible with solo and group use
 - capable of producing structured outputs
+- produces options with explicit states (e.g., READY, IN_PROGRESS, DEFERRED)
 
 Deliberate models how humans actually think:
 - workshops
@@ -104,6 +105,8 @@ Synthesis may not:
 - bypass review
 - auto-accept outcomes
 - imply consensus
+
+Artifacts and options may be revised, deferred, or closed during Deliberate, as they represent thinking-in-progress rather than commitments.
 
 ---
 
