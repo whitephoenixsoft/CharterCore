@@ -1,7 +1,7 @@
 # Sessions, Decisions, and Legitimacy  
 ## How Charter Moves From Thought to Commitment
 
-This document explains **how Charter turns human activity into legitimate decisions**.
+This document explains **how Charter turns recorded human activity into legitimate decisions**.
 
 It complements:
 - *Audit, Breakouts, and Synthesis* (exploration → convergence)
@@ -9,170 +9,210 @@ It complements:
 This document covers:
 - sessions
 - authority
-- proposals
+- proposals and candidates
 - acceptance
 - closure
+- legitimacy preservation
 
-Together, these documents describe the full governance lifecycle from start to finish.
+Together, these documents describe the full governance lifecycle —
+from thinking, to preparation, to commitment.
 
 ---
 
 ## The Core Distinction
 
-Charter separates three things that humans often blur:
+Charter separates three things humans routinely collapse:
 
-1. **Doing work**
+1. **Exploring and doing work**
 2. **Reaching agreement**
 3. **Recording legitimacy**
 
 Only the third creates authority.
 
-Everything else prepares for it.
+Everything else exists to support it —  
+and must never be mistaken for it.
 
 ---
 
 ## Sessions: The Only Place Legitimacy Is Created
 
-A **session** is the smallest unit of legitimacy in Charter.
+A **session** is the smallest and only unit of legitimacy in Charter.
 
 A session:
-- has a defined authority
-- has explicit participants
+- declares an authority
+- declares constraints
+- records explicit participants
 - evaluates explicit proposals
 - records explicit stances
-- ends in acceptance or non-acceptance
+- terminates explicitly
 
 Nothing outside a session creates legitimacy.
 
 Not breakouts.  
 Not synthesis.  
-Not baselines.  
+Not baseline reviews.  
 Not imports.  
+
+Sessions do not *discover* decisions.  
+They *record* them.
 
 ---
 
-## Proposals: What Sessions Evaluate
+## Proposals and Candidates: What Sessions Evaluate
 
-A proposal is a **candidate resolution** presented to a session.
+A **proposal** is a concrete claim presented for legitimacy.
 
 Proposals may originate from:
 - synthesis outputs
 - baseline reviews
-- direct authoring
-- imports (after review)
+- deliberate authoring
+- imported material (after review)
 
 A proposal:
 - has identity
 - has content
 - has provenance
-- has no authority until accepted
+- carries **no authority** until accepted
 
-Sessions do not invent proposals — they judge them.
+Within a session, proposals are evaluated as **candidates**.
+
+Candidates:
+- imply no intent
+- imply no endorsement
+- acquire meaning only if accepted
+
+Sessions do not invent content.
+They judge whether content becomes legitimate.
 
 ---
 
 ## Authority: How Agreement Is Measured
 
-Authority defines:
-- who must participate
+Authority defines **how legitimacy is computed**, not what is correct.
+
+Authority specifies:
+- who has standing
 - how stances are evaluated
 - what counts as acceptance
 
 Authority is:
 - explicit
-- immutable for a session
+- immutable for the lifetime of a session
 - evaluated mechanically
 
-Authority does not infer intent.
-Authority does not guess consensus.
-Authority only computes outcomes from recorded stances.
+Authority never:
+- infers intent
+- interprets silence
+- assigns meaning to content
+- resolves ambiguity
+
+Authority measures agreement — nothing more.
 
 ---
 
-## Stances: Recorded, Not Interpreted
+## Stances: Explicit, Final, Auditable
 
-Participants express stances explicitly:
+Participants record stances explicitly:
 - ACCEPT
 - REJECT
 - ABSTAIN
-- (future extensions possible)
+- (extensions may exist, but must be explicit)
 
 Stances:
 - are first-class audit events
 - never expire
 - are never reinterpreted
+- freeze candidate sets once recorded
 
-Silence is not a stance.
-Absence is not a stance.
+Silence is not a stance.  
+Absence is not a stance.  
+Metadata is not a stance.
+
+If it was not recorded, it did not happen.
 
 ---
 
-## Acceptance: A Deliberate Act
+## Acceptance: Recording Legitimacy
+
+Acceptance is a **deliberate act**, not an outcome inference.
 
 Acceptance:
+- occurs explicitly
 - occurs once per session
-- is explicit
 - is auditable
-- freezes the outcome
+- seals legitimacy permanently
 
-Acceptance does not erase disagreement.
-Acceptance records legitimacy.
+Acceptance does not:
+- erase disagreement
+- imply correctness
+- imply permanence
+- suppress alternatives
 
-A rejected or blocked session is still valuable history.
+Acceptance records *that legitimacy occurred* —
+not that everyone agreed.
 
 ---
 
-## Closure: Ending the Moment
+## Closure: Ending the Legitimacy Moment
 
 When a session closes:
 - its authority context is sealed
-- its participants are frozen
-- its outcome becomes immutable
+- its participant set is frozen
+- its outcomes become immutable
 
-Closed sessions are:
-- exportable
-- auditable
-- referenceable
-- permanent
+Closed sessions:
+- are exportable
+- are auditable
+- are referenceable
+- persist indefinitely
 
-Nothing reopens a session.
-New decisions require new sessions.
+Sessions never reopen.
+New legitimacy always requires a new session.
 
 ---
 
-## Restarting: Preserving History Without Carrying Authority
+## Restart-From: Preserving Context Without Carrying Authority
 
-Restart-from exists to:
-- preserve context
-- discard legitimacy
-- continue work safely
+Restart-from exists to preserve **memory**, not legitimacy.
 
 Restarting:
 - closes the prior session
 - creates a new session
-- carries no votes
+- carries no stances
 - carries no acceptance
 - records lineage only
 
-This mirrors human reality:
-> “We talked about this before — but we’re deciding again.”
+This reflects human reality:
+
+> “We discussed this before —  
+> but this is a new decision.”
+
+Nothing is erased.
+Authority is not inherited.
+History remains visible.
 
 ---
 
 ## Baseline Review: Legitimacy at Scale
 
-Baseline review exists to:
-- evaluate many proposals together
-- preserve deliberation history
-- batch acceptance safely
+Baseline review is a **consolidation boundary**, not a decision system.
+
+It exists to:
+- gather proposals
+- preserve provenance
+- structure review
+- prepare sessions safely
 
 Baseline review:
-- prepares proposals
-- never creates legitimacy itself
-- produces sessions (explicit or hidden)
+- never evaluates authority
+- never votes
+- never creates legitimacy directly
 
-Acceptance still happens through sessions.
-Baseline review only orchestrates them.
+Every accepted outcome still corresponds to a session —
+explicitly or mechanically.
+
+Baseline review orchestrates legitimacy.
+It does not replace it.
 
 ---
 
@@ -181,15 +221,16 @@ Baseline review only orchestrates them.
 Imported material is always treated as:
 - foreign
 - non-authoritative
-- potentially incomplete
+- historically contextual
 
 Import creates:
 - review context
-- provenance
-- audit trails
+- preserved provenance
+- auditable lineage
 
-Legitimacy is always local.
+Local authority always governs acceptance.
 Trust is never assumed.
+Similarity never implies legitimacy.
 
 ---
 
@@ -204,20 +245,21 @@ Trust is never assumed.
 2. **Convergence**
    - Synthesis
    - Structured proposals
-   - Discarded alternatives
+   - Discarded paths
    - Open issues
 
 3. **Evaluation**
    - Sessions
    - Authority
-   - Stances
+   - Explicit stances
 
 4. **Legitimacy**
    - Acceptance
    - Closure
-   - Audit permanence
+   - Immutable outcomes
 
 5. **Memory**
+   - Audit
    - Export
    - Import
    - Baseline review
@@ -226,6 +268,7 @@ Trust is never assumed.
 At no point does Charter:
 - guess intent
 - infer agreement
+- reinterpret silence
 - erase disagreement
 - shortcut legitimacy
 
@@ -238,15 +281,16 @@ Most systems collapse:
 - silence into consent
 - outcomes into history
 
-Charter does the opposite.
+Charter refuses to.
 
 It preserves:
-- disagreement
 - uncertainty
-- process
-- intent
+- disagreement
+- abandoned paths
+- failed attempts
+- context
 
-Legitimacy becomes something you can *prove*, not *claim*.
+Legitimacy becomes something you can **demonstrate**, not assert.
 
 ---
 
@@ -256,10 +300,11 @@ Charter does not optimize for speed.
 It optimizes for **defensibility**.
 
 If a decision mattered:
-- you can explain how it happened
-- who was involved
-- what alternatives existed
-- why this outcome was legitimate
+- you can show how it was evaluated
+- under what authority
+- by whom
+- against what alternatives
+- at what moment
 
-And if you can’t —
-Charter won’t pretend you can.
+And if you cannot —
+Charter will not pretend that you did.

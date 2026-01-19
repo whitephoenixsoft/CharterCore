@@ -1,10 +1,11 @@
 # Audit, Breakouts, and Synthesis  
 ## How Charter Remembers Without Deciding
 
-This document explains **how Charter observes and records reality** without prematurely deciding it.
+This document explains **how Charter records human activity** without turning it into decisions.
 
-It exists to guide future specifications — especially auditing — by clarifying the *roles* of:
+It exists to guide future specifications — especially auditing — by clarifying the *roles and boundaries* of:
 - breakouts
+- options
 - synthesis
 - baselines
 - sessions
@@ -18,34 +19,39 @@ This is a mental model.
 
 ## The Core Principle
 
-Charter distinguishes between:
+Charter distinguishes between three fundamentally different human activities:
 
-- **Exploration** (thinking, learning, generating)
-- **Convergence** (shaping, consolidating, preparing)
-- **Legitimacy** (deciding, accepting, committing)
+- **Exploration** — thinking, learning, questioning, drafting
+- **Convergence** — structuring, grouping, refining, preparing
+- **Legitimacy** — deciding, accepting, committing
 
-Audit must span all three —  
-but **legitimacy exists only in the last**.
+Audit must span all three.
+
+**Legitimacy exists only in the last.**
+
+Everything before legitimacy is memory.
 
 ---
 
 ## Moments in Time, Not Streams
 
-A breakout is not an ongoing state.
-A session is not an ongoing state.
+A breakout is not an ongoing state.  
+A session is not an ongoing state.  
 A synthesis is not an ongoing state.
 
 Each is a **bounded moment in time** with:
 - a start
-- a set of participants
+- a declared context
+- a set of participants (if any)
 - a set of inputs
 - a set of outputs
-- an end
+- an explicit end
 
-Audit records **that the moment happened** — not whether it was correct.
+Audit records **that the moment occurred** —  
+not whether it was correct, complete, or successful.
 
-This is why breakouts make sense:
-they are *recorded moments of exploration*.
+Charter records moments so that humans can revisit them later
+without rewriting history.
 
 ---
 
@@ -57,17 +63,19 @@ They:
 - do not vote
 - do not accept
 - do not reject
+- do not evaluate authority
 - do not create legitimacy
 
-A breakout may produce **multiple artifacts**, including:
+A breakout may produce **any number of artifacts**, including:
 - draft resolution text
-- option lists
-- tradeoff summaries
-- risk notes
+- option descriptions
+- problem statements
+- tradeoff notes
+- risks and concerns
 - unanswered questions
 - action items
 - recommendations
-- requests for further exploration
+- follow-up prompts
 
 These artifacts:
 - have identity
@@ -76,10 +84,40 @@ These artifacts:
 - carry **zero authority**
 
 Breakouts answer:
-> “What did we learn?”
+> “What happened during this exploration?”
 
 They never answer:
-> “What should we do?”
+> “What should be decided?”
+
+Breakouts are **guided note-taking with receipts**.
+
+---
+
+## Options: Exploratory Placeholders
+
+Options represent **things worth thinking about**, not things worth deciding.
+
+An option may be:
+- a proposed solution
+- a question
+- a concern
+- a hypothesis
+- a direction
+- a reframing of the problem
+
+Options:
+- may be created explicitly before a breakout
+- may emerge during a breakout
+- may change meaning over time
+- may be closed, deferred, or replaced
+
+Options are **mutable during exploration**.
+
+They are not commitments.
+They are not candidates.
+They are not proposals.
+
+They are memory anchors.
 
 ---
 
@@ -88,97 +126,112 @@ They never answer:
 Because breakouts are moments, not streams:
 
 - restarting a breakout:
-  - closes the original breakout
-  - preserves all prior artifacts
-  - creates a new breakout with explicit lineage
-  - begins with a clean artifact set
+  - closes the prior breakout
+  - preserves all produced artifacts
+  - records explicit lineage
+  - begins a new exploratory moment
 
 Nothing is erased.
 Nothing is overwritten.
-Learning accumulates.
+Earlier thinking remains visible — even if abandoned.
+
+This ensures audit reflects *how understanding evolved*, not just where it landed.
 
 ---
 
 ## Synthesis: Convergence Without Authority
 
-Synthesis exists between exploration and legitimacy.
+Synthesis is not a vote.
+It is not a decision.
+It is not a command.
+
+Synthesis is the act of **structuring what already exists**.
 
 It:
-- consumes breakout artifacts
-- shapes them into structured proposals
-- records discarded alternatives
-- documents remaining uncertainty
+- groups related breakout artifacts
+- refines language
+- separates alternatives
+- records discarded paths
+- identifies unresolved questions
+- clarifies readiness
 
 Synthesis does **not**:
-- vote
 - accept
 - reject
-- evaluate authority
+- override
+- interpret authority
 
 Synthesis answers:
-> “What are the coherent options worth judging?”
+> “What are the things we now understand well enough to judge?”
 
-It prepares material — it does not judge it.
+Synthesis may happen:
+- incrementally
+- implicitly
+- repeatedly
+
+Its effects must be **auditable**, even if the act itself is not exposed as a standalone command.
 
 ---
 
 ## Relationship to Baseline Review
 
-Synthesis is intentionally similar to baseline review in *shape*:
+Baseline review is the **universal consolidation boundary** in Charter.
 
+It exists wherever:
+- work is imported
+- work is merged
+- work is handed off
+- work is prepared for legitimacy
+
+Synthesis and baseline review are similar in shape:
 - both consolidate multiple inputs
-- both produce reviewable artifacts
 - both are auditable
-- neither creates legitimacy directly
+- both prepare material for sessions
+- neither creates legitimacy
 
-Key difference:
-- **Baseline review evaluates foreign or historical material**
-- **Synthesis evaluates exploratory material created locally**
+Key distinction:
+- **Synthesis structures local exploratory material**
+- **Baseline review evaluates foreign or consolidated material**
 
-Both must end explicitly.
-
-Both may:
-- finalize outputs
-- or kick work back for further breakouts
+Both must:
+- terminate explicitly
+- either produce reviewable outputs or be abandoned
 
 ---
 
-## From Synthesis to Legitimacy
+## From Exploration to Legitimacy
 
-Once synthesis produces proposals:
+Once exploration converges:
 
-- those proposals may:
-  - enter a baseline review
-  - or be introduced into sessions
-  - or be deferred entirely
+- options may become **proposals**
+- proposals may enter **baseline review**
+- baseline review may create **sessions**
+- sessions may create **legitimacy**
 
-Legitimacy is created only when:
-- a session evaluates a proposal
-- authority is applied
-- acceptance occurs
+At no point does Charter assume intent.
 
-Audit does not confuse preparation with decision.
+Preparation is never mistaken for decision.
+Memory is never mistaken for agreement.
 
 ---
 
 ## What Audit Must Preserve
 
-Audit exists to reconstruct reality, not intent.
+Audit exists to reconstruct reality — not judgment.
 
 It must always be possible to answer:
 
 - What exploration occurred?
+- When did it occur?
 - Who participated?
-- What artifacts were produced?
-- How were those artifacts shaped?
-- Which artifacts became proposals?
-- Which proposals became decisions?
-- Which ones did not — and why?
+- What artifacts were created?
+- How did those artifacts change?
+- Which options became proposals?
+- Which proposals entered baseline review?
+- Which sessions accepted them — or did not?
 
-Breakouts, synthesis, baselines, and sessions are all first-class audit subjects.
-
-Legitimacy is not assumed.
-It is proven.
+Audit must show **everything that happened**,
+not just what “mattered in the end”.
 
 ---
 
@@ -186,31 +239,35 @@ It is proven.
 
 Without breakouts:
 - exploration leaks into sessions
-- voting pressure appears too early
-- decisions become brittle
+- pressure to decide appears too early
+- authority is misused to resolve ambiguity
 
 Without synthesis:
 - exploration becomes noise
-- proposals lack context
-- authority is forced to arbitrate ambiguity
+- decisions lack context
+- legitimacy is forced to compensate for confusion
 
 Without audit:
-- legitimacy becomes performative
 - history collapses into outcomes
-- trust erodes silently
+- rejected paths disappear
+- trust erodes quietly
 
-Charter preserves trust by remembering **everything**,  
-and legitimizing **almost nothing**.
+Charter preserves trust by:
+- remembering **everything**
+- legitimizing **almost nothing**
 
 ---
 
 ## Final Note
 
-If something feels “unfinished” here, that is intentional.
+If this feels slow, it is.
 
-Exploration is allowed to be incomplete.
-Convergence is allowed to be uncomfortable.
-Legitimacy is allowed to be slow.
+If it feels uncomfortable, it should.
+
+Exploration is allowed to be incomplete.  
+Convergence is allowed to be messy.  
+Legitimacy is allowed to be rare.
 
 Audit does not rush reality.
-It records it.
+
+It remembers it.
