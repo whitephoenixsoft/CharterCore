@@ -28,8 +28,6 @@ Commands for ergonomics, multi-user collaboration, nested deliberations, and aud
 - `charter session close` — close session normally
 - `charter session restart-from <session_id>` — restart session with lineage
 - `charter session default-participant <actor_id>` — automatically added participant
-- `charter session branch <session_id>` — create a derived session
-- `charter session merge <session_id> [--force]` — merge branch respecting authority
 
 ---
 
@@ -38,10 +36,11 @@ Commands for ergonomics, multi-user collaboration, nested deliberations, and aud
 - `charter deliberate pause` — pause active Deliberate
 - `charter deliberate resume` — resume paused Deliberate
 - `charter deliberate add-option <description>` — add new option to Deliberate
-- `charter deliberate declare-complete` — finalize Deliberate, start baseline review
+- `charter deliberate declare-complete` — finalize Deliberate and hand off for baseline review
+- `charter deliberate abandon` — cancel active Deliberate without outputs
 - `charter breakout start <deliberate-id> [--participants <group>]` — start nested breakout
-- `charter breakout complete <breakout-id>` — finish breakout, pass artifacts to synthesis
-- `charter breakout close <breakout-id>` — abandon breakout, discard outputs
+- `charter breakout complete <breakout-id>` — finalize breakout, pass artifacts to synthesis
+- `charter breakout abandon <breakout-id>` — cancel breakout, discard outputs
 - `charter breakout restart-from <breakout-id>` — restart breakout preserving lineage
 
 ---
@@ -61,7 +60,7 @@ Commands for ergonomics, multi-user collaboration, nested deliberations, and aud
 - `charter import restore-auto <filename>` — CLI chooses consolidate/restore automatically
 - `charter export <filename>` — export data safely
 - `charter import <filename>` — import resolutions or data
-- `charter deliberate export <filename>` — export Deliberate artifacts for sharing
+- `charter deliberate export <deliberate_label> <filename>` — export Deliberate artifacts for sharing
 - `charter deliberate import <filename>` — import Deliberate artifacts (treated as foreign)
 
 ---
