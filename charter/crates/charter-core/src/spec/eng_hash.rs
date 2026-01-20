@@ -3,6 +3,32 @@
 //! Scope: Engine-internal
 //! Change Policy: Any change requires a new hash version and explicit migration
 //!
+//! ### Rule OS-03 — Hash Version Is Explicit
+//!
+//! Every object hash MUST be computed under an explicit Charter hash version.
+//!
+//! Initial version: v1
+//!
+//! Future changes require:
+//! - A new version identifier (v2, v3, …)
+//! - Explicit rehash logic
+//! - Parallel coexistence of versions
+//!
+//! Fail if:
+//! - Hash version is inferred implicitly
+//! - Hash version changes without migration
+//!
+//! ### Rule OS-04 — Multiple Hash Versions May Coexist
+//!
+//! The engine MUST:
+//! - Accept objects with different hash versions
+//! - Preserve original hashes during import
+//! - Treat hash version as part of object identity
+//!
+//! The engine MUST NOT:
+//! - Assume a single global hash version
+//! - Auto-upgrade hashes implicitly
+//!
 //! ## Rule OS-05 — Hash Input Is Canonical and Deterministic (v1)
 //!
 //! For hash version v1, the digest input MUST be the following byte sequence:
@@ -109,6 +135,13 @@
 //! Algorithm: sha256  
 //! Output: lowercase hexadecimal string
 //!
+//! ### Guarantees
+//!
+//! The digest MUST be:
+//! - Deterministic
+//! - Lowercase hexadecimal
+//! - Exactly 64 characters (sha256)
+//!
 //! ### Executable Specification
 //!
 //! ```rust
@@ -117,26 +150,18 @@
 //! use charter_core::storage::hashing::HashVersion;
 //! use charter_core::storage::hashing::HashAlgorithm;
 //! use charter_core::types::CharterObjectKind;
-//! use charter_core::storage::hashing::compute_hash;
+//! use charter_core::storage::hashing::hash_object;
 //!
-//! let input = HashInput {
-//!     version: HashVersion::V1,
-//!     algorithm: HashAlgorithm::Sha256,
-//!     object_type: CharterObjectKind::Area,
-//!     canonical_json: b"{}",
-//! };
+//! let version =  HashVersion::V1;
+//! let algorithm = HashAlgorithm::Sha256;
+//! let object_type = CharterObjectKind::Area;
+//! let canonical_json = b"{}";
 //! 
-//! let digest = compute_hash(&input).ok();
+//! let digest = hash_object(version, algorithm, object_type, canonical_json).ok();
 //!
 //! assert_eq!(
 //!     digest.unwrap().0,
-//!     "550b249927be192ec93800d097619da6e8fb7c0d1e4357dc97178bce6f5fd1db"
+//!     "36a174b42c121bf434bd95dc3a229a773c4d6d1c3c71394e3b6ab0772dfa0c68"
 //! );
 //! ```
 //!
-//! ### Guarantees
-//!
-//! The digest MUST be:
-//! - Deterministic
-//! - Lowercase hexadecimal
-//! - Exactly 64 characters (sha256)
