@@ -124,13 +124,13 @@
 //!     algorithm: HashAlgorithm::Sha256,
 //!     object_type: CharterObjectKind::Area,
 //!     canonical_json: b"{}",
-//! }.as_bytes();
+//! };
 //! 
-//! let digest = compute_hash(input);
+//! let digest = compute_hash(&input).ok();
 //!
 //! assert_eq!(
-//!     digest,
-//!     "e9d71f5ee7c92d6dc9e92ffdad17b8bd49418f98b6e7e0d9bbf0b2db6e52b2d5"
+//!     digest.unwrap().0,
+//!     "550b249927be192ec93800d097619da6e8fb7c0d1e4357dc97178bce6f5fd1db"
 //! );
 //! ```
 //!
