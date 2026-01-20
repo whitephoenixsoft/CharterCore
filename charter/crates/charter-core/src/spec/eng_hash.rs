@@ -5,7 +5,6 @@
 //!
 //! ## Rule OS-05 — Hash Input Is Canonical and Deterministic (v1)
 //!
-//! ### Description
 //! For hash version v1, the digest input MUST be the following byte sequence:
 //!    
 //! charter:<hash_version>\n
@@ -45,7 +44,6 @@
 //!
 //! ## Rule OS-06 — Canonical JSON Rules (v1)
 //!
-//! ### Description
 //! Canonical JSON serialization MUST be deterministic and stable.
 //!
 //! ### Guarantees
@@ -105,3 +103,40 @@
 //! - Different serializations produce different hashes
 //! - Canonicalization logic diverges across components
 //! - Any deviation invalidates object identity 
+//!
+//! ## OS-07 — Hash Algorithm (v1)
+//!
+//! Algorithm: sha256  
+//! Output: lowercase hexadecimal string
+//!
+//! ### Executable Specification
+//!
+//! ```rust
+//! use serde::Serialize;
+//! use charter_core::storage::hashing::HashInput;
+//! use charter_core::storage::hashing::HashVersion;
+//! use charter_core::storage::hashing::HashAlgorithm;
+//! use charter_core::types::CharterObjectKind;
+//! use charter_core::storage::hashing::compute_hash;
+//!
+//! let input = HashInput {
+//!     version: HashVersion::V1,
+//!     algorithm: HashAlgorithm::Sha256,
+//!     object_type: CharterObjectKind::Area,
+//!     canonical_json: b"{}",
+//! }.as_bytes();
+//! 
+//! let digest = compute_hash(input);
+//!
+//! assert_eq!(
+//!     digest,
+//!     "e9d71f5ee7c92d6dc9e92ffdad17b8bd49418f98b6e7e0d9bbf0b2db6e52b2d5"
+//! );
+//! ```
+//!
+//! ### Guarantees
+//!
+//! The digest MUST be:
+//! - Deterministic
+//! - Lowercase hexadecimal
+//! - Exactly 64 characters (sha256)
