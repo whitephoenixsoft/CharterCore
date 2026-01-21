@@ -1,4 +1,6 @@
 # Long-Lived Institutions Guide
+
+*This guide describes how Charter can be used by teams like this — not how it must be used.*
 ## RFCs, Orders, and Canonical Memory
 
 ### Who This Is For

@@ -1,4 +1,6 @@
 # Solo Developer Guide
+
+*This guide describes how Charter can be used by teams like this — not how it must be used.*
 ## Charter as Your Personal Decision Journal
 
 ### Who This Is For
@@ -74,6 +76,7 @@ A session:
 - freezes the moment
 - records the authority (you)
 - makes the decision defensible
+- are not about correctness, but about ending loops
 
 This is how you stop re-litigating the same choice forever.
 
@@ -87,6 +90,7 @@ Your audit log becomes:
 - a personal memory palace
 - a timeline of intent
 - a defense against self-doubt
+- about reducing self-gaslighting
 
 You no longer ask:
 > “Was this a bad decision?”

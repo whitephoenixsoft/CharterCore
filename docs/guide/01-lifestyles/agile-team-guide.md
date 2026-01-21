@@ -1,6 +1,8 @@
 # Agile Team Guide
 ## Collaboration Without Process Loss
 
+*This guide describes how Charter can be used by teams like this — not how it must be used.*
+
 ### Who This Is For
 
 This guide is for agile teams who:
@@ -79,7 +81,9 @@ Charter treats authority as:
 - explicit
 - auditable
 
-This removes:
+It documents what is already there.
+
+Thus removing:
 - emotional escalation
 - informal power struggles
 - retroactive reinterpretation

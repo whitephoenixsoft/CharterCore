@@ -1,4 +1,6 @@
 # Scientist Guide
+
+*This guide describes how Charter can be used by teams like this — not how it must be used.*
 ## Decision Integrity Under Uncertainty
 
 ### Who This Is For
