@@ -33,10 +33,10 @@
 //!
 //! For hash version v1, the digest input MUST be the following byte sequence:
 //!    
-//! charter:<hash_version>\n
+//! "charter:<hash_version>\n
 //! type:<object_type>\n
 //! len:<byte_length>\n
-//! <canonical_json_bytes>
+//! <canonical_json_bytes>"
 //!    
 //! Where:
 //! - `hash_version` = "v1"
@@ -165,3 +165,15 @@
 //! );
 //! ```
 //!
+//! # Rule OS-08 — Objects Are Stored with an Explicit Envelope
+//! 
+//! Objects MUST be persisted as self-describing envelopes:
+//!
+//! {
+//!  "charter_hash_version": "v1",
+//!  "hash_algorithm": "sha256",
+//!  "object_type": "area",
+//!  "object_hash": "<hex-digest>",
+//!  "object": { ... canonical domain object ... }
+//! }
+

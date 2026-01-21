@@ -1,14 +1,11 @@
 use crate::model::ids::{
-    AreaId,
-    Label,
-    DisplayName,
-    Annotation,
+    AreaId
 };
 
 pub struct AreaMetadata {
-    label: Label,
-    display_name: Option<DisplayName>,
-    annotation: Option<Annotation>,
+    label: String,
+    display_name: Option<String>,
+    annotation: Option<String>,
 }
 
 trait MetadataStore {
@@ -16,3 +13,6 @@ trait MetadataStore {
     fn get_area_metadata(&self, area_id: &AreaId) -> Option<&AreaMetadata>;
     fn delete_area_metadata(&mut self, area_id: &AreaId);
 }
+
+
+
