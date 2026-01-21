@@ -1,4 +1,4 @@
-use super::ids::AreaId;
+use super::ids::{AreaId, ResolutionId};
 use crate::time::Timestamp;
 
 /// Engine-owned Area record.
@@ -14,16 +14,16 @@ pub struct Area {
     pub name: String,
 
     /// Rationalle around the name (user memory aid); mutable
-    pub annotation: Option<String>
+    pub annotation: Option<String>,
 
     /// Creation metadata (audit only)
     pub created_at: Timestamp,
 
     /// Active authority resolution. (required for initialization); mutable
-    pub active_authority: Option<ResoutionId>,
+    pub active_authority: Option<ResolutionId>,
 
     /// Active Scope resolution. (required for initialization); mutable
-    pub active_scope: Option<ResoutionId>,
+    pub active_scope: Option<ResolutionId>,
 }
 
 

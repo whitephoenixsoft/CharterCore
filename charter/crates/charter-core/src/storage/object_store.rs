@@ -1,6 +1,4 @@
-use super::core::{
-	   ObjectHash
-};
+use super::ObjectHash;
 
 pub trait ObjectStore {
 	   fn put(&mut self, hash: ObjectHash, data: String) -> Result<(), String>;

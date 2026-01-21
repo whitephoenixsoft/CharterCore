@@ -1,4 +1,4 @@
-use super::core::ObjectHash;
+use super::ObjectHash;
 
 pub enum RefName {
     Area(String),

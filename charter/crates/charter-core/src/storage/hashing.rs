@@ -1,17 +1,17 @@
-use super::core::ObjectHash;
-use crate::types::CharterObjectKind;
+use super::ObjectHash;
+use super::CharterObjectKind;
 use serde::Serialize;
 use serde_json_canonicalizer::to_vec;
 use strum::Display;
 use std::fmt;
 
-#[derive(Debug, Clone, Copy, Display)]
+#[derive(Debug, Clone, Copy, Display, Serialize)]
 #[strum(serialize_all = "lowercase")]
 pub enum HashVersion {
     V1,
 }
 
-#[derive(Clone, Copy, PartialEq, Eq, Hash, Debug, Display)]
+#[derive(Clone, Copy, PartialEq, Eq, Hash, Debug, Display, Serialize)]
 #[strum(serialize_all = "lowercase")]
 pub enum HashAlgorithm {
     Sha256,

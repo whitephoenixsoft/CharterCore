@@ -1,4 +1,4 @@
-use super::core::ObjectHash;
+use super::ObjectHash;
 use crate::time::Timestamp;
 use crate::model::ids::AreaId;
 

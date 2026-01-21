@@ -9,6 +9,15 @@ pub struct AreaRoot {
     pub created_at: Timestamp,
 }
 
+impl AreaRoot {
+    pub fn default() -> Self {
+        Self {
+            area_id: AreaId("".into()),
+            created_at: "".into(),
+        }
+    }
+}
+
 impl From<Area> for AreaRoot {
     fn from(a: Area) -> Self {
         AreaRoot { 

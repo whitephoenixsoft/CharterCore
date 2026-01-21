@@ -5,6 +5,6 @@ pub mod resolution;
 pub mod session;
 pub mod vote;
 
-enum CharterModelKind {
+pub enum CharterModelKind {
     Area(area::Area),
 }

@@ -51,12 +51,13 @@
 //! use charter_core::storage::hashing::HashInput;
 //! use charter_core::storage::hashing::HashVersion;
 //! use charter_core::storage::hashing::HashAlgorithm;
-//! use charter_core::types::CharterObjectKind;
+//! use charter_core::storage::CharterObjectKind;
+//! use charter_core::storage::area::AreaRoot;
 //!
 //! let fields = HashInput {
 //!     version: HashVersion::V1,
 //!     algorithm: HashAlgorithm::Sha256,
-//!     object_type: CharterObjectKind::Area,
+//!     object_type: CharterObjectKind::Area(AreaRoot::default()),
 //!     canonical_json: b"{\"value\":42}",
 //! }.as_bytes();
 //!
@@ -149,12 +150,13 @@
 //! use charter_core::storage::hashing::HashInput;
 //! use charter_core::storage::hashing::HashVersion;
 //! use charter_core::storage::hashing::HashAlgorithm;
-//! use charter_core::types::CharterObjectKind;
+//! use charter_core::storage::CharterObjectKind;
+//! use charter_core::storage::area::AreaRoot;
 //! use charter_core::storage::hashing::hash_object;
 //!
 //! let version =  HashVersion::V1;
 //! let algorithm = HashAlgorithm::Sha256;
-//! let object_type = CharterObjectKind::Area;
+//! let object_type = CharterObjectKind::Area(AreaRoot::default());
 //! let canonical_json = b"{}";
 //! 
 //! let digest = hash_object(version, algorithm, object_type, canonical_json).ok();

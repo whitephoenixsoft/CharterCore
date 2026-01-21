@@ -1,6 +1,4 @@
-use super::core::{
-	   ObjectHash
-};
+use super:: ObjectHash;
 use super::object_store::ObjectStore;
 use std::collections::HashMap;
 use std::cell::RefCell;
