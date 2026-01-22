@@ -5,6 +5,8 @@ pub mod resolution;
 pub mod session;
 pub mod vote;
 
+pub use area::AreaRuntime;
+
 pub enum CharterModelKind {
-    Area(area::Area),
+    Area(AreaRuntime),
 }

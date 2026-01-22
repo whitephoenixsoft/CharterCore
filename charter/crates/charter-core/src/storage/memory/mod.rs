@@ -4,17 +4,17 @@ use std::collections::HashMap;
 use std::cell::RefCell;
 
 
-pub struct MemoryStore {
+pub struct MemoryObjectStore {
     storage: RefCell<HashMap<ObjectHash, String>>,
 }
 
-impl MemoryStore {
+impl MemoryObjectStore {
     pub fn new() -> Self {
         Self { storage: RefCell::new(HashMap::new()) }
     }
 }
 
-impl ObjectStore for MemoryStore {
+impl ObjectStore for MemoryObjectStore {
     fn put(&mut self, hash: ObjectHash, data: String) -> Result<(), String> {
         self.storage.borrow_mut().insert(hash, data);
         Ok(())

@@ -8,7 +8,7 @@ pub mod metadata_store;
 pub mod object_store;
 pub mod ref_store;
 
-pub use area::AreaRoot;
+pub use area::AreaObject;
 
 use crate::model::CharterModelKind;
 use crate::model::ids::*;
@@ -30,7 +30,7 @@ impl From<String> for ObjectHash {
 //#[strum(serialize_all = "lowercase")]
 #[serde(tag = "object_type", content = "object", rename_all = "lowercase")]
 pub enum CharterObjectKind {
-    Area(AreaRoot),
+    Area(AreaObject),
     //Session,
     //Resolution,
 }
@@ -39,7 +39,7 @@ pub enum CharterObjectKind {
 impl From<CharterModelKind> for CharterObjectKind {
     fn from(o: CharterModelKind) -> Self {
         match o {
-            CharterModelKind::Area(a) => CharterObjectKind::Area(AreaRoot::from(a)),
+            CharterModelKind::Area(a) => CharterObjectKind::Area(AreaObject::from(a)),
         }
     }
 }

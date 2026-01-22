@@ -3,7 +3,7 @@ use crate::time::Timestamp;
 
 /// Engine-owned Area record.
 /// Areas are hard governance boundaries.
-pub struct Area {
+pub struct AreaRuntime {
     /// Unique hash that never changes
     pub area_id: AreaId,
 

@@ -1,7 +1,9 @@
 use super::ObjectHash;
+use crate::model::ids::AreaId;
 
+/// List of types with each having a ref path.
 pub enum RefName {
-    Area(String),
+    AreaRef { area_id: AreaId, path: String },
 }
 
 pub trait RefStore {

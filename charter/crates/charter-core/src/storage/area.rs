@@ -1,15 +1,15 @@
 use serde::Serialize;
 use crate::model::ids::AreaId;
-use crate::model::area::Area;
+use crate::model::area::AreaRuntime;
 use crate::time::Timestamp;
 
 #[derive(Debug, Clone, Serialize)]
-pub struct AreaRoot {
+pub struct AreaObject {
     pub area_id: AreaId,
     pub created_at: Timestamp,
 }
 
-impl AreaRoot {
+impl AreaObject {
     pub fn default() -> Self {
         Self {
             area_id: AreaId("".into()),
@@ -18,9 +18,9 @@ impl AreaRoot {
     }
 }
 
-impl From<Area> for AreaRoot {
-    fn from(a: Area) -> Self {
-        AreaRoot { 
+impl From<AreaRuntime> for AreaObject {
+    fn from(a: AreaRuntime) -> Self {
+        AreaObject { 
             area_id: a.area_id,
             created_at: a.created_at,
         }

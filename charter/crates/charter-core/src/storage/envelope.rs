@@ -9,8 +9,8 @@ use serde::Serialize;
 pub struct ObjectEnvelope {
     pub hash_version: HashVersion,
     pub hash_algorithm: HashAlgorithm,
-    pub object_hash: ObjectHash,
-	   #[serde(flatten)]
+    pub object_hash: ObjectHash, 
+    #[serde(flatten)]
     pub object: CharterObjectKind,
 }
 
