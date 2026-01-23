@@ -12,8 +12,8 @@ pub struct AreaObject {
 impl AreaObject {
     pub fn default() -> Self {
         Self {
-            area_id: AreaId("".into()),
-            created_at: "".into(),
+            area_id: AreaId::new(),
+            created_at: Timestamp::now(),
         }
     }
 }
