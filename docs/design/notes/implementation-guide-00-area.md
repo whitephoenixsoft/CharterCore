@@ -233,8 +233,48 @@ Charter Core optimizes for:
 
 Use this guide as the implementation spine.
 
+---
+## NEXT SECTION IS IMPLEMENTATION DESIGN DECISIONS 
+
+---
+
+## What is now locked (authoritative):
+
+-  Five distinct model representations exist and must never be collapsed:
+    1. Runtime representation (engine-only, derived, ephemeral)
+    2. Persistence representation (object store, immutable, hashable)
+    3. Audit action representation (append-only, non-authoritative)
+    4. Export representation (trust-boundary, versioned)
+    5. Non-legitimacy append-only metadata (refs / metadata store)
+- Object hashes are storage-only
+    1. No domain model knows about hashes
+    2. No runtime logic depends on hashes
+    3. Hashes exist only for persistence, verification, and import/export
+- Refs and metadata are explicitly mutable
+    1. Area authority & scope live in refs
+    2. Area descriptive metadata lives outside the object store
+    3. Object store is strictly append-only
+- Indexes are derived, rebuildable, and non-authoritative
+    1. Built at boot
+    2. Never persisted as truth
+    3. Safe to discard and rebuild
+- All boundary crossings are explicit and typed
+    1. TryFrom / From / constructor functions only
+    2. No implicit conversions
+    3. No shared structs across layers
+- Enums control kind and transitions
+    1. Structs control content
+    2. No “one struct to rule them all”
+- Supersession is a model concern, not a storage concern
+    1. Storage never deletes or overwrites
+    2. Legitimacy changes only via new objects + refs
+- Future-proofed for V1 → V3 → V4
+    1. Engine purity preserved
+    2. CLI orchestration layered cleanly
+    3. Export/import remains auditable and deterministic
+
 ----
-ALL BELOW IS INTERNAL ANALYSIS OF ABOVE 
+## ALL BELOW IS INTERNAL ANALYSIS OF FIRST SECTION 
 
 ---
 # Charter Core — Initialization Spine  
