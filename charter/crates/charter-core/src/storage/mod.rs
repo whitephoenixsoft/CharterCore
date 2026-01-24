@@ -14,6 +14,7 @@ use crate::model::CharterModelKind;
 use crate::model::ids::*;
 use serde::Serialize;
 use strum::Display;
+use enum_dispatch::enum_dispatch;
 
 #[derive(Clone, PartialEq, Eq, Hash, Debug, Serialize)]
 #[serde(transparent)]
@@ -43,7 +44,6 @@ impl From<CharterModelKind> for CharterObjectKind {
         }
     }
 }
-
 
 #[cfg(test)]
 mod tests {

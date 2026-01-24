@@ -25,9 +25,10 @@ pub struct HashInput<'a> {
 }
 
 impl<'a> HashInput<'a> {
-    pub fn as_bytes(&self) -> Vec<u8> {
+    pub fn as_bytes(&self) -> Result<Vec<u8>, serde_json::Error> {
         let mut bytes = Vec::new();
         
+        let canonical_json = get_canonical_json(self.object)
         bytes.extend(format!("charter:{}\n", self.version.to_string()).as_bytes());
         bytes.extend(format!("type:{}\n", self.object_type.to_string()).as_bytes());
         bytes.extend(format!("len:{}\n", self.canonical_json.len()).as_bytes());
@@ -37,14 +38,16 @@ impl<'a> HashInput<'a> {
     }
 }
 
-pub fn get_canonical_json<T: Serialize>(value: &T) -> Result<Vec<u8>, String> {
-    // single implementation
-    // sorted keys, no whitespace, stable
-    let result = to_vec(value);
-    match result {
-        Ok(json) => Ok(json),
-        Err(e) => Err(e.to_string())
+#[enum_dispatch]
+trait GetBytes {
+    fn get_bytes(&self) -> Result<Vec<u8>, serde_json::Error> {
+        get_canonical_json(&self)
     }
+}
+
+pub fn get_canonical_json<T: Serialize>(value: &T) -> Result<Vec<u8>, serde_json::Error> {
+    let json_bytes = to_vec(value)?;
+    json_bytes
 }
 
 pub fn compute_hash(input: &HashInput) -> Result<ObjectHash, String> {

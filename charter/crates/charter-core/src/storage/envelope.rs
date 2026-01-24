@@ -14,12 +14,10 @@ pub struct ObjectEnvelope {
     pub object: CharterObjectKind,
 }
 
-/*
-impl<T> ObjectEnvelope<T> where T : Serialize {
+impl ObjectEnvelope {
     pub fn new(
         self,
-        object_type: CharterObjectKind,
-        value: T,
+        object_type: CharterObjectKind
     ) -> Self {
     	   let hash_version = HashVersion::V1;
     	   let hash_algorithm = HashAlgorithm::Sha256;
@@ -39,7 +37,6 @@ impl<T> ObjectEnvelope<T> where T : Serialize {
         get_canonical_json(&self.object)
     }
 }
-*/
 
 #[cfg(test)]
 mod tests {
