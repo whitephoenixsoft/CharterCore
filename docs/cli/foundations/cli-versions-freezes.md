@@ -1,15 +1,23 @@
-# Charter CLI — Version Freezes & V3 Command Additions
+# Charter Interfaces — Version Freezes & Evolution Plan (V1–V5)
 
-Status: FROZEN  
-Scope: Charter CLI surface (not engine semantics)
+Status: **FROZEN (through V3)**  
+Scope: **Charter interaction layers (CLI → Library → Guidance)**  
+Does NOT define: engine semantics, authority rules, or audit mechanics
 
+This document records **what each version is allowed to care about**, and—more importantly—what it is *not allowed* to do.
+
+Charter evolves by **layering**, not by mutation.
+
+---
 
 ## I. Version Freezes
 
 ### V1 — Deterministic Solo Governance
-Status: FROZEN
 
-V1 is intentionally minimal and linear.
+Status: **FROZEN**
+
+V1 establishes the irreducible core:  
+**legitimacy without ambiguity**, usable by a single human.
 
 Characteristics:
 - Single-user (solo mode)
@@ -20,15 +28,15 @@ Characteristics:
 - No exploratory workflows
 
 V1 knows about:
-- Contexts
 - Areas
+- Contexts
 - Sessions
 - Candidates
-- Participants (single implicit user)
+- Participants (single explicit user)
 - Authority sets
 - Scope sets
 - Baseline review (import + acceptance)
-- Audit (linear, factual)
+- Linear, factual audit
 
 V1 explicitly does NOT know about:
 - Deliberate
@@ -36,115 +44,206 @@ V1 explicitly does NOT know about:
 - Synthesis
 - Draft candidates
 - Participant groups
-- Bundled discussions
-- Multi-session orchestration
+- Parallel work
+- Human workflow modeling
 
 V1 mental model:
-> “I make decisions, one session at a time, and I can review foreign input safely.”
+> “I make decisions deliberately, one at a time, and I can safely re-decide imported history.”
 
+---
 
 ### V2 — Multi-Participant Governance & Review
-Status: FROZEN
 
-V2 expands *who* participates and *how acceptance is evaluated*,
-but not *how exploration is structured*.
+Status: **FROZEN**
+
+V2 expands *who* participates and *how agreement is computed*,  
+without changing *where legitimacy lives*.
 
 Characteristics:
 - Multiple participants
-- Voting semantics
-- Baseline review with per-resolution votes
-- Participant auditing
-- Still fundamentally session-driven
+- Explicit voting semantics
+- Authority-aware acceptance rules
+- Still session-centric
+- Still decision-first
 
 V2 adds:
 - Explicit participant add/remove
 - Voting commands
-- Authority-aware acceptance rules
-- Baseline votes per resolution
-- Richer audit queries
+- Mechanical authority evaluation
+- Per-resolution baseline acceptance
+- Participant-centric audit queries
 
 V2 explicitly does NOT know about:
 - Deliberate
 - Breakouts
 - Synthesis
-- Workshop-style workflows
-- Session bundling
+- Workshops or facilitation
+- Session bundling or orchestration
 
 V2 mental model:
-> “We decide together, and the rules of agreement matter.”
+> “We decide together, and the rules of agreement are explicit and provable.”
 
+---
 
 ### V3 — Deliberative Orchestration & Human Workflow Modeling
-Status: FROZEN
 
-V3 is **not** “more commands”.
-It is a **new layer above sessions**.
+Status: **FROZEN**
+
+V3 is **not an extension of sessions**.  
+It is a **layer above sessions**.
+
+This is the first version that treats *thinking* as first-class.
 
 Characteristics:
-- Exploration before legitimacy
-- Human meeting modeling
-- Orchestration of many sessions
 - Explicit separation of:
-  - thinking
-  - converging
-  - deciding
-- All legitimacy still flows through sessions and baseline review
+  - exploration
+  - convergence
+  - legitimacy
+- Long-running, human-shaped workflows
+- Sessions become terminal acts, not workspaces
+- Legitimacy pathways unchanged
 
 V3 introduces:
-- Deliberate (epic-scoped orchestration)
-- Breakouts (write-only exploratory moments)
-- Synthesis (structured convergence)
-- Draft candidates (non-authoritative)
+- Deliberate (epic-scoped thinking spaces)
+- Breakouts (bounded exploratory moments)
+- Synthesis (explicit convergence artifacts)
+- Draft candidates (non-authoritative text)
 - Participant groups
-- Explicit consolidation boundaries
+- Deliberate import/export (foreign thinking)
+
+V3 guarantees:
+- No action inside Deliberate creates legitimacy
+- All legitimacy still flows through:
+  - sessions
+  - baseline review
 
 V3 mental model:
-> “We explore freely, converge explicitly, and only then decide.”
+> “We explore freely, converge intentionally, and only then decide.”
 
+---
 
-## II. Why V3 Is Significantly Different
+## II. Why V3 Is a Structural Break
 
-V1 / V2:
-- Treat sessions as the *primary* unit of work
-- Assume decisions are the center of activity
+V1 / V2 assume:
+- Decisions are the center of activity
+- Thinking happens *inside* sessions
 
-V3:
-- Treats **exploration as first-class**
-- Treats **decisions as a terminal act**
-- Models real human workflows:
-  - long meetings
-  - workshops
-  - breakout rooms
-  - deferred agreement
-  - partial convergence
+V3 asserts:
+- Thinking happens **before** sessions
+- Sessions exist to finalize legitimacy, not discover it
 
 Key shift:
-- Sessions stop being the place where thinking happens
-- Sessions become the place where legitimacy is finalized
+- Sessions stop being places where humans think
+- Sessions become places where humans **own outcomes**
 
-## III. Explicit Non-Goals (Frozen)
+This is a cognitive, not technical, transition.
 
-V3 still does NOT include:
+---
+
+## III. V4 — Charter as a Library (Planned)
+
+Status: **PLANNED (LOCKED DIRECTION)**
+
+V4 is a **delivery transformation**, not a conceptual one.
+
+The CLI becomes:
+- a thin client
+- a reference interface
+- one consumer of a Charter interaction library
+
+Characteristics:
+- Charter interaction logic extracted into a library
+- CLI rebuilt on top of that library
+- No new governance semantics
+- No new legitimacy paths
+
+V4 exists to enable:
+- embedding Charter into other tools
+- simulations and validation harnesses
+- future server processes
+- alternative interfaces (UI, batch, automation)
+
+V4 explicitly does NOT add:
+- server mode
+- background daemons
 - AI facilitation
-- Implicit consensus
-- Auto-generated acceptance
-- Hidden authority inference
-- Engine-side awareness of deliberation
+- automation of decisions
 
-These remain future (V4+) concerns.
+V4 mental model:
+> “Charter is a system you integrate, not just a tool you run.”
 
+---
 
-## IV. Freeze Statement
+## IV. V5 — Guidance, Semantics, and Clarification (Planned)
 
-V1, V2, and V3 CLI semantics are now frozen.
+Status: **PLANNED (LOCKED DIRECTION)**
 
-Future versions may:
-- add new orchestration layers
-- add automation or plugins
-- add server-native workflows
+V5 introduces **guidance**, not authority.
 
-They may NOT:
-- weaken legitimacy guarantees
+This layer exists to help humans:
+- think clearly
+- notice ambiguity
+- detect incoherence
+- understand consequences
+
+Characteristics:
+- Read-only analysis of Charter state
+- Canon-based evaluation (e.g., Legitimacy Ledger)
+- AI used for clarification, not control
+- Multiple semantic lenses over the same facts
+
+V5 may include:
+- Legitimacy analysis
+- Coherence checks
+- Decision hygiene feedback
+- “What changed?” explanations
+- “What assumptions exist?” surfacing
+
+V5 explicitly does NOT:
+- accept resolutions
+- infer consent
+- override authority
+- create legitimacy
+- mutate engine state
+
+V5 mental model:
+> “Help me understand what I’ve done — don’t decide for me.”
+
+---
+
+## V. Explicit Non-Goals (Frozen Across All Versions)
+
+Charter will never:
+- infer authority
+- assume consensus
+- optimize away explicitness
+- erase disagreement
+- treat silence as intent
+- collapse history into outcomes
+
+No future version may:
 - bypass sessions
-- collapse audit boundaries
-- infer authority implicitly
+- weaken audit guarantees
+- blur preparation with legitimacy
+- make authority implicit
+
+---
+
+## VI. Final Freeze Statement
+
+V1, V2, and V3 semantics are **fully frozen**.
+
+V4 and V5 may add:
+- new delivery mechanisms
+- new guidance layers
+- new analytical perspectives
+
+They may not change:
+- what legitimacy means
+- how it is created
+- where it lives
+- how it is proven
+
+Charter does not evolve by becoming faster or smarter.
+
+It evolves by becoming **clearer**.
