@@ -1,9 +1,9 @@
-use serde::Serialize;
+use serde::{Serialize, Deserialize};
 use crate::model::ids::AreaId;
 use crate::model::area::AreaRuntime;
 use crate::time::Timestamp;
 
-#[derive(Debug, Clone, Serialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct AreaObject {
     pub area_id: AreaId,
     pub created_at: Timestamp,
@@ -27,13 +27,3 @@ impl From<AreaRuntime> for AreaObject {
     }
 }
 
-#[enum_dispatch]
-trait GetBytes {
-    fn get_bytes(&self) -> Result<Vec<u8>, serde_json::Error>;
-}
-
-impl GetBytes for AreaObject {
-    fn get_bytes(&self) -> Result<Vec<u8>, serde_json::Error> {
-        get_canonical_json(&self)
-    }
-}

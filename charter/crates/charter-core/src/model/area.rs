@@ -1,17 +1,17 @@
 use super::ids::{AreaId, ResolutionId};
 use crate::time::Timestamp;
 use derive_more::{Display, From, FromStr};
-use serde::Serialize;
+use serde::{Serialize,Deserialize};
 
-#[derive(Clone, PartialEq, Eq, Hash, Debug, Serialize, From, FromStr, Display)]
+#[derive(Clone, PartialEq, Eq, Hash, Debug, Serialize, Deserialize, From, FromStr, Display)]
 #[serde(transparent)]
 pub struct AreaLabel(String);
 
-#[derive(Clone, PartialEq, Eq, Hash, Debug, Serialize, From, FromStr, Display)]
+#[derive(Clone, PartialEq, Eq, Hash, Debug, Serialize, Deserialize, From, FromStr, Display)]
 #[serde(transparent)]
 pub struct AreaName(String);
 
-#[derive(Clone, PartialEq, Eq, Hash, Debug, Serialize, From, FromStr, Display)]
+#[derive(Clone, PartialEq, Eq, Hash, Debug, Serialize, Deserialize, From, FromStr, Display)]
 #[serde(transparent)]
 pub struct Annotation(String);
 

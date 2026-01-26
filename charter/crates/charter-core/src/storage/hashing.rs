@@ -1,17 +1,17 @@
 use super::ObjectHash;
 use super::CharterObjectKind;
-use serde::Serialize;
+use serde::{Serialize, Deserialize};
 use serde_json_canonicalizer::to_vec;
 use strum::Display;
 use std::fmt;
 
-#[derive(Debug, Clone, Copy, Display, Serialize)]
+#[derive(Debug, Clone, Copy, Display, Serialize, Deserialize)]
 #[strum(serialize_all = "lowercase")]
 pub enum HashVersion {
     V1,
 }
 
-#[derive(Clone, Copy, PartialEq, Eq, Hash, Debug, Display, Serialize)]
+#[derive(Clone, Copy, PartialEq, Eq, Hash, Debug, Display, Serialize, Deserialize)]
 #[strum(serialize_all = "lowercase")]
 pub enum HashAlgorithm {
     Sha256,
@@ -28,19 +28,17 @@ impl<'a> HashInput<'a> {
     pub fn as_bytes(&self) -> Result<Vec<u8>, serde_json::Error> {
         let mut bytes = Vec::new();
         
-        let canonical_json = get_canonical_json(self.object)
         bytes.extend(format!("charter:{}\n", self.version.to_string()).as_bytes());
-        bytes.extend(format!("type:{}\n", self.object_type.to_string()).as_bytes());
+        bytes.extend(format!("type:{}\n", self.object_type).as_bytes());
         bytes.extend(format!("len:{}\n", self.canonical_json.len()).as_bytes());
         bytes.extend(&*self.canonical_json);
         
-        bytes
+        Ok(bytes)
     }
 }
 
 pub fn extract_enum_tag<T: Serialize>(payload: &T, tag: &str_) -> Result<String, serde_json::Error> {
-    let value = serde_json::to_value(payload);
-
+    let value = serde_json::to_value(payload)?; 
     match value.get(tag) {
         Some(Value::String(s)) => Ok(s.clone()),
         _ => Err(serde::Error::custom("missing enum tag")),

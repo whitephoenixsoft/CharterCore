@@ -1,8 +1,8 @@
 use uuid::Uuid;
 use derive_more::{Display, From, FromStr};
-use serde::Serialize;
+use serde::{Serialize, Deserialize};
 
-#[derive(Clone, Copy, PartialEq, Eq, Debug, Display, Serialize)]
+#[derive(Clone, Copy, PartialEq, Eq, Debug, Display, Serialize, Deserialize)]
 #[serde(transparent)]
 pub struct AreaId(pub Uuid);
 
@@ -20,18 +20,18 @@ impl std::str::FromStr for AreaId {
 }
 
 
-#[derive(Clone, PartialEq, Eq, Hash, Debug, Serialize, From, FromStr, Display)]
+#[derive(Clone, PartialEq, Eq, Hash, Debug, Serialize, Deserialize, From, FromStr, Display)]
 #[serde(transparent)]
 pub struct SessionId(pub String);
 
-#[derive(Clone, PartialEq, Eq, Hash, Debug, Serialize, From, FromStr, Display)]
+#[derive(Clone, PartialEq, Eq, Hash, Debug, Serialize, Deserialize, From, FromStr, Display)]
 #[serde(transparent)]
 pub struct ResolutionId(pub String);
 
-#[derive(Clone, PartialEq, Eq, Hash, Debug, Serialize, From, FromStr, Display)]
+#[derive(Clone, PartialEq, Eq, Hash, Debug, Serialize, Deserialize, From, FromStr, Display)]
 #[serde(transparent)]
 pub struct CandidateId(pub String);
 
-#[derive(Clone, PartialEq, Eq, Hash, Debug, Serialize, From, FromStr, Display)]
+#[derive(Clone, PartialEq, Eq, Hash, Debug, Serialize, Deserialize, From, FromStr, Display)]
 #[serde(transparent)]
 pub struct ActorId(pub String);

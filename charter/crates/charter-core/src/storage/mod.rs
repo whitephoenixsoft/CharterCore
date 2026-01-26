@@ -12,11 +12,11 @@ pub use area::AreaObject;
 
 use crate::model::CharterModelKind;
 use crate::model::ids::*;
-use serde::Serialize;
+use serde::{Serialize, Deserialize};
 use strum::Display;
 use enum_dispatch::enum_dispatch;
 
-#[derive(Clone, PartialEq, Eq, Hash, Debug, Serialize)]
+#[derive(Clone, PartialEq, Eq, Hash, Debug, Serialize, Deserialize)]
 #[serde(transparent)]
 pub struct ObjectHash(pub String);
 
@@ -27,7 +27,7 @@ impl From<String> for ObjectHash {
 }
 
 
-#[derive(Debug, Clone, Display, Serialize)]
+#[derive(Debug, Clone, Display, Serialize, Deserialize)]
 //#[strum(serialize_all = "lowercase")]
 #[serde(tag = "object_type", content = "object", rename_all = "lowercase")]
 pub enum CharterObjectKind {
