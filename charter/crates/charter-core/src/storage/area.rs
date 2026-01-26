@@ -33,7 +33,7 @@ trait GetBytes {
 }
 
 impl GetBytes for AreaObject {
-    fn get_bytes(&self) -> Result<Vec<u8>, serdes_json::Error> {
+    fn get_bytes(&self) -> Result<Vec<u8>, serde_json::Error> {
         get_canonical_json(&self)
     }
 }

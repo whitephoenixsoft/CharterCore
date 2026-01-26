@@ -3,38 +3,45 @@ use super::hashing::{
     HashVersion, HashAlgorithm, hash_object, get_canonical_json
 };
 use super::CharterObjectKind;
-use serde::Serialize;
+use serde::{Serialize, Deserialize};
 
-#[derive(Serialize)]
-pub struct ObjectEnvelope {
+#[derive(Debug, Serialize, Deserialize)]
+pub struct ObjectEnvelope<T> {
     pub hash_version: HashVersion,
     pub hash_algorithm: HashAlgorithm,
     pub object_hash: ObjectHash, 
-    #[serde(flatten)]
-    pub object: CharterObjectKind,
+    pub object: T,
 }
 
-impl ObjectEnvelope {
+impl ObjectEnvelope<CharterObjectKind> {
+    pub fn get_hash_version() -> HashVersion {
+        HashVersion::V1
+    }
+
+    pub fn get_hash_algorithm() -> HashAlgorithm {
+        HashAlgorithm::Sha256
+    }
+
     pub fn new(
-        self,
-        object_type: CharterObjectKind
-    ) -> Self {
-    	   let hash_version = HashVersion::V1;
-    	   let hash_algorithm = HashAlgorithm::Sha256;
-    	   let hash = hash_object(hash_version, hash_algorithm, object_type, &value)
-    	       .expect("Failed go generate hash digest");
+        object: CharterObjectKind
+    ) -> Result<Self, serde_json::Error> {
+        let hash_version = get_hash_version();
+        let hash_algorithm = get_hash_algorithm();
+        let hash = hash_object(hash_version, hash_algorithm, &object)?;
     
         Self {
             hash_version,
             hash_algorithm,
-            object_type,
             object_hash: hash,
-            object: value,
+            object,
         }
     }
 	   
-	    pub fn as_bytes(&self) -> Result<Vec<u8>, String> {
-        get_canonical_json(&self.object)
+    pub fn verify(&self) -> Result<bool, serde_json::Error> {
+        let hash_version = get_hash_version();
+        let hash_algorithm = get_hash_algorithm();
+        let recomputed  = hash_object(hash_version, hash_algorithm, &object)?;
+        Ok(self.object_hash == recomputed)
     }
 }
 

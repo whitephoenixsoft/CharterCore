@@ -11,7 +11,7 @@ pub struct CreateArea {
 }
 
 impl Engine {
-    pub create_area(&self, area_info: CreateArea) {
+    pub fn create_area(&self, area_info: CreateArea) {
         let new_area = CharterModelKind::Area(AreaRuntime::new(
             label: area_info.label.clone(),
             name: area_info.name.clone(),
