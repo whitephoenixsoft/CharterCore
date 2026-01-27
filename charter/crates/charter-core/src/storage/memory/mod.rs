@@ -5,7 +5,7 @@ use std::cell::RefCell;
 
 
 pub struct MemoryObjectStore {
-    storage: RefCell<HashMap<ObjectHash, String>>,
+    storage: RefCell<HashMap<ObjectHash, Vec<u8>>>,
 }
 
 impl MemoryObjectStore {
@@ -15,12 +15,12 @@ impl MemoryObjectStore {
 }
 
 impl ObjectStore for MemoryObjectStore {
-    fn put(&mut self, hash: ObjectHash, data: String) -> Result<(), String> {
-        self.storage.borrow_mut().insert(hash, data);
+    fn put(&mut self, hash: ObjectHash, data: &Vec<u8>) -> Result<(), String> {
+        self.storage.borrow_mut().insert(hash, data.clone());
         Ok(())
     }
 
-    fn get(&self, hash: &ObjectHash) -> Result<String, String> {
+    fn get(&self, hash: &ObjectHash) -> Result<Vec<u8>, String> {
         self.storage.borrow().get(hash)
             .cloned()
             .ok_or_else(|| "Hash not found".to_string())

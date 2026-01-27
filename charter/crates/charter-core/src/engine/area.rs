@@ -3,6 +3,7 @@ use crate::model::ids::AreaId;
 use crate::model::area::*;
 use crate::model::CharterModelKind;
 use crate::storage::envelope::ObjectEnvelope;
+use crate::storage::CharterObjectKind;
 use derive_more::Display;
 
 #[derive(Clone, Debug, Display)]
@@ -14,14 +15,22 @@ pub struct CreateArea {
 }
 
 impl Engine {
-    pub fn create_area(&self, area_info: &CreateArea) {
+    pub fn create_area(&mut self, area_info: &CreateArea) -> Result<(), String> {
         let new_area = CharterModelKind::Area(AreaRuntime::new(
             area_info.label.clone(),
             area_info.name.clone(),
             area_info.annotation.clone(),
         ));
 
-        let new_area_object = new_area.into();
-        let envelope = ObjectEnvelope::new(new_area_object);
+        let new_area_object: CharterObjectKind  = new_area.into();
+        let envelope = ObjectEnvelope::new(new_area_object).expect("failed to create envelope");
+
+        //Integrity check
+        assert_eq!(envelope.verify().ok(), Some(true));
+
+        let json = serde_json::to_vec(&envelope).expect("failed to create json");
+        self.objects.put(envelope.object_hash, &json).expect("failed to save area");
+
+        Ok(())
     }
 }
