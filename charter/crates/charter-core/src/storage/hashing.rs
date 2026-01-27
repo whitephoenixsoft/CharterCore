@@ -1,7 +1,9 @@
 use super::ObjectHash;
 use super::CharterObjectKind;
 use serde::{Serialize, Deserialize};
+use serde::de::Error;
 use serde_json_canonicalizer::to_vec;
+use serde_json::Value;
 use strum::Display;
 use std::fmt;
 
@@ -37,11 +39,11 @@ impl<'a> HashInput<'a> {
     }
 }
 
-pub fn extract_enum_tag<T: Serialize>(payload: &T, tag: &str_) -> Result<String, serde_json::Error> {
+pub fn extract_enum_tag<T: Serialize>(payload: &T, tag: &str) -> Result<String, serde_json::Error> {
     let value = serde_json::to_value(payload)?; 
     match value.get(tag) {
         Some(Value::String(s)) => Ok(s.clone()),
-        _ => Err(serde::Error::custom("missing enum tag")),
+        _ => Err(serde_json::Error::custom("missing enum tag")),
     }
 }
 
@@ -50,9 +52,9 @@ pub fn get_canonical_json<T: Serialize>(value: &T) -> Result<Vec<u8>, serde_json
     json_bytes
 }
 
-pub fn compute_hash(bytes: &Vec<u8>) -> ObjectHash {
+pub fn compute_hash(algorithm: &HashAlgorithm, bytes: &Vec<u8>) -> ObjectHash {
     let object_hash: ObjectHash;
-    match input.algorithm {
+    match algorithm {
         HashAlgorithm::Sha256 => {
             use sha2::{Digest, Sha256};
         
@@ -77,7 +79,7 @@ pub fn hash_object<T: Serialize>(hash_version: HashVersion, hash_algorithm: Hash
         canonical_json: &json,
     }.as_bytes()?;
 
-    Ok(compute_hash(&bytes))
+    Ok(compute_hash(&hash_algorithm, &bytes))
 }
 
 

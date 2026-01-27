@@ -29,18 +29,18 @@ impl ObjectEnvelope<CharterObjectKind> {
         let hash_algorithm = Self::get_hash_algorithm();
         let hash = hash_object(hash_version, hash_algorithm, &object)?;
     
-        Self {
+        Ok(Self {
             hash_version,
             hash_algorithm,
             object_hash: hash,
             object,
-        }
+        })
     }
 	   
     pub fn verify(&self) -> Result<bool, serde_json::Error> {
         let hash_version = Self::get_hash_version();
         let hash_algorithm = Self::get_hash_algorithm();
-        let recomputed  = hash_object(hash_version, hash_algorithm, &object)?;
+        let recomputed  = hash_object(hash_version, hash_algorithm, &self.object)?;
         Ok(self.object_hash == recomputed)
     }
 }
