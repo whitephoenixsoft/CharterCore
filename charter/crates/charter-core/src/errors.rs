@@ -6,4 +6,8 @@ pub enum StorageError {
     HashGeneration,
     #[error("Hash not found")]
     HashNotFound,
+    #[error("Could not open file")]
+    FileOpenError,
+    #[error("Could not write file")]
+    FileWriteError,
 }
