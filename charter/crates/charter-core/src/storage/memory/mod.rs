@@ -1,5 +1,6 @@
 use super:: ObjectHash;
 use super::object_store::ObjectStore;
+use crate::errors::StorageError;
 use std::collections::HashMap;
 use std::cell::RefCell;
 
@@ -15,14 +16,14 @@ impl MemoryObjectStore {
 }
 
 impl ObjectStore for MemoryObjectStore {
-    fn put(&mut self, hash: ObjectHash, data: &Vec<u8>) -> Result<(), String> {
+    fn put(&mut self, hash: ObjectHash, data: &Vec<u8>) -> Result<(), StorageError> {
         self.storage.borrow_mut().insert(hash, data.clone());
         Ok(())
     }
 
-    fn get(&self, hash: &ObjectHash) -> Result<Vec<u8>, String> {
+    fn get(&self, hash: &ObjectHash) -> Result<Vec<u8>, StorageError> {
         self.storage.borrow().get(hash)
             .cloned()
-            .ok_or_else(|| "Hash not found".to_string())
+            .ok_or_else(|| StorageError::HashNotFound)
     }
 }
