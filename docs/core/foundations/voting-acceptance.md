@@ -1,4 +1,4 @@
-# Session Voting & Acceptance Invariant
+# Session Voting & Acceptance
 ## Explicit Evaluation, Explicit Commitment
 
 Status: FROZEN  
