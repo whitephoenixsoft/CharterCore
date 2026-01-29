@@ -1,5 +1,11 @@
 use thiserror::Error;
 
+#[derive(Error, Debug)]
+pub enum EngineError {
+    #[error("Could not create area")]
+    CreateAreaError,
+}
+
 #[derive(Error, Debug )]
 pub enum StorageError {
     #[error("Failed to generate has digest")]
