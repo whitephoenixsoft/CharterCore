@@ -19,7 +19,7 @@ impl OneFileObjectStore {
 }
 
 impl ObjectStore for OneFileObjectStore {
-    fn put(&mut self, hash: ObjectHash, data: impl AsRef<[u8]>) -> Result<(), StorageError> {
+    fn put(&mut self, hash: ObjectHash, data: Vec<u8>) -> Result<(), StorageError> {
         let path = self.root.join(filename);
 
         let mut file: fs::OpenOptions::new()
@@ -27,7 +27,7 @@ impl ObjectStore for OneFileObjectStore {
             .open(path)
             .expect(StorageError::FileOpenError);
         
-        file.write_all(data.as_ref()).expect(StorageError::FileWriteError);
+        file.write_all(data.as_byte()).expect(StorageError::FileWriteError);
 
         Ok(())
     }

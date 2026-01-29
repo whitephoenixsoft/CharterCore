@@ -34,7 +34,7 @@ impl Engine {
         assert_eq!(envelope.verify().ok(), Some(true));
 
         let json = serde_json::to_vec(&envelope).expect("failed to create json");
-        self.objects.put(envelope.object_hash, &json).expect("failed to save area");
+        self.objects.put(envelope.object_hash, json).expect("failed to save area");
 
         //todo:save the area label, name, and annotation to metadata store
         Ok(())

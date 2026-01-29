@@ -16,9 +16,8 @@ impl MemoryObjectStore {
 }
 
 impl ObjectStore for MemoryObjectStore {
-    fn put(&mut self, hash: ObjectHash, data: impl AsRef<[u8]>) -> Result<(), StorageError> {
-        let input = data.as_ref(); 
-        self.storage.borrow_mut().insert(hash, input.clone());
+    fn put(&mut self, hash: ObjectHash, data: Vec<u8>) -> Result<(), StorageError> {
+        self.storage.borrow_mut().insert(hash, data.clone());
         Ok(())
     }
 
