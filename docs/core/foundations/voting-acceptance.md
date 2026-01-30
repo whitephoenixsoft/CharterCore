@@ -1,43 +1,109 @@
-# Session Voting & Acceptance
+# Charter Foundation — Voting & Acceptance
 ## Explicit Evaluation, Explicit Commitment
 
-Status: FROZEN  
-Applies to: Charter Core, CLI, and future interfaces  
-Scope: All Sessions that evaluate Proposals
+Status: FROZEN (V1 Foundation)  
+Applies to: Charter Core, CLI, and all future interfaces  
+Scope: Any Session that evaluates proposals
+
+---
+
+## Purpose
+
+This document explains **why Charter separates voting from acceptance**  
+and how that separation preserves legitimacy, clarity, and human dignity.
+
+It is not a procedural spec.
+It is the conceptual foundation behind the invariants.
+
+Charter is not designed to measure agreement.
+It is designed to record **owned commitment**.
 
 ---
 
 ## Core Principle
 
-> **Votes express evaluation.  
-> Acceptance expresses commitment.  
-> Charter never conflates the two.**
+**Votes express evaluation.**  
+**Acceptance expresses commitment.**
 
-A proposal is never accepted *because* votes exist.
-A proposal is accepted only when an explicit acceptance action is taken —
-and only if the recorded votes satisfy Authority at that moment.
+Charter never conflates the two.
+
+A proposal is **never accepted because votes exist**.  
+A proposal is accepted only when a human explicitly commits to it —
+and only if authority rules are satisfied **at that moment**.
+
+This separation is intentional and non-negotiable.
 
 ---
 
-## Two-Phase Session Model
+## Why Voting Exists
 
-Every session evaluating proposals operates in two distinct phases:
+Voting exists to answer one question:
+
+> *“What do people currently think?”*
+
+Votes are:
+- expressions of stance
+- provisional
+- changeable
+- auditable
+- non-legitimizing
+
+Votes are not promises.  
+Votes are not commitments.  
+Votes do not create history.
+
+They are a snapshot of human evaluation, nothing more.
+
+---
+
+## Why Acceptance Exists
+
+Acceptance exists to answer a different question:
+
+> *“Are we committing to this now?”*
+
+Acceptance is:
+- explicit
+- deliberate
+- irreversible
+- legitimacy-creating
+
+Acceptance is the moment when:
+- authority is evaluated
+- responsibility is owned
+- history becomes sealed
+
+Charter treats this moment with gravity on purpose.
+
+---
+
+## The Two-Phase Session Model
+
+Every session that evaluates proposals operates in **two distinct phases**.
 
 ### Phase 1 — Evaluation (Voting)
 
+During evaluation:
+
 - Participants may record stances:
-  - ACCEPT
-  - REJECT
-  - ABSTAIN
+  - `ACCEPT`
+  - `REJECT`
+  - `ABSTAIN`
 - Votes are:
   - mutable
   - auditable
-  - non-legitimizing
+  - non-authoritative
 - Votes may be changed any number of times
-- No authority is evaluated continuously
+- Authority is **not continuously evaluated**
 
-This phase answers:
-> “What do people currently think?”
+This phase supports:
+- exploration
+- disagreement
+- learning
+- human uncertainty
+
+Changing one’s mind is not instability.  
+It is a sign that thinking is happening.
 
 ---
 
@@ -45,83 +111,86 @@ This phase answers:
 
 Acceptance is a **separate, explicit action**.
 
-- Acceptance:
-  - is invoked deliberately (`session accept`)
-  - evaluates authority **once**
-  - freezes the outcome
-- Acceptance is irreversible
-- Acceptance closes the session
+When acceptance is attempted:
 
-This phase answers:
-> “Are we committing to this now?”
+- Authority is evaluated **once**
+- Based on votes as they exist **at that moment**
+- If authority passes:
+  - acceptance succeeds
+  - outcome is frozen
+  - session closes
+- If authority fails:
+  - acceptance is blocked
+  - session remains open
+  - nothing becomes legitimate
 
----
-
-## Enforcement Invariants
-
-### INV-SESSION-ACCEPT-01 — Authority Gate
-
-A proposal **cannot be accepted** unless:
-
-- Authority evaluation **passes**
-- Based on **current recorded stances**
-- At the moment acceptance is attempted
-
-If authority does not pass:
-- Acceptance fails
-- Session remains open
-- No legitimacy is created
+Acceptance answers:
+> *“Are we willing to own this now?”*
 
 ---
 
-### INV-SESSION-ACCEPT-02 — No Auto-Accept
+## Enforcement Philosophy (Conceptual)
 
-Charter MUST NOT:
-- auto-accept when votes cross a threshold
-- infer acceptance from voting patterns
-- close sessions implicitly
+Charter enforces separation not to be strict —
+but to prevent accidental legitimacy.
+
+### Authority Is a Gate, Not a Trigger
+
+Authority does not act on its own.
+It is only evaluated when a human asks to accept.
 
 Votes never trigger acceptance.
 Humans do.
 
 ---
 
-### INV-SESSION-ACCEPT-03 — Vote Mutability Before Acceptance
+### Mutability Before, Finality After
 
 Before acceptance:
-- Any participant may change their vote
-- Vote changes:
-  - do not create audit ambiguity
-  - do not imply instability
-  - reflect human reality
+- Votes may change freely
+- No implication of instability
+- No legitimacy risk
 
 After acceptance:
 - Votes are frozen
 - Authority context is sealed
+- History is immutable
+
+This mirrors real human decision-making:
+thinking first, committing later.
 
 ---
 
-### INV-SESSION-ACCEPT-04 — Single Commitment Point
+### Single Commitment Point
 
-- Each proposal may be accepted **at most once**
-- Each session may produce:
-  - acceptance
-  - or non-acceptance
-- Re-evaluation requires a new session
+Each proposal may be accepted **at most once**.  
+Each session produces either:
+- acceptance  
+- or non-acceptance  
 
-There is no partial acceptance.
-There is no provisional legitimacy.
+Re-evaluation requires a new session.
+
+There is:
+- no partial acceptance
+- no provisional legitimacy
+- no “almost decided” state
+
+Charter records decisions, not momentum.
 
 ---
 
-## CLI / Library Behavior
+## Interface Responsibility (CLI / Library)
 
-- CLI may display:
-  - “Authority satisfied” (informational only)
-  - “Authority not satisfied” (informational only)
-- CLI MUST still require:
-  - an explicit `accept` action
-- CLI MUST block acceptance if authority fails
+Interfaces may assist, but never decide.
+
+Interfaces may:
+- display whether authority would pass
+- explain why acceptance is blocked
+- summarize voting state
+
+Interfaces must still:
+- require an explicit accept action
+- block acceptance when authority fails
 
 This preserves:
 - cognitive clarity
@@ -130,37 +199,51 @@ This preserves:
 
 ---
 
-## Why This Matters
+## Psychological Rationale
 
-This design ensures:
+This model protects humans from:
 
-- Charter records **decisions**, not momentum
-- Consensus is never inferred
-- Politics stays outside the system
-- Pressure to “just let it pass” is structurally blocked
+- pressure to “just let it pass”
+- legitimacy by exhaustion
+- confusion between agreement and commitment
+- shame for changing one’s mind
 
-Charter does not ask:
-> “Did enough people agree?”
+You are allowed to think.
+You are allowed to hesitate.
+You are allowed to revise.
 
-It asks:
-> “Did someone explicitly commit — under rules everyone could see?”
+But when you accept —
+you are owning the outcome.
 
 ---
 
 ## Mental Model
 
-Votes are **notes on the table**.  
-Acceptance is **signing the document**.
+> Votes are notes on the table.  
+> Acceptance is signing the document.
 
 You can rearrange the notes as much as you like.  
 Once signed, history is sealed.
 
 ---
 
-## Final Lock
+## Final Foundation Lock
 
 If acceptance were automatic,
 Charter would become a political machine.
 
 By separating voting from acceptance,
-Charter remains a **memory of human intent**, not a referee of human behavior.
+Charter remains:
+
+- a memory of human intent
+- a record of owned decisions
+- not a referee of human behavior
+
+Charter does not ask:
+
+> “Did enough people agree?”
+
+It asks:
+
+> “Did someone explicitly commit — under rules everyone could see?”
+
