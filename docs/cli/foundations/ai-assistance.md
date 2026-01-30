@@ -1,146 +1,155 @@
-# Charter — AI Assistance & Guidance Layer (V5 Holding Notes)
-
-Status: HOLDING (Non-Spec Guidance)  
-Applies to: Future Charter guidance layers (V5+)  
+# Charter — AI Assistance & Guidance Layer (V5)
+Status: FROZEN (Design Foundation)  
+Scope: Future Charter guidance layers (V5+)  
 Does NOT define: engine semantics, authority rules, acceptance behavior
 
 ---
 
 ## Purpose
 
-This document captures the **intended role of AI assistance in Charter**
-as a *guidance and clarification layer*, not a decision-maker.
+The V5 AI layer exists to **enhance human understanding**, not to make decisions.  
 
-It exists to:
-- preserve design intent
-- prevent accidental authority leakage
-- scope future AI work safely
+It is a **read-only, advisory layer** that:
 
-This is not a commitment to implementation.
-It is a boundary-setting artifact.
+- Surfaces potential gaps or inconsistencies
+- Explains system state in human terms
+- Summarizes history, context, and rationale
+- Supports learning, reflection, and decision hygiene
 
----
+AI guidance **must never** create legitimacy, enforce acceptance, or bypass authority.
 
-## Core Principle
-
-AI in Charter exists to **help humans understand what already exists**.
-
-It must never:
-- decide
-- accept
-- reject
-- infer authority
-- mutate state
-- shortcut legitimacy
-
-AI guidance is *read-only*, *advisory*, and *non-blocking*.
+> Mental Model:  
+> “Explain what I’ve done.  
+> Show me what I might be missing.  
+> Never decide for me.”
 
 ---
 
-## Intended Guidance Surfaces
+## Core Principles
 
-AI assistance may operate over **existing Charter facts**, including:
+1. **Non-Blocking** — AI never prevents human action.  
+2. **Read-Only** — AI observes immutable facts only.  
+3. **Advisory** — Guidance may be incorrect; humans retain final authority.  
+4. **Contextual** — AI explanations are always grounded in recorded data.  
+5. **Transparent** — Any metadata, assumptions, or inferred observations are explicitly flagged.
+
+---
+
+## Guidance Surfaces
+
+AI assistance operates over **immutable Charter facts** and is organized by functional layer.
 
 ### 1. Sessions
-- Highlight resolution conflicts
-- Surface scope mismatches
-- Explain why acceptance is blocked
+- Highlight resolution conflicts and scope mismatches
+- Explain why acceptance may be blocked
 - Summarize session outcomes (receipts)
+- Provide rationale and contextual annotations for irreversible decisions
 
 ### 2. Queries & Discovery
-- Natural-language querying over immutable facts
-- Help locate relevant resolutions, sessions, or areas
-- Rephrase mechanical output into human-readable explanations
+- Natural-language querying over engine facts
+- Locate relevant resolutions, sessions, or areas
+- Rephrase CLI or API outputs into human-readable explanations
+- Highlight missing context or potential exploration gaps
 
 ### 3. Baseline Review & Synthesis
-- Detect duplicate or overlapping proposals
-- Flag conflicts between imported and local history
-- Summarize review deltas and acceptance results
-- Assist with convergence clarity (not decisions)
+- Detect duplicates or overlapping proposals
+- Identify conflicts between imported and local history
+- Summarize review deltas and accepted/rejected candidates
+- Aid clarity for convergence decisions without enforcing them
 
-### 4. Deliberate (Orchestration Guidance)
+### 4. Deliberate (Epic Guidance)
 - Warn when discussion drifts from the epic
 - Identify uncovered questions or assumptions
-- Suggest synthesis readiness (non-binding)
+- Suggest readiness for synthesis (non-binding)
 - Highlight missing perspectives or artifacts
 
 ### 5. Breakouts
-- Check whether produced artifacts meet declared criteria
+- Check if produced artifacts meet declared criteria
 - Flag incompleteness or ambiguity
 - Never evaluate correctness or merit
 
 ### 6. Scope Awareness
 - Surface scope violations or ambiguities
-- Explain why a proposal does not fit current scope
-- Never auto-correct scope
+- Explain why a resolution or candidate does not fit the current area or scope
+- Never auto-correct or modify scope
 
 ### 7. Auditing & Reporting
 - Generate human-readable audit summaries
-- Produce reports suitable for reviewers or auditors
-- Explain lineage and supersession chains
+- Summarize candidate outcomes, session flows, and supersession chains
+- Provide trend analysis for potential learning and psychological feedback
+- Highlight potential cognitive risks (e.g., long-running unclosed sessions)
 
-### 8. Scientific / Long-Horizon Practices (Exploratory)
-- Track hypothesis changes over time
-- Summarize rationale evolution
-- Preserve decision hygiene during revision
+### 8. Scientific / Long-Horizon Practices
+- Track hypothesis or assumption evolution over time
+- Summarize rationale changes and decision hygiene
+- Support low-budget scientific or research workflows without affecting legitimacy
+
+---
+
+## Human-Centric Philosophy
+
+V5 AI guidance is designed to **support the user’s mind**:
+
+- **Reflection:** Show the consequences of prior actions
+- **Learning:** Surface previously unseen gaps or inconsistencies
+- **Confidence:** Reduce fear or shame by clarifying decisions
+- **Psychological Safety:** Provide advisory feedback without judgment
+- **Mature Clarity:** Help users distinguish between considered and committed actions
+
+---
+
+## Metadata & Annotations
+
+AI may leverage existing or new fields for richer guidance:
+
+- **Rationale** — Explains why resolutions or sessions exist  
+- **Irreversibility** — Highlights permanent or conditionally permanent decisions  
+- **Guidance Annotations** — Suggestions or observations that do not affect legitimacy  
+- **External Context Flags** — Identifies imported or foreign candidates, out-of-scope considerations
 
 ---
 
 ## Configuration & Deployment
 
-Guidance layers may support:
-- Local models
-- Remote models (API keys)
-- Fully disabled operation
-
-AI availability must never affect:
-- correctness
-- determinism
-- legitimacy
-- engine safety
+- Local models, remote API models, or fully disabled operation  
+- AI availability must **never** affect correctness, determinism, or legitimacy  
+- Guidance outputs should remain **machine-readable**; CLI formatting may provide human-friendly presentation
 
 ---
 
-## Hard Prohibitions (Frozen)
+## Hard Prohibitions
 
-AI guidance must NEVER:
-- accept a resolution
-- cast or modify votes
-- infer consent
-- override authority
-- mutate engine state
-- block a valid human action
+AI guidance **must never**:
 
----
+- Accept, reject, or modify resolutions  
+- Cast or change votes  
+- Infer consent  
+- Override authority or legitimacy rules  
+- Mutate engine state  
+- Block valid human action  
 
-## Mental Model
-
-> “Explain what I’ve done.
-> Show me what I might be missing.
-> Never decide for me.”
-
-If guidance feels authoritative,
-it has already failed.
+> If AI guidance feels authoritative, it has already failed.
 
 ---
 
 ## Relationship to Charter Canon
 
-AI guidance is evaluated against:
-- Charter legitimacy principles
-- Auditability guarantees
-- Engine immutability
-- Explicit authority rules
+AI guidance in V5:
 
-Guidance may be wrong.
-History must remain right.
+- Respects legitimacy principles and auditability guarantees  
+- Observes engine immutability and authority rules  
+- Provides advisory interpretations only; historical facts remain unchanged  
+- May be wrong, but history must remain correct and reconstructible
 
 ---
 
-## Status
+## Future Considerations
 
-This document is a **holding place**.
-Details are intentionally deferred.
+Potential enhancements:
 
-Future work must align with these boundaries
-or explicitly revise them.
+- Subtext advisory in CLI status outputs  
+- “Consult” commands to interact with AI guidance  
+- Mechanical questions to assess missing coverage without invoking chat-style responses  
+- Integration with annotations for sessions, resolutions, and breakouts  
+
+All future work must **adhere to boundaries** or explicitly revise them.
