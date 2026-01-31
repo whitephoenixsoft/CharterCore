@@ -1,25 +1,30 @@
-# Charter — AI Assistance & Guidance Layer (V5)
-
+# Charter — AI Assistance & Guidance Layer (V5)  
 **Status:** FROZEN (Design Foundation)  
 **Scope:** Future Charter guidance layers (V5+)  
-**Does NOT define:** engine semantics, authority rules, acceptance behavior, or legitimacy creation  
+**Does NOT define:** engine semantics, authority rules, acceptance behavior, or legitimacy creation
 
 ---
 
 ## Purpose
 
-The V5 AI layer exists to enhance **human understanding**, not to make decisions.
+The V5 AI layer exists to enhance human understanding, not to make decisions.  
 
-It is a **read-only, advisory layer** that:
+It is a **read-only advisory layer** that:
 
 - Explains Charter state in human terms  
 - Surfaces gaps, inconsistencies, or unresolved structure  
-- Summarizes history, context, and rationale  
+- Summarizes history, context, rationale, and session receipts  
 - Supports learning, reflection, and decision hygiene over time  
 
-AI guidance must **never** create legitimacy, infer authority, or bypass explicit human commitment.
+AI guidance must **never**:
 
-### Mental Model
+- create legitimacy  
+- infer authority  
+- bypass explicit human commitment  
+
+---
+
+## Mental Model
 
 > “Explain what I’ve done.  
 > Show me what I might be missing.  
@@ -30,17 +35,17 @@ AI guidance must **never** create legitimacy, infer authority, or bypass explici
 ## Core Principles
 
 - **Non-Blocking** — AI never prevents or delays a valid human action  
-- **Read-Only** — AI observes immutable Charter facts only  
-- **Advisory** — Guidance may be wrong; humans retain final authority  
-- **Contextual** — All explanations are grounded in recorded data  
-- **Transparent** — Any assumptions, metadata use, or heuristics are explicitly flagged  
-- **Optional** — AI guidance can always be disabled without loss of correctness  
+- **Read-Only** — observes immutable Charter facts only  
+- **Advisory** — may be wrong; humans retain final authority  
+- **Contextual** — explanations are always grounded in recorded data  
+- **Transparent** — any assumptions, metadata, or heuristics are explicitly flagged  
+- **Optional** — AI guidance can be disabled without affecting correctness  
 
 ---
 
 ## Guidance Surfaces
 
-AI assistance operates over immutable Charter facts and is organized by functional layer.
+AI assistance operates over **immutable Charter facts** and is organized by functional layer.
 
 ### 1. Sessions
 
@@ -48,8 +53,9 @@ AI may:
 
 - Highlight resolution conflicts or scope mismatches  
 - Explain why acceptance is blocked or unsafe  
-- Summarize session outcomes (receipts)  
-- Surface rationale or annotations related to irreversible decisions  
+- Summarize **session outcomes (receipts)**  
+- Surface rationale or **annotations** related to irreversible or conditionally reversible decisions  
+- Track **topic changes** or session metadata for context  
 
 AI must never:
 
@@ -68,8 +74,10 @@ AI may:
 - Rephrase CLI or API output into human-readable explanations  
 - Highlight missing context or unexplored structural gaps  
 
-Queries remain **pure** and **immutable**.  
-Inference has no power.
+Notes:
+
+- Queries remain **pure and immutable**  
+- Inference has no effect on legitimacy  
 
 ---
 
@@ -85,7 +93,7 @@ AI may:
 AI must never:
 
 - Evaluate authority  
-- Auto-accept unchanged content  
+- Auto-accept content  
 - Collapse review into trust  
 
 ---
@@ -99,7 +107,7 @@ AI may:
 - Suggest readiness for synthesis (non-binding)  
 - Highlight missing perspectives or artifacts  
 
-AI does not evaluate merit or correctness.
+AI does **not** evaluate merit or correctness.
 
 ---
 
@@ -125,7 +133,7 @@ AI may:
 
 - Surface scope violations or ambiguities  
 - Explain why a candidate or resolution does not fit current scope  
-- Suggest reviewing Scope history or annotations  
+- Suggest reviewing **Scope history or annotations**  
 
 AI must never:
 
@@ -144,7 +152,9 @@ AI may:
 - Summarize session and baseline receipts  
 - Highlight structural or cognitive risk signals (e.g., long-running unclosed sessions)  
 
-Trend analysis is **descriptive**, not judgmental.
+Notes:
+
+- Trend analysis is **descriptive**, not judgmental  
 
 ---
 
@@ -193,7 +203,7 @@ It aims to:
 
 Side effects are intentional:
 
-> Mature clarity → lack of shame → confidence → courage to revise  
+> Mature clarity → lack of shame → confidence → courage to revise
 
 ---
 
@@ -205,6 +215,7 @@ AI may leverage or reference:
 - **Irreversibility** — Permanent or conditionally permanent decisions  
 - **Guidance Annotations** — Advisory observations without legitimacy impact  
 - **External Context Flags** — Imported, foreign, or out-of-scope material  
+- **Session Receipts** — Historical record of session changes, topics, annotations, and stances  
 
 Annotations inform understanding only.
 
@@ -212,31 +223,33 @@ Annotations inform understanding only.
 
 ## Voice & Presentation (Non-Authoritative)
 
-AI explanations may be rendered through configurable **voices**:
+AI explanations may be rendered through configurable voices:
 
-- Voices affect *tone, density, and style*, not content or authority  
+- Voices affect tone, density, and style, **not content or authority**  
 - Voices must never manipulate emotion or imply judgment  
 - Help and selection must demonstrate voices via examples, not labels  
-
-Voice is presentation, not persuasion.
+- Voice is **presentation, not persuasion**  
 
 ---
 
 ## Configuration & Deployment
 
-- Supports local models, remote APIs, or fully disabled operation  
-- AI availability must never affect:
-  - correctness  
-  - determinism  
-  - legitimacy  
-- Core outputs remain machine-readable  
-- CLI or UI layers may format for humans  
+Supports local models, remote APIs, or fully disabled operation.  
+
+AI availability must never affect:
+
+- correctness  
+- determinism  
+- legitimacy  
+
+Core outputs remain machine-readable.  
+CLI or UI layers may format for humans.
 
 ---
 
 ## Hard Prohibitions
 
-AI guidance must **never**:
+AI guidance must never:
 
 - Accept, reject, or modify resolutions  
 - Cast or change votes  
@@ -253,7 +266,7 @@ AI guidance must **never**:
 
 V5 AI guidance:
 
-- Is subordinate to the Legitimacy Canon  
+- Is subordinate to the **Legitimacy Canon**  
 - Respects auditability and immutability  
 - Interprets history without rewriting it  
 - May be wrong — history must remain correct  
@@ -270,7 +283,6 @@ Potential extensions:
 - Subtext advisory in CLI status outputs  
 - `consult` commands for guided reflection  
 - Mechanical “what’s missing?” queries without chat  
-- Deeper integration with annotations and rationale fields  
+- Deeper integration with annotations, rationale fields, and session receipts  
 
-All future work must respect this foundation  
-or explicitly revise it.
+All future work must respect this foundation or explicitly revise it.

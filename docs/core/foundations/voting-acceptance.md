@@ -1,22 +1,27 @@
-# Charter Foundation — Voting & Acceptance
+# Charter Foundation — Voting & Acceptance  
 ## Explicit Evaluation, Explicit Commitment
 
 Status: FROZEN (V1 Foundation)  
 Applies to: Charter Core, CLI, and all future interfaces  
-Scope: Any Session that evaluates proposals
+Scope: Any session that evaluates proposals  
 
 ---
 
 ## Purpose
 
-This document explains **why Charter separates voting from acceptance**  
-and how that separation preserves legitimacy, clarity, and human dignity.
+This document defines *why* Charter strictly separates **evaluation** from **commitment**,  
+and how that separation preserves:
 
-It is not a procedural spec.
-It is the conceptual foundation behind the invariants.
+- legitimacy  
+- clarity  
+- auditability  
+- human dignity  
 
-Charter is not designed to measure agreement.
-It is designed to record **owned commitment**.
+This is **not** a procedural specification.  
+It is the conceptual foundation underlying the engine invariants.
+
+Charter is not designed to measure agreement.  
+Charter is designed to record **owned commitment**.
 
 ---
 
@@ -27,8 +32,8 @@ It is designed to record **owned commitment**.
 
 Charter never conflates the two.
 
-A proposal is **never accepted because votes exist**.  
-A proposal is accepted only when a human explicitly commits to it —
+A proposal is never accepted *because* votes exist.  
+A proposal is accepted only when a human **explicitly commits** to it —  
 and only if authority rules are satisfied **at that moment**.
 
 This separation is intentional and non-negotiable.
@@ -39,20 +44,21 @@ This separation is intentional and non-negotiable.
 
 Voting exists to answer one question:
 
-> *“What do people currently think?”*
+> **“What do people currently think?”**
 
 Votes are:
-- expressions of stance
-- provisional
-- changeable
-- auditable
-- non-legitimizing
+
+- expressions of stance  
+- provisional  
+- changeable  
+- auditable  
+- non-legitimizing  
 
 Votes are not promises.  
 Votes are not commitments.  
 Votes do not create history.
 
-They are a snapshot of human evaluation, nothing more.
+They are a snapshot of human evaluation — nothing more.
 
 ---
 
@@ -60,18 +66,20 @@ They are a snapshot of human evaluation, nothing more.
 
 Acceptance exists to answer a different question:
 
-> *“Are we committing to this now?”*
+> **“Are we committing to this now?”**
 
 Acceptance is:
-- explicit
-- deliberate
-- irreversible
-- legitimacy-creating
+
+- explicit  
+- deliberate  
+- irreversible  
+- legitimacy-creating  
 
 Acceptance is the moment when:
-- authority is evaluated
-- responsibility is owned
-- history becomes sealed
+
+- authority is evaluated  
+- responsibility is owned  
+- history becomes sealed  
 
 Charter treats this moment with gravity on purpose.
 
@@ -79,31 +87,41 @@ Charter treats this moment with gravity on purpose.
 
 ## The Two-Phase Session Model
 
-Every session that evaluates proposals operates in **two distinct phases**.
+Every session that evaluates proposals operates in two distinct phases.
+
+---
 
 ### Phase 1 — Evaluation (Voting)
 
 During evaluation:
 
-- Participants may record stances:
-  - `ACCEPT`
-  - `REJECT`
-  - `ABSTAIN`
-- Votes are:
-  - mutable
-  - auditable
-  - non-authoritative
-- Votes may be changed any number of times
-- Authority is **not continuously evaluated**
+Participants may record stances:
+
+- ACCEPT  
+- REJECT  
+- ABSTAIN  
+
+Votes are:
+
+- mutable  
+- auditable  
+- non-authoritative  
+
+Rules:
+
+- Votes may be changed any number of times  
+- Authority is **not** continuously evaluated  
+- No legitimacy is created  
 
 This phase supports:
-- exploration
-- disagreement
-- learning
-- human uncertainty
+
+- exploration  
+- disagreement  
+- learning  
+- human uncertainty  
 
 Changing one’s mind is not instability.  
-It is a sign that thinking is happening.
+It is evidence that thinking is happening.
 
 ---
 
@@ -114,50 +132,66 @@ Acceptance is a **separate, explicit action**.
 When acceptance is attempted:
 
 - Authority is evaluated **once**
-- Based on votes as they exist **at that moment**
-- If authority passes:
-  - acceptance succeeds
-  - outcome is frozen
-  - session closes
-- If authority fails:
-  - acceptance is blocked
-  - session remains open
-  - nothing becomes legitimate
+- Based on votes as they exist at that moment
 
-Acceptance answers:
-> *“Are we willing to own this now?”*
+If authority passes:
+
+- acceptance succeeds  
+- outcome is frozen  
+- legitimacy is created  
+
+If authority fails:
+
+- acceptance is blocked  
+- session remains open  
+- no legitimacy is created  
+
+Acceptance answers one question only:
+
+> **“Are we willing to own this now?”**
 
 ---
 
 ## Enforcement Philosophy (Conceptual)
 
-Charter enforces separation not to be strict —
-but to prevent accidental legitimacy.
+Charter enforces this separation not to be strict —  
+but to prevent **accidental legitimacy**.
+
+---
 
 ### Authority Is a Gate, Not a Trigger
 
-Authority does not act on its own.
-It is only evaluated when a human asks to accept.
+Authority never acts on its own.
 
-Votes never trigger acceptance.
-Humans do.
+- Votes do not trigger acceptance  
+- Thresholds do not trigger acceptance  
+- Time does not trigger acceptance  
+
+Authority is evaluated **only** when a human explicitly asks to accept.
+
+Humans create legitimacy.  
+Mechanics merely verify it.
 
 ---
 
 ### Mutability Before, Finality After
 
 Before acceptance:
-- Votes may change freely
-- No implication of instability
-- No legitimacy risk
+
+- Votes may change freely  
+- No implication of instability  
+- No legitimacy risk  
 
 After acceptance:
-- Votes are frozen
-- Authority context is sealed
-- History is immutable
+
+- Votes are frozen  
+- Authority context is sealed  
+- History is immutable  
 
 This mirrors real human decision-making:
-thinking first, committing later.
+
+> Think first.  
+> Commit second.
 
 ---
 
@@ -165,17 +199,19 @@ thinking first, committing later.
 
 Each proposal may be accepted **at most once**.  
 Each session produces either:
+
 - acceptance  
 - or non-acceptance  
 
-Re-evaluation requires a new session.
+Re-evaluation requires a **new session**.
 
 There is:
-- no partial acceptance
-- no provisional legitimacy
-- no “almost decided” state
 
-Charter records decisions, not momentum.
+- no partial acceptance  
+- no provisional legitimacy  
+- no “almost decided” state  
+
+Charter records decisions — not momentum.
 
 ---
 
@@ -183,19 +219,22 @@ Charter records decisions, not momentum.
 
 Interfaces may assist, but never decide.
 
-Interfaces may:
-- display whether authority would pass
-- explain why acceptance is blocked
-- summarize voting state
+Interfaces **may**:
 
-Interfaces must still:
-- require an explicit accept action
-- block acceptance when authority fails
+- display whether authority would pass  
+- explain why acceptance is blocked  
+- summarize current voting state  
+
+Interfaces **must still**:
+
+- require an explicit accept action  
+- block acceptance when authority fails  
 
 This preserves:
-- cognitive clarity
-- mechanical legitimacy
-- political neutrality
+
+- cognitive clarity  
+- mechanical legitimacy  
+- political neutrality  
 
 ---
 
@@ -203,24 +242,24 @@ This preserves:
 
 This model protects humans from:
 
-- pressure to “just let it pass”
-- legitimacy by exhaustion
-- confusion between agreement and commitment
-- shame for changing one’s mind
+- pressure to “just let it pass”  
+- legitimacy by exhaustion  
+- confusion between agreement and commitment  
+- shame for changing one’s mind  
 
-You are allowed to think.
-You are allowed to hesitate.
+You are allowed to think.  
+You are allowed to hesitate.  
 You are allowed to revise.
 
-But when you accept —
+But when you accept —  
 you are owning the outcome.
 
 ---
 
 ## Mental Model
 
-> Votes are notes on the table.  
-> Acceptance is signing the document.
+Votes are notes on the table.  
+Acceptance is signing the document.
 
 You can rearrange the notes as much as you like.  
 Once signed, history is sealed.
@@ -229,15 +268,15 @@ Once signed, history is sealed.
 
 ## Final Foundation Lock
 
-If acceptance were automatic,
+If acceptance were automatic,  
 Charter would become a political machine.
 
-By separating voting from acceptance,
+By separating voting from acceptance,  
 Charter remains:
 
-- a memory of human intent
-- a record of owned decisions
-- not a referee of human behavior
+- a memory of human intent  
+- a record of owned decisions  
+- not a referee of human behavior  
 
 Charter does not ask:
 
@@ -245,5 +284,4 @@ Charter does not ask:
 
 It asks:
 
-> “Did someone explicitly commit — under rules everyone could see?”
-
+> **“Did someone explicitly commit — under rules everyone could see?”**

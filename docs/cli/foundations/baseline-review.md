@@ -1,164 +1,153 @@
-# Baseline Review v2
-Status: DRAFT → FROZEN (Target)  
-Applies to: Charter CLI and Charter Core interaction layer
+# Baseline Review
+**Status:** FROZEN (Target)  
+**Applies to:** Charter CLI and Charter Core interaction layer
 
 ## Purpose
-
-Baseline Review is the mechanism by which **foreign or external proposals**
-are evaluated and either integrated into Charter history
-or explicitly rejected.
+Baseline Review is the mechanism by which foreign, imported, or external proposals are evaluated and either integrated into canonical Charter history or explicitly rejected.  
 
 It exists to prevent:
-- silent trust of external data
-- legitimacy drift across time or versions
-- retroactive reinterpretation of decisions
 
-Baseline Review is not a shortcut.
-It is a legitimacy firewall.
+- Silent trust of external data  
+- Legitimacy drift across time or versions  
+- Retroactive reinterpretation of prior decisions  
+
+**Baseline Review is not a shortcut.** It is a legitimacy firewall: nothing reviewed here becomes canonical until explicitly accepted through a session.
 
 ---
 
 ## Core Idea
+Baseline Review evaluates proposals, **not decisions**.  
 
-> Baseline Review evaluates *proposals*, not decisions.
-
-Nothing becomes legitimate by entering a Baseline.
-Legitimacy is created only through sessions.
-
----
-
-## What a Baseline Review Is
-
-A Baseline Review is:
-
-- a bounded review workspace
-- containing one or more **foreign proposals**
-- evaluated deliberately and explicitly
-- producing zero or more acceptance sessions
-
-A Baseline Review is:
-
-- mutable until closed
-- auditable in full
-- isolated from active decision-making
-- non-legitimizing by design
+- No proposal in a baseline creates legitimacy.  
+- Legitimacy is created **only** via sessions in the main engine.  
 
 ---
 
-## What a Baseline Review Is Not
+## Baseline Review Properties
+A Baseline Review is:
 
-Baseline Review does NOT:
+- A bounded review workspace  
+- Mutable until explicitly closed  
+- Auditable in full  
+- Isolated from active decision-making  
+- Non-legitimizing by design  
 
-- vote
-- infer authority
-- create consensus
-- accept decisions directly
-- modify existing resolutions
-- reinterpret imported legitimacy
+It **does not**:
 
-Any appearance of legitimacy is a CLI abstraction only.
-All legitimacy is created through sessions.
+- Vote  
+- Evaluate or infer Authority  
+- Create consensus or legitimacy  
+- Modify existing resolutions  
+- Reinterpret imported legitimacy  
+
+Any appearance of legitimacy is a **CLI abstraction only**. All actual legitimacy comes from sessions.
 
 ---
 
 ## Lifecycle
 
 ### 1. Creation
-
 A Baseline Review is created by:
 
-- flat file import
-- consolidate import
-- Deliberate handoff
+- Flat-file import  
+- Consolidate import  
+- Deliberate handoff  
 
-Restore operations **do not** create baselines.
-Restore replaces the Area entirely and bypasses review.
+Restore operations **replace an Area entirely** and bypass review.  
 
-On creation:
+Upon creation:
 
-- All proposals enter state: `UNDER_REVIEW`
-- All active sessions are paused
-- Baseline becomes the sole active review context
+- All proposals enter state: `UNDER_REVIEW`  
+- All active sessions are paused  
+- Baseline becomes the sole active review context  
 
 ---
 
 ### 2. Evaluation Phase
-
 During review:
 
-- Proposals may be:
-  - inspected
-  - compared
-  - grouped
-  - marked unchanged / modified (ergonomic only)
-
-No authority is evaluated at this stage.
-No legitimacy is created.
-
-Acceptance and rejection are **reversible preparatory actions**
-until the baseline is closed.
+- Proposals may be inspected, compared, grouped, or marked as unchanged/modified (ergonomic only)  
+- Authority is **never evaluated**  
+- No legitimacy is created  
+- Acceptance or rejection is reversible preparatory work until the baseline is closed  
 
 ---
 
 ### 3. Acceptance Semantics
+When a proposal is accepted from a baseline review:
 
-When a proposal is accepted:
+- A **new session** is created in the main engine (explicit or hidden)  
+- The **topic** and **candidates** are copied from the baseline  
+- **Participants** are explicitly defined for the session  
+- **Authority and Scope** are evaluated according to the main engine rules (baseline Authority/Scope are **never imported**)  
+- Acceptance is recorded immutably and auditably  
+- Pre-existing annotations, rationale, and baseline session receipts are preserved for context  
 
-- A **session is created** (explicit or hidden)
-- Authority is evaluated normally
-- Participants are explicitly defined
-- Acceptance is recorded immutably
+**Batch acceptance**:
 
-Batch acceptance:
-- creates multiple sessions
-- does not collapse legitimacy into a single event
+- Creates multiple sessions  
+- Does not collapse legitimacy into a single event  
 
-Rejected proposals:
-- remain auditable
-- do not affect local legitimacy
-- carry no semantic meaning beyond “not accepted”
+**Rejected proposals**:
+
+- Remain auditable  
+- Do not affect local legitimacy  
+- Carry no semantic meaning beyond “not accepted”
+
+> **Key Principle:** Baseline content informs preparation but does not bypass governance. Legitimacy requires canonical participants, Authority, and Scope.
 
 ---
 
 ### 4. Closure
+When a baseline review is closed:
 
-When `baseline close` is executed:
-
-- Remaining `UNDER_REVIEW` proposals → `ABANDONED`
-- Baseline becomes immutable
-- Paused sessions may resume
-
-Closure is irreversible.
-Unaccepted proposals do not linger ambiguously.
+- Remaining `UNDER_REVIEW` proposals → `ABANDONED`  
+- Baseline becomes immutable  
+- Paused sessions may resume  
+- Closure is irreversible  
+- Unaccepted proposals do not linger ambiguously  
 
 ---
 
 ## Invariants
 
-- Baseline Review never creates legitimacy
-- Every accepted proposal corresponds to a session
-- No proposal becomes active implicitly
-- Review history must be reconstructible end-to-end
-- Authority evaluation is never bypassed
-- Baselines never reinterpret imported authority or scope
+- **Baseline Review never creates legitimacy**  
+- **Every accepted proposal corresponds to a session**  
+- **No proposal becomes ACTIVE implicitly**  
+- **Review history must be reconstructible end-to-end**  
+- **Authority and Scope from baseline are advisory only**; canonical legitimacy uses main engine governance  
+- **Topics, candidates, annotations, and session receipts are preserved** in acceptance  
 
 ---
 
 ## Relationship to Other Constructs
 
-- **Import (consolidate / flat)**: creates a Baseline Review
-- **Deliberate**: may produce a Baseline Review
-- **Session**: the only source of legitimacy
-- **Restore**: replaces state, bypasses review entirely
-- **Audit**: must show full baseline lineage
+| Construct | Role in Baseline Review |
+|-----------|------------------------|
+| **Import (consolidate / flat)** | Creates a baseline review workspace |
+| **Deliberate** | May produce a baseline review |
+| **Session** | The only source of canonical legitimacy |
+| **Restore** | Replaces engine state, bypasses baseline review entirely |
+| **Audit** | Must show full baseline lineage, including preserved topics and receipts |
 
 ---
 
 ## Mental Model
+Think of Baseline Review as:
 
-Baseline Review is equivalent to:
+> “We are reviewing claims made elsewhere. Nothing here is official until we decide it again in the main engine.”
 
-> “We are looking at claims made elsewhere.
-> Nothing here is true until we decide it again.”
+This friction is intentional: it prevents assumptions, preserves audit integrity, and separates exploratory review from canonical legitimacy.
 
-That friction is intentional.
+---
+
+## Notes on Session Changes
+
+- **Topic**: always preserved when proposals are accepted from the baseline  
+- **Candidates**: carried over into the main engine session  
+- **Annotations / Rationale**: copied for context; cannot be edited in a way that would change meaning — new rationale requires a new resolution  
+- **Participants**: defined fresh in the main engine session  
+- **Authority / Scope**: evaluated in the main engine; baseline governance never counts for legitimacy  
+- **Receipts**: preserved to link baseline evaluation to main engine acceptance
+
+> Baseline Review informs preparation; it does not confer ownership, Authority, or Scope.

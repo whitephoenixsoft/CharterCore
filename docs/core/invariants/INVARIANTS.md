@@ -235,6 +235,33 @@ Fail if:
 - the engine auto-retires, suppresses, or prioritizes decisions
 
 ---
+### ENG-HIST-04 — Supersession Is One-Way and Irreversible
+
+Supersession defines a permanent, directional historical relationship.
+
+Rules:
+
+- A resolution may supersede one or more prior resolutions
+- A superseded resolution MUST NOT:
+  - become ACTIVE again
+  - supersede another resolution
+  - have its superseded status removed
+- Supersession relationships MUST be acyclic
+- Supersession MUST NOT be reversible, editable, or retractable
+
+Consequences:
+
+- Reinstating prior intent requires a new resolution
+- Change is recorded as evolution, not rollback
+- History remains linear, auditable, and non-retroactive
+
+Fail if:
+
+- a superseded resolution regains governing power
+- circular or bidirectional supersession occurs
+- supersession is used to mutate or edit past decisions
+
+---
 
 ## V. Areas, Authority, and Scope
 
@@ -269,6 +296,33 @@ Until then:
 Fail if:
 
 - decisions occur in an uninitialized Area
+
+---
+### ENG-AREA-03 — Governance Anchors Cannot Be Retired
+
+Authority and Scope resolutions are structural governance anchors.
+They define whether an Area is governed at all.
+
+Rules:
+
+- Authority resolutions MUST NOT be RETIRED.
+- Scope resolutions MUST NOT be RETIRED.
+- Authority and Scope may change only via explicit supersession.
+- An Area MUST always have:
+  - exactly one ACTIVE Authority resolution
+  - exactly one ACTIVE Scope resolution
+
+Consequences:
+
+- Governance cannot be removed, only evolved.
+- Areas cannot enter an undefined or ungoverned state.
+- Historical authority and scope remain permanently auditable.
+
+Fail if:
+
+- an Authority or Scope resolution is retired
+- an Area exists without an active Authority or Scope
+- governance changes occur without supersession
 
 ---
 
@@ -768,8 +822,73 @@ Fail if:
 - AI affects legitimacy
 
 ---
+### XIV. Supersession, Review, and Governance Stability
 
-## XIV. Explicit Non-Goals
+### ENG-SUP-01 — Supersession Is One-Way
+Accepted resolutions may only affect prior resolutions through explicit supersession.
+
+Rules:
+- Supersession is directional and irreversible
+- A superseded resolution MUST NOT regain ACTIVE status
+- Supersession MUST NOT mutate historical content or acceptance context
+
+Fail if:
+- A superseded resolution becomes ACTIVE again
+- Supersession is reversed, toggled, or implicitly undone
+
+
+### ENG-SUP-02 — Authority Is Immutable Except by Supersession
+Authority resolutions define the legitimacy evaluation mechanism.
+
+Rules:
+- Authority resolutions MUST NOT enter UNDER_REVIEW
+- Authority may change only via explicit supersession
+- There MUST always be exactly one ACTIVE Authority per initialized Area
+
+Fail if:
+- Authority is marked UNDER_REVIEW
+- No active Authority exists for an initialized Area
+- Authority evaluation becomes ambiguous or suspended
+
+
+### ENG-SUP-03 — Scope May Enter Review State
+Scope resolutions document applicability and intent.
+
+Rules:
+- Scope resolutions MAY enter UNDER_REVIEW
+- UNDER_REVIEW Scope has no governing power
+- Entering or exiting UNDER_REVIEW MUST be explicit and auditable
+
+Fail if:
+- Scope changes governing behavior while UNDER_REVIEW
+- Scope review state is inferred or implicit
+
+
+### ENG-SUP-04 — Review Blocks Dependent Legitimacy
+If a governing resolution enters UNDER_REVIEW:
+
+- Any session whose legitimacy depends on that resolution MUST be BLOCKED
+- No acceptance may occur while the dependency is unresolved
+
+Fail if:
+- A session proceeds under a resolution that is UNDER_REVIEW
+- Acceptance occurs without an active, governing context
+
+
+### ENG-SUP-05 — Context Revalidation Is Mandatory After Governance Change
+When a BLOCKED session is affected by changes to Authority or Scope:
+
+Rules:
+- The session MUST NOT resume legitimacy actions automatically
+- Governing context MUST be explicitly revalidated before acceptance
+- Revalidation MUST be auditable
+
+Fail if:
+- A session resumes acceptance under modified Authority or Scope without explicit acknowledgment
+- Legitimacy is created across a governance transition silently
+
+---
+## XV. Explicit Non-Goals
 
 Charter Core does NOT provide:
 

@@ -1,132 +1,243 @@
 # Charter Core — Session Foundation
-Version: 0.1  
+
+Version: 0.2  
 Status: FOUNDATIONAL  
-Scope: Charter CLI / Engine Interaction Layer  
+Layer: Conceptual / Human Interface (Engine-adjacent)  
+Applies to: Charter Core semantics, CLI behavior, and guidance layers  
+Does NOT define: engine invariants, authority mechanics, or UX guarantees  
 
 ---
 
 ## Purpose
 
-Sessions are the **primary mechanism by which legitimacy is realized** in Charter. They transform candidate resolutions into **owned, auditable commitments**, while preserving human agency and psychological safety.
+Sessions are the sole mechanism by which **legitimacy is created** in Charter.
 
-The purpose of this foundation document is to explain:
+They exist to transform **candidate resolutions** into **explicit, auditable commitments**, while preserving human agency, clarity, and psychological safety.
 
-- What sessions are conceptually
-- How they relate to resolutions and legitimacy
-- How annotations and rationale support human understanding
-- How they help cultivate mature, confident decision-making
+This document defines:
+
+- What a session *is* conceptually
+- How sessions relate to resolutions and legitimacy
+- Why annotations and rationale are first-class
+- How sessions support mature, confident decision-making over time
+
+Sessions do not optimize outcomes.  
+They make ownership explicit.
 
 ---
 
-## Mental Model: Sessions as Safe Spaces
+## Mental Model — Sessions as Bounded Commitment Spaces
 
-A session is a **bounded workspace for creating legitimacy**, where:
+A session is a **bounded workspace for legitimacy**, where humans choose to commit under known rules.
 
-- Humans explicitly commit to resolutions
-- Authority and scope are respected
-- Decisions are auditable and traceable
-- The psychology of permanence is supported
+Within a session:
+
+- Authority is explicit
+- Scope is explicit
+- Participants are explicit
+- Permanence is acknowledged
+- History is recorded without interpretation
 
 Sessions do **not**:
 
-- Make decisions automatically
+- Decide automatically
 - Infer consensus
-- Replace human judgment
+- Interpret intent
+- Reduce ambiguity silently
 
-Sessions **exist to help humans own their actions**.
+A session exists so that a human can say:
 
----
-
-## Key Concepts
-
-### 1. Legitimacy through Ownership
-
-- Only resolutions accepted in sessions become **legitimate**.
-- Sessions ensure that authority, scope, and participants are explicitly recorded.
-- Legitimacy is traceable, not inferred.
-
-### 2. Candidate Resolutions
-
-- Sessions operate on **candidate resolutions** produced by any workflow (solo drafting, deliberate, breakout, baseline review).
-- Candidates are **non-authoritative** until accepted in a session.
-
-### 3. Authority & Scope
-
-- Every session evaluates legitimacy **within the context of authority and scope**.
-- Authority defines who may commit a resolution.
-- Scope defines the domain affected by the resolution.
-- Both must be explicit before legitimacy is granted.
-
-### 4. Annotation & Rationale Fields
-
-- Each session and resolution may include **annotations** and **rationale** explaining context, intent, and reasoning.
-- Example use cases:
-  - Explaining why a resolution is irreversible
-  - Documenting thought processes during a complex deliberation
-  - Capturing considerations that may affect future decisions
-
-Annotations **reduce ambiguity** and support human understanding, especially for **long-lived or permanent commitments**.
-
-### 5. Irreversibility
-
-- Resolutions may be marked **reversible**, **conditionally reversible**, or **irreversible**.
-- The rationale field should **explain the permanence** of the decision.
-- Sessions normalize permanent decisions:
-  - Traceable, auditable
-  - Not a source of shame
-  - Encourages learning and confidence in future decisions
-
-### 6. Relationship to Other Constructs
-
-- **Baseline Review**: sessions may be created from accepted resolutions after review.
-- **Deliberate & Breakouts**: sessions are the endpoint for ideas explored in these spaces.
-- **Audit**: all session activity contributes to the audit trail, supporting transparency.
-- **Resolution Foundation**: sessions are the mechanism by which resolutions gain legitimacy.
+> “I am committing to this — under these rules — at this time.”
 
 ---
 
-## Psychological Guidance
+## Core Properties of Sessions
 
-Charter sessions support **human growth alongside software**:
+### 1. Legitimacy Through Explicit Ownership
 
-- By making ownership explicit, sessions encourage **mature clarity**.
-- Clarity reduces **shame**, enabling honest reflection and improvement.
-- Confidence grows, providing the **courage to make mistakes safely**.
-- Over time, using sessions fosters a culture of deliberate, responsible decision-making.
+Only resolutions **accepted within a session** are legitimate.
 
-> Side note: personally, the goal is to **grow with the software** and help others mature in their decision-making. Using sessions deliberately can instill clarity, confidence, and courage in all users.
+Sessions ensure that:
+
+- Authority at acceptance is recorded
+- Scope at acceptance is recorded
+- Participants at acceptance are recorded
+- Stances are recorded
+- Context is preserved
+
+Legitimacy is never inferred.
+It is always **owned**.
+
+---
+
+### 2. Sessions Operate on Candidates
+
+Sessions evaluate **candidate resolutions**.
+
+Candidates:
+
+- May originate anywhere (drafting, deliberate, breakout, baseline review)
+- Have no authority or meaning until accepted
+- Carry annotations and rationale that may later become permanent
+
+Acceptance is the *only* transition from candidate → resolution.
+
+---
+
+### 3. Authority and Scope Are Preconditions
+
+Every session operates under an active:
+
+- **Authority** — how agreement is evaluated
+- **Scope** — what domain is affected
+
+Sessions may exist when governance is under review, but:
+
+- No legitimacy may be created while required governance is unresolved
+- Such sessions are **BLOCKED**, not invalid
+
+Sessions never guess governance.
+They record it.
+
+---
+
+### 4. Annotations and Rationale Are First-Class
+
+Annotations and rationale are **part of legitimacy**, not decoration.
+
+They exist to explain:
+
+- Why a resolution exists
+- Why it was accepted
+- What context mattered at the time
+- Why permanence or irreversibility was chosen
+
+Because annotations shape future interpretation:
+
+- They are immutable once acceptance occurs
+- Adding missing context later requires a new resolution
+
+Annotations reduce ambiguity.
+They do not reinterpret history.
+
+---
+
+### 5. Irreversibility Is Acknowledged, Not Punitive
+
+Resolutions may be marked as:
+
+- Reversible
+- Conditionally reversible
+- Irreversible
+
+These markers:
+
+- Do not judge correctness
+- Do not prohibit reflection
+- Exist to prevent silent revision
+
+Rationale should explain permanence explicitly.
+
+Sessions normalize irreversible decisions as:
+
+- Auditable
+- Thoughtful
+- Non-shaming
+- Part of learning over time
+
+---
+
+## Session Lifecycle (Conceptual)
+
+A session may pass through these states:
+
+- **ACTIVE** — candidates and context may be developed
+- **PAUSED** — activity intentionally halted
+- **BLOCKED** — legitimacy cannot proceed due to unresolved dependency
+- **CLOSED** — history sealed; no further action allowed
+
+All state transitions are explicit and auditable.
+
+Closure preserves clarity.
+Open-ended sessions are discouraged.
+
+---
+
+## Relationship to Other Charter Constructs
+
+- **Resolutions**  
+  Sessions are the only path to legitimacy.
+
+- **Baseline Review**  
+  Baselines are review workspaces. Sessions are commitment mechanisms.  
+  UNDER_REVIEW in baseline ≠ UNDER_REVIEW in canonical governance.
+
+- **Deliberate & Breakouts**  
+  These explore ideas. Sessions commit to them.
+
+- **Audit**  
+  Every session contributes to an append-only audit trail.
+
+Sessions sit at the boundary between *thinking* and *deciding*.
+
+---
+
+## Psychological Safety and Human Growth
+
+Sessions are designed to support human development, not pressure it.
+
+They encourage:
+
+- **Clarity** — decisions are explicit
+- **Confidence** — permanence is acknowledged, not hidden
+- **Learning** — history is preserved without shame
+- **Courage** — mistakes are survivable and traceable
+
+Over time, disciplined use of sessions cultivates:
+
+- Mature decision-making
+- Reduced fear of commitment
+- Increased trust in one’s own judgment
+
+Sessions do not moralize.
+They illuminate.
 
 ---
 
 ## End States
 
-Every session concludes in one of two ways:
+Every session ends explicitly as one of:
 
-- **Accepted**: candidate resolutions become legitimate, annotated, and auditable.
-- **Abandoned**: candidate resolutions remain non-legitimate but are preserved for historical context.
+- **Accepted** — one or more resolutions become legitimate
+- **Abandoned** — no legitimacy created; history preserved
 
-Open-ended sessions are discouraged; closure preserves clarity and audit integrity.
+There is no implicit success or failure.
+Only recorded outcomes.
 
 ---
 
-## Invariants (Conceptual)
+## Conceptual Invariants (Non-Mechanical)
 
-- Only one authoritative acceptance occurs per resolution per session.
-- Authority and scope must be defined before legitimacy is granted.
-- Annotations and rationale must accompany irreversible or conditionally reversible resolutions.
-- History must be reconstructible end-to-end.
+- Legitimacy requires explicit acceptance
+- Authority and Scope must be known at acceptance
+- Annotations that explain legitimacy are immutable
+- History must be reconstructible end-to-end
+- Sessions never infer intent or consensus
 
 ---
 
 ## Summary
 
-Sessions are **the psychological and procedural bridge** between human intent and canonical legitimacy.  
+Sessions are the bridge between **human intent** and **canonical legitimacy**.
 
 They:
 
-- Give resolutions meaning
-- Protect participants from implicit assumptions
-- Preserve clarity and traceability
-- Foster mature, confident decision-making
+- Make ownership explicit
+- Preserve context
+- Protect against silent reinterpretation
+- Enable reflection without shame
+- Support growth over time
 
-Sessions are **not just a software mechanism**, they are a tool for humans to **own their actions, reflect safely, and grow in judgment over time**.
+A session is not just where a decision happens.
+
+It is where a human chooses to stand behind it.
