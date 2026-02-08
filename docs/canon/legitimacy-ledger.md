@@ -1,5 +1,5 @@
 # Legitimacy Ledger Canon
-Version: 1.0  
+Version: 1.1  
 Status: CANONICAL (Guidance Layer)  
 Applies to: Human decision-making systems layered on Charter  
 Enforced by: Humans, tools, or guidance engines — **never by Charter Core**
@@ -24,6 +24,20 @@ This canon is compatible with:
 
 It is intentionally demanding.
 
+It is informed by structural human system principles inspired by Zarathustrian ethics:
+- Truth must precede authority
+- Choice is sacred
+- Misalignment is informational, not moral
+- Integrity spans thought, word, and action
+- Observation is responsibility
+- Time reveals meaning
+- Renewal preserves context
+- Service tests decisions
+- No final authority exists
+- Alignment scales cost with impact
+
+These principles explain *why* the rules exist, not *how* to implement them.
+
 ---
 
 ## Definition: Legitimacy
@@ -44,96 +58,88 @@ Being opaque is not.
 ## Core Principles
 
 ### 1. Explicit Authorship
-
-Every decision must have a clear, explicit author or set of authors.
-
-Implicit ownership invalidates legitimacy.
+Every decision must have a clear, explicit author or set of authors.  
+**Why:** Aligns with Truth Precedes Authority — positions alone do not grant correctness.
 
 ---
 
 ### 2. Legitimacy Over Optimization
-
-A slower legitimate decision is superior to a faster illegitimate one.
-
-Efficiency never overrides accountability.
+A slower legitimate decision is superior to a faster illegitimate one.  
+Efficiency never overrides accountability.  
+**Why:** Aligns with Alignment Scales Cost — higher stakes demand deliberate care.
 
 ---
 
 ### 3. Explicit Deliberation
-
 Any decision that mutates durable state must explicitly record:
 - intent
 - rationale
 - expected impact
 
-Silence is not deliberation.
+Silence is not deliberation.  
+**Why:** Choice is Sacred — voluntary, conscious alignment is required.
 
 ---
 
 ### 4. Auditability Over Time
-
 Every decision must remain explainable using:
 - the information available at the time
 - the recorded context
 - the declared authority
 
-Retroactive justification is disallowed.
+Retroactive justification is disallowed.  
+**Why:** Time Is Part of Truth — forcing reinterpretation erodes legitimacy.
 
 ---
 
 ### 5. Truth Supremacy
-
-When observed reality contradicts belief, belief must be updated.
-
-No belief is protected from revision by status, seniority, or tradition.
+When observed reality contradicts belief, belief must be updated.  
+No belief is protected from revision by status, seniority, or tradition.  
+**Why:** No Final Authority — legitimacy emerges from correctness, not rank.
 
 ---
 
 ### 6. No Hidden State
-
-Undeclared motivations, assumptions, or constraints invalidate legitimacy.
-
-If it matters, it must be stated.
+Undeclared motivations, assumptions, or constraints invalidate legitimacy.  
+If it matters, it must be stated.  
+**Why:** Observation Is an Act — awareness carries responsibility.
 
 ---
 
 ### 7. Reversibility Awareness
-
 Every decision must explicitly declare whether it is:
 - reversible
 - conditionally reversible
 - irreversible
 
-Unacknowledged irreversibility is a legitimacy failure.
+Unacknowledged irreversibility is a legitimacy failure.  
+**Why:** Misalignment Is Not Guilt — risks must be visible and bounded.
 
 ---
 
 ### 8. Authority Is Owned, Not Borrowed
-
-No rule, value, or principle is binding unless it is explicitly adopted.
-
-External authority may be referenced, but never assumed.
+No rule, value, or principle is binding unless it is explicitly adopted.  
+External authority may be referenced, but never assumed.  
+**Why:** Choice Is Sacred — compliance without consent is illegitimate.
 
 ---
 
 ### 9. Evolution Is Patch-Based
-
-Change occurs only through explicit revision.
-
-Silent drift is disallowed.
-
-Supersession must be visible.
+Change occurs only through explicit revision.  
+Silent drift is disallowed.  
+Supersession must be visible.  
+**Why:** Renewal Must Preserve Meaning — history gives legitimacy and context.
 
 ---
 
 ### 10. Coherence Is Mandatory
-
 Contradictory commitments must be:
 - resolved
 - superseded
 - or explicitly retired
 
-Unresolved contradiction invalidates legitimacy.
+Unresolved contradiction invalidates legitimacy.  
+**Why:** Thought, Word, and Action Must Align — integrity requires internal consistency.
 
 ---
 
@@ -228,9 +234,9 @@ This canon may be applied:
 - scientifically (hypothesis tracking)
 - institutionally (long-lived rule systems)
 
-Adoption is explicit.
-Enforcement is human.
-Guidance may be automated.
+Adoption is explicit.  
+Enforcement is human.  
+Guidance may be automated.  
 Authority is never inferred.
 
 ---
@@ -245,5 +251,5 @@ It exists to produce decisions that are:
 - auditable
 - revisable in the presence of truth
 
-Legitimacy is not comfort.
+Legitimacy is not comfort.  
 Legitimacy is responsibility.
