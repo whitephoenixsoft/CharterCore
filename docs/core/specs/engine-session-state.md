@@ -11,10 +11,12 @@ Scope: Session lifecycle, transitions, enforcement, and legitimacy boundaries
 ### ENG-SESSION-01 — Sessions Are the Sole Legitimacy Mechanism
 
 A Session is the only structure through which legitimacy can be created in Charter Core.
+
 All acceptance, rejection, supersession, and authority changes MUST occur within a session.
+
 Fail if:
-A resolution is accepted without a session
-Legitimacy is created outside a session boundary
+- A resolution is accepted without a session
+- Legitimacy is created outside a session boundary
 
 ---
 ## 2. Session Identity & Persistence
@@ -22,13 +24,15 @@ Legitimacy is created outside a session boundary
 ### ENG-SESSION-02 — Session Identity Is Stable
 
 Each session has a stable session_id independent of:
-Storage location
-Object hash
-Export/import
-Context
+- Storage location
+- Object hash
+- Export/import
+- Context
+
 Session identity MUST remain stable across restarts and exports.
+
 Fail if:
-Session identity changes due to persistence mechanics
+- Session identity changes due to persistence mechanics
 
 ---
 ## 3. Session States (Closed Set)
@@ -36,33 +40,34 @@ Session identity changes due to persistence mechanics
 ### ENG-SESSION-03 — Valid Session States
 
 A session MUST be in exactly one of the following states:
-Copy code
-
+```
 CREATED
 ACTIVE
 PAUSED
 BLOCKED
+ACCEPTED
 CLOSED
-ABANDONED
+```
 No other states are permitted.
+
 Fail if:
-Engine introduces implicit or transitional states
+- Engine introduces implicit or transitional states
 
 ---
 ## 4. State Semantics (Mechanical)
 
 ### CREATED
 
-Session metadata is defined
-Authority and Scope are captured
-Constraints are declared
-No candidates or stances exist
-Permitted actions:
-Add candidates
-Start session
-Forbidden:
-Record stances
-Accept resolutions
+- Session metadata is defined
+- Authority and Scope are captured
+- Constraints are declared
+- No candidates or stances exist
+- Permitted actions:
+    - Add candidates
+    - Start session
+- Forbidden:
+    - Record stances
+    - Accept resolutions
 
 ### ACTIVE
 
@@ -106,7 +111,7 @@ Forbidden:
 Resume without explicit handling
 Accept resolutions
 
-### CLOSED
+### ACCEPTED 
 
 Session has concluded
 Outcome is finalized
@@ -118,7 +123,7 @@ Legitimacy-bearing
 Forbidden:
 Any mutation
 
-### ABANDONED
+### CLOSED
 
 Session explicitly discarded
 No legitimacy created
