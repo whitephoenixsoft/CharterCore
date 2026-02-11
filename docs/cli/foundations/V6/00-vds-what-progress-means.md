@@ -230,6 +230,8 @@ It is concerned with **whether decisions remain defensible**, not whether tasks 
 
 ## Why This Comes Before Check-Ins
 
+A check-in is when progress is reported.
+
 Without this shared understanding:
 
 - Check-ins feel like reporting
