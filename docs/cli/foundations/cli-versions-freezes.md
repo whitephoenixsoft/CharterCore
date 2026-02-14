@@ -187,64 +187,70 @@ V5 introduces guidance, not authority.
 ---
 
 ### V6 — Federation, Signals, and Reflective Roll-Up
-Status: PLANNED (LOCKED DIRECTION)
 
-V6 introduces federation without control.
+**Features / Capabilities**  
 
-**Characteristics / Additions:**
-- Multi-area visibility
-- Self-reported **check-ins** (signals)
-- Status enums describing relationship to intent
-- Roll-ups that preserve detail or meaningful summaries
-- Git-like metaphors:
-  - `push` for signal elevation
-  - `fetch` for intent or lineage updates
-- Explicit recognition of silence as a valid state
-- Area references as connective tissue across layers
+- Support **federation of multiple Charter areas** across teams, individuals, or decision domains  
+- Human-initiated, **voluntary check-ins** report relationship to intent, drift, or capacity  
+- Check-ins may include **optional annotations and rationale** to provide context  
+- Signals use **predefined status enums**:  
+  - `Intent Unchanged`  
+  - `Capacity Reduced`  
+  - `Action Taken`  
+  - `Observations Inconclusive`  
+  - `Paused Intentionally`  
+  - `Reassessment Requested`  
+- Silence is **first-class** and auditable if human-entered  
+- Aggregation (federation) **summarizes without flattening** context or authority  
+- Roll-ups enable **reflection and discussion** at human-chosen cadence (sprints, retros, milestones)  
+- Supports **multiple VDS instances** for the same identity for redundancy or resilience  
+- Tracks **team rhythms and deployment windows** as descriptive **health signals**, not schedules  
+- Distinguishes between:  
+  - **Operational decisions** (directly tied to mission outcomes)  
+  - **Capacity decisions** (availability, coverage, or resources)  
+- All outputs (**check-ins, annotations, silence records**) are **auditable artifacts**: immutable, append-only, and identity-tracked  
+- Federation allows **observing inter-team dependencies, overlapping scope, and identity evolution**  
+- Escalation, interpretation, or action is **always human-driven**  
+- Preserves **agency, autonomy, and non-authoritative observation**
 
-**V6 explicitly does NOT:**
-- Enforce cadence
-- Require updates
-- Treat status as performance
-- Create urgency
-- Interpret intent
-- Decide what progress means
+**Explicit Non-Goals / Restrictions**  
 
-**V6 mental model:**  
-“Show me how my decisions are holding up — without turning my work into a status report.”
+- Does **not enforce cadence or schedules**  
+- Does **not treat check-ins or signals as performance metrics**  
+- Does **not interpret intent or progress**  
+- Does **not assign blame, urgency, or correctness**  
+- Does **not automate check-ins or silence entries** — all actions are human-initiated  
 
 ---
 
 ### V7 — Online Commit Relay (No Legitimacy)
-Status: PLANNED (LOCKED DIRECTION)
 
-V7 introduces a **networked commit relay** for Charter.
+**Features / Capabilities**  
 
-**Purpose:**
-- Serves as an online append-only store
-- Routes commits between users or systems
-- Preserves history without interpreting or merging
-- Enables VDS/VLS to consume commits externally
+- Provides an **online, append-only commit relay** for Charter CLI  
+- Stores **all commit types** identically:  
+  - Resolution commits  
+  - Deliberate commits  
+  - Baseline review commits  
+  - Import commits  
+  - Annotation commits  
+- Segregates commits by **context workspace** (user, team, system)  
+- Commits are **immutable, append-only, and opaque**; no interpretation occurs  
+- Supports **manual push/fetch operations** via CLI (similar to git)  
+- Preserves **complete history of local and imported commits**  
+- Enables **backup and restore of entire commit history**, in one or multiple transactions; restored commits remain foreign  
+- Supports **multi-consumer access**: VDS and VLS may fetch commits for observation  
+- CLI-based relay allows **manual collaboration without automating decisions**  
+- Author identity is **optional and can be anonymous or alias-based**  
+- Supports **local reconstruction of full history** while keeping legitimacy local to the consuming system  
 
-**Characteristics / Additions:**
-- One commit store per context (workspace)
-- Segregates commits by user/system if needed
-- Consumes commit exports from V6 or VDS/VLS
-- Stores all commits immutably
-- Provides external history to consumers
-- Baseline reviews and deliberates may consume relay commits
-- Optional restoration restores all commits, including local history
-- Treats all commits as opaque, append-only events
+**Explicit Non-Goals / Restrictions**  
 
-**V7 explicitly does NOT:**
-- Interpret commits
-- Declare current state
-- Create legitimacy
-- Merge histories
-- Execute or enforce behavior
-
-**V7 mental model:**  
-“Remember everything said, route it faithfully, but never decide.”
+- Does **not merge histories**  
+- Does **not assign legitimacy**  
+- Does **not enforce or declare current state**  
+- Does **not interpret, summarize, or analyze commits**  
+- Does **not create urgency, pressure, or authority**
 
 ---
 

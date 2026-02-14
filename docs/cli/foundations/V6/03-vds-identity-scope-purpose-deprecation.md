@@ -1,11 +1,11 @@
 # Charter — Identity, Scope, Purpose, and Deprecation
+Version: 2.1  
+Status: FOUNDATIONAL  
+Applies to: Charter areas, teams, and federated decision domains  
+Intent: Preserve legitimacy, continuity, and clarity in human decision-making  
 
-**Status:** FOUNDATIONAL  
-**Applies to:** Charter areas, teams, and federated decision domains  
-**Intent:** Preserve legitimacy, continuity, and clarity in human decision-making  
-
-This document explains how identity, scope, purpose, and deprecation operate in Charter.  
-It adapts lessons from Value Lineage Systems (VLS) for federated human decision-making, ensuring that work, responsibilities, and decisions remain explicit, legible, and non-coercive.
+This document explains how **identity, scope, purpose, and deprecation** operate in Charter.  
+It adapts lessons from Value Lineage Systems (VLS) for federated human decision-making, ensuring that work, responsibilities, and decisions remain **explicit, legible, and non-coercive**.
 
 ---
 
@@ -21,10 +21,10 @@ It does **not** observe:
 
 It observes:
 
-- Who owns a decision or area  
-- What scope the area covers  
-- What intent or purpose the area serves  
-- How purpose evolves, narrows, expands, or is released  
+- **Who** owns a decision or area  
+- **What** scope the area covers  
+- **What** intent or purpose the area serves  
+- **How** purpose evolves, narrows, expands, or is released  
 
 Charter is concerned with **legitimacy and alignment**, not enforcement or outcomes.
 
@@ -34,13 +34,14 @@ Charter is concerned with **legitimacy and alignment**, not enforcement or outco
 
 ### What an Identity Is
 
-An identity represents a **bounded area of responsibility** and accountable decision-making. It is analogous to a department, functional team, or specific decision domain.
+An identity represents a **bounded area of responsibility** and accountable decision-making.  
+Analogous to a department, functional team, or decision domain.
 
 An identity includes:
 
-- A coherent scope of influence  
-- A recognizable purpose  
-- Ownership of decisions within that scope  
+- Coherent **scope of influence**  
+- Recognizable **purpose**  
+- Ownership of **decisions within that scope**
 
 ### What an Identity Is Not
 
@@ -62,7 +63,7 @@ Every identity must declare:
 - Explicit **boundaries** of authority and influence  
 - Local autonomy to make decisions within its boundaries  
 
-Without a defined scope, an area cannot be treated as a legitimate identity.  
+Without a defined scope, an area **cannot** be treated as a legitimate identity.  
 
 Identities may **collaborate**, but they do **not dissolve** into each other.
 
@@ -96,13 +97,13 @@ Charter areas may contain work in three states:
 
 ### Deprecated
 - Work continues but no longer aligns with declared purpose  
-- Indicates misalignment, not fault  
-- History and decisions are preserved for reflection  
+- Indicates misalignment, **not fault**  
+- History and decisions are preserved for **reflection and lineage**  
 
 ### Abandoned
 - Work has stopped or cannot continue  
 - Result of scope change, context shift, or intentional release  
-- Preserved for lineage and learning  
+- Preserved for **learning and audit**  
 - Does **not** imply failure or judgment  
 
 Deprecation is **descriptive, not moral** — it signals a relationship to intent.
@@ -115,7 +116,7 @@ Clear identity, scope, and purpose:
 
 - Prevent misplaced accountability  
 - Enable compassionate deprecation and intentional release  
-- Make federated decisions legible  
+- Make federated decisions **legible**  
 - Preserve legitimacy across change  
 
 Without identity, a team or area **cannot know who it is or what it cares about**, making alignment and federation impossible.
@@ -136,7 +137,7 @@ Charter does **not**:
 - Escalate urgency  
 - Assign blame  
 
-Instead, it surfaces signals so humans may deliberate intentionally.
+Instead, it surfaces **signals** so humans may deliberate intentionally.
 
 ---
 
@@ -169,11 +170,11 @@ Most large federated systems fail because:
 
 Charter addresses this by enforcing:
 
-- Explicit identity and scope  
-- Explicit purpose and intent  
-- Descriptive, neutral language  
-- Preserved lineage across change  
-- Separation of observation from action  
+- Explicit **identity and scope**  
+- Explicit **purpose and intent**  
+- Descriptive, **neutral language**  
+- Preserved **lineage across change**  
+- Separation of **observation from action**  
 
 Result: **less blame, higher trust, clearer decision-making**.
 
@@ -185,8 +186,8 @@ Charter **is not** a management framework, a performance metric, or an authority
 
 It is a **lineage system for human decision-making**:
 
-- Preserves identity, purpose, and commitments  
-- Makes deprecation and abandonment safe and legible  
-- Provides a reflective space for federated decision-making  
+- Preserves **identity, purpose, and commitments**  
+- Makes **deprecation and abandonment safe and legible**  
+- Provides a reflective space for **federated decision-making**  
 
 With this framework, federated teams and individuals can **decide consciously what belongs, what can be released, and how to maintain legitimacy over time**.
