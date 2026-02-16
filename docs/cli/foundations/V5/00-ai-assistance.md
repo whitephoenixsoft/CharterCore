@@ -38,8 +38,43 @@ AI guidance must **never**:
 - **Read-Only** — observes immutable Charter facts only  
 - **Advisory** — may be wrong; humans retain final authority  
 - **Contextual** — explanations are always grounded in recorded data  
-- **Transparent** — any assumptions, metadata, or heuristics are explicitly flagged  
+- **Transparent** — any assumptions, metadata, heuristics, or phases are explicitly flagged  
 - **Optional** — AI guidance can be disabled without affecting correctness  
+
+---
+
+## Phases & Modes
+
+AI guidance operates in **phases**, which structure its behavior and interpretive focus.  
+
+### Phase List
+
+1. **Expansion Mode** — Generate ideas, explore possibilities, highlight gaps.  
+2. **Structuring Mode** — Organize, categorize, and map relationships between facts and artifacts.  
+3. **Divergence Highlight Mode** — Identify conflicts, contradictions, or inconsistencies without resolving them.  
+4. **Synthesis Mode** — Summarize, integrate, and prepare outputs for eventual baseline review.  
+5. **Temporal Reflection Mode** — Present historical context, acceptance-time framing, and evolution of decisions.  
+6. **Assumption Tracking Mode** — Surface explicit and implicit assumptions; redirect unknowns to annotations.  
+
+### Phase Behavior
+
+- **Default assignment:** Phases are assigned based on workflow context.  
+- **Override rules:** Users may change phases explicitly **only in Deliberate workflows**.  
+- **Drift allowance:** Non-legitimate phases (Expansion, Divergence Highlight) may produce exploratory or ambiguous outputs.  
+- **Synthesis constraint:** Synthesis phase prepares artifacts for baseline review; drift is reconciled here.  
+- **Announcement:** Every phase activation or change reports:
+  - Phase name  
+  - Purpose  
+  - Pros / cons  
+  - Expected behavior / drift allowances  
+
+---
+
+## Personality
+
+- Personality (e.g., calm, supportive, direct) affects **voice and style**, not guidance content or authority.  
+- Personality and phase are independent but **always announced together**.  
+- Users may configure or disable personality at any time.
 
 ---
 
@@ -53,9 +88,9 @@ AI may:
 
 - Highlight resolution conflicts or scope mismatches  
 - Explain why acceptance is blocked or unsafe  
-- Summarize **session outcomes (receipts)**  
-- Surface rationale or **annotations** related to irreversible or conditionally reversible decisions  
-- Track **topic changes** or session metadata for context  
+- Summarize session outcomes (**receipts**)  
+- Surface rationale or annotations related to irreversible or conditionally reversible decisions  
+- Track topic changes or session metadata  
 
 AI must never:
 
@@ -107,7 +142,8 @@ AI may:
 - Suggest readiness for synthesis (non-binding)  
 - Highlight missing perspectives or artifacts  
 
-AI does **not** evaluate merit or correctness.
+AI does **not** evaluate merit or correctness.  
+Phases may guide deliberation; drift is permitted until synthesis.
 
 ---
 
@@ -150,7 +186,7 @@ AI may:
 - Generate human-readable audit summaries  
 - Explain lineage, supersession, and decision evolution  
 - Summarize session and baseline receipts  
-- Highlight structural or cognitive risk signals (e.g., long-running unclosed sessions)  
+- Highlight structural or cognitive risk signals  
 
 Notes:
 
@@ -171,7 +207,7 @@ AI never evaluates truth, validity, or success.
 
 ---
 
-## Next-Step Guidance (Shadow Requirement)
+## Next-Step Guidance
 
 AI may surface **available next actions** as optional guidance.
 
@@ -186,24 +222,6 @@ Examples:
 
 - “You may now close this session.”  
 - “Common follow-ups after Authority changes include reviewing Scope.”  
-
----
-
-## Human-Centric Philosophy
-
-V5 AI guidance exists to support **mature clarity**, not optimization.
-
-It aims to:
-
-- **Reflection** — Show consequences of prior actions  
-- **Learning** — Surface unseen gaps or inconsistencies  
-- **Confidence** — Reduce fear or shame through clarity  
-- **Psychological Safety** — Provide feedback without judgment  
-- **Continuity** — Help users understand themselves over time  
-
-Side effects are intentional:
-
-> Mature clarity → lack of shame → confidence → courage to revise
 
 ---
 
@@ -223,11 +241,9 @@ Annotations inform understanding only.
 
 ## Voice & Presentation (Non-Authoritative)
 
-AI explanations may be rendered through configurable voices:
-
 - Voices affect tone, density, and style, **not content or authority**  
 - Voices must never manipulate emotion or imply judgment  
-- Help and selection must demonstrate voices via examples, not labels  
+- Help and selection must demonstrate voices via examples  
 - Voice is **presentation, not persuasion**  
 
 ---

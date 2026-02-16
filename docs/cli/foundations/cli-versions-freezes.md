@@ -155,34 +155,42 @@ V4 is a delivery transformation, not a conceptual one.
 ---
 
 ### V5 — Guidance, Semantics, and Clarification
-Status: PLANNED (LOCKED DIRECTION)
+**Status:** PLANNED (LOCKED DIRECTION)
 
-V5 introduces guidance, not authority.
+V5 introduces a **read-only AI guidance layer** that enhances human understanding without creating or altering legitimacy.
 
 **Characteristics:**
-- Read-only analysis of Charter state
+- Observes Charter facts without modifying them
 - Canon-based evaluation (e.g., Legitimacy Ledger)
-- AI used for clarification, not control
-- Multiple semantic lenses over the same facts
+- Phase-aware guidance for deliberate workflows
+- Personality-aware explanations (tone and style only)
+- Summaries of sessions, deliberates, breakouts, and baseline reviews
+- Drift, coherence, and assumption surfacing
+- Optional and skippable AI assistance
 
 **V5 may include:**
-- Legitimacy analysis
-- Coherence checks
+- Legitimacy analysis (descriptive only)
+- Coherence checks across sessions or epics
 - Decision hygiene feedback
-- “What changed?” explanations
-- Assumption surfacing
-- Summaries of sessions, deliberates, and baseline reviews
+- "What changed?" explanations
+- Summaries and highlights for assumptions, annotations, and rationale
 - Risk or drift flags for long-running workflows
+- Phase announcements and pros/cons on changes
+- Voice or personality application for clarity and readability
 
 **V5 explicitly does NOT:**
-- Accept resolutions
-- Infer consent
-- Override authority
+- Accept, reject, or modify resolutions
+- Infer consent, intent, or motivation
+- Override authority or scope
 - Create legitimacy
 - Mutate engine state
+- Recommend actions or solutions
+- Judge correctness or quality
+- Persuade or manipulate
 
-**V5 mental model:**  
-“Help me understand what I’ve done — not what I should do.”
+**V5 mental model:**
+“Help me understand what I’ve done — not what I should do.  
+Show patterns, gaps, and drift, but never decide for me.”
 
 ---
 
