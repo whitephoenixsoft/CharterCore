@@ -1,8 +1,8 @@
-# Charter V6 — Signals, Meaning, and Non-Authority
-Version: 2.1  
-Status: FOUNDATIONAL  
-Scope: All Charter-based systems (personal or team)  
-Purpose: Prevent signals from becoming control, pressure, or judgment  
+# Charter V6 — Signals, Meaning, and Non-Authority  
+**Version:** 2.1  
+**Status:** FOUNDATIONAL  
+**Scope:** All Charter-based systems (personal or team)  
+**Purpose:** Prevent signals from becoming control, pressure, or judgment  
 
 This document defines what **signals mean** within Charter —  
 and, critically, what they are **not allowed to mean**.  
@@ -58,7 +58,7 @@ Signals **carry no authority**:
 - They do not escalate automatically  
 - They do not bind others to act  
 
-Only **explicit decisions**, recorded as **commits**, create legitimacy.
+Only **explicit decisions**, recorded as **commits or Legitimacy Receipts**, create legitimacy.
 
 ---
 
@@ -138,7 +138,8 @@ At sprint retro:
 - Backlog items are created if needed  
 - Process deviations are discussed, not escalated  
 
-Signals create **visibility**, not pressure.
+Signals create **visibility**, not pressure.  
+Optionally, **Exploration Receipts** may be emitted for these observations.
 
 ---
 
@@ -160,9 +161,10 @@ They experience reduced capacity due to illness.
 
 No tasks are generated.  
 No failures are recorded.  
-No justification is required.
+No justification is required.  
 
-Signals preserve **honest self-awareness**, not productivity theater.
+Signals preserve **honest self-awareness**, not productivity theater.  
+Optionally, **Exploration Receipts** may be emitted for personal signals if tracked.
 
 ---
 
@@ -172,9 +174,11 @@ When signals roll up across federated areas:
 
 - Context is preserved  
 - Summaries reflect **intent impact**, not raw metrics  
+- Aggregation must operate over **Receipts**, not decisions  
 - No downstream authority or obligation is created  
 
-Federation amplifies **understanding**, not control.
+Federation amplifies **understanding**, not control.  
+Receipts provide **traceable evidence**, but must **never synthesize legitimacy**.
 
 ---
 
@@ -183,6 +187,7 @@ Federation amplifies **understanding**, not control.
 - No signal is a command  
 - No request is an obligation  
 - No silence is an error  
+- Receipts must **never imply legitimacy**  
 
 Violation of this principle makes the system **non-Charter-compliant**.
 
@@ -190,7 +195,7 @@ Violation of this principle makes the system **non-Charter-compliant**.
 
 ## Closing Perspective
 
-Signals exist to make **reflection possible**, not action inevitable.
+Signals exist to make **reflection possible**, not action inevitable.  
 
 They protect humans from:
 

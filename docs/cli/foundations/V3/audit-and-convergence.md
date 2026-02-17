@@ -1,273 +1,240 @@
 # Audit, Breakouts, and Synthesis  
 ## How Charter Remembers Without Deciding
 
-This document explains **how Charter records human activity** without turning it into decisions.
+**Status:** FROZEN (Foundational)  
+**Applies to:** Charter CLI / Interaction Layer  
 
+This document explains **how Charter records human activity** without turning it into decisions.  
 It exists to guide future specifications — especially auditing — by clarifying the *roles and boundaries* of:
-- breakouts
-- options
-- synthesis
-- baselines
-- sessions
-- audit itself
 
-This is not a workflow.
-This is not a UI guide.
+- breakouts  
+- options  
+- synthesis  
+- baselines  
+- sessions  
+- audit itself  
+
+This is not a workflow.  
+This is not a UI guide.  
 This is a mental model.
 
 ---
 
-## The Core Principle
+## Core Principle
 
 Charter distinguishes between three fundamentally different human activities:
 
-- **Exploration** — thinking, learning, questioning, drafting
-- **Convergence** — structuring, grouping, refining, preparing
-- **Legitimacy** — deciding, accepting, committing
+- **Exploration** — thinking, learning, questioning, drafting  
+- **Convergence** — structuring, grouping, refining, preparing  
+- **Legitimacy** — deciding, accepting, committing  
 
 Audit must span all three.
 
-**Legitimacy exists only in the last.**
-
+**Legitimacy exists only in the last.**  
 Everything before legitimacy is memory.
 
 ---
 
 ## Moments in Time, Not Streams
 
-A breakout is not an ongoing state.  
-A session is not an ongoing state.  
-A synthesis is not an ongoing state.
+Each moment in Charter (breakout, synthesis, session) is **bounded**:
 
-Each is a **bounded moment in time** with:
-- a start
-- a declared context
-- a set of participants (if any)
-- a set of inputs
-- a set of outputs
-- an explicit end
+- a start  
+- a declared context  
+- a set of participants (if any)  
+- a set of inputs  
+- a set of outputs  
+- an explicit end  
 
 Audit records **that the moment occurred** —  
-not whether it was correct, complete, or successful.
+not correctness, agreement, or success.
 
-Charter records moments so that humans can revisit them later
+Charter captures moments so humans can revisit them later  
 without rewriting history.
+
+---
+
+## Receipts as First-Class Audit Entities
+
+Audit now treats **Receipts** as canonical, structured records for every bounded lifecycle:
+
+- **Exploration Receipts** — emitted at Deliberate closure, Breakout closure, or Synthesis artifact finalization  
+- **Review Receipts** — emitted at Baseline Review closure  
+- **Legitimacy Receipts** — emitted at Session closure with accepted proposals  
+
+Receipts must be:
+
+- immutable  
+- append-only  
+- reconstructible deterministically  
+- referenced in audit output for lineage and traceability  
 
 ---
 
 ## Breakouts: Recorded Exploration
 
-Breakouts exist to explore without deciding.
+Breakouts exist to explore without deciding. They:
 
-They:
-- do not vote
-- do not accept
-- do not reject
-- do not evaluate authority
-- do not create legitimacy
+- do not vote  
+- do not accept or reject  
+- do not evaluate authority  
+- do not create legitimacy  
 
-A breakout may produce **any number of artifacts**, including:
-- draft resolution text
-- option descriptions
-- problem statements
-- tradeoff notes
-- risks and concerns
-- unanswered questions
-- action items
-- recommendations
-- follow-up prompts
+Artifacts produced:
 
-These artifacts:
-- have identity
-- are auditable
-- are referenceable
-- carry **zero authority**
+- draft resolution text  
+- option descriptions  
+- problem statements  
+- tradeoff notes  
+- risks and concerns  
+- unanswered questions  
+- action items  
+- recommendations  
+
+Artifacts:
+
+- have identity  
+- are auditable  
+- are referenceable  
+- carry **zero authority**  
 
 Breakouts answer:
-> “What happened during this exploration?”
+
+> “What happened during this exploration?”  
 
 They never answer:
-> “What should be decided?”
 
-Breakouts are **guided note-taking with receipts**.
+> “What should be decided?”  
+
+**Breakouts generate Exploration Receipts** at closure.
 
 ---
 
 ## Options: Exploratory Placeholders
 
-Options represent **things worth thinking about**, not things worth deciding.
+Options represent **things worth thinking about**, not deciding.  
 
-An option may be:
-- a proposed solution
-- a question
-- a concern
-- a hypothesis
-- a direction
-- a reframing of the problem
+They may be:
 
-Options:
-- may be created explicitly before a breakout
-- may emerge during a breakout
-- may change meaning over time
-- may be closed, deferred, or replaced
+- proposed solutions  
+- questions  
+- concerns  
+- hypotheses  
+- directions  
+- problem reframings  
 
-Options are **mutable during exploration**.
-
-They are not commitments.
-They are not candidates.
-They are not proposals.
-
-They are memory anchors.
+Options are mutable during exploration,  
+never become candidates or proposals until formally promoted.
 
 ---
 
 ## Restarting Breakouts
 
-Because breakouts are moments, not streams:
+Restarting a breakout:
 
-- restarting a breakout:
-  - closes the prior breakout
-  - preserves all produced artifacts
-  - records explicit lineage
-  - begins a new exploratory moment
+- closes the prior breakout  
+- preserves produced artifacts  
+- records explicit lineage  
+- begins a new exploratory moment  
 
-Nothing is erased.
-Nothing is overwritten.
-Earlier thinking remains visible — even if abandoned.
-
-This ensures audit reflects *how understanding evolved*, not just where it landed.
+Nothing is erased; earlier thinking remains visible.  
+Audit reflects **how understanding evolved**, not just final outcomes.
 
 ---
 
 ## Synthesis: Convergence Without Authority
 
-Synthesis is not a vote.
-It is not a decision.
-It is not a command.
+Synthesis structures exploration:
 
-Synthesis is the act of **structuring what already exists**.
+- groups related artifacts  
+- refines language  
+- separates alternatives  
+- records discarded paths  
+- identifies unresolved questions  
+- clarifies readiness  
 
-It:
-- groups related breakout artifacts
-- refines language
-- separates alternatives
-- records discarded paths
-- identifies unresolved questions
-- clarifies readiness
+Synthesis **does not**:
 
-Synthesis does **not**:
-- accept
-- reject
-- override
-- interpret authority
+- accept  
+- reject  
+- override  
+- interpret authority  
 
-Synthesis answers:
-> “What are the things we now understand well enough to judge?”
-
-Synthesis may happen:
-- incrementally
-- implicitly
-- repeatedly
-
-Its effects must be **auditable**, even if the act itself is not exposed as a standalone command.
+**Synthesis emits Exploration Receipts** when artifacts are finalized.  
 
 ---
 
 ## Relationship to Baseline Review
 
-Baseline review is the **universal consolidation boundary** in Charter.
+Baseline review consolidates work for governance:
 
-It exists wherever:
-- work is imported
-- work is merged
-- work is handed off
-- work is prepared for legitimacy
+- evaluates foreign/consolidated material  
+- pauses active sessions  
+- prepares proposals for canonical sessions  
 
-Synthesis and baseline review are similar in shape:
-- both consolidate multiple inputs
-- both are auditable
-- both prepare material for sessions
-- neither creates legitimacy
+Neither synthesis nor baseline review creates legitimacy.  
+Both **terminate explicitly** and emit **Receipts**:
 
-Key distinction:
-- **Synthesis structures local exploratory material**
-- **Baseline review evaluates foreign or consolidated material**
-
-Both must:
-- terminate explicitly
-- either produce reviewable outputs or be abandoned
+- Baseline Review → Review Receipt  
+- Synthesis → Exploration Receipt
 
 ---
 
 ## From Exploration to Legitimacy
 
-Once exploration converges:
+Lifecycle progression:
 
-- options may become **proposals**
-- proposals may enter **baseline review**
-- baseline review may create **sessions**
-- sessions may create **legitimacy**
+1. Breakouts → Exploration Receipts  
+2. Synthesis → Exploration Receipts  
+3. Baseline Review → Review Receipts  
+4. Sessions → Legitimacy Receipts  
 
-At no point does Charter assume intent.
-
-Preparation is never mistaken for decision.
+At no point is intent assumed.  
 Memory is never mistaken for agreement.
 
 ---
 
-## What Audit Must Preserve
+## Audit Requirements
 
-Audit exists to reconstruct reality — not judgment.
+Audit must:
 
-It must always be possible to answer:
+- render receipts one per line  
+- include **receipt type**  
+- include canonical engine IDs  
+- preserve **stable, deterministic ordering**  
+- allow grep/search by receipt type  
+- allow full lineage reconstruction:
 
-- What exploration occurred?
-- When did it occur?
-- Who participated?
-- What artifacts were created?
-- How did those artifacts change?
-- Which options became proposals?
-- Which proposals entered baseline review?
-- Which sessions accepted them — or did not?
+  - Exploration → Review → Legitimacy  
 
-Audit must show **everything that happened**,
-not just what “mattered in the end”.
+Audit captures **everything that happened**, not just outcomes.
 
 ---
 
 ## Why This Matters
 
-Without breakouts:
-- exploration leaks into sessions
-- pressure to decide appears too early
-- authority is misused to resolve ambiguity
+Without explicit audit and receipts:
 
-Without synthesis:
-- exploration becomes noise
-- decisions lack context
-- legitimacy is forced to compensate for confusion
+- history collapses into outcomes  
+- rejected or deferred paths disappear  
+- trust erodes quietly  
 
-Without audit:
-- history collapses into outcomes
-- rejected paths disappear
-- trust erodes quietly
+Charter preserves:
 
-Charter preserves trust by:
-- remembering **everything**
-- legitimizing **almost nothing**
+- all moments of exploration  
+- structured convergence artifacts  
+- canonical legitimacy events  
 
 ---
 
 ## Final Note
 
-If this feels slow, it is.
+Charter audit:
 
-If it feels uncomfortable, it should.
+- remembers every bounded event  
+- never assumes correctness or agreement  
+- treats receipts as first-class, reconstructible artifacts  
 
 Exploration is allowed to be incomplete.  
 Convergence is allowed to be messy.  
 Legitimacy is allowed to be rare.
-
-Audit does not rush reality.
-
-It remembers it.
