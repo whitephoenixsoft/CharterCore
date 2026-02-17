@@ -1,159 +1,309 @@
 # Charter V7 — Foundation Specification  
-**Architecture: Online Commit Relay (Manual, No Legitimacy)**
+**Architecture: CLI Commit Relay (Append-Only, No Legitimacy)**
 
 **Status:** FOUNDATIONAL  
 **Depends On:** Commit Canon, V6 Commit Semantics  
-**Does Not Define:** legitimacy, decision authority, merging, interpretation, enforcement  
+**Does Not Define:** legitimacy, decision authority, merging, interpretation, enforcement, or state reconstruction  
 
 ---
 
 ## Purpose
 
-Charter V7 introduces a **manual, online commit relay feature** for the CLI while remaining fully agnostic to semantics and legitimacy.  
+Charter V7 defines a **CLI-mediated commit relay mechanism** for transporting and archiving Charter commits.
 
-It exists to:
+It introduces:
+
+- An append-only commit store  
+- Manual push and fetch operations  
+- Configurable relay endpoints (local or remote)  
+- Immutable archival preservation of all commit types  
+
+V7 is **not a hosted service** and does not require a persistent runtime process.  
+All operations are explicitly invoked through the Charter CLI.
+
+V7 exists to:
 
 - Store commits immutably  
-- Route commits between users, teams, or systems  
-- Make historical commits available for consumption  
-- Preserve imported and local commit history intact  
+- Transport commits between users, teams, or systems  
+- Preserve exported history intact  
+- Provide a historical feed for consuming systems  
 
-It does **not**:
+V7 does **not**:
 
 - Interpret commits  
 - Assign legitimacy  
 - Merge histories  
-- Maintain or enforce current state  
+- Reconstruct canonical state  
+- Compute active resolutions  
+- Infer supersession  
 - Make decisions  
 
-**Note:** All relay operations are manual. Users explicitly push, fetch, and import commits, similar to Git. No automation or background enforcement occurs.
+Relay endpoints function as archival libraries of typed commits.
 
 ---
 
-## 1. Commit Store Model
+## 1. Deployment and CLI Model
 
-- **One commit store per context workspace**  
-  - A workspace may represent a user, team, or system  
-  - Contains all commits for that context, including all areas  
+V7 is:
 
-- **Commit Properties**  
-  - Opaque: V7 treats contents as uninterpreted  
-  - Append-only and immutable  
-  - Referenceable: parents, linked areas, or related commits  
-  - UUID-identified: repeated pushes or restores are idempotent  
-  - Metadata preserved: annotations, rationale, deliberates, baseline references  
+- CLI-invoked only  
+- Explicitly configured (similar to Git remotes)  
+- Manual: push, fetch, and import are user-triggered  
+- Transport-agnostic (filesystem, SSH, HTTPS, or equivalent mechanisms)  
 
-- No mutable state exists; history only grows.
+V7 does not define:
+
+- Authentication mechanisms  
+- Access control policies  
+- Server-side enforcement  
+- Background synchronization  
+
+Relay endpoints may be local or remote but are not defined as Charter services.
 
 ---
 
-## 2. Commit Types
+## 2. Commit Store Model
 
-V7 stores all commit types defined upstream (V6 or deliberate) including **Receipts**:
+Each relay endpoint contains:
 
-- Resolution Commits — legitimate decisions anchored in canon  
-- Deliberate Commits — exploratory, non-authoritative  
-- Baseline Review Commits — validation of imported history  
+- **One append-only commit store per workspace**
+
+A workspace:
+
+- Represents a user, team, or system context  
+- Contains all commits for that context  
+- Is logically isolated from other workspaces  
+
+### Commit Properties
+
+All commits are:
+
+- Opaque (relay does not interpret contents)  
+- Immutable and append-only  
+- UUID-identified (idempotent across repeated pushes or restores)  
+- Chronologically ordered for storage purposes only  
+
+Commits may contain structural references (parents, linked areas, related commits), but:
+
+- References are metadata only  
+- Relay does not validate or enforce reference integrity  
+- Ordering does not imply dependency  
+- Commits do not form a mutable state chain  
+
+No mutable state exists in the relay. History only grows.
+
+---
+
+## 3. Commit Types
+
+V7 stores all upstream commit types, including Receipts.
+
+### Canonical Types
+
+- Resolution Commits — canonical resolution objects (smallest legitimacy unit)  
+- Legitimacy Receipt Commits — immutable records of session closure that produced resolutions  
+- Exploration Receipt Commits — records of deliberate or breakout closure  
+- Review Receipt Commits — records of baseline review closure  
+- Deliberate Commits — exploratory, non-authoritative artifacts  
+- Baseline Review Commits — review workspace artifacts  
 - Import Commits — verbatim foreign history  
-- Annotation Commits — rationale, context, or reversibility notes  
-- **Receipt Commits** — immutable records emitted at lifecycle boundaries (Exploration, Review, Legitimacy)  
+- Annotation Commits — rationale or contextual metadata  
 
-**Rule:** V7 treats all commit types identically; routing, storage, and referenceability are uniform. Metadata is preserved without interpretation.  
-**Receipts are stored in full fidelity, but V7 does not interpret categories or authority.**
+### Handling Rule
+
+V7:
+
+- Treats all commit types identically  
+- Stores and routes them uniformly  
+- Preserves metadata in full fidelity  
+- Does not interpret receipt categories  
+- Does not evaluate authority  
+- Does not derive legitimacy from receipts  
+
+Receipts are first-class commit objects, but the relay does not interpret their meaning.
 
 ---
 
-## 3. Context Workspaces and Segregation
+## 4. Independence and Archival Model
 
-- Each workspace is a logical partition  
-- Commits are isolated between workspaces  
-- Allows multi-user, multi-team, or multi-system usage without accidental cross-over  
-- Areas may overlap, but semantics remain scoped locally  
-- Multiple V7 relays may exist; consumers resolve conflicts and authoritative views  
+Commits in V7 are:
 
----
+- Independent archival entries  
+- Self-contained historical objects  
+- Not dependent on replay order for validity  
 
-## 4. Handling of Imported Commits
+The relay behaves as an archival library, not a version-control state machine.
 
-- Imported commits are foreign: immutable and fully preserved  
-- Legitimacy is never assumed locally  
-- Restores may be repeated; commit UUIDs ensure idempotency  
-- Baseline reviews or deliberates consuming foreign commits are local actions, outside V7  
+Unlike Git:
+
+- There is no working tree  
+- There is no shared mutable branch state  
+- There is no automatic merge logic  
+- There is no implied layering of changes  
+
+Consumers reconstruct meaning locally if needed.
 
 ---
 
 ## 5. Relay Semantics
 
-V7 functions as a **manual commit router and historical feed**:
+Relay operations are manual and CLI-triggered:
 
-- Push commits to the relay for storage  
-- Fetch commits for local import  
-- Route commits to subscribed participants  
-- Serve as read-only historical reference for VDS, VLS, or local Charter V6  
+- Push commits to a relay endpoint  
+- Fetch commits from a relay endpoint  
+- Import fetched commits into a local workspace  
 
-**Constraints:**  
+Relay constraints:
 
-- No aggregation, prioritization, or interpretation  
-- Relay commits are never authoritative; legitimacy is determined by consumers  
-- Operations are manual only, triggered by the CLI  
-- Receipts are preserved and routed identically to other commit types  
-- Receipt lineage is maintained across fetch and push operations  
+- No aggregation  
+- No prioritization  
+- No summarization  
+- No interpretation  
+- No legitimacy evaluation  
+- No state reconstruction  
 
----
+Receipts:
 
-## 6. Deliberates and Baseline Review Support
+- Are preserved identically to other commit types  
+- Retain canonical identifiers  
+- Maintain lineage across push and fetch operations  
+- Are never aggregated or synthesized into decisions  
 
-- Deliberates may reference historical or imported commits  
-- Baseline reviews can include relay commits to re-establish local context  
-- V7 does not validate, summarize, or interpret these operations  
-- Metadata, annotations, and rationale are fully preserved  
-- Receipts generated by sessions, baseline reviews, or deliberate closures are **committed unchanged**  
-
----
-
-## 7. Relationship to Charter V6
-
-- V6 can push commits to V7 or fetch commits from V7 as foreign  
-- V7 treats all commit types identically; interpretation and legitimacy remain local to V6  
-- V7 acts purely as a transport and historical object store  
+Legitimacy is always determined by the consuming engine.
 
 ---
 
-## 8. Relationship to VDS and VLS
+## 6. Handling of Imported Commits
 
-- VDS may push or fetch check-in commits  
-- VLS may fetch intent or identity commits  
-- V7 has no special rules per commit type; consumer modules determine usage and meaning  
-- Receipts are preserved as first-class commits for traceability and auditing  
+Fetched commits are treated as:
+
+- Foreign  
+- Immutable  
+- Historically preserved  
+
+Repeated fetch or restore operations are safe and idempotent due to UUID identity.
+
+The relay does not:
+
+- Validate legitimacy  
+- Enforce authority  
+- Promote foreign resolutions to local canonical state  
+
+Baseline reviews or sessions consuming foreign commits are local engine actions and outside V7 scope.
 
 ---
 
-## 9. Backup and Restore Semantics
+## 7. Deliberates, Baseline Review, and Receipts
 
-- Full commit export can be restored into a local store in a single transaction  
-- Repeated restores are safe and idempotent  
-- Restored commits remain foreign; legitimacy is local  
-- Relay can act purely as a backup feed without affecting live local stores  
+V7 stores without interpretation:
+
+- Deliberate artifacts  
+- Baseline review artifacts  
+- Exploration Receipts  
+- Review Receipts  
+- Legitimacy Receipts  
+
+Receipts emitted at lifecycle boundaries are committed unchanged.
+
+The relay:
+
+- Does not aggregate receipts  
+- Does not synthesize legitimacy  
+- Does not compute roll-ups  
+- Does not interpret lifecycle transitions  
 
 ---
 
-## 10. Design Constraints
+## 8. Relationship to Charter V6
+
+V6:
+
+- Pushes commits to V7  
+- Fetches commits from V7 as foreign  
+- Evaluates authority locally  
+- Reconstructs canonical state locally  
+
+V7:
+
+- Does not evaluate legitimacy  
+- Does not compute active resolutions  
+- Does not interpret supersession  
+
+Resolution remains the smallest legitimacy unit.  
+Receipts document lifecycle events only.
+
+---
+
+## 9. Relationship to VDS and VLS
+
+VDS and VLS may:
+
+- Push check-in commits  
+- Fetch identity or intent commits  
+- Consume receipt commits for traceability  
+
+V7:
+
+- Applies no special rules per commit type  
+- Does not distinguish governance from communication  
+- Stores all commits uniformly  
+
+Interpretation remains local to consuming systems.
+
+---
+
+## 10. Backup and Restore Semantics
+
+V7 may function as:
+
+- A transport endpoint  
+- A historical archive  
+- A backup library  
+
+Full commit exports:
+
+- May be restored in a single transaction  
+- Are idempotent  
+- Remain foreign until locally evaluated  
+
+Relay restore does not alter legitimacy or canonical state.
+
+---
+
+## 11. Design Constraints
 
 Charter V7 must remain:
 
-- Optional and replaceable  
-- Manual and CLI-driven  
-- Stateless, boring, and transparent  
-- Immutable: history cannot be altered  
-- Metadata-preserving: rationale, annotations, deliberates, baseline references remain intact  
-- Receipt-preserving: all Exploration, Review, and Legitimacy Receipts must retain their canonical structure  
+- CLI-driven  
+- Manual and explicit  
+- Append-only  
+- Immutable  
+- Stateless with respect to canonical state  
+- Interpretation-free  
+- Legitimacy-neutral  
+- Metadata-preserving  
+- Receipt-preserving  
+
+It must never:
+
+- Compute authority  
+- Derive legitimacy  
+- Aggregate receipts into decisions  
+- Construct shared mutable state  
 
 ---
 
-## 11. Closing Principle
+## 12. Closing Principle
 
-> Charter V7 remembers **what was said**, not **what it means**.  
+Charter V7 remembers what was recorded, not what it means.
 
-It is a **manual commit relay, historical store, and transport layer** for all commit types, including **Receipts**.  
-All semantics, legitimacy, and decision-making remain **local to consuming systems**.  
-Multiple relays, repeated restores, or overlapping workspaces are **safe and idempotent**.
+It is a CLI-mediated archival transport layer for typed commits, including:
+
+- Resolutions (legitimacy units)  
+- Exploration, Review, and Legitimacy Receipts  
+- Deliberate and baseline artifacts  
+- Communication and check-in commits  
+
+All semantics, legitimacy, and decision-making remain local to consuming systems.
+
+Multiple relays, repeated restores, and overlapping workspaces are safe, idempotent, and interpretation-free.
