@@ -1,5 +1,5 @@
 # Charter Core — Engine Invariants
-Status: FROZEN (V1)  
+Status: FROZEN (V2-Minimal)  
 Applies to: Charter Core Engine  
 Violations indicate an engine correctness failure
 
@@ -7,7 +7,7 @@ Violations indicate an engine correctness failure
 
 ## Purpose
 
-These invariants define the **non-negotiable behavior** of the Charter Core.
+These invariants define the **non-negotiable mechanical behavior** of the Charter Core engine.  
 
 They exist to preserve:
 
@@ -16,13 +16,7 @@ They exist to preserve:
 - auditability
 - non-retroactivity
 
-Charter Core is intentionally narrow.
-
-If behavior is not guaranteed here,
-it must be implemented **outside** the engine.
-
-If an implementation violates an invariant,
-the implementation is wrong — not the invariant.
+Behavior not guaranteed here must be implemented **outside** the engine.
 
 ---
 
@@ -30,25 +24,19 @@ the implementation is wrong — not the invariant.
 
 ### ENG-CORE-01 — Charter Core Is a Legitimacy Engine
 
-Charter Core is **not**:
+Charter Core **does not**:
 
-- a reasoning engine
-- a workflow engine
-- a collaboration system
-- a facilitation tool
-- a semantic interpreter
+- reason about content
+- facilitate workflow
+- interpret semantics
+- infer intent
 
-Its sole responsibility is to ensure that decisions are:
+Its responsibility is strictly to:
 
-- explicit
-- governed
-- deterministic
-- auditable
-- non-retroactive
-
-Fail if:
-
-- engine behavior implies reasoning, facilitation, or interpretation
+- enforce explicit legitimacy
+- maintain deterministic governance rules
+- ensure auditability
+- prevent retroactive changes
 
 ---
 
@@ -56,19 +44,9 @@ Fail if:
 
 ### ENG-ID-01 — Canonical Engine Identity
 
-All engine entities  
-(Areas, Sessions, Resolutions, Candidates, Authority, Scope, Participants)
-MUST have stable, canonical engine IDs.
+All engine entities (Areas, Sessions, Resolutions, Candidates, Authority, Scope, Participants) must have stable, canonical IDs that survive restarts and export/import.
 
-Rules:
-
-- IDs are stable across restarts
-- IDs survive export/import
-- IDs are independent of labels, formatting, or storage layout
-
-Fail if:
-
-- identity changes due to relabeling or reorganization
+Fail if identity changes due to relabeling, reorganization, or serialization.
 
 ---
 
@@ -76,17 +54,10 @@ Fail if:
 
 Once a resolution is accepted:
 
-- its content must never change
-- its acceptance context must never change
+- content and acceptance context are immutable
+- state changes only via **explicit supersession** or **retirement**
 
-A resolution may only change status via:
-
-- explicit supersession
-- explicit retirement
-
-Fail if:
-
-- accepted content is edited or reinterpreted
+Fail if content or context is edited or reinterpreted.
 
 ---
 
@@ -94,300 +65,105 @@ Fail if:
 
 ### ENG-LEG-01 — Explicit Decisions Only
 
-No decision is legitimate unless it is **explicitly accepted** within a session.
-
-Rules:
-
-- silence is not consent
-- metadata is not acceptance
-- automation is not authority
-- inactivity has no meaning
-
-Fail if:
-
-- legitimacy appears without explicit acceptance
+Legitimacy arises **only** from explicit acceptance within a session.
 
 ---
 
 ### ENG-LEG-02 — Sessions Are the Unit of Legitimacy
 
-Resolutions may only be accepted **within sessions**.
-
-Sessions:
-
-- define participants
-- enforce authority rules
-- enforce constraints
-- produce zero or more accepted resolutions
-
-Fail if:
-
-- legitimacy exists outside a session
+Sessions define participants, authority, constraints, and outcomes.  
+Resolutions outside sessions do not confer legitimacy.
 
 ---
 
-### ENG-LEG-03 — Legitimacy Is Evaluated at Acceptance Time
+### ENG-LEG-03 — Legitimacy Evaluated at Acceptance
 
-A resolution’s legitimacy is determined **only** by:
+Legitimacy is determined **only** by:
 
 - Authority active at acceptance
 - Scope active at acceptance
-- Constraints active at acceptance
+- Constraints at acceptance
 - Recorded stances at acceptance
-
-Later changes MUST NOT reinterpret legitimacy.
-
-Fail if:
-
-- future state alters past legitimacy
 
 ---
 
 ### ENG-LEG-04 — Deterministic Evaluation
 
-Given identical:
-
-- participants
-- stances
-- authority
-- constraints
-
-The outcome MUST be identical.
-
-Fail if:
-
-- evaluation is non-deterministic
+Identical inputs (participants, stances, authority, constraints) must produce identical outcomes.
 
 ---
 
 ### ENG-LEG-05 — Explicit Dissent Is First-Class
 
-The engine MUST support explicit disagreement.
-
-Rules:
-
-- abstention is explicit
-- silence has no meaning
-- absence is not rejection
-
-Fail if:
-
-- dissent is inferred or implied
+Abstention is explicit. Silence is meaningless. Absence is not rejection.
 
 ---
 
 ## IV. Resolution Lifecycle & History
 
-### ENG-HIST-01 — History Is Append-Only
+### ENG-HIST-01 — Append-Only History
 
-Accepted resolutions:
-
-- are never edited
-- are never deleted
-- remain auditable indefinitely
-
-Corrections require:
-
-- superseding resolutions
-- clarifying resolutions
-
-Fail if:
-
-- history mutates implicitly
+Resolutions are never edited or deleted. Corrections require **supersession** or **clarifying resolutions**.
 
 ---
 
-### ENG-HIST-02 — Explicit Resolution States
+### ENG-HIST-02 — Explicit States
 
-Resolutions transition only through explicit states:
-
-- ACTIVE
-- UNDER_REVIEW
-- SUPERSEDED
-- RETIRED
-
-Rules:
-
-- no resolution is ever removed
-- UNDER_REVIEW has no governing power
-- all transitions are auditable
-- legitimacy states change only via sessions
-- workflow states must not affect legitimacy
-
-Fail if:
-
-- resolution state changes implicitly
+Valid states: ACTIVE, UNDER_REVIEW, SUPERSEDED, RETIRED.  
+UNDER_REVIEW has no governing power. Transitions are explicit and auditable.
 
 ---
 
-### ENG-HIST-03 — Relevance Is Human, Not Mechanical
+### ENG-HIST-04 — Supersession Is One-Way
 
-The engine does not determine relevance.
-
-Relevance is expressed only through:
-
-- supersession
-- retirement
-- clarifying resolutions
-
-Fail if:
-
-- the engine auto-retires, suppresses, or prioritizes decisions
-
----
-### ENG-HIST-04 — Supersession Is One-Way and Irreversible
-
-Supersession defines a permanent, directional historical relationship.
-
-Rules:
-
-- A resolution may supersede one or more prior resolutions
-- A superseded resolution MUST NOT:
-  - become ACTIVE again
-  - supersede another resolution
-  - have its superseded status removed
-- Supersession relationships MUST be acyclic
-- Supersession MUST NOT be reversible, editable, or retractable
-
-Consequences:
-
-- Reinstating prior intent requires a new resolution
-- Change is recorded as evolution, not rollback
-- History remains linear, auditable, and non-retroactive
-
-Fail if:
-
-- a superseded resolution regains governing power
-- circular or bidirectional supersession occurs
-- supersession is used to mutate or edit past decisions
+Supersession is irreversible and directional. Superseded resolutions cannot regain ACTIVE status.
 
 ---
 
 ## V. Areas, Authority, and Scope
 
-### ENG-AREA-01 — Areas Are Hard Governance Boundaries
+### ENG-AREA-01 — Areas Are Governance Boundaries
 
-Every resolution belongs to **exactly one Area**.
-
-Rules:
-
-- no implicit overlap
-- no inheritance
-- cross-area relevance must be explicit
-
-Fail if:
-
-- authority or scope leaks across Areas
+Each resolution belongs to exactly one Area. Cross-area relevance must be explicit.
 
 ---
 
-### ENG-AREA-02 — Area Initialization Is Mandatory
+### ENG-AREA-02 — Area Initialization
 
-An Area MUST have:
-
-- exactly one active Authority resolution
-- exactly one active Scope resolution
-
-Until then:
-
-- the Area is UNINITIALIZED
-- only Authority- or Scope-defining sessions are permitted
-
-Fail if:
-
-- decisions occur in an uninitialized Area
+An Area requires exactly one ACTIVE Authority and one ACTIVE Scope.  
+Fail if decisions occur in an uninitialized Area.
 
 ---
+
 ### ENG-AREA-03 — Governance Anchors Cannot Be Retired
 
-Authority and Scope resolutions are structural governance anchors.
-They define whether an Area is governed at all.
-
-Rules:
-
-- Authority resolutions MUST NOT be RETIRED.
-- Scope resolutions MUST NOT be RETIRED.
-- Authority and Scope may change only via explicit supersession.
-- An Area MUST always have:
-  - exactly one ACTIVE Authority resolution
-  - exactly one ACTIVE Scope resolution
-
-Consequences:
-
-- Governance cannot be removed, only evolved.
-- Areas cannot enter an undefined or ungoverned state.
-- Historical authority and scope remain permanently auditable.
-
-Fail if:
-
-- an Authority or Scope resolution is retired
-- an Area exists without an active Authority or Scope
-- governance changes occur without supersession
+Authority and Scope **cannot** be retired. Changes occur only via supersession.
 
 ---
 
-### ENG-AUTH-01 — Authority Is First-Class and Mechanical
+### ENG-AUTH-01 — Authority Is Mechanical
 
-Authority defines **how agreement is evaluated**.
-
-Authority:
-
-- defines standing
-- defines acceptance mechanics
-- is purely mechanical
-
-Authority does NOT:
-
-- interpret content
-- assign roles
-- judge correctness
-- encode semantics
+Authority defines vote evaluation.  
 
 Rules:
 
-- exactly one active Authority per Area
-- changes require a session
-- changes never rewrite history
-
-Fail if:
-
-- authority implies meaning or intent
+- One ACTIVE Authority per Area
+- Cannot enter UNDER_REVIEW
+- Changes require a session
+- Never rewrites history
 
 ---
 
-### ENG-SCOPE-01 — Scope Is First-Class and Descriptive
+### ENG-SCOPE-01 — Scope Is Descriptive
 
-Scope documents applicability and intent.
-
-Scope:
-
-- is descriptive, not enforcing
-- exists for audit and clarity
-- is immutable per resolution
-
-Rules:
-
-- exactly one active Scope per Area
-- changes require a session
-- changes never invalidate prior resolutions
-
-Fail if:
-
-- scope is inferred or enforced mechanically
+Scope is first-class but descriptive. Scope may enter **UNDER_REVIEW**, which removes governing power.  
+Entering/exiting UNDER_REVIEW must be explicit and auditable.
 
 ---
 
-### ENG-CONTEXT-01 — Authority and Scope Are Permanently Recorded
+### ENG-CONTEXT-01 — Authority and Scope Permanently Recorded
 
-Every session and accepted resolution MUST permanently record:
-
-- Authority active at acceptance
-- Scope active at acceptance
-- any explicitly referenced scopes
-
-Fail if:
-
-- context can only be reconstructed implicitly
+Every accepted resolution and session permanently records Authority and Scope at acceptance.
 
 ---
 
@@ -395,177 +171,45 @@ Fail if:
 
 ### ENG-SES-01 — Candidates Are Neutral
 
-Candidates:
-
-- imply no intent
-- imply no endorsement
-- have no legitimacy unless accepted
-
-Rejection or abandonment has no semantic meaning.
-
-Fail if:
-
-- candidates are treated as decisions
+Candidates are non-legitimacy artifacts. Rejection or abandonment has no effect.
 
 ---
 
-### ENG-SES-02 — Candidate Set Freezes on First Stance
+### ENG-SES-02 — Candidate Set Freezes
 
-After any stance is recorded:
-
-- candidates may not be added
-- candidates may not be removed
-- candidates may not be edited
-
-Fail if:
-
-- mutation occurs after stances begin
+After first stance, candidate content is immutable.
 
 ---
 
 ### ENG-CON-01 — Constraints Are Engine-Enforced
 
-Constraints:
-
-- are declared at session start
-- apply only to that session
-- are enforced mechanically
-- do not modify Authority or Scope
-
-Fail if:
-
-- constraints are inferred or modified implicitly
+Constraints are session-scoped and do not modify Authority or Scope.
 
 ---
 
-### ENG-CON-02 — Constraints Are Authority-Equivalent
+### ENG-SES-03 — Pause, Block, and Resume
 
-Any rule that alters agreement evaluation is authority-equivalent.
-
-Consequences:
-
-- constraints cannot change mid-session
-- constraints cannot change on resume
-- constraints require a governing session
-
-Fail if:
-
-- constraints bypass authority governance
+Blocked sessions (e.g., due to UNDER_REVIEW Scope) **cannot proceed** until context is explicitly revalidated.
 
 ---
 
-### ENG-SES-03 — Pause, Block, and Resume Preserve Context
-
-If legitimacy conditions cannot be satisfied:
-
-- a session becomes PAUSED or BLOCKED
-
-On resume:
-
-- Authority and Scope are revalidated
-- if legitimacy conditions differ → BLOCKED
-
-Fail if:
-
-- resume alters legitimacy conditions
-
----
-
-### ENG-SES-04 — Resume Cannot Introduce New Legitimacy Rules
-
-On resume:
-
-- participants may change
-- stances may change
-- authority and constraints may NOT
-
-Fail if:
-
-- legitimacy rules change on resume
-
----
-
-## VII. Voting & Acceptance (Legitimacy Creation)
+## VII. Voting & Acceptance
 
 ### ENG-VOTE-01 — Votes Are Evaluative Only
 
-Recorded stances:
-
-- ACCEPT
-- REJECT
-- ABSTAIN
-
-Votes:
-
-- create no legitimacy
-- may change prior to acceptance
-- are fully auditable
-- have no automatic effect
-
-The engine MUST NOT:
-
-- auto-accept based on votes
-- infer consensus
-- close sessions implicitly
+Votes do not automatically create legitimacy.
 
 ---
 
 ### ENG-ACCEPT-01 — Explicit Acceptance Required
 
-A resolution becomes legitimate only if:
-
-- an explicit acceptance action occurs
-- within a session
-- under declared authority
-- within declared scope
-
-If no acceptance occurs:
-
-- no decision exists
-
----
-
-### ENG-ACCEPT-02 — Authority Gate at Acceptance Time
-
-At acceptance:
-
-- authority MUST be evaluated
-- using current stances
-- using the frozen participant set
-
-If authority fails:
-
-- acceptance MUST be rejected
-- session remains open
-- engine state MUST NOT mutate
-
----
-
-### ENG-ACCEPT-03 — Single Commitment Moment
-
-For a given proposal in a session:
-
-- acceptance may occur at most once
-- rejection does not create legitimacy
-- re-evaluation requires a new session
-
-There is:
-
-- no provisional acceptance
-- no conditional legitimacy
-- no implicit closure
+Legitimacy arises only via explicit acceptance in a session under current Authority and Scope.
 
 ---
 
 ### ENG-ACCEPT-04 — Non-Retroactivity
 
-Changes to:
-
-- votes
-- authority
-- scope
-
-after acceptance MUST NOT reinterpret legitimacy.
+Changes to votes, authority, or scope after acceptance cannot affect past legitimacy.
 
 ---
 
@@ -573,36 +217,8 @@ after acceptance MUST NOT reinterpret legitimacy.
 
 ### ENG-CONCUR-01 — Concurrent Sessions Are Isolated
 
-Sessions may run concurrently in an Area.
-
-Interference occurs only if a resolution:
-
-- changes Authority
-- changes Scope
-- supersedes an active resolution
-
-Affected sessions MUST be:
-
-- revalidated
-- paused
-- or blocked
-
-Fail if:
-
-- interference is silent or implicit
-
----
-
-### ENG-CONCUR-02 — Legitimacy Cannot Be Forked
-
-The engine MUST prevent:
-
-- finalizing decisions outside original context
-- forking in-progress legitimacy
-
-Fail if:
-
-- sessions can be completed elsewhere
+Sessions only interfere if Authority or Scope changes, or if a resolution is superseded.  
+Affected sessions must pause or block.
 
 ---
 
@@ -610,303 +226,56 @@ Fail if:
 
 ### ENG-EXP-01 — Only Closed Sessions Export Legitimacy
 
-Exports may include only:
-
-- CLOSED sessions
-- their resulting resolutions
-
-Fail if:
-
-- active or paused sessions affect legitimacy
+Active or paused sessions do not export legitimacy.
 
 ---
 
 ### ENG-IMP-01 — Consolidation Preserves Legitimacy Only
 
-In CONSOLIDATE mode:
-
-- imported resolutions are historical artifacts
-- imported deliberation is non-authoritative
-
-Fail if:
-
-- imported votes affect acceptance
+Imported resolutions do not affect current legitimacy; imported sessions are read-only.
 
 ---
 
-### ENG-IMP-02 — Imported Session History Is Read-Only
-
-Imported session history:
-
-- is immutable
-- never governs legitimacy
-
-Fail if:
-
-- imported history influences decisions
-
----
-
-### ENG-REV-01 — Import Review Is Mechanical
-
-Import review must satisfy:
-
-- chronological review
-- local authority governs review
-- no cascading rejection
-- context preserved for audit only
-
-Fail if:
-
-- review interprets intent
-
----
-
-## X. References & Semantics
-
-### ENG-REF-01 — References Are Informational Only
-
-References:
-
-- grant no authority
-- imply no approval
-- create no precedence
-- trigger no enforcement
-
-Fail if:
-
-- references affect legitimacy
-
----
-
-### ENG-REF-02 — No Semantic Inference
-
-The engine MUST NOT infer:
-
-- authority overlap
-- scope overlap
-- role equivalence
-- intent
-
-Fail if:
-
-- meaning is inferred from structure or content
-
----
-
-## XI. Audit & Integrity
-
-### ENG-AUD-01 — Audit Is Authoritative
-
-Audit is the system of record for:
-
-- what happened
-- when it happened
-- under what authority
-- with which participants
-
-Fail if:
-
-- outcomes cannot be reconstructed via audit
-
----
-
-### ENG-AUD-02 — Audit Outlives Subjects
-
-Audit records MUST outlive the entities they describe.
-
-Fail if:
-
-- audit disappears with deletion
-
----
-
-### ENG-AUD-03 — Export Integrity Is Verifiable
-
-Exports MUST allow detection of:
-
-- structural tampering
-- content modification
-
-Fail if:
-
-- tampering cannot be detected
-
----
-
-## XII. Storage & Persistence
-
-### ENG-STOR-01 — Storage Isolation
-
-Each engine instance operates over a single explicit storage root.
-
-Fail if:
-
-- cross-root visibility exists
-
----
-
-### ENG-STOR-02 — Engine Is Storage-Agnostic
-
-The engine treats storage as opaque.
-
-Fail if:
-
-- filesystem layout affects behavior
-
----
-
-### ENG-STOR-03 — Stable Object Identity
-
-Object identity MUST survive:
-
-- restarts
-- export/import
-- storage relocation
-
-Fail if:
-
-- identity depends on paths
-
----
-
-### ENG-STOR-04 — No Implicit History Deletion
-
-History may only be:
-
-- superseded
-- retired
-- abandoned
-
-Always with audit.
-
-Fail if:
-
-- history disappears silently
-
----
-
-### ENG-STOR-05 — Export Is a Complete Snapshot
-
-Exports MUST be:
-
-- complete
-- referentially intact
-- deterministically rehydratable
-
-Fail if:
-
-- exports are partial or ambiguous
-
----
-
-## XIII. AI Boundary
-
-### ENG-AI-01 — AI Is Outside the Engine Boundary
-
-AI systems may:
-
-- suggest
-- annotate
-- warn
-
-AI systems MUST NOT:
-
-- accept decisions
-- modify resolutions
-- override authority
-- bypass constraints
-
-Fail if:
-
-- AI affects legitimacy
-
----
-### XIV. Supersession, Review, and Governance Stability
+## XIV. Supersession, Review, and Governance Stability
 
 ### ENG-SUP-01 — Supersession Is One-Way
-Accepted resolutions may only affect prior resolutions through explicit supersession.
 
-Rules:
-- Supersession is directional and irreversible
-- A superseded resolution MUST NOT regain ACTIVE status
-- Supersession MUST NOT mutate historical content or acceptance context
-
-Fail if:
-- A superseded resolution becomes ACTIVE again
-- Supersession is reversed, toggled, or implicitly undone
-
-
-### ENG-SUP-02 — Authority Is Immutable Except by Supersession
-Authority resolutions define the legitimacy evaluation mechanism.
-
-Rules:
-- Authority resolutions MUST NOT enter UNDER_REVIEW
-- Authority may change only via explicit supersession
-- There MUST always be exactly one ACTIVE Authority per initialized Area
-
-Fail if:
-- Authority is marked UNDER_REVIEW
-- No active Authority exists for an initialized Area
-- Authority evaluation becomes ambiguous or suspended
-
-
-### ENG-SUP-03 — Scope May Enter Review State
-Scope resolutions document applicability and intent.
-
-Rules:
-- Scope resolutions MAY enter UNDER_REVIEW
-- UNDER_REVIEW Scope has no governing power
-- Entering or exiting UNDER_REVIEW MUST be explicit and auditable
-
-Fail if:
-- Scope changes governing behavior while UNDER_REVIEW
-- Scope review state is inferred or implicit
-
-
-### ENG-SUP-04 — Review Blocks Dependent Legitimacy
-If a governing resolution enters UNDER_REVIEW:
-
-- Any session whose legitimacy depends on that resolution MUST be BLOCKED
-- No acceptance may occur while the dependency is unresolved
-
-Fail if:
-- A session proceeds under a resolution that is UNDER_REVIEW
-- Acceptance occurs without an active, governing context
-
-
-### ENG-SUP-05 — Context Revalidation Is Mandatory After Governance Change
-When a BLOCKED session is affected by changes to Authority or Scope:
-
-Rules:
-- The session MUST NOT resume legitimacy actions automatically
-- Governing context MUST be explicitly revalidated before acceptance
-- Revalidation MUST be auditable
-
-Fail if:
-- A session resumes acceptance under modified Authority or Scope without explicit acknowledgment
-- Legitimacy is created across a governance transition silently
+Supersession is directional and irreversible.
 
 ---
+
+### ENG-SUP-02 — Authority Is Immutable Except by Supersession
+
+Authority cannot enter UNDER_REVIEW; exactly one ACTIVE Authority must exist per Area.
+
+---
+
+### ENG-SUP-03 — Scope May Enter Review State
+
+Scope may enter UNDER_REVIEW. Entering/exiting review is explicit and auditable.
+
+---
+
+### ENG-SUP-04 — Review Blocks Dependent Legitimacy
+
+Sessions depending on a resolution under review are blocked.
+
+---
+
+### ENG-SUP-05 — Context Revalidation After Governance Change
+
+Blocked sessions must revalidate governing context explicitly before proceeding.
+
+---
+
 ## XV. Explicit Non-Goals
 
-Charter Core does NOT provide:
+Charter Core engine does **not** provide:
 
-- chat systems
-- workflow orchestration
-- task execution
-- role management
-- identity systems
-- semantic reasoning
-- inferred conflict resolution
-- UX patterns (rounds, moderation, facilitation)
-
-These belong to higher layers.
+- reasoning, workflow, facilitation, or semantic interpretation
 
 ---
 
 ## Lock Statement
 
-These invariants are frozen.
-
-Charter Core correctness is defined by adherence to them.
+These invariants are frozen. Adherence defines engine correctness.

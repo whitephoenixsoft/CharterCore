@@ -131,7 +131,18 @@ Fail if:
 
 ---
 
-## CLI-CTX-04 — Context Switching Never Moves Data
+## CLI-CTX-04 — Context Isolation Across CLI Invocations
+
+CLI context is **local and isolated** per invocation.
+
+Fail if:
+
+- multiple CLI processes share context implicitly  
+- session or baseline state leaks between CLI instances  
+
+---
+
+## CLI-CTX-05 — Context Switching Never Moves Data
 
 Context switching must not:
 
@@ -142,6 +153,19 @@ Context switching must not:
 Fail if:
 
 - history mutates due to context switching  
+
+---
+
+## CLI-CTX-06 — Concurrency Isolation
+
+CLI must detect concurrent operations affecting the same Area or session across multiple processes.
+
+Rules:
+- overlapping CLI invocations must not silently interfere
+- conflicting operations must be paused, blocked, or rejected explicitly
+
+Fail if:
+- session, baseline, or candidate state is mutated concurrently without explicit user coordination
 
 ---
 
@@ -231,13 +255,14 @@ Fail if:
 
 ---
 
-## CLI-SES-05 — Resume Requires Participant Revalidation
+## CLI-SES-05 — Resume Requires Governance & Participant Revalidation
 
-On resume, CLI must:
+On resume:
 
 - display prior participants  
 - display current participants  
 - require explicit confirmation  
+- validate Authority and Scope against session context
 
 Until confirmed:
 
@@ -248,6 +273,16 @@ Until confirmed:
 Fail if:
 
 - resume proceeds silently  
+- legitimacy is created under outdated governance  
+
+---
+## CLI-SES-06 — Abandonment Lineage
+
+All abandoned candidates, sessions, or baselines must remain auditable and preserve explicit parent references.
+
+Fail if:
+- lineage of abandoned or aborted work is lost
+- historical connections to superseded or abandoned objects are broken
 
 ---
 
@@ -391,17 +426,29 @@ Fail if:
 
 ---
 
-## CLI-RCP-05 — Receipts Are Commit-Level Artifacts
+## CLI-RCP-05 — Receipts Preserve Lineage & Audit Ownership
 
 Receipts:
 
-- must be stored as first-class commit objects  
+- must include explicit parent references  
 - must survive export, restore, relay, and federation  
-- must preserve lineage references  
+- must capture lineage across CLI operations and sessions  
+- must be auditable independently of engine storage
 
 Fail if:
 
-- closure evidence exists only implicitly  
+- lineage cannot be traced end-to-end  
+- audit is missing for historical events  
+
+---
+## CLI-RCP-06 — Failed or Rejected Actions Are Audited
+
+Any rejected, blocked, or failed operation that affects Authority, Scope, session, or candidate state must:
+- emit a receipt or audit event
+- capture the attempted action and reason for failure
+
+Fail if:
+- structural attempts that fail leave no trace in audit or receipts
 
 ---
 
@@ -520,7 +567,18 @@ Fail if:
 
 # VIII. Audit Guarantees (CLI)
 
-## CLI-AUD-01 — Audit Is Read-Only
+## CLI-AUD-01 — CLI Owns Audit Store
+
+The CLI is responsible for recording, persisting, and managing all audit data.
+
+Fail if:
+
+- engine events exist without CLI-recorded audit  
+- audit store is missing or incomplete  
+
+---
+
+## CLI-AUD-02 — Audit Is Read-Only
 
 Audit commands:
 
@@ -529,7 +587,7 @@ Audit commands:
 
 ---
 
-## CLI-AUD-02 — Audit Is Deterministic
+## CLI-AUD-03 — Audit Is Deterministic
 
 Same input → same output.
 
@@ -537,7 +595,7 @@ Ordering and aggregation must be explicit.
 
 ---
 
-## CLI-AUD-03 — Audit Is Grep-Friendly by Design
+## CLI-AUD-04 — Audit Is Grep-Friendly
 
 Audit output must:
 
@@ -547,11 +605,9 @@ Audit output must:
   `AREA, SESSION, RESOLUTION, AUTH, SCOPE, BASELINE, DELIBERATE, BREAKOUT, RECEIPT`  
 - always include engine IDs  
 
-Non-negotiable.
-
 ---
 
-## CLI-AUD-04 — Participant Audits Are First-Class
+## CLI-AUD-05 — Participant Audits Are First-Class
 
 CLI must support:
 
@@ -565,7 +621,7 @@ Fail if:
 
 ---
 
-## CLI-AUD-05 — Audit Is the System of Record
+## CLI-AUD-06 — Audit Is the System of Record
 
 Audit is authoritative for:
 
@@ -580,7 +636,7 @@ Fail if:
 
 ---
 
-## CLI-AUD-06 — Provenance Is Preserved End-to-End
+## CLI-AUD-07 — Provenance Is Preserved End-to-End
 
 Audit must preserve lineage between:
 
@@ -596,13 +652,37 @@ Fail if:
 
 ---
 
-## CLI-AUD-07 — Audit Never Interprets Intent
+## CLI-AUD-08 — Audit Never Interprets Intent
 
 Audit records facts only.
 
 Fail if:
 
 - audit output implies agreement, consensus, or correctness  
+
+---
+
+## CLI-AUD-09 — Imported/Consolidated Objects Must Populate Audit
+
+When importing or consolidating:
+
+- all historical resolutions, stances, and sessions MUST be recorded in the CLI audit store  
+- lineage must reflect original acceptance context  
+
+Fail if:
+
+- imported objects are missing audit entries  
+
+---
+## CLI-AUD-10 — Federated Operations Preserve Audit & Lineage
+
+When operating in federated or multi-node setups:
+- all CLI actions must maintain audit integrity
+- receipts and lineage references must remain complete and traceable across nodes
+- cross-node operations must not break deterministic audit ordering
+
+Fail if:
+- audit or lineage cannot be reconstructed across federated environments
 
 ---
 
@@ -779,6 +859,20 @@ Fail if:
 
 ---
 
+## CLI-ERR-01 — Explicit Error Reporting
+
+All CLI invariant violations:
+
+- must produce explicit, human-readable errors  
+- must never fail silently  
+- must indicate cause and remediation where possible  
+
+Fail if:
+
+- invariant violation occurs without error feedback  
+
+---
+
 ## Lock Statement
 
 These invariants are frozen.
@@ -787,4 +881,5 @@ Future features may extend them explicitly,
 but must never weaken them implicitly.
 
 Receipts are first-class structural commits.  
-Legitimacy remains session-only.
+Legitimacy remains session-only.  
+Audit store ownership, lineage, and concurrency guarantees are CLI responsibilities.

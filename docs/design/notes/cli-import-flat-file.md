@@ -1,21 +1,28 @@
-Flat File Import — Baseline Review (CLI V1)
-Purpose
+# Flat File Import — Baseline Review (CLI V1)
+
+## Purpose
+
 Flat file import exists to bootstrap or consult Charter Areas when formal governance history does not yet exist or is maintained externally.
+
 This mechanism prioritizes:
-Speed of onboarding
-Preservation of foreign provenance
-Explicit legitimacy (never inferred)
+- Speed of onboarding
+- Preservation of foreign provenance
+- Explicit legitimacy (never inferred)
+
 Flat file imports never create legitimacy. They only materialize candidate resolutions for review.
-Flat File Import Process (Conceptual)
-User provides a plain text file containing one or more resolutions.
-CLI parses the file into discrete resolution blocks.
-Each block becomes an imported resolution object.
-All imported resolutions are marked UNDER_REVIEW.
-No Authority or Scope is inferred.
-User must explicitly review and accept or reject each resolution via baseline review.
-Acceptance creates local resolutions via sessions (even if hidden ergonomically).
-Flat imports always enter the baseline review workflow.
-Flat File Format (CLI V1)
+
+## Flat File Import Process (Conceptual)
+
+- User provides a plain text file containing one or more resolutions.
+- CLI parses the file into discrete resolution blocks.
+- Each block becomes an imported resolution object.
+- All imported resolutions are marked UNDER_REVIEW.
+- No Authority or Scope is inferred.
+- User must explicitly review and accept or reject each resolution via baseline review.
+- Acceptance creates local resolutions via sessions (even if hidden ergonomically).
+- Flat imports always enter the baseline review workflow.
+
+# Flat File Format (CLI V1)
 Design Goals
 Human-editable
 Multi-line safe

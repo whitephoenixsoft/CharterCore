@@ -1,6 +1,7 @@
 # Baseline Review
-**Status:** FROZEN (Target)  
-**Applies to:** Charter CLI and Charter Core interaction layer
+Status: FROZEN (Target)  
+Applies to: Charter CLI and Charter Core interaction layer  
+Forward-Compatible With: Commit model (V6+)  
 
 ---
 
@@ -14,17 +15,37 @@ It exists to prevent:
 - Legitimacy drift across time or versions  
 - Retroactive reinterpretation of prior decisions  
 
-**Baseline Review is not a shortcut.**  
-It is a legitimacy firewall: nothing reviewed here becomes canonical until explicitly accepted through a session.
+Baseline Review is not a shortcut.  
+It is a legitimacy firewall: nothing reviewed here becomes canonical until explicitly accepted through a session in the main engine.
 
 ---
 
 ## Core Idea
 
-Baseline Review evaluates proposals, **not decisions**.  
+Baseline Review evaluates proposals, not decisions.
 
 - No proposal in a baseline creates legitimacy.  
-- Legitimacy is created **only** via sessions in the main engine.  
+- Legitimacy is created only via sessions in the main engine.  
+- Baseline Review is a workflow boundary, not a governance boundary.  
+
+In V6+ terminology:
+
+- Proposals may later become commit payloads.  
+- Baseline Review itself produces a non-legitimizing commit (Review Receipt).  
+- Only session-generated Resolutions create legitimate commits.
+
+---
+
+## Scope & Isolation
+
+Baseline Review operates per Area.
+
+- It pauses active sessions within the same Area only.  
+- It does not affect other Areas.  
+- It does not cross Context boundaries.  
+
+Contexts remain hard-isolated storage partitions.  
+A baseline review in one context has no visibility into another.
 
 ---
 
@@ -38,7 +59,7 @@ A Baseline Review is:
 - Isolated from active decision-making  
 - Non-legitimizing by design  
 
-It **does not**:
+It does not:
 
 - Vote  
 - Evaluate or infer Authority  
@@ -46,7 +67,7 @@ It **does not**:
 - Modify existing resolutions  
 - Reinterpret imported legitimacy  
 
-Any appearance of legitimacy is a **CLI abstraction only**.  
+Any appearance of legitimacy is a CLI abstraction only.  
 All actual legitimacy comes from sessions.
 
 ---
@@ -60,14 +81,18 @@ A Baseline Review is created by:
 - Flat-file import  
 - Consolidate import  
 - Deliberate handoff  
+- Future federation intake  
 
-Restore operations **replace an Area entirely** and bypass review.  
+Restore operations replace an Area entirely and bypass review.
 
 Upon creation:
 
-- All proposals enter state: `UNDER_REVIEW`  
-- All active sessions are paused  
-- Baseline becomes the sole active review context  
+- All proposals enter state: UNDER_REVIEW  
+- Active sessions in the same Area are paused  
+- The baseline becomes the sole active review workspace for that Area  
+
+Proposals are considered foreign artifacts.  
+They do not possess canonical IDs until accepted through session.
 
 ---
 
@@ -75,64 +100,125 @@ Upon creation:
 
 During review:
 
-- Proposals may be inspected, compared, grouped, or marked as unchanged/modified (ergonomic only)  
-- Authority is **never evaluated**  
+- Proposals may be inspected, compared, grouped, or annotated  
+- CLI may mark items as unchanged or modified (ergonomic only)  
+- Authority is never evaluated  
 - No legitimacy is created  
-- Acceptance or rejection is reversible preparatory work until the baseline is closed  
+
+Acceptance or rejection decisions remain reversible only until a session is created.
+
+Reversible means:
+
+- No engine session has yet been emitted  
+- No Legitimacy Receipt has been created  
+- No canonical Resolution exists  
+
+Once a session is created, it is immutable.
 
 ---
 
 ### 3. Acceptance Semantics
 
-When a proposal is accepted from a baseline review:
+When a proposal is accepted:
 
-- A **new session** is created in the main engine (explicit or hidden)  
-- A **Legitimacy Receipt** is emitted for the session  
-- The **topic** and **candidates** are copied from the baseline  
-- **Participants** are explicitly defined for the session  
-- **Authority and Scope** are evaluated according to the main engine rules (baseline Authority/Scope are **never imported**)  
-- Acceptance is recorded immutably and auditably  
-- Pre-existing annotations, rationale, and baseline session receipts are preserved for context  
+- A new session is created in the main engine (explicit or CLI-hidden)  
+- Participants are explicitly defined for that session  
+- Authority and Scope are evaluated under canonical engine rules  
+- A Legitimacy Receipt is emitted  
+- Resulting Resolutions become canonical  
+- Acceptance is recorded immutably  
 
-**Batch acceptance**:
+Baseline Authority or Scope metadata is advisory only and never imported as governance truth.
 
-- Creates multiple sessions  
-- Emits multiple **Legitimacy Receipts** (one per accepted proposal)  
-- Does not collapse legitimacy into a single event  
+Batch acceptance:
 
-**Rejected proposals**:
+- Creates multiple independent sessions  
+- Emits multiple Legitimacy Receipts  
+- Never collapses legitimacy into a single event  
 
-- Remain auditable  
-- Do not affect local legitimacy  
-- Carry no semantic meaning beyond “not accepted”  
+Rejected proposals:
 
-> **Key Principle:** Baseline content informs preparation but does not bypass governance.  
-> Legitimacy requires canonical participants, Authority, and Scope.
+- Are not submitted to legitimacy evaluation  
+- Are not failed sessions  
+- Do not represent authority denial  
+- Remain auditable as workflow outcomes only  
+
+They are proposals not elevated to governance.
 
 ---
 
 ### 4. Closure
 
-When a baseline review is closed:
+When a Baseline Review is closed:
 
-- Remaining `UNDER_REVIEW` proposals → `ABANDONED`  
-- Baseline becomes immutable  
-- Paused sessions may resume  
+- Remaining UNDER_REVIEW proposals → ABANDONED  
+- The baseline becomes immutable  
+- Paused sessions in the Area may resume  
 - Closure is irreversible  
-- Unaccepted proposals do not linger ambiguously  
-- A **Review Receipt** is emitted capturing all reviewed, accepted, rejected, and abandoned proposals  
+
+Closure emits a Review Receipt.
+
+The Review Receipt:
+
+- Is a commit artifact (V6+)  
+- Aggregates all proposals reviewed  
+- Records accepted, rejected, and abandoned proposals  
+- References resulting session IDs  
+- Does not summarize or reinterpret legitimacy  
+- Does not infer semantic meaning  
+
+It is structural, not interpretive.
+
+---
+
+## Proposal States
+
+Proposals within a baseline may be:
+
+- UNDER_REVIEW  
+- ACCEPTED (once session emitted)  
+- REJECTED (explicit workflow rejection)  
+- ABANDONED (implicitly closed at baseline closure)  
+
+Rejected and Abandoned are distinct states:
+
+- Rejected: explicitly declined during evaluation  
+- Abandoned: not evaluated before closure  
+
+Neither creates legitimacy.
 
 ---
 
 ## Invariants
 
-- **Baseline Review never creates legitimacy**  
-- **Every accepted proposal corresponds to a session and emits a Legitimacy Receipt**  
-- **No proposal becomes ACTIVE implicitly**  
-- **Review history must be reconstructible end-to-end**  
-- **Authority and Scope from baseline are advisory only**; canonical legitimacy uses main engine governance  
-- **Topics, candidates, annotations, and session receipts are preserved** in acceptance  
-- **Closure always emits a Review Receipt**  
+- Baseline Review never creates legitimacy  
+- Every accepted proposal corresponds to a session and emits a Legitimacy Receipt  
+- No proposal becomes ACTIVE implicitly  
+- Rejection is not a failed session  
+- Review history must be reconstructible end-to-end  
+- Authority and Scope from baseline are advisory only  
+- Topics, candidates, annotations, and receipts are preserved as future commit payloads  
+- Closure always emits a Review Receipt  
+- Engine semantics are never bypassed  
+
+---
+
+## Relationship to Commits (V6+ Foreshadowing)
+
+Under the commit model:
+
+- Accepted proposals become commit payloads through Resolution commits  
+- Session lifecycle emits Legitimacy Receipt commits  
+- Baseline closure emits a Review Receipt commit  
+- Rejected and Abandoned proposals are referenced in the Review Receipt  
+
+Baseline Review does not generate Resolution commits directly.
+
+Only sessions do.
+
+This preserves the invariant:
+
+Legitimacy flows through the engine, never through workflow.
 
 ---
 
@@ -140,32 +226,60 @@ When a baseline review is closed:
 
 | Construct | Role in Baseline Review |
 |-----------|------------------------|
-| **Import (consolidate / flat)** | Creates a baseline review workspace |
-| **Deliberate** | May produce a baseline review |
-| **Session** | The only source of canonical legitimacy; generates Legitimacy Receipts |
-| **Restore** | Replaces engine state, bypasses baseline review entirely |
-| **Audit** | Must show full baseline lineage, including preserved topics and receipts |
+| Import (flat / consolidate) | Creates a baseline review workspace |
+| Deliberate | May produce proposals handed to baseline |
+| Session | Sole source of canonical legitimacy |
+| Resolution | Smallest legitimacy unit |
+| Review Receipt | Workflow closure commit |
+| Restore | Replaces Area state; bypasses baseline |
+| Audit | Must show complete lineage |
 
 ---
 
 ## Mental Model
 
-Think of Baseline Review as:
+Baseline Review means:
 
-> “We are reviewing claims made elsewhere. Nothing here is official until we decide it again in the main engine.”
+“We are evaluating claims made elsewhere. Nothing becomes official until we decide it again.”
 
-This friction is intentional: it prevents assumptions, preserves audit integrity, and separates exploratory review from canonical legitimacy.
+This friction is intentional.
+
+It prevents:
+
+- Imported authority leakage  
+- Governance shortcuts  
+- Silent reinterpretation of history  
+
+Workflow informs preparation.  
+Only sessions create legitimacy.  
+Receipts preserve the boundary.
 
 ---
 
-## Notes on Session Changes
+## Session Notes
 
-- **Topic**: always preserved when proposals are accepted from the baseline  
-- **Candidates**: carried over into the main engine session  
-- **Annotations / Rationale**: copied for context; cannot be edited in a way that would change meaning — new rationale requires a new resolution  
-- **Participants**: defined fresh in the main engine session  
-- **Authority / Scope**: evaluated in the main engine; baseline governance never counts for legitimacy  
-- **Receipts**: preserved to link baseline evaluation to main engine acceptance; each accepted proposal produces a Legitimacy Receipt, and baseline closure produces a Review Receipt  
+Sessions created from baseline:
 
-> Baseline Review informs preparation; it does not confer ownership, Authority, or Scope.  
-> Receipts make all actions and lineage explicit and auditable.
+- May omit a problem statement (optional and non-semantic)  
+- Preserve proposal topic and candidates  
+- Copy annotations for context only  
+- Require explicit participants  
+- Evaluate Authority and Scope canonically  
+
+Session descriptions never influence legitimacy.
+
+---
+
+## Final Boundary
+
+If Baseline Review ever:
+
+- Creates legitimacy  
+- Evaluates authority  
+- Collapses workflow into governance  
+- Or synthesizes decisions  
+
+Then Charter has violated its core separation discipline.
+
+Baseline Review prepares.  
+The engine decides.
