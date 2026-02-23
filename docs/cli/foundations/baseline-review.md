@@ -179,6 +179,8 @@ Proposals within a baseline may be:
 - ACCEPTED (once session emitted)  
 - REJECTED (explicit workflow rejection)  
 - ABANDONED (implicitly closed at baseline closure)  
+- HISTORICAL (Superceded)
+- ACTIVE (active in local area by Resolution id or decision text)
 
 Rejected and Abandoned are distinct states:
 
