@@ -1,7 +1,16 @@
-# ENG-REVIEW-RETIRED
-UNDER_REVIEW Semantics & Dynamic Legitimacy Suspension  
+# ENG-REVIEW-RETIRED  
+Dynamic Legitimacy Suspension & Deprecation Model  
 Status: DRAFT (Pre-Freeze)  
-Applies to: Engine Core (V1/V2+)
+Applies to: Engine Core (V1/V2+)  
+
+This document must be interpreted in conjunction with:
+
+- ENG-DOMAIN  
+- ENG-DECISION  
+- ENG-SUPERSESSION  
+- ENG-INTEGRITY  
+
+If conflict exists, ENG-INTEGRITY runtime guarantees take precedence.
 
 ---
 
@@ -9,57 +18,62 @@ Applies to: Engine Core (V1/V2+)
 
 This document defines the semantics of UNDER_REVIEW and RETIRED states for:
 
-- Resolutions
-- Scope
+- Resolution  
+- Scope  
 
-They both govern:
+These states govern:
 
-- Allowed state transitions
-- Blocking behavior
-- Resume confirmation rules
-- Interaction with sessions
-- Interaction with evaluation
-- Legitimacy neutrality guarantees
+- Allowed state transitions  
+- Blocking behavior  
+- Resume confirmation rules  
+- Interaction with sessions  
+- Interaction with evaluation  
+- Legitimacy neutrality guarantees  
 
-UNDER_REVIEW is a dynamic legitimacy suspension mechanism.
-RETIRED is 
+UNDER_REVIEW is an administrative suspension mechanism.  
+RETIRED is a governance-level deprecation mechanism.  
 
-It does not create legitimacy.
-It does not revoke legitimacy.
-It does not modify supersession edges.
+Neither:
 
-It temporarily suspends usability for decision purposes.
+- Creates legitimacy  
+- Revokes past legitimacy  
+- Modifies supersession edges  
+- Alters structural ACTIVE derivation  
+
+SUPERSEDED remains the only graph-altering state.
 
 ---
 
 # 2. Reviewable Objects
 
-The following objects may enter UNDER_REVIEW:
+- Resolution supports: ACTIVE, UNDER_REVIEW, RETIRED, SUPERSEDED  
+- Scope supports: ACTIVE, UNDER_REVIEW, SUPERSEDED  
 
-- Resolution
-- Scope
+Authority does not support UNDER_REVIEW or RETIRED.
 
-Authority does not support UNDER_REVIEW.
-Authority changes require supersession and result in permanent blocking per ENG-SUPERSESSION.
+Authority changes require supersession and are governed exclusively by ENG-SUPERSESSION.
 
 ---
 
-# 3. Allowed States
+# 3. Structural vs Usability Distinction
 
-For Resolution:
+## 3.1 Structural ACTIVE
 
-- ACTIVE
-- UNDER_REVIEW
-- SUPERSEDED
-- RETIRED 
+Structural ACTIVE is derived solely from supersession edges (ENG-SUPERSESSION).
 
-For Scope:
+UNDER_REVIEW and RETIRED do not affect structural ACTIVE derivation.
 
-- ACTIVE
-- UNDER_REVIEW
-- SUPERSEDED
+---
 
-No additional states are permitted.
+## 3.2 Usable for Legitimacy
+
+A Resolution or Scope is usable for legitimacy evaluation only if:
+
+- Structurally ACTIVE  
+- Not UNDER_REVIEW  
+- Not RETIRED  
+
+Usability is evaluated at runtime.
 
 ---
 
@@ -67,36 +81,23 @@ No additional states are permitted.
 
 ## 4.1 Resolution
 
-ACTIVE → UNDER_REVIEW  
-UNDER_REVIEW → ACTIVE  
-ACTIVE → SUPERSEDED  
-ACTIVE → RETIRED 
-RETIRED → ACTIVE 
-UNDER_REVIEW → SUPERSEDED  
-RETIRED → SUPERSEDED
+- ACTIVE ↔ UNDER_REVIEW (no session required)  
+- ACTIVE ↔ RETIRED (requires session)  
+- ACTIVE → SUPERSEDED (requires session)  
+- UNDER_REVIEW → SUPERSEDED (requires session)  
+- RETIRED → SUPERSEDED (requires session)  
 
-SUPERSEDED is terminal.
-
-UNDER_REVIEW → SUPERSEDED must occur via a valid session acceptance.
-
-Returning UNDER_REVIEWto ACTIVE does not require a session.
-
-Any state changes to and from RETIRED must occur via a valid session acceptance.
+SUPERSEDED is structural and terminal.
 
 ---
 
 ## 4.2 Scope
 
-ACTIVE → UNDER_REVIEW  
-UNDER_REVIEW → ACTIVE  
-ACTIVE → SUPERSEDED  
-UNDER_REVIEW → SUPERSEDED  
+- ACTIVE ↔ UNDER_REVIEW (no session required)  
+- ACTIVE → SUPERSEDED (requires session)  
+- UNDER_REVIEW → SUPERSEDED (requires session)  
 
 SUPERSEDED is terminal.
-
-Scope supersession must occur via a valid session acceptance.
-
-Returning to ACTIVE does not require a session.
 
 ---
 
@@ -104,188 +105,193 @@ Returning to ACTIVE does not require a session.
 
 UNDER_REVIEW:
 
-- Does not create a new Resolution.
-- Does not modify supersession edges.
-- Does not change graph history.
-- Does not invalidate past legitimacy.
-- Does not alter ACTIVE status historically.
+- Does not create a new Resolution  
+- Does not modify supersession edges  
+- Does not alter structural ACTIVE  
+- Does not affect historical legitimacy  
+- Suspends forward usability only  
 
-UNDER_REVIEW only affects forward decision usability.
+RETIRED:
 
-SUPERSEDED is permanent and graph-altering.
-UNDER_REVIEW is temporary and graph-neutral.
+- Does not create a new Resolution  
+- Does not modify supersession edges  
+- Does not alter structural ACTIVE  
+- Does not affect historical legitimacy  
+- Marks Resolution deprecated  
+- Suspends forward usability  
 
-These states must not be conflated.
+SUPERSEDED:
+
+- Creates supersession edge  
+- Alters structural ACTIVE  
+- Terminal  
+
+States must remain distinct.
 
 ---
 
 # 6. Blocking Matrix
 
-The following matrix defines required engine behavior.
-
 ## 6.1 Resolution UNDER_REVIEW
 
-If a session references a Resolution that enters UNDER_REVIEW:
+Referencing sessions:
 
-- Session transitions to BLOCK_TEMPORARY.
-- All active votes are cleared.
-- Session phase returns to PRE_STANCE.
-- Resume is required.
-- Participants must be explicitly re-specified before voting restarts.
-
----
-
-## 6.2 Scope UNDER_REVIEW
-
-If Scope enters UNDER_REVIEW:
-
-- All ACTIVE sessions in the Area transition to BLOCK_TEMPORARY.
-- All active votes in those sessions are cleared.
-- Acceptance is not permitted for any session in the Area.
-- Resume is required after Scope returns to ACTIVE.
-
-Participants must be explicitly re-specified upon resume.
+- Transition → BLOCK_TEMPORARY  
+- Votes cleared  
+- Phase → PRE_STANCE  
+- Resume required  
+- Acceptance prohibited while UNDER_REVIEW  
 
 ---
 
-## 6.3 Resolution SUPERSEDED
+## 6.2 Resolution RETIRED
 
-If a referenced Resolution becomes SUPERSEDED:
+Referencing sessions:
 
-- Referencing sessions transition to BLOCK_PERMANENT.
-- Session cannot resume.
-- Forward motion requires a new session.
+- Transition → BLOCK_TEMPORARY  
+- Votes cleared  
+- Phase → PRE_STANCE  
+- Resume required  
+- Acceptance prohibited while RETIRED  
+
+Forward progress requires:
+
+- Session reactivating Resolution  
+  OR  
+- Session superseding Resolution  
+
+---
+
+## 6.3 Scope UNDER_REVIEW
+
+All sessions in Area:
+
+- Transition → BLOCK_TEMPORARY  
+- Votes cleared  
+- Acceptance prohibited until ACTIVE  
+
+Resume permitted once Scope returns to ACTIVE.
 
 ---
 
-## 6.4 Scope SUPERSEDED
+## 6.4 Resolution SUPERSEDED
 
-If Scope becomes SUPERSEDED:
+Referencing sessions:
 
-- All sessions in the Area transition to BLOCK_PERMANENT.
-- Sessions cannot resume.
-- Forward motion requires new sessions under the new Scope.
+- Transition → BLOCK_PERMANENT  
+- Resume prohibited  
+- Acceptance permanently impossible  
+
+User must explicitly close session or restart-from.
+
+Area-level acceptance blocking enforced by ENG-INTEGRITY.
 
 ---
-## 6.5 Resolution RETIRED
 
-If a session references a Resolution that enters RETIRED:
+## 6.5 Scope SUPERSEDED
 
-- Session transitions to BLOCK_TEMPORARY.
-- All active votes are cleared.
-- Session phase returns to PRE_STANCE.
-- Resume is required.
-- Participants must be explicitly re-specified before voting restarts.
-- May close the session if session is not longer valid.
+All sessions in Area:
+
+- Transition → BLOCK_PERMANENT  
+- Resume prohibited  
+- Acceptance permanently impossible  
+
+User must explicitly close sessions.
+
+Area-level acceptance blocking enforced by ENG-INTEGRITY.
 
 ---
 
 # 7. Resume Confirmation Rules
 
-For any BLOCK_TEMPORARY caused by UNDER_REVIEW:
+For any BLOCK_TEMPORARY:
 
-- Votes are cleared.
-- Session phase returns to PRE_STANCE.
-- Participants must be explicitly re-specified.
-- Governance must be re-established before voting resumes.
-- Resume event must be recorded in session history for receipt derivation.
+- Votes cleared  
+- Phase → PRE_STANCE  
+- Participants re-specified  
+- Governance re-established before voting resumes  
+- Resume event recorded in session history  
 
-Resuming does not restore prior voting state.
+Resuming:
 
-Blocking resets voting because context has been interrupted.
-
----
-
-# 8. Interaction With ENG-DECISION
-
-UNDER_REVIEW interacts with session mechanics as follows:
-
-- Blocking due to UNDER_REVIEW follows standard BLOCK_TEMPORARY behavior.
-- Acceptance validation must initially fail while referenced objects are UNDER_REVIEW. This is to cause a temporary block only.
-- Evaluation must detect UNDER_REVIEW state deterministically.
-- Governance immutability rules remain unchanged.
-
-UNDER_REVIEW does not modify session governance rules.
-It only affects acceptability.
+- Never restores prior votes  
+- Never overrides UNDER_REVIEW or RETIRED state  
+- Never bypasses usability constraints  
 
 ---
 
-# 9. Interaction With ENG-SUPERSESSION
+# 8. Acceptance Guard
 
-UNDER_REVIEW:
+Acceptance must fail deterministically if any referenced object is not usable:
 
-- Does not create supersession edges.
-- Does not change ACTIVE lineage.
-- Does not affect acyclicity.
-- Does not determine graph precedence.
+- Authority  
+- Scope  
+- Referenced Resolution  
 
-SUPERSEDED remains governed exclusively by ENG-SUPERSESSION.
+Usable = structurally ACTIVE and not UNDER_REVIEW or RETIRED.
 
----
+No partial validation allowed.
 
-# 10. Evaluation API Requirements
-
-Evaluation must:
-
-- Detect if referenced Resolution is UNDER_REVIEW.
-- Detect if Scope is UNDER_REVIEW.
-- Indicate that acceptance is currently impossible.
-- Classify blocking as temporary.
-
-Evaluation must return structured, machine-readable reason codes.
-
-Evaluation must not mutate state.
-
-If object returns to ACTIVE, evaluation must reflect that deterministically.
+Atomicity governed by ENG-DECISION.
 
 ---
 
-# 11. Concurrency Requirements
+# 9. Concurrency Requirements
 
-State transitions to UNDER_REVIEW must:
+Transitions to UNDER_REVIEW or RETIRED must:
 
-- Be atomic.
-- Trigger immediate deterministic re-evaluation of affected sessions.
-- Not partially update session states.
+- Be atomic  
+- Trigger deterministic re-evaluation of affected sessions  
+- Not partially update session states  
 
-If UNDER_REVIEW occurs during an acceptance attempt:
+If state change occurs during acceptance:
 
-- Acceptance must fail deterministically before commit.
-- No partial mutation is permitted.
+- Acceptance fails before commit  
+- No partial mutation occurs  
 
----
-
-# 12. Engine Invariants
-
-- UNDER_REVIEW never alters supersession edges.
-- UNDER_REVIEW never creates legitimacy.
-- UNDER_REVIEW never revokes past legitimacy.
-- SUPERSEDED is permanent and terminal.
-- Blocking caused by UNDER_REVIEW is always temporary.
-- Blocking caused by SUPERSEDED is always permanent.
-- Resume always requires participant reconfirmation.
-- Voting state is always cleared after temporary block.
+Supersession concurrency governed by ENG-SUPERSESSION.
 
 ---
 
-# 13. Relationship to Other Specifications
+# 10. Engine Invariants
+
+- UNDER_REVIEW never alters supersession edges  
+- RETIRED never alters supersession edges  
+- SUPERSEDED alters structural ACTIVE permanently  
+- Temporary suspension never creates legitimacy  
+- Temporary suspension never destroys historical legitimacy  
+- SUPERSEDED causes BLOCK_PERMANENT (not auto-closure)  
+- Closure always requires explicit user action  
+- Acceptance requires all referenced objects usable  
+
+Structural inconsistency detected during restore must halt engine (ENG-INTEGRITY).
+
+---
+
+# 11. Relationship to Other Specifications
 
 ENG-DECISION governs:
 
-- Session lifecycle
-- Acceptance mechanics
-- Blocking reset behavior
+- Session lifecycle  
+- Blocking state transitions  
+- Acceptance mechanics  
 
 ENG-SUPERSESSION governs:
 
-- Graph structure
-- Supersession edges
-- Permanent structural conflicts
+- Graph structure  
+- Structural ACTIVE derivation  
+- Supersession integrity  
 
-ENG-REVIEW governs:
+ENG-INTEGRITY governs:
 
-- Temporary suspension semantics
-- UNDER_REVIEW state behavior
-- Dynamic session interruption rules
+- Engine halt conditions  
+- Area-level acceptance guards  
+- Structural failure handling  
 
-Together, these documents fully define legitimacy creation, evolution, and temporary suspension within the engine.
+ENG-REVIEW-RETIRED governs:
+
+- Suspension semantics  
+- Deprecation semantics  
+- Temporary legitimacy interruption  
+
+Together, these define legitimacy creation, suspension, deprecation, and structural evolution.

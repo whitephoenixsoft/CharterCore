@@ -1,7 +1,16 @@
 # ENG-DECISION  
 Decision Execution, Session Governance, and Acceptance Model  
 Status: DRAFT (Pre-Freeze)  
-Applies to: Engine Core (V1/V2+)
+Applies to: Engine Core (V1/V2+)  
+
+This document must be interpreted in conjunction with:
+
+- ENG-DOMAIN  
+- ENG-SUPERSESSION  
+- ENG-REVIEW-RETIRED  
+- ENG-INTEGRITY  
+
+If conflict exists, ENG-INTEGRITY runtime guarantees take precedence.
 
 ---
 
@@ -9,18 +18,18 @@ Applies to: Engine Core (V1/V2+)
 
 This document defines the complete mechanical model governing:
 
-- Session lifecycle
-- Governance mutation rules
-- Participant mechanics
-- Candidate mechanics
-- Constraint semantics
-- Voting semantics
-- Authority evaluation
-- Blocking semantics
-- Under-review interactions
-- Acceptance transaction model
-- Evaluation API
-- Concurrency and atomicity guarantees
+- Session lifecycle  
+- Governance mutation rules  
+- Participant mechanics  
+- Candidate mechanics  
+- Constraint semantics  
+- Voting semantics  
+- Authority evaluation  
+- Blocking and closure semantics  
+- Under-review and retired interactions  
+- Acceptance transaction model  
+- Evaluation API  
+- Concurrency guarantees  
 
 This specification defines how legitimacy is created and how it fails.
 
@@ -28,47 +37,28 @@ This specification defines how legitimacy is created and how it fails.
 
 # 2. Foundational Principles
 
-2.1 Legitimacy is created only by explicit acceptance.
-
-2.2 Voting is mutable until acceptance.
-
-2.3 Acceptance is atomic.
-
-2.4 Governance is frozen once voting begins.
-
-2.5 Any legitimacy-context change permanently invalidates incompatible sessions.
-
-2.6 Interruptions reset voting.
-
-2.7 The engine enforces strict invariants. Usability belongs to the CLI layer.
+2.1 Legitimacy is created only by explicit acceptance.  
+2.2 Voting is mutable until acceptance.  
+2.3 Acceptance is atomic.  
+2.4 Governance is frozen once voting begins.  
+2.5 Permanent legitimacy-context changes force permanent blocking.  
+2.6 Permanent blocks require explicit user closure.  
+2.7 Interruptions reset voting.  
+2.8 Runtime structural integrity is governed by ENG-INTEGRITY.  
+2.9 The engine enforces invariants. Usability belongs to the CLI layer.
 
 ---
 
 # 3. Core Entities
 
-3.1 Session  
-A bounded decision record that may produce at most one accepted Resolution.
-
-3.2 Participant  
-An explicitly added identity allowed to record exactly one stance per candidate.
-
-3.3 Candidate  
-A proposal scoped to a session that may become a Resolution upon acceptance.
-
-3.4 Constraint  
-A session-scoped mechanical acceptance gate declared before voting.
-
-3.5 Authority  
-An Area-level Resolution defining the decision rule.
-
-3.6 Scope  
-An Area-level Resolution defining contextual boundary.
-
-3.7 Resolution  
-An immutable object created only by successful acceptance.
-
-3.8 EvaluationReport  
-A deterministic, side-effect-free evaluation of session status.
+3.1 **Session** — A bounded decision record that may produce at most one accepted Resolution.  
+3.2 **Participant** — Explicitly added identity allowed one stance per candidate.  
+3.3 **Candidate** — Proposal scoped to a session.  
+3.4 **Constraint** — Mechanical acceptance gate declared before voting.  
+3.5 **Authority** — Area-level Resolution defining decision rules.  
+3.6 **Scope** — Area-level Resolution defining contextual boundaries.  
+3.7 **Resolution** — Immutable object created only by successful acceptance.  
+3.8 **EvaluationReport** — Deterministic, side-effect-free session evaluation.
 
 ---
 
@@ -76,43 +66,47 @@ A deterministic, side-effect-free evaluation of session status.
 
 ## 4.1 Session States
 
-A session must always be in exactly one of the following states:
+A session must be exactly one of:
 
-- ACTIVE
-- PAUSED
-- BLOCK_TEMPORARY
-- BLOCK_PERMANENT
-- ACCEPTED
-- CLOSED
+- ACTIVE  
+- PAUSED  
+- BLOCK_TEMPORARY  
+- BLOCK_PERMANENT  
+- ACCEPTED  
+- CLOSED  
 
-ACCEPTED, BLOCK_PERMANENT, and CLOSED are terminal states.
+Definitions:
 
-BLOCK_TEMPORARY is reversible.  
-BLOCK_PERMANENT is irreversible.
+ACTIVE — Normal operating state.  
+PAUSED — User-initiated suspension.  
+BLOCK_TEMPORARY — Reversible governance interruption.  
+BLOCK_PERMANENT — Irreversible legitimacy-context invalidation; requires explicit closure.  
+ACCEPTED — Successfully produced a Resolution.  
+CLOSED — Explicitly terminated by user.
+
+ACCEPTED and CLOSED are terminal.  
+BLOCK_PERMANENT is non-resumable but not terminal until explicitly CLOSED.
+
+Area-level acceptance blocking behavior is defined in ENG-INTEGRITY.
 
 ---
 
 ## 4.2 Session Phases
 
-Each session progresses through phases:
+- PRE_STANCE — Governance mutable.  
+- VOTING — At least one stance recorded; governance frozen.  
+- TERMINAL — ACCEPTED or CLOSED.  
 
-- PRE_STANCE
-- VOTING
-- TERMINAL
+Transitions:
 
-PRE_STANCE: Governance is mutable.  
-VOTING: At least one stance has been recorded. Governance is frozen.  
-TERMINAL: Session is ACCEPTED or CLOSED.
+- PRE_STANCE → VOTING: first stance recorded.  
+- VOTING → ACCEPTED: successful acceptance.  
+- ACTIVE → PAUSED: user action.  
+- PAUSED or BLOCK_TEMPORARY → PRE_STANCE: resume.  
+- BLOCK_PERMANENT → CLOSED: explicit user action only.  
+- Any non-terminal → CLOSED: explicit user action.
 
-Phase transitions:
-
-- PRE_STANCE → VOTING: First stance recorded.
-- VOTING → ACCEPTED: Successful acceptance.
-- Any → BLOCK_*: Engine-triggered invariant failure.
-- ACTIVE → PAUSED: User action.
-- PAUSED or BLOCK_TEMPORARY → PRE_STANCE: Resume.
-
-Closed sessions cannot resume.
+BLOCK_PERMANENT cannot resume.
 
 ---
 
@@ -122,44 +116,41 @@ Closed sessions cannot resume.
 
 Before first stance:
 
-- Participants may be added or removed.
-- Candidates may be added or removed.
-- Constraints may be declared.
+- Participants may be added/removed.  
+- Candidates may be added/removed.  
+- Constraints may be declared.  
 
 After first stance:
 
-- Participants are immutable.
-- Candidates are immutable.
-- Constraints are immutable.
+- Participants immutable.  
+- Candidates immutable.  
+- Constraints immutable.  
 
-Any attempt to mutate governance after first stance results in a deterministic engine error.
+Mutation after first stance → BLOCK_PERMANENT.
 
 ---
 
 ## 5.2 Participant Rules
 
-- Participants must be explicitly added before voting.
-- Each participant counts as exactly one presence unit.
-- Each participant may record exactly one stance per candidate.
-- Stances may change until acceptance.
-- No implicit participants are allowed.
-- Non-participants cannot vote.
+- Participants must be explicitly added before voting.  
+- Each participant counts as one presence unit.  
+- One stance per participant per candidate.  
+- Stances mutable until acceptance.  
+- Non-participants cannot vote.  
 
-Presence is defined as the explicitly added participant set at time of evaluation.
+Presence equals explicitly added participant set at evaluation time.
 
 ---
 
 ## 5.3 Constraint Rules
 
-Constraints:
+- Must be declared before first stance.  
+- Immutable once VOTING begins.  
+- Gate acceptance but do not determine authority outcome.  
+- Evaluated before authority rules.  
 
-- Must be declared before the first stance.
-- Are immutable once voting begins.
-- Gate acceptance but do not determine acceptance.
-- Are evaluated before authority rules.
-- Any constraint mutation attempt results in BLOCK_PERMANENT.
-
-Constraint violation during evaluation results in BLOCK_TEMPORARY.
+Constraint mutation during VOTING → BLOCK_PERMANENT.  
+Constraint violation during evaluation → BLOCK_TEMPORARY.
 
 ---
 
@@ -167,17 +158,16 @@ Constraint violation during evaluation results in BLOCK_TEMPORARY.
 
 Valid stances:
 
-- ACCEPT
-- REJECT
-- ABSTAIN
+- ACCEPT  
+- REJECT  
+- ABSTAIN  
 
 Rules:
 
-- Stances are mutable before acceptance.
-- Stances are frozen after acceptance.
-- Stances are recorded immutably in session history.
-- No automatic acceptance occurs when thresholds are satisfied.
-- Authority is evaluated only when explicit acceptance is invoked.
+- Stances mutable before acceptance.  
+- Frozen after acceptance.  
+- No automatic acceptance.  
+- Authority evaluated only on explicit acceptance.
 
 ---
 
@@ -185,40 +175,36 @@ Rules:
 
 ## 7.1 Authority Types
 
-- SOLE_ACTOR
-- UNANIMOUS_PRESENT
-- MAJORITY_PRESENT
+- SOLE_ACTOR  
+- UNANIMOUS_PRESENT  
+- MAJORITY_PRESENT  
 
-## 7.2 Presence Definition
+## 7.2 ACTIVE Definition (Legitimacy Use)
 
-Presence equals the explicitly added participants at evaluation time.
+A Resolution is usable for legitimacy evaluation only if:
+
+- Not SUPERSEDED.  
+- Not UNDER_REVIEW.  
+- Not RETIRED.  
+
+ACTIVE usability is determined at evaluation time.
+
+---
 
 ## 7.3 Mechanical Rules
 
 SOLE_ACTOR:
-
-- Exactly one participant must exist.
-- That participant must cast ACCEPT.
+- Exactly one participant.
+- That participant casts ACCEPT.
 
 UNANIMOUS_PRESENT:
-
-- All present participants must cast a stance.
-- All stances must be ACCEPT.
-
-Any REJECT, ABSTAIN, or missing stance blocks acceptance.
+- All present must vote.
+- All must ACCEPT.
 
 MAJORITY_PRESENT:
-
 - accept_count > floor(present / 2)
 
-Abstain counts toward present but not toward accept_count.
-
-Edge case examples:
-
-- 1 present → requires 1 ACCEPT.
-- 2 present → requires 2 ACCEPT.
-- 3 present → requires 2 ACCEPT.
-- 4 present → requires 3 ACCEPT.
+Abstain counts toward presence but not accept_count.
 
 ---
 
@@ -228,18 +214,18 @@ Edge case examples:
 
 Triggered by:
 
-- Constraint violation
-- Resolution UNDER_REVIEW or RETIRED 
-- Scope UNDER_REVIEW
-- Recoverable invariant failure
+- Constraint violation.  
+- Referenced Resolution UNDER_REVIEW.  
+- Referenced Resolution RETIRED.  
+- Scope UNDER_REVIEW.  
+- Other reversible legitimacy interruption.  
 
 Effects:
 
-- All active votes are cleared.
-- Session phase returns to PRE_STANCE.
-- Resume is required.
-- Participants must be explicitly re-specified.
-- Governance must be re-established before voting restarts.
+- Votes cleared.  
+- Phase → PRE_STANCE.  
+- Resume required.  
+- Governance must be re-established.
 
 ---
 
@@ -247,222 +233,183 @@ Effects:
 
 Triggered by:
 
-- Authority superseded
-- Scope superseded
-- Constraint mutation
-- Supersession race loss
-- Any legitimacy-context change invalidating the session
+- Authority superseded.  
+- Scope superseded.  
+- Referenced Resolution superseded.  
+- Supersession race loss.  
+- Governance mutation after VOTING began.  
+- Structural legitimacy-context invalidation.
 
 Effects:
 
-- Session cannot resume.
-- Acceptance is permanently impossible.
+- Session cannot resume.  
+- Acceptance permanently impossible.  
+- Evaluation reports governance_conflict_permanent.  
+- User must explicitly close session.  
+- restart-from permitted.
+
+While any session in an Area is BLOCK_PERMANENT,
+acceptance in that Area is prohibited (ENG-INTEGRITY).
 
 ---
 
 # 9. Pause and Resume
 
-PAUSED is user-initiated.
+Resume allowed only from:
 
-Resume rules:
+- PAUSED  
+- BLOCK_TEMPORARY  
 
-- Allowed only from PAUSED or BLOCK_TEMPORARY.
-- Participants must be explicitly re-specified.
-- Active votes are cleared.
-- Session returns to PRE_STANCE.
-- Governance must be re-established before voting restarts.
+On resume:
 
-Closed or ACCEPTED sessions cannot resume.
+- Votes cleared.  
+- Participants re-specified.  
+- Phase → PRE_STANCE.
+
+BLOCK_PERMANENT cannot resume.  
+ACCEPTED and CLOSED cannot resume.
 
 ---
 
-# 10. Under-Review Semantics
+# 10. Under-Review and Retired Semantics
 
 Resolution UNDER_REVIEW:
 
-- Causes BLOCK_TEMPORARY.
-- Clears votes.
-- Requires resume.
+- Causes BLOCK_TEMPORARY in referencing sessions.  
+- Reversible without session.  
+- May be superseded via session.
+
+Resolution RETIRED:
+
+- Causes BLOCK_TEMPORARY in referencing sessions.  
+- ACTIVE ↔ RETIRED requires session.  
+- May be superseded via session.
 
 Scope UNDER_REVIEW:
 
-- Causes BLOCK_TEMPORARY.
-- Acceptance is not possible until Scope returns ACTIVE.
+- Causes BLOCK_TEMPORARY for all sessions in Area.  
+- Acceptance prohibited until ACTIVE.
 
 Scope SUPERSEDED:
 
 - Causes BLOCK_PERMANENT.
 
-Returning UNDER_REVIEW to ACTIVE does not require a session.
-
-Supersession always requires a session.
-
----
-# 11. Retired Semantics
-
-Resolution RETIRED:
-
-- Causes BLOCK_TEMPORARY.
-- Clears votes.
-- Requires resume or close.
-
-ACTIVE to RETIRED requires a session.
-
-Returning RETIRED to ACTIVE requires a session. 
-
 ---
 
-# 12. Supersession and Concurrency
+# 11. Supersession and Concurrency
 
 Acceptance must verify:
 
-- Referenced Resolution is ACTIVE.
-- Authority is ACTIVE.
-- Scope is ACTIVE.
+- Authority usable (ACTIVE).  
+- Scope usable (ACTIVE).  
+- Referenced Resolution usable (ACTIVE).  
 
-Race condition rule:
+Race:
 
-- The first successful acceptance wins.
-- Competing sessions referencing superseded resolutions transition to BLOCK_PERMANENT.
+- First successful acceptance wins.  
+- Competing sessions → BLOCK_PERMANENT.
+
+Graph integrity rules defined in ENG-SUPERSESSION.
 
 ---
 
-# 13. Acceptance Transaction Model
+# 12. Acceptance Transaction Model
 
-Acceptance(session_id, candidate_id) executes:
-
-1. Acquire legitimacy lock covering all affected legitimacy context.
-2. Validate session state is ACTIVE and in VOTING phase.
-3. Validate governance immutability.
-4. Validate Authority is ACTIVE.
-5. Validate Scope is ACTIVE.
-6. Validate no supersession conflict exists.
-7. Validate constraints.
-8. Evaluate Authority rule.
-9. If any validation fails:
-   - Return structured failure.
-   - Perform no state mutation.
-10. Snapshot session state.
-11. Create Resolution from candidate.
-12. Mark session ACCEPTED.
+1. Acquire legitimacy lock.  
+2. Validate session ACTIVE and VOTING.  
+3. Validate governance immutability.  
+4. Validate Authority usability.  
+5. Validate Scope usability.  
+6. Validate referenced Resolution usability.  
+7. Validate constraints.  
+8. Evaluate authority rule.  
+9. On failure → no mutation.  
+10. Snapshot session state.  
+11. Create Resolution.  
+12. Mark session ACCEPTED.  
 13. Release lock.
 
-Acceptance is atomic relative to:
-
-- Session state
-- Referenced Resolution state
-- Authority Resolution
-- Scope Resolution
-
-No partial acceptance is possible.
+Atomic across session and legitimacy context.
 
 ---
 
-# 14. Evaluation API
+# 13. Evaluation API
 
-evaluate(session_id) returns EvaluationReport.
+evaluate(session_id) → EvaluationReport
 
-Evaluation:
+Must include:
 
-- Has no side effects.
-- Is deterministic.
-- Does not mutate session.
+- session_state  
+- session_phase  
+- can_accept  
+- blocking_reasons  
+- warnings  
 
-EvaluationReport includes:
+Must deterministically report:
 
-- session_state
-- session_phase
-- can_accept (boolean)
-- blocking_reasons (structured list)
-- warnings (optional)
+- governance_conflict_permanent  
+- temporary_block_reasons  
 
-Evaluation behavior by phase:
-
-PRE_STANCE:
-
-- Validate governance prerequisites (e.g., participant existence).
-
-VOTING:
-
-- Evaluate constraints.
-- Evaluate authority math.
-- Evaluate supersession conflicts.
-- Evaluate under-review state.
-
-TERMINAL:
-
-- Return state only.
-
-Blocking reasons must be stable, machine-readable codes.
+No side effects.
 
 ---
 
-# 15. Candidate Semantics
+# 14. Candidate Semantics
 
-- Candidates exist only within a session.
-- Acceptance requires explicit candidate_id.
-- Only one candidate may be accepted.
-- Non-accepted candidates remain historical session artifacts.
-- They do not become standalone objects.
+- Candidates exist only within session.  
+- Acceptance requires explicit candidate_id.  
+- Only one candidate may be accepted.  
+- Non-accepted candidates remain historical artifacts.
 
 ---
 
-# 16. Legitimacy Receipt Derivation
-
-Upon ACCEPTED:
-
-- The session and audit history deterministically derive:
-  - Participant snapshot
-  - Candidate snapshot
-  - Stance snapshot
-  - Authority ID
-  - Scope ID
-  - Acceptance result
-  - Annotations
-
-The legitimacy receipt is derived from the session record.
-
-It is not an independent legitimacy source.
+# 15. Legitimacy Receipt Derivation
 
 Only ACCEPTED sessions produce legitimacy receipts.
 
----
+Receipt derived from:
 
-# 17. Atomicity Guarantees
+- Participant snapshot  
+- Candidate snapshot  
+- Stance snapshot  
+- Authority reference  
+- Scope reference  
+- Acceptance result  
+- Annotations  
 
-Acceptance is atomic relative to all referenced legitimacy context.
-
-If any validation fails, no mutation occurs.
-
-If a crash occurs before commit, no legitimacy is created.
-
-All implementations must produce identical outcomes given identical inputs.
-
----
-
-# 18. Engine Invariants
-
-- Only ACCEPTED sessions create Resolutions.
-- No automatic acceptance.
-- Governance cannot mutate after first stance.
-- Any legitimacy-context change permanently invalidates incompatible sessions.
-- Blocking resets voting.
-- Every acceptance must be reproducible deterministically from audit.
-- Evaluation must be deterministic across independent implementations.
+Receipts do not create independent legitimacy.
 
 ---
 
-# 19. Heavy Engine Doctrine
+# 16. Atomicity Guarantees
 
-The engine enforces strict legitimacy mechanics.
+- Acceptance atomic.  
+- Validation failure → no mutation.  
+- Crash before commit → no legitimacy.  
+- Identical inputs → identical outcomes.
 
-The CLI layer may provide usability, summaries, defaults, and workflow assistance.
+---
 
-The engine must never:
+# 17. Engine Invariants
 
-- Auto-accept
-- Infer consensus
-- Relax invariants
-- Mask legitimacy failures
+- Only ACCEPTED sessions create Resolutions.  
+- Governance immutable after first stance.  
+- BLOCK_TEMPORARY resets voting.  
+- BLOCK_PERMANENT requires explicit closure.  
+- Area acceptance blocked while permanent conflicts exist.  
+- Deterministic across implementations.
+
+---
+
+# 18. Heavy Engine Doctrine
+
+The engine enforces legitimacy mechanics.
+
+It must never:
+
+- Auto-accept  
+- Infer consensus  
+- Repair structural violations  
+- Mask legitimacy failures  
 
 Legitimacy is created only when explicitly commanded and mechanically validated.

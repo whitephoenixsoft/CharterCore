@@ -1,26 +1,34 @@
 # ENG-SUPERSESSION  
 Supersession & Conflict Model  
 Status: DRAFT (Pre-Freeze)  
-Applies to: Engine Core (V1/V2+)
+Applies to: Engine Core (V1/V2+)  
+
+This document must be interpreted in conjunction with:
+
+- ENG-DOMAIN  
+- ENG-DECISION  
+- ENG-REVIEW-RETIRED  
+- ENG-INTEGRITY  
+
+If conflict exists, ENG-INTEGRITY runtime guarantees take precedence.
 
 ---
 
 # 1. Purpose
 
-This document defines the Resolution graph model and all supersession and conflict semantics.
+This document defines:
 
-It governs:
+- Resolution graph structure  
+- Supersession linking rules  
+- Active-set derivation  
+- Conflict detection  
+- Race condition semantics  
+- Permanent blocking triggers  
+- Revalidation requirements  
+- Deterministic restore guarantees  
 
-- Supersession linking rules
-- Active resolution definition
-- Conflict detection
-- Race condition semantics
-- Permanent blocking behavior
-- Revalidation triggers
-- Under-review graph interaction
-- Deterministic restore guarantees
+This document does not define session lifecycle mechanics.
 
-This document does not define session lifecycle mechanics.  
 It defines graph integrity and legitimacy conflict behavior.
 
 ---
@@ -33,16 +41,18 @@ A Resolution may supersede zero or more prior Resolutions.
 
 Supersession is:
 
-- Explicit
-- Directional
-- Immutable
-- Recorded at acceptance time only
+- Explicit  
+- Directional  
+- Immutable  
+- Recorded at acceptance time only  
 
 If Resolution B supersedes Resolution A:
 
-- B contains an immutable reference to A.
-- A does not mutate.
-- A remains in history.
+- B contains an immutable reference to A.  
+- A does not mutate structurally.  
+- A remains part of historical graph.  
+
+Supersession edges are permanent once created.
 
 ---
 
@@ -52,12 +62,20 @@ The supersession graph must remain acyclic.
 
 A Resolution may not:
 
-- Supersede itself.
-- Create a cycle directly or indirectly.
+- Supersede itself.  
+- Introduce a cycle directly or indirectly.  
 
-Cycle detection must be enforced at acceptance time.
+Cycle detection must occur at acceptance time.
 
-Violation results in deterministic acceptance failure.
+If acceptance would introduce a cycle:
+
+- Acceptance must fail deterministically.  
+- No graph mutation may occur.
+
+If a cycle is detected during restore:
+
+- Engine initialization must fail (StructuralIntegrityFailure per ENG-INTEGRITY).  
+- Engine must halt.
 
 ---
 
@@ -69,21 +87,54 @@ A Resolution may supersede only Resolutions within the same Area.
 
 Cross-area references are informational only and have no supersession effect.
 
+Violation at acceptance time → deterministic acceptance failure.  
+Violation detected at restore → StructuralIntegrityFailure.
+
 ---
 
-# 3. Active Resolution Definition
+# 3. Active Resolution Derivation
 
-A Resolution is ACTIVE if:
+## 3.1 Structural ACTIVE Set
 
-- It has not been superseded by another accepted Resolution in the same Area.
-- It is not marked SUPERSEDED.
-- It is not logically invalidated by graph rules.
+A Resolution is structurally ACTIVE if:
 
-Only one ACTIVE Resolution may exist per legitimacy slot where exclusivity is required.
+- It has no accepted successor in the same Area.  
+- It is not structurally inconsistent.  
+
+Structural ACTIVE is derived solely from supersession edges.
+
+Structural ACTIVE does not consider UNDER_REVIEW or RETIRED.
+
+---
+
+## 3.2 Legitimacy Usability
+
+A Resolution is usable for legitimacy evaluation only if:
+
+- Structurally ACTIVE.  
+- State is not UNDER_REVIEW.  
+- State is not RETIRED.  
+
+Legitimacy usability is evaluated at runtime.
+
+---
+
+## 3.3 Exclusive Legitimacy Slots
 
 Authority and Scope are exclusive legitimacy slots.
 
-If multiple active successors would result from acceptance, acceptance must fail.
+For each exclusive slot:
+
+- Exactly one structurally ACTIVE Resolution must exist.
+
+If acceptance would result in multiple structurally ACTIVE successors in an exclusive slot:
+
+- Acceptance must fail deterministically.
+
+If restore produces multiple structurally ACTIVE successors in an exclusive slot:
+
+- Engine initialization must fail (StructuralIntegrityFailure).  
+- Engine must halt.
 
 ---
 
@@ -93,122 +144,120 @@ If multiple active successors would result from acceptance, acceptance must fail
 
 A session may reference:
 
-- The current ACTIVE Authority.
-- The current ACTIVE Scope.
-- Zero or one ACTIVE Resolution for supersession purposes.
+- The current usable Authority.  
+- The current usable Scope.  
+- Zero or one usable Resolution for supersession purposes.
 
 A session must not reference:
 
-- A Resolution that is already superseded.
-- A Resolution outside its Area for legitimacy purposes.
+- A Resolution that is not structurally ACTIVE for supersession.  
+- A Resolution outside its Area for legitimacy.  
 
-If a session attempts to reference a superseded Resolution for legitimacy:
+If a session references a Resolution that becomes non-usable:
 
-- The session transitions to BLOCK_PERMANENT.
+- Session transitions per ENG-DECISION (BLOCK_TEMPORARY or BLOCK_PERMANENT).
+
+Area-level acceptance blocking is governed by ENG-INTEGRITY.
 
 ---
 
 ## 4.2 Informational References
 
-Sessions may reference:
+Sessions may reference other Areas or Resolutions for informational context.
 
-- Other Areas
-- Other Area Resolutions
+These references:
 
-These references are informational only and do not affect legitimacy.
-
-Informational references have no supersession power.
+- Do not affect legitimacy.  
+- Do not create supersession edges.  
+- Have no impact on ACTIVE derivation.
 
 ---
 
 # 5. First-Accept Wins Rule
 
-If two or more sessions attempt to supersede the same ACTIVE Resolution:
+If multiple sessions attempt to supersede the same structurally ACTIVE Resolution:
 
-- The first successful acceptance creates the successor Resolution.
-- The referenced Resolution becomes non-ACTIVE.
-- All other sessions referencing that Resolution for supersession become BLOCK_PERMANENT.
+- The first successful acceptance creates the successor edge.  
+- The referenced Resolution becomes non-structurally-ACTIVE.  
+- Competing sessions referencing that Resolution must transition to BLOCK_PERMANENT (ENG-DECISION).
 
-There is no automatic branch merging.
+There is:
 
-There is no implicit precedence rule.
+- No automatic branch merging.  
+- No implicit precedence rule.  
+- No timestamp-based arbitration.
 
-Only explicit supersession edges determine graph structure.
+Explicit supersession edges define graph truth.
 
 ---
 
-# 6. Conflict Detection Semantics
+# 6. Conflict Detection
 
 A supersession conflict exists if:
 
-- A session references a Resolution that is no longer ACTIVE.
-- A session references an Authority that has been superseded.
-- A session references a Scope that has been superseded.
-- Acceptance would create multiple ACTIVE successors in an exclusive legitimacy slot.
-- Acceptance would introduce a cycle.
+- A session references a Resolution that is no longer structurally ACTIVE.  
+- A session references an Authority or Scope that is no longer usable.  
+- Acceptance would introduce a cycle.  
+- Acceptance would violate exclusive slot constraints.
 
 Conflict detection must occur:
 
-- During evaluation.
+- During evaluation.  
 - Immediately before acceptance commit.
 
-If conflict is irreversible, session becomes BLOCK_PERMANENT.
-
-If conflict is reversible (e.g., UNDER_REVIEW), session becomes BLOCK_TEMPORARY.
+Irreversible conflict → BLOCK_PERMANENT (session-level).  
+Reversible conflict (UNDER_REVIEW, RETIRED) → BLOCK_TEMPORARY.
 
 ---
 
 # 7. Revalidation Triggers
 
-The engine must re-evaluate sessions when any of the following occur:
+The engine must re-evaluate sessions when:
 
-- A referenced Resolution is superseded.
-- Authority is superseded.
-- Scope is superseded.
-- A referenced Resolution enters UNDER_REVIEW.
+- A referenced Resolution is superseded.  
+- Authority is superseded.  
+- Scope is superseded.  
+- A referenced Resolution enters UNDER_REVIEW.  
+- A referenced Resolution enters RETIRED.  
 - Scope enters UNDER_REVIEW.
 
 Effects:
 
-Resolution superseded:
-- Referencing sessions → BLOCK_PERMANENT.
+Resolution SUPERSEDED → Referencing sessions → BLOCK_PERMANENT  
+Authority SUPERSEDED → All sessions in Area → BLOCK_PERMANENT  
+Scope SUPERSEDED → All sessions in Area → BLOCK_PERMANENT  
+Resolution UNDER_REVIEW → Referencing sessions → BLOCK_TEMPORARY  
+Resolution RETIRED → Referencing sessions → BLOCK_TEMPORARY  
+Scope UNDER_REVIEW → All sessions in Area → BLOCK_TEMPORARY  
 
-Authority superseded:
-- All sessions in Area → BLOCK_PERMANENT.
-
-Scope superseded:
-- All sessions in Area → BLOCK_PERMANENT.
-
-Resolution UNDER_REVIEW:
-- Referencing sessions → BLOCK_TEMPORARY.
-
-Scope UNDER_REVIEW:
-- All sessions in Area → BLOCK_TEMPORARY.
-- Acceptance is not permitted while Scope is UNDER_REVIEW.
-
-Resolution RETIRED:
-- Referencing sessions → BLOCK_TEMPORARY.
-
-Returning from UNDER_REVIEW to ACTIVE does not require a session.
-
-Supersession always requires a session.
+Area-level acceptance blocking behavior enforced by ENG-INTEGRITY.
 
 ---
 
-# 8. Under-Review Graph Semantics
+# 8. Under-Review and Retired Graph Semantics
 
 UNDER_REVIEW:
 
-- Does not create a new Resolution.
-- Does not modify supersession edges.
-- Does not alter historical relationships.
-- Temporarily suspends ACTIVE usability for legitimacy evaluation.
+- Does not create new Resolution.  
+- Does not modify supersession edges.  
+- Does not alter structural ACTIVE derivation.  
+- Temporarily suspends legitimacy usability.  
+- Reversible.
 
-UNDER_REVIEW is reversible.
+RETIRED:
 
-SUPERSEDED is permanent and graph-altering.
+- Does not modify supersession edges.  
+- Does not alter structural ACTIVE derivation.  
+- Suspends legitimacy usability.  
+- Requires session to reactivate or supersede.
 
-These states must not be conflated.
+SUPERSEDED:
+
+- Structural and permanent.  
+- Alters ACTIVE derivation.  
+- Irreversible.
+
+These states must remain distinct.
 
 ---
 
@@ -216,20 +265,20 @@ These states must not be conflated.
 
 Acceptance must atomically verify:
 
-- Referenced Resolution is ACTIVE.
-- Authority is ACTIVE.
-- Scope is ACTIVE.
-- No supersession conflict exists.
-- No cycle would be introduced.
+- Referenced Resolution structurally ACTIVE.  
+- Authority usable.  
+- Scope usable.  
+- No exclusive-slot violation.  
+- No cycle introduction.
 
-Acceptance must acquire a legitimacy lock covering all affected graph nodes.
+Acceptance must acquire a legitimacy lock covering affected graph nodes.
 
 If any referenced node changes before commit:
 
-- Acceptance fails deterministically.
+- Acceptance fails deterministically.  
 - No partial graph mutation occurs.
 
-The first successful acceptance establishes graph truth.
+First successful acceptance establishes graph truth.
 
 Subsequent conflicting attempts must fail.
 
@@ -237,18 +286,23 @@ Subsequent conflicting attempts must fail.
 
 # 10. Deterministic Restore Guarantee
 
-Given identical Resolution records and supersession edges:
+Given identical persisted objects and supersession edges:
 
-- Independent engine implementations must produce identical ACTIVE sets.
-- Graph traversal must produce identical outcomes.
-- No timestamp-based or heuristic selection is permitted.
-- No implicit "latest wins" logic is allowed.
+- Independent implementations must derive identical structural ACTIVE sets.  
+- Exclusive slot evaluation must produce identical results.  
+- No heuristic, timestamp, or ordering-based logic is permitted.  
 
-Supersession is determined solely by explicit edges.
+If restore produces:
 
-If restore would produce multiple ACTIVE successors in an exclusive slot:
+- A cycle  
+- Multiple structurally ACTIVE successors in an exclusive slot  
+- Invalid supersession references  
 
-- Restore must fail deterministically.
+Engine initialization must fail (StructuralIntegrityFailure per ENG-INTEGRITY).
+
+The engine must halt.
+
+No automatic repair is permitted.
 
 ---
 
@@ -256,27 +310,30 @@ If restore would produce multiple ACTIVE successors in an exclusive slot:
 
 A session must transition to BLOCK_PERMANENT if:
 
-- Its referenced Resolution is superseded.
-- Its Authority is superseded.
-- Its Scope is superseded.
-- Its acceptance would create structural graph violation.
-- Its legitimacy reference is no longer valid and cannot be restored.
+- Its referenced Resolution becomes non-structurally-ACTIVE.  
+- Its Authority is superseded.  
+- Its Scope is superseded.  
+- Acceptance would introduce structural graph violation.  
 
-Permanent blocks cannot be resumed.
+Permanent blocks:
 
-Forward motion requires a new session.
+- Cannot resume.  
+- Require explicit closure.  
+- May be restarted via CLI `restart-from`.
+
+Area-level acceptance prohibition while permanent blocks exist is defined in ENG-INTEGRITY.
 
 ---
 
 # 12. Engine Invariants
 
-- Supersession edges are immutable once created.
-- The graph must remain acyclic.
-- Only explicit supersession defines precedence.
-- No implicit authority inheritance exists.
-- No automatic conflict resolution occurs.
-- Graph integrity must be deterministic across implementations.
-- First-accept wins is absolute.
+- Supersession edges are immutable.  
+- Graph must remain acyclic.  
+- Structural ACTIVE derivation is deterministic.  
+- Exclusive legitimacy slots must have exactly one structurally ACTIVE Resolution.  
+- No implicit conflict resolution exists.  
+- First-accept wins is absolute.  
+- Structural inconsistency must halt the engine.
 
 ---
 
@@ -284,14 +341,21 @@ Forward motion requires a new session.
 
 ENG-DECISION governs:
 
-- Session lifecycle
-- Governance mutation
-- Acceptance transaction
+- Session lifecycle  
+- Governance mutation  
+- Acceptance transaction  
 
 ENG-SUPERSESSION governs:
 
-- Resolution graph structure
-- Conflict semantics
-- Supersession integrity
+- Resolution graph structure  
+- Structural ACTIVE derivation  
+- Supersession integrity  
+- Conflict semantics  
 
-Both documents together define complete legitimacy mechanics.
+ENG-INTEGRITY governs:
+
+- Engine halt conditions  
+- Area-level acceptance guards  
+- Structural failure handling  
+
+Together they define complete legitimacy mechanics.
