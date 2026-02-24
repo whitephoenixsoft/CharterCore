@@ -1,317 +1,408 @@
-# Charter Core — Audit Event Specification
+# ENG-AUD  
+Audit Event Specification  
+Status: FROZEN (v2)  
+Applies to: Engine Core (V1/V2+)  
 
-Document ID: ENG-AUD  
-Status: FROZEN (v1)  
-Audience: Charter Core engine implementers  
-Scope: Engine-internal only (never legitimizing)  
+This document must be interpreted in conjunction with:
+
+- ENG-DOMAIN  
+- ENG-DECISION  
+- ENG-SUPERSESSION  
+- ENG-REVIEW-RETIRED  
+- ENG-INTEGRITY  
+
+If conflict exists, structural and legitimacy rules defined elsewhere take precedence.
+
+Audit is observational only.
 
 ---
 
-## 1. Purpose
+# 1. Purpose
 
-### ENG-AUD-01 — Audit Preserves Accountability
+## ENG-AUD-01 — Audit Preserves Accountability
 
 Audit records exist to answer:
 
-- What happened?  
-- When did it happen?  
-- Under which Authority and Scope context?  
-- Was it explicit?  
+- What action occurred?
+- When did it occur?
+- Under which Authority and Scope context?
+- Was the action explicit?
 
 Audit records:
 
-- Do **not** create legitimacy  
-- Do **not** alter outcomes  
-- Do **not** confer authority  
+- Do not create legitimacy.
+- Do not alter structural state.
+- Do not confer authority.
+- Do not participate in ACTIVE derivation.
+- Do not participate in restore.
+- Do not participate in acceptance validation.
 
 Fail if:
 
-- Audit data influences acceptance or legitimacy  
-- Removing audit changes engine behavior  
+- Audit data influences acceptance.
+- Audit data influences restore behavior.
+- Removing audit changes engine legitimacy outcomes.
+
+Audit is memory, not law.
 
 ---
 
-## 2. Core Principle
+# 2. Core Principles
 
-### ENG-AUD-02 — Append-Only
+## ENG-AUD-02 — Append-Only
 
 Audit events:
 
-- Are immutable  
-- Are never edited  
-- Are never deleted implicitly  
+- Are immutable.
+- Are never edited.
+- Are never deleted implicitly.
 
-Corrections require **new audit events**.
+Corrections require new audit events.
 
 Fail if:
 
-- Audit records are modified  
-- Audit history is rewritten  
+- Audit records are modified.
+- Audit history is rewritten.
 
 ---
 
-## 3. Audit Scope Model
+## ENG-AUD-03 — Engine Is Audit Producer Only
 
-### ENG-AUD-03 — Every Event Belongs to a Scope
+The engine:
 
-- Each audit event must belong to exactly **one scope**  
-- Scopes define **retention**, not legitimacy  
+- Emits audit events as side effects of actions.
+- Must not consult audit events during restore.
+- Must not consult audit events during evaluation.
+- Must not consult audit events during acceptance.
 
-Required scopes:
+Audit corruption must not alter legitimacy derivation.
 
-- `GLOBAL` (non-deletable)  
-- `AREA:<area_id>`  
+Structural integrity (ENG-INTEGRITY) must not depend on audit availability.
 
 Fail if:
 
-- An auditable action exists without a scope  
-- Area deletion removes the only audit record  
+- Engine logic depends on audit queries.
+- Restore requires audit records to derive state.
 
-### ENG-AUD-04 — Global Audit Scope Is Immutable
+---
 
-- `GLOBAL` audit scope **must always exist**  
-- Must **not** be deleted or retired  
+# 3. Audit Scope Model
+
+## ENG-AUD-04 — Every Event Belongs to Exactly One Audit Scope
+
+Each audit event must belong to exactly one of:
+
+- GLOBAL
+- AREA:<area_id>
+
+Audit scope defines retention and organizational boundary only.
+
+Audit scope does not affect legitimacy.
+
+Fail if:
+
+- An auditable action exists without a scope.
+- Scope determines legitimacy evaluation.
+
+---
+
+## ENG-AUD-05 — GLOBAL Scope Is Immutable
+
+The GLOBAL audit scope:
+
+- Must always exist.
+- Must not be deleted.
+- Must not be retired.
+- Must not be superseded.
 
 Used for:
 
-- Area creation/deletion  
-- Import operations  
-- Hash upgrades  
-- Reference rewrites  
+- Area creation or deletion
+- Import operations
+- Hash migrations
+- Reference rewrites
+- Cross-area structural events
 
 Fail if:
 
-- Global scope is missing or mutable  
+- GLOBAL scope is missing.
+- GLOBAL scope is mutable.
 
 ---
 
-## 4. Auditable Actions
+# 4. Auditable Actions
 
-### ENG-AUD-05 — Explicit Engine Actions Must Emit Audit Events
+## ENG-AUD-06 — Explicit Engine Actions Must Emit Audit Events
 
-The following actions **must** generate audit records:
+The following engine actions must generate audit events:
 
-- Area creation / deletion  
-- Session start / pause / resume / close  
-- Candidate addition (pre-freeze)  
-- First stance (candidate freeze trigger)  
-- Resolution acceptance / supersession / retirement  
-- Authority resolution change  
-- Scope resolution change  
-- Import start / close / accept / reject / consolidate  
-- Hash migration  
-- Reference creation / update / deletion  
-- fsck execution (diagnostic only)  
+- Area creation and deletion
+- Session start, pause, resume, close
+- Candidate addition (before freeze)
+- First stance (freeze trigger)
+- Resolution acceptance
+- Resolution supersession (implicit via acceptance)
+- Resolution retirement
+- Acceptance of Resolution occupying Authority slot
+- Acceptance of Resolution occupying Scope slot
+- Import start, close, accept, reject, consolidate
+- Hash migration
+- Reference creation, update, deletion
+- fsck execution (diagnostic only)
 
 Fail if:
 
-- Any above occurs silently  
+- Any above occurs without emitting audit.
+
+Audit emission must not alter acceptance atomicity.
 
 ---
 
-## 5. Audit Event Structure
+# 5. Identity Rules
 
-### ENG-AUD-06 — Canonical Audit Event Shape
+## ENG-AUD-07 — Audit Event Identity
+
+Each audit event must include:
+
+- event_id: UUID version 7
+- occurred_at: timestamp (informational only)
+
+All engine-generated identifiers must be UUIDv7.
+
+Audit identity must be globally unique.
+
+Event ordering must not be derived from UUID timestamp for legitimacy purposes.
+
+Fail if:
+
+- Non-UUIDv7 identifiers are used.
+- Identity format varies across implementations.
+
+---
+
+# 6. Canonical Audit Event Structure
+
+## ENG-AUD-08 — Stable Event Shape
 
 Every audit event must include:
 
 {
-  "event_id": "<stable id>",
+  "event_id": "<uuidv7>",
   "event_type": "<ENUM>",
   "occurred_at": "<timestamp>",
   "actor": "<opaque string or null>",
   "scope": "GLOBAL | AREA:<area_id>",
   "subject": {
     "object_type": "<type>",
-    "object_id": "<id or hash>"
+    "object_id": "<uuidv7 or other immutable id>"
   },
   "context": {
-    "authority_resolution_id": "<id or null>",
-    "scope_resolution_id": "<id or null>",
-    "session_id": "<id or null>"
+    "authority_resolution_id": "<uuidv7 or null>",
+    "scope_resolution_id": "<uuidv7 or null>",
+    "session_id": "<uuidv7 or null>"
   },
-  "details": { ... engine-defined, non-semantic ... }
+  "details": { ... non-semantic data ... }
 }
 
 Rules:
 
-- `details` is non-semantic  
-- Missing fields **must** be explicit nulls  
-- No inferred values  
-- Event shape is stable across versions  
+- details is non-semantic.
+- Missing fields must be explicit null.
+- Event shape must remain stable across versions.
+- Field omission is not permitted.
+- Audit payload must not be used to reconstruct state.
 
 Fail if:
 
-- Context or subject fields are omitted  
-- Event structure varies implicitly  
+- Event structure varies implicitly.
+- Context or subject fields are omitted.
+- Audit payload is used to reconstruct state.
 
 ---
 
-## 6. Actor Semantics
+# 7. Actor Semantics
 
-### ENG-AUD-07 — Actors Are Informational
+## ENG-AUD-09 — Actors Are Informational Only
 
-- `actor` is an opaque identifier  
-- Has **no authority implications**  
-- May be `null` for automated actions  
+- actor is an opaque identifier.
+- Actor identity has no authority implication.
+- Actor may be null.
+- Actor does not imply permissions.
 
 Fail if:
 
-- Actor identity alters legitimacy  
-- Actor implies permissions  
+- Actor alters legitimacy.
+- Actor is used for permission enforcement.
+
+Authorization belongs outside engine legitimacy logic.
 
 ---
 
-## 7. Relationship to Legitimacy
+# 8. Relationship to Legitimacy
 
-### ENG-AUD-08 — Audit Never Creates Legitimacy
+## ENG-AUD-10 — Audit Never Creates Legitimacy
 
-- Audit events may reference legitimacy actions  
-- Must **never** be used to infer acceptance  
-- Must **never** substitute for sessions  
+- Audit may reference acceptance.
+- Audit must never imply acceptance.
+- A Resolution must exist in domain storage to be legitimate.
+- Audit cannot substitute for session acceptance.
 
 Fail if:
 
-- Resolution exists only in audit  
-- Audit implies consent  
+- Resolution exists only in audit.
+- Audit implies consent.
+- Audit influences ACTIVE derivation.
 
 ---
 
-## 8. Import & Upgrade Semantics
+# 9. Import & Upgrade Semantics
 
-### ENG-AUD-09 — Import Is Fully Audited
+## ENG-AUD-11 — Import Must Be Fully Audited
 
-Import operations **must** emit:
+Import operations must emit:
 
-- Import started  
-- Import mode (`RESTORE` / `CONSOLIDATE`)  
-- Object counts  
-- Hash mismatches  
-- Review outcomes  
-- Import closed  
+- Import started
+- Import mode (RESTORE or CONSOLIDATE)
+- Object counts
+- Structural validation outcomes
+- Hash mismatches
+- Review outcomes
+- Import closed
 
-Fail if:
-
-- Any import side effect is unaudited  
-
-### ENG-AUD-10 — Hash Migration Is Audited
-
-- Hash upgrades **must** emit:
-
-  - Old hash version  
-  - New hash version  
-  - Affected object count  
-  - Reference rebinding summary  
+Import audit must not substitute for structural validation.
 
 Fail if:
 
-- Hashes change without audit trail  
+- Import side effects are unaudited.
+- Audit replaces structural validation.
 
 ---
 
-## 9. fsck Interaction
+## ENG-AUD-12 — Hash Migration Must Be Audited
 
-### ENG-AUD-11 — fsck Is Auditable but Non-Mutating
+Hash migration must emit:
 
-- fsck **may** emit audit events  
-- Must **not** modify state  
-- Must **not** repair automatically  
+- Old hash version
+- New hash version
+- Affected object count
+- Reference rebinding summary
 
-Fail if:
-
-- fsck mutates data or performs hidden repairs  
-
----
-
-## 10. Storage Guarantees
-
-### ENG-AUD-12 — Audit Outlives Subjects
-
-- Audit records must remain accessible even if:
-
-  - Area is deleted  
-  - Session is removed  
-  - Objects become unreachable  
+Object identity must not change during hash migration.
 
 Fail if:
 
-- Subject deletion removes audit history  
+- Hash changes occur silently.
+- Identity is altered during migration.
 
 ---
 
-## 11. Query Semantics
+# 10. fsck Interaction
 
-### ENG-AUD-13 — Audit Queries Are Read-Only
+## ENG-AUD-13 — fsck Is Observational
 
-- Audit logs must be queryable and filterable  
-- Queries **must not** affect legitimacy or engine state  
+- fsck may emit audit events.
+- fsck must not mutate state.
+- fsck must not perform automatic repair.
+- fsck must not consult audit to repair state.
 
 Fail if:
 
-- Engine decisions depend on audit queries  
+- fsck modifies domain objects.
+- fsck performs hidden reconciliation.
 
 ---
 
-## 12. Export Semantics
+# 11. Storage Guarantees
 
-### ENG-AUD-14 — Audit Export Is Optional but Deterministic
+## ENG-AUD-14 — Audit Outlives Subjects
 
-- Audit exports **may** include events  
-- If included:
+Audit records must remain accessible even if:
 
-  - Ordering must be preserved  
-  - Scope must be preserved  
-  - No filtering by relevance  
+- Area is deleted
+- Session is closed
+- Objects become unreachable
+
+Audit retention must not affect structural restore.
+
+Audit corruption must not trigger StructuralIntegrityFailure unless domain data is also corrupted.
 
 Fail if:
 
-- Audit is partially exported without warning  
+- Deleting a subject deletes its audit.
+- Restore requires audit presence.
 
 ---
 
-## 13. Design Guarantees
+# 12. Query & Export Semantics
 
-### ENG-AUD-15 — Audit Is Engine Memory
+## ENG-AUD-15 — Queries Are Read-Only
+
+Audit logs must be queryable and filterable.
+
+Queries:
+
+- Must not alter engine state.
+- Must not influence legitimacy decisions.
+
+Fail if:
+
+- Engine decisions depend on audit queries.
+
+---
+
+## ENG-AUD-16 — Export Is Deterministic
+
+Audit export may include events.
+
+If exported:
+
+- Event ordering must be preserved.
+- Scope must be preserved.
+- No silent filtering is permitted.
+
+Export must not alter domain state.
+
+---
+
+# 13. Design Guarantees
 
 Audit guarantees:
 
-- No silent authority shifts  
-- No invisible legitimacy changes  
-- No untraceable imports or upgrades  
+- No silent authority shifts.
+- No invisible legitimacy changes.
+- No untraceable imports.
+- No untraceable identity migrations.
+- No invisible structural rewrite.
+
+Audit does not guarantee:
+
+- Legitimacy correctness.
+- Structural integrity.
+- Consensus.
+
+Those are governed elsewhere.
 
 ---
 
-## Mental Model
+# Mental Model
 
-- Legitimacy lives in sessions  
-- History lives in objects  
-- Accountability lives in audit  
-- Audit observes — it never acts  
-
----
-
-## Non-Goal
-
-Audit is **not** a narrative log:
-
-- Does not provide human-readable story  
-- Does not explain reasoning  
-- Does not replay commands  
-
-Audit exists solely to preserve accountability and explicitness.  
+- Legitimacy lives in sessions.
+- Structure lives in domain objects and supersession edges.
+- Integrity lives in restore and halt rules.
+- Accountability lives in audit.
+- Audit observes — it never acts.
 
 ---
 
-## Why This Matters
+# Non-Goal
 
-Without audit:
+Audit is not:
 
-- Area deletion is dangerous  
-- Imports are unverifiable  
-- Hash upgrades are untrustworthy  
-- Long-term legitimacy collapses  
+- A narrative log.
+- A reasoning log.
+- A command replay system.
+- A consensus layer.
 
-With audit:
+Audit is institutional memory.
 
-- Charter preserves defensible institutional memory  
-- Actions can be explained precisely, without altering outcomes
+It records explicit action without influencing outcome.
