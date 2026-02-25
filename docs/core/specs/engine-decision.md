@@ -1,6 +1,6 @@
 # ENG-DECISION  
-Decision Execution, Session Governance, and Acceptance Model  
-Status: DRAFT (Pre-Freeze)  
+Decision Execution, Session Governance, Acceptance Model, and Receipt Verification  
+Status: DRAFT (Pre-Freeze – Receipts Integrated)  
 Applies to: Engine Core (V1/V2+)  
 
 This document must be interpreted in conjunction with:
@@ -9,6 +9,8 @@ This document must be interpreted in conjunction with:
 - ENG-SUPERSESSION  
 - ENG-REVIEW-RETIRED  
 - ENG-INTEGRITY  
+- ENG-RECEIPT  
+- ENG-API  
 
 If conflict exists, ENG-INTEGRITY runtime guarantees take precedence.
 
@@ -28,10 +30,11 @@ This document defines the complete mechanical model governing:
 - Blocking and closure semantics  
 - Under-review and retired interactions  
 - Acceptance transaction model  
+- Receipt generation and verification  
 - Evaluation API  
 - Concurrency guarantees  
 
-This specification defines how legitimacy is created and how it fails.
+This specification defines how legitimacy is created, recorded, and verified.
 
 ---
 
@@ -45,20 +48,22 @@ This specification defines how legitimacy is created and how it fails.
 2.6 Permanent blocks require explicit user closure.  
 2.7 Interruptions reset voting.  
 2.8 Runtime structural integrity is governed by ENG-INTEGRITY.  
-2.9 The engine enforces invariants. Usability belongs to the CLI layer.
+2.9 The engine enforces invariants. Usability belongs to the CLI layer.  
+2.10 Receipts formalize closure but do not create legitimacy.
 
 ---
 
 # 3. Core Entities
 
-3.1 **Session** — A bounded decision record that may produce at most one accepted Resolution.  
-3.2 **Participant** — Explicitly added identity allowed one stance per candidate.  
-3.3 **Candidate** — Proposal scoped to a session.  
-3.4 **Constraint** — Mechanical acceptance gate declared before voting.  
-3.5 **Authority** — Area-level Resolution defining decision rules.  
-3.6 **Scope** — Area-level Resolution defining contextual boundaries.  
-3.7 **Resolution** — Immutable object created only by successful acceptance.  
-3.8 **EvaluationReport** — Deterministic, side-effect-free session evaluation.
+3.1 Session — A bounded decision record that may produce at most one accepted Resolution.  
+3.2 Participant — Explicitly added identity allowed one stance per candidate.  
+3.3 Candidate — Proposal scoped to a session.  
+3.4 Constraint — Mechanical acceptance gate declared before voting.  
+3.5 Authority — Area-level Resolution defining decision rules.  
+3.6 Scope — Area-level Resolution defining contextual boundaries.  
+3.7 Resolution — Immutable object created only by successful acceptance.  
+3.8 EvaluationReport — Deterministic, side-effect-free session evaluation.  
+3.9 Session Receipt — Immutable closure artifact emitted at ACCEPTED or CLOSED.
 
 ---
 
@@ -75,19 +80,8 @@ A session must be exactly one of:
 - ACCEPTED  
 - CLOSED  
 
-Definitions:
-
-ACTIVE — Normal operating state.  
-PAUSED — User-initiated suspension.  
-BLOCK_TEMPORARY — Reversible governance interruption.  
-BLOCK_PERMANENT — Irreversible legitimacy-context invalidation; requires explicit closure.  
-ACCEPTED — Successfully produced a Resolution.  
-CLOSED — Explicitly terminated by user.
-
 ACCEPTED and CLOSED are terminal.  
 BLOCK_PERMANENT is non-resumable but not terminal until explicitly CLOSED.
-
-Area-level acceptance blocking behavior is defined in ENG-INTEGRITY.
 
 ---
 
@@ -102,7 +96,7 @@ Transitions:
 - PRE_STANCE → VOTING: first stance recorded.  
 - VOTING → ACCEPTED: successful acceptance.  
 - ACTIVE → PAUSED: user action.  
-- PAUSED or BLOCK_TEMPORARY → PRE_STANCE: resume.  
+- PAUSED or BLOCK_TEMPORARY → PRE_STANCE: resume (with reconfirmation).  
 - BLOCK_PERMANENT → CLOSED: explicit user action only.  
 - Any non-terminal → CLOSED: explicit user action.
 
@@ -140,6 +134,12 @@ Mutation after first stance → BLOCK_PERMANENT.
 
 Presence equals explicitly added participant set at evaluation time.
 
+On resume from PAUSED or BLOCK_TEMPORARY:
+
+- Votes cleared.  
+- Participant set must be explicitly reconfirmed.  
+- Reconfirmation event must be recorded for receipt derivation.
+
 ---
 
 ## 5.3 Constraint Rules
@@ -168,6 +168,11 @@ Rules:
 - Frozen after acceptance.  
 - No automatic acceptance.  
 - Authority evaluated only on explicit acceptance.
+
+Solo Mode:
+
+- If no stance recorded at acceptance attempt, implicit ACCEPT inserted.
+- Implicit stance becomes part of frozen stance snapshot.
 
 ---
 
@@ -225,7 +230,7 @@ Effects:
 - Votes cleared.  
 - Phase → PRE_STANCE.  
 - Resume required.  
-- Governance must be re-established.
+- Participant reconfirmation required.
 
 ---
 
@@ -245,8 +250,7 @@ Effects:
 - Session cannot resume.  
 - Acceptance permanently impossible.  
 - Evaluation reports governance_conflict_permanent.  
-- User must explicitly close session.  
-- restart-from permitted.
+- User must explicitly close session.
 
 While any session in an Area is BLOCK_PERMANENT,
 acceptance in that Area is prohibited (ENG-INTEGRITY).
@@ -263,40 +267,16 @@ Resume allowed only from:
 On resume:
 
 - Votes cleared.  
-- Participants re-specified.  
-- Phase → PRE_STANCE.
+- Participant set must be explicitly re-specified.  
+- Phase → PRE_STANCE.  
+- Reconfirmation event logged for receipt derivation.
 
 BLOCK_PERMANENT cannot resume.  
 ACCEPTED and CLOSED cannot resume.
 
 ---
 
-# 10. Under-Review and Retired Semantics
-
-Resolution UNDER_REVIEW:
-
-- Causes BLOCK_TEMPORARY in referencing sessions.  
-- Reversible without session.  
-- May be superseded via session.
-
-Resolution RETIRED:
-
-- Causes BLOCK_TEMPORARY in referencing sessions.  
-- ACTIVE ↔ RETIRED requires session.  
-- May be superseded via session.
-
-Scope UNDER_REVIEW:
-
-- Causes BLOCK_TEMPORARY for all sessions in Area.  
-- Acceptance prohibited until ACTIVE.
-
-Scope SUPERSEDED:
-
-- Causes BLOCK_PERMANENT.
-
----
-
-# 11. Supersession and Concurrency
+# 10. Supersession and Concurrency
 
 Acceptance must verify:
 
@@ -313,10 +293,10 @@ Graph integrity rules defined in ENG-SUPERSESSION.
 
 ---
 
-# 12. Acceptance Transaction Model
+# 11. Acceptance Transaction Model
 
 1. Acquire legitimacy lock.  
-2. Validate session ACTIVE and VOTING.  
+2. Validate session ACTIVE and VOTING (or PRE_STANCE in Solo Mode).  
 3. Validate governance immutability.  
 4. Validate Authority usability.  
 5. Validate Scope usability.  
@@ -324,12 +304,55 @@ Graph integrity rules defined in ENG-SUPERSESSION.
 7. Validate constraints.  
 8. Evaluate authority rule.  
 9. On failure → no mutation.  
-10. Snapshot session state.  
-11. Create Resolution.  
-12. Mark session ACCEPTED.  
-13. Release lock.
+10. Freeze participant snapshot.  
+11. Freeze candidate snapshot.  
+12. Freeze stance snapshot (including implicit vote if applicable).  
+13. Create Resolution.  
+14. Mark session ACCEPTED.  
+15. Emit LEGITIMACY receipt.  
+16. Release lock.
 
-Atomic across session and legitimacy context.
+Atomic across session, resolution, and receipt emission.
+
+Crash before commit → no resolution and no receipt.
+
+---
+
+# 12. Receipt Derivation and Verification
+
+## 12.1 Receipt Emission
+
+ACCEPTED → emit LEGITIMACY receipt.  
+CLOSED (no acceptance) → emit EXPLORATION receipt.
+
+Receipt must include:
+
+- Participant snapshot  
+- Candidate snapshot  
+- Stance snapshot  
+- Authority reference  
+- Scope reference  
+- Acceptance result  
+- Participant reconfirmation history  
+- content_hash  
+
+Receipt is immutable.
+
+---
+
+## 12.2 Legitimacy Verification via Receipt
+
+A Resolution's legitimacy may be verified by:
+
+1. Confirming Resolution references originating session_id.  
+2. Confirming session_state = ACCEPTED.  
+3. Confirming corresponding LEGITIMACY receipt exists.  
+4. Confirming receipt snapshots match Resolution snapshots.  
+5. Confirming receipt content_hash valid.
+
+Receipt absence or mismatch indicates structural corruption.
+
+Receipt does not create legitimacy; it proves recorded legitimacy event.
 
 ---
 
@@ -345,63 +368,35 @@ Must include:
 - blocking_reasons  
 - warnings  
 
-Must deterministically report:
-
-- governance_conflict_permanent  
-- temporary_block_reasons  
-
 No side effects.
 
----
-
-# 14. Candidate Semantics
-
-- Candidates exist only within session.  
-- Acceptance requires explicit candidate_id.  
-- Only one candidate may be accepted.  
-- Non-accepted candidates remain historical artifacts.
+Must not generate receipts.
 
 ---
 
-# 15. Legitimacy Receipt Derivation
-
-Only ACCEPTED sessions produce legitimacy receipts.
-
-Receipt derived from:
-
-- Participant snapshot  
-- Candidate snapshot  
-- Stance snapshot  
-- Authority reference  
-- Scope reference  
-- Acceptance result  
-- Annotations  
-
-Receipts do not create independent legitimacy.
-
----
-
-# 16. Atomicity Guarantees
+# 14. Atomicity Guarantees
 
 - Acceptance atomic.  
+- Receipt emission atomic with acceptance.  
 - Validation failure → no mutation.  
-- Crash before commit → no legitimacy.  
-- Identical inputs → identical outcomes.
+- Crash before commit → no legitimacy, no receipt.  
+- Identical inputs → identical outcomes and identical receipt content_hash.
 
 ---
 
-# 17. Engine Invariants
+# 15. Engine Invariants
 
 - Only ACCEPTED sessions create Resolutions.  
+- Only ACCEPTED sessions create LEGITIMACY receipts.  
 - Governance immutable after first stance.  
-- BLOCK_TEMPORARY resets voting.  
+- BLOCK_TEMPORARY resets voting and requires reconfirmation.  
 - BLOCK_PERMANENT requires explicit closure.  
-- Area acceptance blocked while permanent conflicts exist.  
+- Receipt snapshot must match frozen session state.  
 - Deterministic across implementations.
 
 ---
 
-# 18. Heavy Engine Doctrine
+# 16. Heavy Engine Doctrine
 
 The engine enforces legitimacy mechanics.
 
@@ -411,5 +406,8 @@ It must never:
 - Infer consensus  
 - Repair structural violations  
 - Mask legitimacy failures  
+- Alter receipts once emitted  
 
 Legitimacy is created only when explicitly commanded and mechanically validated.
+
+Receipts preserve that legitimacy event for deterministic reconstruction and admissible verification.
