@@ -1,7 +1,7 @@
-# ENG-ENGINE-INITIALIZATION — Engine Initialization & Readiness Specification  
-Status: FROZEN (v2)  
-Applies to: Engine Core (V1/V2+)  
-Scope: Pure Engine Initialization (Storage-Agnostic)  
+# ENG-ENGINE-INITIALIZATION — Engine Initialization & Readiness Specification (v3)
+Status: FROZEN (v3)
+Applies to: Engine Core (V1/V2+)
+Scope: Structural Engine Initialization & Area Activation
 
 ---
 
@@ -9,12 +9,12 @@ Scope: Pure Engine Initialization (Storage-Agnostic)
 
 This document defines how the Engine Core:
 
-- Is instantiated
 - Receives domain objects
 - Validates structural readiness
-- Becomes eligible to evaluate legitimacy
+- Ensures deterministic eligibility for legitimacy evaluation
+- Supports Area Activation (restore) and minimal evaluation contexts
 
-This specification replaces legacy storage-coupled boot logic.
+Initialization replaces legacy storage-coupled boot logic.  
 
 The Engine:
 
@@ -24,7 +24,7 @@ The Engine:
 - Does not load refs
 - Does not perform migration
 
-Initialization is purely structural.
+Initialization is purely structural verification, not state evolution.
 
 ---
 
@@ -34,7 +34,8 @@ Initialization is purely structural.
 
 The host (CLI or embedding system) must provide:
 
-- Complete domain objects required for evaluation
+- Complete domain objects required for evaluation (minimal evaluation)
+- Or complete Area object graph (Area Activation / restore)
 - All referenced objects
 - Current session set
 - Current authority and scope resolutions
@@ -55,7 +56,7 @@ Fail if:
 
 # 3. Initialization Contract
 
-## ENG-INIT-02 — Deterministic Construction
+## ENG-INIT-02 — Deterministic, Side-Effect Free Construction
 
 Engine initialization must be:
 
@@ -78,11 +79,30 @@ Fail if:
 
 ---
 
-# 4. Structural Validation Phase
+# 4. Modes of Initialization
 
-Upon initialization, the Engine must validate:
+## ENG-INIT-03 — Two Modes
 
-### ENG-INIT-03 — Identity Validity
+1. Minimal Evaluation Mode  
+   - Graph includes only objects relevant to a specific evaluation request  
+   - Only referenced sessions, resolutions, and snapshots  
+   - Must satisfy structural invariants within the subset provided
+
+2. Area Activation Mode (Restore)  
+   - Graph includes complete Area object graph  
+   - All sessions, resolutions, Authority, Scope, and candidates present  
+   - Full invariant enforcement applied (exclusive slots, snapshot completeness, participant integrity)
+
+Fail if:
+
+- Partial graph provided in Area Activation mode  
+- Structural invariants violated
+
+---
+
+# 5. Structural Validation Phase
+
+## ENG-INIT-04 — Identity Validity
 
 - All object identifiers are valid UUIDv7
 - No duplicate identifiers exist within type namespace
@@ -90,36 +110,59 @@ Upon initialization, the Engine must validate:
 
 Fail if:
 
-- An object references a missing identifier
-- Identifier format is invalid
+- Missing references
+- Invalid UUID format
 - Duplicate IDs exist
 
 ---
 
-### ENG-INIT-04 — Lifecycle Consistency
+## ENG-INIT-05 — Lifecycle Consistency
 
-The Engine must validate:
-
-- Session state and phase consistency
+- Session state vs phase consistency
 - Resolution state consistency
 - Supersession invariants
-- Snapshot completeness for accepted sessions
+- Snapshot completeness for ACCEPTED sessions
 - BLOCK_PERMANENT invariants (structural only)
 
 Fail if:
 
-- A resolution marked SUPERSEDED lacks superseded_by
-- A non-SUPERSEDED resolution has superseded_by
-- ACCEPTED session lacks originating resolution
+- SUPERSEDED resolution missing superseded_by
+- Non-SUPERSEDED resolution has superseded_by
+- ACCEPTED session lacks corresponding Resolution
 - TERMINAL phase conflicts with session state
 
 ---
 
-### ENG-INIT-05 — Supersession Graph Integrity
+## ENG-INIT-06 — Exclusive Slot Enforcement
 
-The Engine must verify:
+- Exactly one ACTIVE Authority per Area
+- Exactly one ACTIVE Scope per Area
 
-- Supersession graph is acyclic
+Fail if:
+
+- Multiple ACTIVE objects exist in the same Area
+- Exclusive slot conflicts present
+
+---
+
+## ENG-INIT-07 — Participant Integrity
+
+- Every session must have ≥1 participant
+- ACCEPTED sessions must have at least one vote recorded
+- Resolution participant_snapshot must equal session participant set at acceptance
+- Resolution candidate_snapshot must exist and match accepted candidate
+
+Fail if:
+
+- Empty participant sets
+- ACCEPTED session missing vote(s)
+- Resolution snapshot incomplete
+
+---
+
+## ENG-INIT-08 — Supersession Graph Integrity
+
+- Graph must be acyclic
 - Superseded objects are not ACTIVE
 - Supersession edges are immutable
 
@@ -130,27 +173,28 @@ Fail if:
 
 ---
 
-# 5. Governance Hygiene Enforcement
+## ENG-INIT-09 — UNDER_REVIEW / RETIRED Resolution Validation
 
-Initialization must not alter state, but must enforce invariants at evaluation time.
+- Remain structurally ACTIVE in supersession graph
+- May be superseded
+- Do not break graph integrity
 
-## ENG-INIT-06 — BLOCK_PERMANENT Enforcement
+Fail if:
 
-If any session exists with:
+- Resolution state mutates during initialization
+- Graph integrity violated
 
-state = BLOCK_PERMANENT
+---
 
-Then:
+# 6. Governance Hygiene Enforcement
+
+## ENG-INIT-10 — BLOCK_PERMANENT Enforcement
+
+If any session exists with state = BLOCK_PERMANENT:
 
 - No new session acceptance may succeed
 - Engine must reject acceptance attempts
-- No automatic closure is permitted
-
-The Engine must not:
-
-- Auto-close sessions
-- Auto-resume sessions
-- Auto-consolidate sessions
+- No automatic closure or auto-resume permitted
 
 Explicit operator action is required.
 
@@ -161,31 +205,9 @@ Fail if:
 
 ---
 
-# 6. Resolution State Integrity
+# 7. Deterministic Readiness Guarantee
 
-## ENG-INIT-07 — UNDER_REVIEW and RETIRED
-
-Initialization must verify:
-
-- UNDER_REVIEW and RETIRED resolutions:
-  - Remain structurally ACTIVE in supersession graph
-  - May still be superseded
-  - Do not break graph integrity
-
-The Engine must not:
-
-- Alter resolution state during initialization
-- Infer deactivation beyond explicit state
-
-Fail if:
-
-- Resolution state mutates during startup
-
----
-
-# 7. Determinism Guarantee
-
-## ENG-INIT-08 — Pure Deterministic Readiness
+## ENG-INIT-11 — Pure Deterministic Initialization
 
 Given identical:
 
@@ -200,39 +222,26 @@ Initialization must produce:
 - Identical evaluation eligibility
 - Identical invariant checks
 
-Initialization must not depend on:
-
-- Storage order
-- Import source
-- Timestamp ordering
-- Runtime environment
-
 Fail if:
 
-- Two independent implementations produce different readiness outcomes
+- Readiness depends on storage order, import source, timestamp ordering, or runtime environment
 
 ---
 
 # 8. Failure Semantics
 
-## ENG-INIT-09 — Fail Loud, Fail Pure
+## ENG-INIT-12 — Fail Loud, Fail Pure
 
-If structural invariants are violated:
-
-- Initialization must fail explicitly
+- Explicit failure on any invariant violation
 - No partial readiness allowed
 - No degraded evaluation mode
-- No silent recovery
-
-The Engine does not repair.
-
-The Engine rejects invalid structure.
+- No silent recovery or repair
 
 ---
 
 # 9. No Migration Rule
 
-## ENG-INIT-10 — No Implicit Migration
+## ENG-INIT-13 — No Implicit Migration
 
 During initialization, the Engine must not:
 
@@ -242,36 +251,22 @@ During initialization, the Engine must not:
 - Rebind supersession edges
 - Normalize structure
 
-All migration must occur outside the engine through explicit commands.
+All migration must occur through explicit operator command.
 
 Fail if:
 
-- Engine mutates domain objects during initialization
+- Engine mutates domain objects
 
 ---
 
-# 10. What Initialization Is Not
-
-Initialization is not:
-
-- Storage verification
-- Hash validation
-- Envelope validation
-- Import logic
-- Ref resolution
-- Area lifecycle management
-
-Those responsibilities belong to the host layer.
-
----
-
-# 11. Readiness Definition
+# 10. Readiness Definition
 
 The Engine is considered ready when:
 
 - Structural validation passes
 - Supersession graph integrity holds
-- Lifecycle invariants hold
+- Exclusive slot enforcement passed
+- Participant and snapshot invariants satisfied
 - No implicit mutation occurred
 
 Readiness does not imply:
@@ -280,30 +275,27 @@ Readiness does not imply:
 - Session acceptability
 - Governance validity
 
-Readiness only guarantees:
-
-The Engine may now evaluate legitimacy deterministically.
-
 ---
 
-# 12. Mental Model
+# 11. Mental Model
 
-- Host supplies facts.
-- Engine validates structure.
-- Engine enforces invariants.
-- Engine evaluates legitimacy.
-- Nothing changes unless explicitly commanded.
+- Host supplies facts
+- Engine validates structure
+- Engine enforces invariants
+- Engine evaluates legitimacy
+- Nothing changes unless explicitly commanded
 
 Initialization is structural verification, not state evolution.
 
 ---
 
-# Constitutional Alignment
+# 12. Constitutional Alignment
 
 This document conforms to:
 
 - ENG-CORE-PURITY
 - ENG-DOMAIN
+- ENG-SESSION
 - ENG-DECISION
 - ENG-REVIEW-RETIRED
 - ENG-SUPERSESSION
