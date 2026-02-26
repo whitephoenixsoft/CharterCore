@@ -1,50 +1,55 @@
 # ENG-INTEGRITY  
 Engine Integrity & Runtime Guarantees  
-Status: DRAFT (Pre-Freeze)  
+Status: FROZEN (v4 – Integrity, Orphan Handling, Atomicity & Time Semantics)  
 Applies to: Engine Core (V1/V2+)
 
 ---
 
 # 1. Purpose
 
-This document defines the global runtime integrity rules of the engine.
+ENG-INTEGRITY defines the global runtime integrity rules of the Engine Core.
 
 It governs:
 
-- Engine initialization guarantees
-- Structural invariant enforcement
-- Area-level acceptance guards
-- Fatal failure semantics
-- Cross-document invariant precedence
-- Legitimacy compiler doctrine
+- Engine initialization guarantees  
+- Structural invariant enforcement  
+- Area-level acceptance guards  
+- Orphan object detection and graph completeness  
+- Crash and persistence boundaries  
+- Atomic commit semantics  
+- Time semantics for engine operations  
+- Fatal failure semantics  
+- Cross-document invariant precedence  
+- Legitimacy compiler doctrine  
 
-This document does not define:
+It does **not** define:
 
-- Session mechanics (ENG-DECISION)
-- Supersession graph structure (ENG-SUPERSESSION)
-- Suspension and deprecation semantics (ENG-REVIEW-RETIRED)
-- Object schemas (ENG-DOMAIN)
+- Session mechanics (ENG-DECISION)  
+- Supersession graph structure (ENG-SUPERSESSION)  
+- Suspension and deprecation semantics (ENG-REVIEW-RETIRED)  
+- Object schemas (ENG-DOMAIN)  
 
-It defines system-level halting conditions and runtime enforcement behavior.
+This specification defines system-level halting conditions and runtime enforcement behavior.
 
 ---
 
 # 2. Legitimacy Compiler Doctrine
 
-The engine is a legitimacy compiler.
+The Engine is a **legitimacy compiler**:
 
-It does not infer legitimacy.
-It does not repair legitimacy.
-It does not auto-resolve ambiguity.
+- Does not infer legitimacy  
+- Does not repair legitimacy  
+- Does not auto-resolve ambiguity  
+- Does not continue history from corrupted or incomplete data  
 
 Legitimacy is:
 
-- Explicit
-- Deterministic
-- Structurally verifiable
-- Mechanically reproducible
+- Explicit  
+- Deterministic  
+- Structurally verifiable  
+- Mechanically reproducible  
 
-If structural integrity cannot be proven, the engine must halt.
+If structural integrity cannot be proven, the Engine must halt.
 
 Convenience never overrides legitimacy invariants.
 
@@ -54,43 +59,59 @@ Convenience never overrides legitimacy invariants.
 
 ## 3.1 Deterministic Restore
 
-On startup, the engine must:
+On startup, the Engine must:
 
-- Load all persisted domain objects.
-- Reconstruct supersession graph.
-- Recompute ACTIVE sets.
-- Validate exclusive legitimacy slots.
-- Validate acyclic supersession graph.
-- Validate state consistency across objects.
-- Validate schema versions.
+- Load all persisted domain objects  
+- Reconstruct the supersession graph  
+- Recompute ACTIVE sets  
+- Validate exclusive legitimacy slots  
+- Validate acyclic supersession graph  
+- Validate session, candidate, and vote consistency  
+- Validate schema versions  
 
 Restore must be deterministic across implementations.
 
+## 3.2 Orphan Object & Graph Completeness
+
+- Every referenced object ID must exist in the imported graph or persisted store (unless operating in a **relaxed import mode**, e.g., Charter CLI Baseline Review).  
+- Superseded, retired, or active objects must be fully present to validate legitimacy.  
+- Orphan detection triggers **StructuralIntegrityFailure**.  
+
+Relaxed import mode (CLI context):
+
+- Flat lists of resolutions or proposals may be imported without full structural graph.  
+- Structural reference checks are relaxed; the Engine validates only minimal integrity required to process proposals.  
+- No legitimacy or acceptance is created automatically; full evaluation requires standard session mechanics.
+
+Fail if:
+
+- Missing referenced IDs outside relaxed import mode  
+- Supersession edges invalid or cyclic  
+- Participant snapshots incomplete  
+- Candidate or vote snapshots incomplete  
+
 ---
 
-## 3.2 Fatal Structural Integrity Failure
+## 3.3 Fatal Structural Integrity Failure
 
 Engine initialization must fail deterministically if any of the following are detected:
 
-- Supersession cycle
-- Multiple ACTIVE successors in an exclusive legitimacy slot
-- Invalid superseded_by references
-- Resolution state inconsistent with supersession structure
-- Scope state inconsistent with supersession structure
-- Cross-area supersession violation
-- Schema mismatch that prevents deterministic reconstruction
-- Any invariant violation defined in ENG-DOMAIN, ENG-SUPERSESSION, or ENG-DECISION
+- Supersession cycle  
+- Multiple ACTIVE successors in an exclusive legitimacy slot  
+- Invalid superseded_by references  
+- Resolution or scope state inconsistent with supersession  
+- Cross-area supersession violation  
+- Schema mismatch preventing deterministic reconstruction  
+- Any invariant violation defined in ENG-DOMAIN, ENG-SUPERSESSION, or ENG-DECISION  
 
 Failure behavior:
 
-- Engine must not enter interactive mode.
-- No session evaluation permitted.
-- No acceptance permitted.
-- Error must clearly identify invariant violation class.
+- Engine must **halt completely**  
+- No session evaluation permitted  
+- No acceptance permitted  
+- Error must clearly identify the invariant violation class  
 
-No automatic repair is allowed.
-
-Forward motion requires explicit consolidation through baseline review or corrective session.
+No automatic repair is allowed. Forward motion requires **explicit host action**, e.g., baseline consolidation in CLI.
 
 ---
 
@@ -98,48 +119,38 @@ Forward motion requires explicit consolidation through baseline review or correc
 
 ## 4.1 BLOCK_PERMANENT Enforcement
 
-If any session in an Area is in state BLOCK_PERMANENT:
+If any session in an Area is in **BLOCK_PERMANENT**:
 
-- Acceptance of any session in that Area must fail.
-- Evaluation must report area_governance_blocked.
-- The blocking session(s) must be explicitly closed before acceptance can proceed.
-
-This rule enforces legitimacy hygiene.
-
----
+- Acceptance of any session in that Area fails  
+- Evaluation reports `area_governance_blocked`  
+- Blocking session(s) must be explicitly closed before acceptance  
 
 ## 4.2 Scope and Authority Supersession
 
-If Authority or Scope in an Area is SUPERSEDED:
-
-- All sessions in the Area transition to BLOCK_PERMANENT.
-- Area acceptance is prohibited.
-- Explicit closure or restart-from is required.
-
----
+- SUPERSEDED Authority or Scope → all Area sessions BLOCK_PERMANENT  
+- Acceptance prohibited  
+- Explicit closure or restart-from required  
 
 ## 4.3 Scope UNDER_REVIEW
 
-If Scope is UNDER_REVIEW:
-
-- All sessions in the Area transition to BLOCK_TEMPORARY.
-- Acceptance in the Area is prohibited.
-- Resume is permitted once Scope returns to ACTIVE.
+- UNDER_REVIEW Scope → all Area sessions BLOCK_TEMPORARY  
+- Acceptance prohibited until Scope returns to ACTIVE  
+- Resume permitted  
 
 ---
 
 # 5. No Implicit Repair Rule
 
-The engine must never:
+The Engine must never:
 
-- Auto-close sessions due to governance conflict.
-- Auto-resolve supersession conflicts.
-- Auto-merge branches.
-- Auto-reactivate RETIRED resolutions.
-- Auto-resume sessions after interruption.
-- Modify domain objects during restore.
+- Auto-close sessions due to governance conflict  
+- Auto-resolve supersession conflicts  
+- Auto-merge branches  
+- Auto-reactivate RETIRED resolutions  
+- Auto-resume sessions after interruption  
+- Modify domain objects during restore  
 
-All corrective actions require explicit user command.
+All corrective actions require **explicit user or host command**.
 
 ---
 
@@ -147,112 +158,98 @@ All corrective actions require explicit user command.
 
 ## 6.1 StructuralIntegrityFailure (Fatal)
 
-Occurs during initialization.
-
-Halts engine completely.
-
-Examples:
-
-- Graph cycle
-- Multiple ACTIVE successors
-- Corrupted supersession chain
-
----
+- Occurs during initialization or rehydration  
+- Halts Engine completely  
+- Triggered by orphaned IDs, corrupted supersession, cycles, or missing snapshots  
 
 ## 6.2 AreaGovernanceBlocked (Non-Fatal Runtime Guard)
 
-Occurs when:
-
-- BLOCK_PERMANENT session exists in Area
-
-Prevents acceptance in that Area.
-
-Resolved only by explicit closure.
-
----
+- Occurs when any session is BLOCK_PERMANENT  
+- Prevents acceptance in that Area  
+- Resolved only by explicit closure  
 
 ## 6.3 SessionGovernanceBlocked
 
-Occurs when:
-
-- Session in BLOCK_TEMPORARY or BLOCK_PERMANENT
-
-Prevents acceptance of that session.
+- Occurs when session is BLOCK_TEMPORARY or BLOCK_PERMANENT  
+- Prevents acceptance of that session  
 
 ---
 
 # 7. Deterministic Enforcement
 
-All integrity checks must be:
-
-- Deterministic
-- Implementation-independent
-- Side-effect-free until commit
-- Reproducible from persisted data
-
-No timestamp precedence.
-No heuristic ordering.
-No implementation-specific fallback.
+- Checks are deterministic and reproducible from persisted data  
+- No timestamp precedence or heuristic ordering  
+- Side-effect-free until commit  
+- Engine halts on ambiguity  
 
 ---
 
-# 8. Cross-Document Invariant Precedence
+# 8. Persistence & Atomic Commit Model
 
-If conflict arises between documents:
+- Acceptance is atomic: session state, resolution creation, and legitimacy receipt persist together  
+- Audit emission occurs **after** resolution commit; crash post-commit but pre-audit emission is allowed  
+- Rehydration is non-mutating; restore or simulation failures do not alter persisted state  
+- Engine ensures transactional integrity for all atomic operations  
 
-1. ENG-INTEGRITY overrides runtime behavior.
-2. ENG-SUPERSESSION governs graph structure.
-3. ENG-DECISION governs session mechanics.
-4. ENG-REVIEW-RETIRED governs suspension semantics.
-5. ENG-DOMAIN governs structural encoding.
+---
+
+# 9. Time Semantics
+
+- Timestamps are **informational only**.  
+- UUIDv7 time components may preserve creation order but are **not authoritative** for legitimacy, acceptance, or supersession.  
+- Timestamps **must never influence** evaluation, restore, or acceptance rules.  
+- Clock drift or host inconsistencies do not affect engine correctness.  
+- Audit logs may include timestamps for human reference; chronological ordering for legitimacy is determined solely by deterministic structural rules.  
+
+---
+
+# 10. Cross-Document Invariant Precedence
+
+If conflicts arise:
+
+1. ENG-INTEGRITY → runtime enforcement  
+2. ENG-SUPERSESSION → graph structure  
+3. ENG-DECISION → session mechanics  
+4. ENG-REVIEW-RETIRED → suspension semantics  
+5. ENG-DOMAIN → structural encoding  
 
 Runtime must never violate structural invariants.
 
 ---
 
-# 9. Compiler Halt Principle
+# 11. Compiler Halt Principle
 
-If legitimacy structure is ambiguous,
-the engine must halt.
-
-If supersession graph is inconsistent,
-the engine must halt.
-
-If exclusive legitimacy slots contain multiple ACTIVE objects,
-the engine must halt.
-
-If structural invariants cannot be proven,
-the engine must halt.
-
-The engine prefers halt over ambiguity.
+- Any ambiguity → halt  
+- Orphan detection → halt  
+- Multiple ACTIVE objects in exclusive slots → halt  
+- Supersession graph inconsistent → halt  
+- Integrity always preferred over convenience  
 
 ---
 
-# 10. Explicit Consolidation Doctrine
+# 12. Explicit Consolidation Doctrine
 
-When initialization fails due to structural violation:
+When initialization fails:
 
-- User must perform baseline review.
-- Consolidation must be explicit.
-- No hidden repair path is allowed.
-- Post-consolidation state must be fully deterministic.
-
-Restore integrity before forward legitimacy motion.
+- User or host performs explicit consolidation (e.g., Charter CLI Baseline Review)  
+- Post-consolidation state must be fully deterministic  
+- Resolutions from untrusted or corrupted sources may be batched as proposals  
+- No structural trust is inherited; new legitimacy is created only through standard session mechanics  
 
 ---
 
-# 11. Engine Invariants
+# 13. Engine Invariants
 
-- Legitimacy is compiled, not inferred.
-- Structural integrity precedes usability.
-- Explicit closure is required for permanent conflicts.
-- Deterministic restore is mandatory.
-- Area hygiene is enforced mechanically.
-- No silent mutation is allowed.
-- Halt is preferable to ambiguity.
+- Legitimacy is compiled, not inferred  
+- Structural integrity precedes usability  
+- Explicit closure required for permanent conflicts  
+- Deterministic restore is mandatory  
+- Area hygiene enforced mechanically  
+- No silent mutation allowed  
+- Halt preferred to ambiguity  
 
 ---
 
-This document establishes the runtime integrity contract of the engine.
+This specification establishes the runtime integrity, orphan-handling, atomic commit, and time semantics contract of the Engine Core.  
 
 All other specifications must conform to these guarantees.
