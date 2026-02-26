@@ -1,6 +1,6 @@
 # ENG-INTEGRITY  
 Engine Integrity & Runtime Guarantees  
-Status: FROZEN (v4 – Integrity, Orphan Handling, Atomicity & Time Semantics)  
+Status: FROZEN (v5 – Integrity, Atomicity, Time & Identity Semantics)  
 Applies to: Engine Core (V1/V2+)
 
 ---
@@ -18,6 +18,7 @@ It governs:
 - Crash and persistence boundaries  
 - Atomic commit semantics  
 - Time semantics for engine operations  
+- Identity and hash separation rules  
 - Fatal failure semantics  
 - Cross-document invariant precedence  
 - Legitimacy compiler doctrine  
@@ -71,6 +72,8 @@ On startup, the Engine must:
 
 Restore must be deterministic across implementations.
 
+---
+
 ## 3.2 Orphan Object & Graph Completeness
 
 - Every referenced object ID must exist in the imported graph or persisted store (unless operating in a **relaxed import mode**, e.g., Charter CLI Baseline Review).  
@@ -111,7 +114,7 @@ Failure behavior:
 - No acceptance permitted  
 - Error must clearly identify the invariant violation class  
 
-No automatic repair is allowed. Forward motion requires **explicit host action**, e.g., baseline consolidation in CLI.
+No automatic repair is allowed. Forward motion requires explicit host action.
 
 ---
 
@@ -150,7 +153,7 @@ The Engine must never:
 - Auto-resume sessions after interruption  
 - Modify domain objects during restore  
 
-All corrective actions require **explicit user or host command**.
+All corrective actions require explicit user or host command.
 
 ---
 
@@ -197,13 +200,41 @@ All corrective actions require **explicit user or host command**.
 
 - Timestamps are **informational only**.  
 - UUIDv7 time components may preserve creation order but are **not authoritative** for legitimacy, acceptance, or supersession.  
-- Timestamps **must never influence** evaluation, restore, or acceptance rules.  
+- Timestamps must never influence evaluation, restore, or acceptance rules.  
 - Clock drift or host inconsistencies do not affect engine correctness.  
-- Audit logs may include timestamps for human reference; chronological ordering for legitimacy is determined solely by deterministic structural rules.  
+- Chronology for legitimacy is determined solely by deterministic structural rules.  
 
 ---
 
-# 10. Cross-Document Invariant Precedence
+# 10. Identity & Hash Semantics
+
+## 10.1 Canonical Identity
+
+- All engine domain objects are identified exclusively by UUIDv7.  
+- UUID is the sole canonical identity mechanism.  
+- Identity never depends on content hashing, serialization form, or storage location.
+
+## 10.2 Hash Independence Rule
+
+If content hashes are used (e.g., for receipts, audit metadata, federation, or storage integrity):
+
+- Hashes are **integrity metadata only**.  
+- Hash changes do not alter object identity.  
+- Hash algorithm migration does not alter object identity.  
+- Identity resolution always relies on UUID, never on hash value.
+
+## 10.3 Hash Non-Semantic Guarantee
+
+- Hashes must never influence legitimacy evaluation.  
+- Hashes must never influence acceptance.  
+- Hashes must never influence supersession.  
+- Hashes must never influence restore logic.
+
+Hashes are descriptive, not authoritative.
+
+---
+
+# 11. Cross-Document Invariant Precedence
 
 If conflicts arise:
 
@@ -217,7 +248,7 @@ Runtime must never violate structural invariants.
 
 ---
 
-# 11. Compiler Halt Principle
+# 12. Compiler Halt Principle
 
 - Any ambiguity → halt  
 - Orphan detection → halt  
@@ -227,29 +258,31 @@ Runtime must never violate structural invariants.
 
 ---
 
-# 12. Explicit Consolidation Doctrine
+# 13. Explicit Consolidation Doctrine
 
 When initialization fails:
 
-- User or host performs explicit consolidation (e.g., Charter CLI Baseline Review)  
+- User or host performs explicit consolidation  
 - Post-consolidation state must be fully deterministic  
-- Resolutions from untrusted or corrupted sources may be batched as proposals  
-- No structural trust is inherited; new legitimacy is created only through standard session mechanics  
+- No structural trust is inherited from corrupted sources  
+- New legitimacy is created only through standard session mechanics  
 
 ---
 
-# 13. Engine Invariants
+# 14. Engine Invariants
 
 - Legitimacy is compiled, not inferred  
 - Structural integrity precedes usability  
 - Explicit closure required for permanent conflicts  
 - Deterministic restore is mandatory  
 - Area hygiene enforced mechanically  
+- UUID is the sole identity authority  
+- Hashes are non-semantic integrity metadata  
 - No silent mutation allowed  
 - Halt preferred to ambiguity  
 
 ---
 
-This specification establishes the runtime integrity, orphan-handling, atomic commit, and time semantics contract of the Engine Core.  
+This specification establishes the runtime integrity, atomicity, time semantics, and identity guarantees of the Engine Core.
 
 All other specifications must conform to these guarantees.
