@@ -1,5 +1,5 @@
 # ENG-CORE-PURITY — Engine Isolation & Determinism Principles
-Status: FROZEN (v2 – Evaluation Purity & Idempotence Formalized)
+Status: FROZEN (v3 – Cross-Area Opacity Doctrine Added)
 Applies to: Engine Core (V1/V2+)
 Scope: Constitutional Engine Guarantees
 
@@ -7,7 +7,7 @@ Scope: Constitutional Engine Guarantees
 
 # 1. Purpose
 
-This document defines the isolation, identity, and determinism principles of the Engine Core.
+This document defines the isolation, identity, locality, and determinism principles of the Engine Core.
 
 It establishes what the engine is allowed to depend on, and what it must never depend on.
 
@@ -44,7 +44,7 @@ Fail if:
 The Engine operates only on:
 
 - Domain objects provided as input.
-- Explicit references between those objects.
+- Explicit structural references between those objects.
 - Defined lifecycle state.
 - Defined authority and scope rules.
 
@@ -53,18 +53,46 @@ The Engine must not:
 - Infer missing objects.
 - Traverse undeclared relationships.
 - Derive meaning from object existence alone.
+- Resolve external or cross-area identifiers.
 
 Fail if:
 
 - Mere existence of an object affects legitimacy.
 - Unreferenced objects influence evaluation.
 - Implicit graph traversal alters outcomes.
+- External area presence or absence affects legitimacy.
 
 ---
 
-# 3. Identity Doctrine
+# 3. Structural Locality Doctrine
 
-## ENG-CORE-03 — Engine-Owned Identity
+## ENG-CORE-03 — Area Sovereignty
+
+Each Area is structurally sovereign.
+
+Legitimacy within an Area must be computable from:
+
+- That Area’s domain objects only.
+- Supersession relationships within that Area.
+- Governance state derived within that Area.
+
+The Engine must not:
+
+- Depend on other Areas for legitimacy computation.
+- Traverse cross-area references.
+- Require external Areas to exist.
+
+Fail if:
+
+- Removal of an external Area alters legitimacy of a local Area.
+- Cross-area existence influences ACTIVE derivation.
+- Federation topology affects evaluation outcome.
+
+---
+
+# 4. Identity Doctrine
+
+## ENG-CORE-04 — Engine-Owned Identity
 
 All domain object identifiers:
 
@@ -91,9 +119,9 @@ Fail if:
 
 ---
 
-# 4. Immutability Principle
+# 5. Immutability Principle
 
-## ENG-CORE-04 — No In-Place Mutation
+## ENG-CORE-05 — No In-Place Mutation
 
 Domain objects:
 
@@ -111,44 +139,88 @@ Fail if:
 
 ---
 
-# 5. Supersession Graph Purity
+# 6. Structural Reference Boundary
 
-## ENG-CORE-05 — Graph-Based Legitimacy
+## ENG-CORE-06 — Supersession Is the Only Structural Graph Edge
 
-Legitimacy evolution is defined exclusively by:
+Within an Area, the only structural inter-object graph edge that affects legitimacy is:
 
-- Explicit supersession relationships.
-- Explicit lifecycle state transitions.
-- Explicit session acceptance.
+- Supersession between Resolutions.
 
-The Engine must not:
+No other domain object references may:
 
-- Infer replacement order.
-- Use timestamps to determine precedence.
-- Use storage ordering to resolve conflicts.
+- Affect ACTIVE derivation.
+- Create structural dependency.
+- Influence legitimacy computation.
 
-Supersession must remain:
+If additional internal references are introduced in future specifications, they must explicitly declare:
 
-- Explicit
-- Directed
-- Acyclic
-- Immutable
+- Whether they are structural or informational.
+- Their legitimacy impact.
+- Their integrity validation rules.
 
 Fail if:
 
-- Replacement is inferred implicitly.
-- Graph structure mutates after creation.
+- An undeclared reference alters legitimacy.
+- Informational references are treated as structural.
 
 ---
 
-# 6. Determinism Guarantee
+# 7. Cross-Area Opacity Doctrine
 
-## ENG-CORE-06 — Pure Deterministic Evaluation & Mutation
+## ENG-CORE-07 — Cross-Area References Are Informational Only
+
+Domain objects may contain cross-area references to:
+
+- External Areas.
+- External Resolutions.
+
+A cross-area reference must contain:
+
+- An external identifier (e.g., area_id and optionally resolution_id).
+- A human-readable label snapshot.
+
+Cross-area references:
+
+- Are opaque identifiers.
+- Are not dereferenced by the Engine.
+- Are not validated for existence.
+- Are not structural graph edges.
+- Do not participate in supersession.
+- Do not affect ACTIVE derivation.
+- Do not affect governance slot evaluation.
+- Do not affect restore validation.
+
+The Engine must not:
+
+- Require the referenced Area to exist.
+- Fail restore due to unresolved cross-area references.
+- Treat missing external targets as ORPHAN or MISSING_REFERENCE.
+- Attempt to update or canonicalize labels.
+
+Deletion or absence of a referenced external Area or Resolution must not alter:
+
+- Session state.
+- Resolution state.
+- Blocking state.
+- Acceptance eligibility.
+
+Fail if:
+
+- Cross-area references influence legitimacy.
+- Cross-area references create structural dependency.
+- External availability affects deterministic evaluation.
+
+---
+
+# 8. Determinism Guarantee
+
+## ENG-CORE-08 — Pure Deterministic Evaluation & Mutation
 
 Given identical:
 
 - Domain objects
-- Logical references
+- Structural references
 - Session state
 - Authority state
 - Scope state
@@ -163,6 +235,7 @@ No behavior may depend on:
 - Import source
 - Runtime environment
 - System clock (beyond UUID generation)
+- External system availability
 
 Fail if:
 
@@ -170,9 +243,9 @@ Fail if:
 
 ---
 
-# 7. Evaluation Purity Doctrine
+# 9. Evaluation Purity Doctrine
 
-## ENG-CORE-07 — Evaluation Is Pure and Side-Effect Free
+## ENG-CORE-09 — Evaluation Is Pure and Side-Effect Free
 
 Evaluation APIs (e.g., evaluate_session):
 
@@ -184,13 +257,13 @@ Evaluation APIs (e.g., evaluate_session):
 - Must not trigger lifecycle transitions.
 - Must not insert implicit votes.
 - Must not normalize or rewrite domain objects.
+- Must not traverse cross-area references.
 
 Evaluation must not:
 
 - Cause BLOCK_TEMPORARY or BLOCK_PERMANENT transitions.
 - Recompute and persist derived state.
 - Modify participant or candidate sets.
-- Revalidate by mutating state.
 
 Fail if:
 
@@ -199,7 +272,7 @@ Fail if:
 
 ---
 
-## ENG-CORE-08 — Evaluation Idempotence
+## ENG-CORE-10 — Evaluation Idempotence
 
 Evaluation must be idempotent.
 
@@ -211,12 +284,6 @@ Given identical:
 
 Repeated evaluation calls must produce identical EvaluationReports (except non-semantic diagnostics).
 
-Evaluation must not:
-
-- Depend on prior evaluation calls.
-- Cache legitimacy state in a way that alters outcomes.
-- Require evaluation before acceptance.
-
 Acceptance must independently validate all invariants without reliance on prior evaluation.
 
 Fail if:
@@ -226,15 +293,15 @@ Fail if:
 
 ---
 
-# 8. Legitimacy Boundary
+# 10. Legitimacy Boundary
 
-## ENG-CORE-09 — Legitimacy Is Structural
+## ENG-CORE-11 — Legitimacy Is Structural and Local
 
 Legitimacy is created only through:
 
 - Sessions
 - Acceptance rules
-- Supersession rules
+- Supersession rules within an Area
 
 Legitimacy is not created by:
 
@@ -244,6 +311,7 @@ Legitimacy is not created by:
 - Import actions
 - Timestamps
 - Actor identity
+- Cross-area references
 
 Fail if:
 
@@ -251,10 +319,11 @@ Fail if:
 - Evaluation creates governance effects.
 - Audit substitutes for governance.
 - Persistence implies authority.
+- External Areas influence legitimacy.
 
 ---
 
-# 9. Non-Goals
+# 11. Non-Goals
 
 The Engine is not:
 
@@ -263,14 +332,15 @@ The Engine is not:
 - A hash registry
 - A permission system
 - A distributed consensus protocol
+- A cross-area integrity validator
 
 The Engine is:
 
-A deterministic legitimacy evaluator.
+A deterministic, Area-local legitimacy evaluator.
 
 ---
 
-# 10. Mental Model
+# 12. Mental Model
 
 - Storage remembers.
 - Audit records.
@@ -278,18 +348,20 @@ A deterministic legitimacy evaluator.
 - Evaluation inspects.
 - Acceptance commits.
 - Supersession evolves governance.
+- Areas are sovereign.
 
 The Engine is a legitimacy compiler.
 
 Evaluation is simulation.
 Acceptance is transaction.
+Cross-area references are context only.
 
 ---
 
-# 11. Constitutional Status
+# 13. Constitutional Status
 
-This document defines the isolation boundary of the Engine Core.
+This document defines the isolation and locality boundary of the Engine Core.
 
-All other specifications (ENG-DOMAIN, ENG-DECISION, ENG-REVIEW-RETIRED, ENG-SUPERSESSION, ENG-AUD, ENG-API) must conform to these principles.
+All other specifications (ENG-DOMAIN, ENG-DECISION, ENG-REVIEW-RETIRED, ENG-SUPERSESSION, ENG-AUD, ENG-API, ENG-INTEGRITY) must conform to these principles.
 
 Violation of these principles constitutes a critical constitutional failure.

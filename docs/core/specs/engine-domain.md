@@ -1,6 +1,6 @@
 # ENG-DOMAIN — Domain Object Schema  
 Canonical Engine Object Definitions  
-Status: DRAFT (Pre-Freeze, Governance Slots Integrated)  
+Status: DRAFT (Pre-Freeze, Cross-Area References Integrated)  
 Applies to: Engine Core (V1/V2+)
 
 ---
@@ -18,6 +18,7 @@ Its goals are to:
 - Separate structural encoding from behavioral rules.
 - Centralize identity generation within the engine.
 - Define exclusive governance slot invariants.
+- Distinguish structural references from informational cross-area references.
 
 Behavioral rules are defined in:
 
@@ -42,7 +43,7 @@ This document defines structure only.
 - No implicit defaults
 - No nullable ambiguity unless explicitly defined
 
-2.3 Optional annotations are allowed but must not affect object identity or hashing.
+2.3 Optional annotations and informational references are allowed but must not affect object identity or hashing unless explicitly declared.
 
 2.4 Lifecycle state must be encoded using a single enum field — never boolean flags.
 
@@ -82,119 +83,93 @@ Multiple ACTIVE objects in either slot is a structural integrity violation.
 
 ---
 
-## 3.2 Slot Presence Rules
+# 4. Structural vs Informational References
 
-Authority slot:
+## 4.1 Structural References
 
-- Exactly one ACTIVE Authority is required before governance begins.
-- Authority slot may be empty only in UNINITIALIZED state.
+Structural references are references that:
 
-Scope slot:
+- Affect legitimacy
+- Affect ACTIVE derivation
+- Affect supersession graph
+- Must resolve during restore
 
-- Scope may be absent only before first Scope definition.
-- Once a Scope has been defined, the slot must never return to empty.
-- An Area containing regular sessions must have exactly one ACTIVE Scope.
+Permitted structural references:
 
-Absence in violation of these rules is a structural integrity failure.
+- Session → Authority (Resolution)
+- Session → Scope
+- Resolution → originating Session
+- Resolution → superseded Resolution
+- Scope → superseded Scope
 
----
-
-## 3.3 Derived Governance State (Not Persisted)
-
-Area governance state is derived, not stored.
-
-Possible derived states:
-
-UNINITIALIZED  
-- No ACTIVE Authority exists.
-
-AUTHORITY_DEFINED  
-- Exactly one ACTIVE Authority exists.
-- No ACTIVE Scope exists.
-
-FULLY_GOVERNED  
-- Exactly one ACTIVE Authority exists.
-- Exactly one ACTIVE Scope exists.
-
-These states:
-
-- Must never be stored as fields.
-- Must be computed during evaluation or restore.
-- Are used for invariant validation only.
-
-Restore must validate:
-
-- Slot exclusivity.
-- Required presence conditions based on existing sessions.
+Missing structural references constitute integrity failure.
 
 ---
 
-# 4. Enumerations
+## 4.2 Informational Cross-Area References
 
-## 4.1 SessionState
+Cross-area references are informational only.
 
-- ACTIVE
-- PAUSED
-- BLOCK_TEMPORARY
-- BLOCK_PERMANENT
-- ACCEPTED
-- CLOSED
+They may reference:
 
-Definitions (structural only):
+- External Areas
+- External Resolutions in other Areas
 
-- BLOCK_TEMPORARY — reversible interruption
-- BLOCK_PERMANENT — irreversible governance conflict requiring explicit closure
-- ACCEPTED — produced Resolution
-- CLOSED — explicitly terminated by user
+They must not:
 
-No additional states permitted.
+- Affect legitimacy
+- Affect supersession
+- Affect ACTIVE derivation
+- Trigger restore failure if unresolved
+- Be treated as ORPHAN or MISSING_REFERENCE
 
----
-
-## 4.2 SessionPhase
-
-- PRE_STANCE
-- VOTING
-- TERMINAL
-
-TERMINAL phase applies only when state is ACCEPTED or CLOSED.
+They are opaque metadata.
 
 ---
 
-## 4.3 ResolutionState
+# 5. CrossAreaReference Schema
 
-- ACTIVE
-- UNDER_REVIEW
-- RETIRED
-- SUPERSEDED
+A CrossAreaReference must contain:
 
-States are mutually exclusive.
+- external_area_id (opaque identifier, UUIDv7 format recommended)
+- external_area_label (string, human-readable snapshot)
+- external_resolution_id (nullable, opaque identifier)
+- external_resolution_label (nullable string, human-readable snapshot)
+- created_at (timestamp)
+- schema_version (string)
 
-UNDER_REVIEW and RETIRED do not alter supersession edges.
+Rules:
 
-SUPERSEDED is terminal and graph-altering.
+- external identifiers are not dereferenced by the engine.
+- Labels are snapshots and must not be validated or canonicalized.
+- Engine must not attempt to update labels.
+- Absence of referenced Area or Resolution must not alter engine behavior.
+- CrossAreaReference objects are immutable.
 
----
-
-## 4.4 ScopeState
-
-- ACTIVE
-- UNDER_REVIEW
-- SUPERSEDED
-
-Scope does not support RETIRED.
+CrossAreaReference objects are informational only and excluded from structural integrity validation.
 
 ---
 
-## 4.5 Stance
+# 6. Placement of Cross-Area References
 
-- ACCEPT
-- REJECT
-- ABSTAIN
+Cross-area references may appear in:
+
+- Resolution annotations
+- Session annotations
+- Explicit cross_area_references list field (if defined by embedding spec)
+
+They must not appear in:
+
+- superseded_by fields
+- authority_id fields
+- scope_id fields
+- Any structural reference field
+
+If future schema additions include cross-area references in new objects, they must be explicitly declared informational.
 
 ---
 
-# 5. Session Schema
+# 7. Session Schema
 
 A Session object must contain:
 
@@ -209,108 +184,17 @@ A Session object must contain:
 - candidates (list of Candidate objects)
 - constraints (list of Constraint objects)
 - votes (list of Vote objects)
+- cross_area_references (optional list of CrossAreaReference)
 - annotations (optional)
 - created_at (timestamp)
 - updated_at (timestamp)
 - schema_version (string)
 
----
-
-## 5.1 Structural Notes
-
-- session_type is immutable.
-- authority_id must reference the ACTIVE Authority at creation (unless session_type = AUTHORITY during bootstrap).
-- scope_id must reference the ACTIVE Scope at creation for SCOPE and REGULAR sessions.
-- participants reflect the current governance set for the session.
-- participants may be modified only while phase = PRE_STANCE.
-- When phase transitions to VOTING:
-  - participant set becomes structurally frozen.
-  - candidate set becomes structurally frozen.
-- votes are cleared when state transitions to BLOCK_TEMPORARY.
-- BLOCK_PERMANENT freezes progression but does not imply TERMINAL.
-- ACCEPTED implies phase = TERMINAL.
-- CLOSED implies phase = TERMINAL.
-- No boolean flags may represent blocking.
+Cross-area references must not affect evaluation.
 
 ---
 
-# 6. Candidate Schema
-
-A Candidate must contain:
-
-- candidate_id (engine-generated UUIDv7, unique within session)
-- content (opaque payload)
-- created_by (participant ID)
-- created_at (timestamp)
-- annotations (optional)
-- schema_version (string)
-
-Candidates do not exist independently outside sessions.
-
-Candidate objects become part of the immutable Resolution snapshot if accepted.
-
----
-
-# 7. Vote Schema
-
-A Vote must contain:
-
-- vote_id (engine-generated UUIDv7)
-- participant_id
-- candidate_id
-- stance (Stance enum)
-- recorded_at (timestamp)
-- schema_version (string)
-
-Structural constraints:
-
-- At most one vote per participant per candidate.
-- Votes are cleared upon BLOCK_TEMPORARY.
-- Votes immutable once recorded.
-- Votes must not be encoded as a mapping (avoid ordering ambiguity).
-
-Votes form part of the acceptance evaluation record.
-
----
-
-## 7.1 Solo Mode Structural Clarification
-
-In Solo Governance Mode:
-
-- Exactly one participant exists.
-
-If acceptance attempted without a Vote:
-
-- Engine must create implicit Vote object:
-  - participant_id = sole participant
-  - stance = ACCEPT
-  - recorded_at = deterministic timestamp
-  - vote_id = engine-generated UUIDv7
-
-There is no acceptance path that bypasses Vote modeling.
-
----
-
-# 8. Constraint Schema
-
-A Constraint must contain:
-
-- constraint_id (engine-generated UUIDv7)
-- required_participants (set of participant IDs)
-- created_at (timestamp)
-- annotations (optional)
-- schema_version (string)
-
-Constraints:
-
-- Immutable once phase = VOTING.
-- Do not encode permanence or block type.
-
-Behavior defined in ENG-DECISION.
-
----
-
-# 9. Resolution Schema
+# 8. Resolution Schema
 
 A Resolution must contain:
 
@@ -323,60 +207,23 @@ A Resolution must contain:
 - candidate_snapshot (complete accepted candidate content)
 - state (ResolutionState enum)
 - superseded_by (resolution_id, nullable)
+- cross_area_references (optional list of CrossAreaReference)
 - created_at (timestamp)
 - annotations (optional)
 - schema_version (string)
 
----
-
-## 9.1 Snapshot Requirements
-
-participant_snapshot must:
-
-- Reflect complete participant set at acceptance.
-- Be immutable.
-- Be independent of later session mutations.
-
-candidate_snapshot must:
-
-- Contain full accepted candidate content.
-- Be self-contained.
-- Not rely on external references for legitimacy.
-
-In Solo Mode:
-
-- participant_snapshot contains exactly one participant ID.
-- Implicit Vote must exist in session prior to snapshot.
+Cross-area references are informational only.
 
 ---
 
-# 10. Scope Schema
-
-A Scope must contain:
-
-- scope_id (engine-generated UUIDv7)
-- area_id (opaque external reference)
-- state (ScopeState enum)
-- superseded_by (scope_id, nullable)
-- created_at (timestamp)
-- annotations (optional)
-- schema_version (string)
-
-Rules:
-
-- Scope does not support RETIRED.
-- superseded_by must be null unless state = SUPERSEDED.
-
----
-
-# 11. Supersession Encoding
+# 9. Supersession Encoding
 
 Supersession represented structurally by:
 
 - superseded object containing superseded_by reference
 - superseding Resolution referencing originating_session_id
 
-No supersession type field permitted.
+Cross-area references must never participate in supersession.
 
 Supersession is:
 
@@ -387,25 +234,9 @@ Supersession is:
 
 Supersession may occur only through Resolution creation via session acceptance.
 
-Behavior defined in ENG-SUPERSESSION.
-
 ---
 
-# 12. Cross-Object References
-
-Permitted references:
-
-- Session → Authority (Resolution)
-- Session → Scope
-- Resolution → originating Session
-- Resolution → superseded Resolution
-- Scope → superseded Scope
-
-Inter-area references must not affect legitimacy.
-
----
-
-# 13. Deterministic Encoding Requirements
+# 10. Deterministic Encoding Requirements
 
 All implementations must ensure:
 
@@ -414,6 +245,8 @@ All implementations must ensure:
 - Stable timestamp format
 - Stable set ordering (lexicographically sorted)
 - Canonical JSON serialization
+
+Cross-area references must be serialized deterministically but excluded from legitimacy computation.
 
 UUID ordering must never determine legitimacy.
 
@@ -425,7 +258,7 @@ Object identity and hashing must be invariant across:
 
 ---
 
-# 14. Schema Versioning
+# 11. Schema Versioning
 
 Every persisted object must include:
 
@@ -440,29 +273,12 @@ Rules:
 
 ---
 
-# 15. Audit & Receipt Alignment
-
-Domain objects are primary legitimacy artifacts.
-
-LEGITIMACY receipts must reference:
-
-- resolution_id
-- session_id
-- authority_snapshot_id
-- scope_snapshot_id
-
-Receipts:
-
-- Must not create legitimacy.
-- Must not mutate domain objects.
-- Are derived artifacts only.
-
----
-
-# 16. Engine Invariants
+# 12. Engine Invariants
 
 - Governance slots are exclusive per Area.
 - Governance state is derived, never stored.
+- Structural references must resolve.
+- Cross-area references must not be validated for existence.
 - All domain object IDs are engine-generated UUIDv7.
 - Lifecycle represented by enum, never flags.
 - BLOCK_PERMANENT explicit.

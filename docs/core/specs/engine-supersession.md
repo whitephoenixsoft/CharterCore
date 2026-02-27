@@ -1,6 +1,6 @@
 # ENG-SUPERSESSION  
 Supersession & Conflict Model  
-Status: FROZEN (v2 – Governance Slot Enforcement Integrated)  
+Status: FROZEN (v3 – Cross-Area Structural Boundary Formalized)  
 Applies to: Engine Core (V1/V2+)  
 
 This document must be interpreted in conjunction with:
@@ -27,6 +27,7 @@ This document defines:
 - Permanent blocking triggers  
 - Revalidation requirements  
 - Deterministic restore guarantees  
+- Area-local supersession sovereignty  
 
 This document does not define session lifecycle mechanics.
 
@@ -38,7 +39,7 @@ It defines graph integrity and legitimacy conflict behavior.
 
 ## 2.1 Directed Supersession
 
-A Resolution may supersede zero or more prior Resolutions.
+A Resolution may supersede zero or more prior Resolutions **within the same Area only**.
 
 Authority and Scope participate in the supersession graph exactly like any other Resolution within their respective slots.
 
@@ -48,10 +49,11 @@ Supersession is:
 - Directional  
 - Immutable  
 - Recorded at acceptance time only  
+- Strictly Area-local  
 
 If Resolution B supersedes Resolution A:
 
-- B contains an immutable reference to A.  
+- B contains an immutable structural reference to A.  
 - A does not mutate structurally.  
 - A remains part of historical graph.  
 
@@ -61,7 +63,7 @@ Supersession edges are permanent once created.
 
 ## 2.2 Acyclic Requirement
 
-The supersession graph must remain acyclic.
+The supersession graph must remain acyclic within each Area.
 
 A Resolution may not:
 
@@ -82,16 +84,27 @@ If a cycle is detected during restore:
 
 ---
 
-## 2.3 Area Locality
+## 2.3 Area Sovereignty
 
-Supersession is scoped to an Area.
+Supersession is strictly scoped to a single Area.
 
-A Resolution may supersede only Resolutions within the same Area.
+A Resolution may supersede only Resolutions where:
 
-Cross-area references are informational only and have no supersession effect.
+- resolution.area_id == new_resolution.area_id
 
-Violation at acceptance time → deterministic acceptance failure.  
-Violation detected at restore → StructuralIntegrityFailure.
+Cross-area supersession is prohibited.
+
+Violation at acceptance time:
+
+- Deterministic acceptance failure.  
+- No graph mutation.
+
+Violation detected at restore:
+
+- StructuralIntegrityFailure.  
+- Engine must halt.
+
+Cross-area references (as defined in ENG-DOMAIN) are informational only and must never be interpreted as supersession edges.
 
 ---
 
@@ -104,9 +117,9 @@ A Resolution is structurally ACTIVE if:
 - It has no accepted successor in the same Area.  
 - It is not structurally inconsistent.  
 
-Structural ACTIVE is derived solely from supersession edges.
+Structural ACTIVE is derived solely from supersession edges within the Area.
 
-Structural ACTIVE does not consider UNDER_REVIEW or RETIRED.
+Cross-area references must not influence ACTIVE derivation.
 
 Authority and Scope ACTIVE status is derived the same way.
 
@@ -121,6 +134,8 @@ A Resolution is usable for legitimacy evaluation only if:
 - State is not RETIRED  
 
 Legitimacy usability is evaluated at runtime.
+
+External Area state must not influence usability.
 
 ---
 
@@ -154,38 +169,45 @@ No automatic repair is permitted.
 
 ---
 
-# 4. Referencing Rules
+# 4. Structural vs Informational References
 
-## 4.1 Legitimate Session References
+## 4.1 Structural References
 
-A session may reference:
+Structural references affecting supersession are limited to:
 
-- The current usable Authority.  
-- The current usable Scope.  
-- Zero or more structurally ACTIVE Resolutions for supersession purposes (as permitted by ENG-DECISION).
-
-A session must not reference:
-
-- A Resolution that is not structurally ACTIVE for supersession.  
-- A Resolution outside its Area for legitimacy.  
-
-If a session references a Resolution that becomes non-usable:
-
-- Session transitions per ENG-DECISION (BLOCK_TEMPORARY or BLOCK_PERMANENT).  
-
-Area-level acceptance blocking is governed by ENG-INTEGRITY.
-
----
-
-## 4.2 Informational References
-
-Sessions may reference other Areas or Resolutions for informational context.
+- Resolution → superseded Resolution (same Area only)
 
 These references:
 
-- Do not affect legitimacy.  
-- Do not create supersession edges.  
-- Have no impact on ACTIVE derivation.
+- Must resolve.
+- Must be validated during acceptance.
+- Must be validated during restore.
+- Affect ACTIVE derivation.
+
+Missing structural references constitute structural integrity failure.
+
+---
+
+## 4.2 Informational Cross-Area References
+
+Cross-area references (per ENG-DOMAIN):
+
+- May reference external Areas or Resolutions.
+- Must not be interpreted as supersession edges.
+- Must not be traversed.
+- Must not be validated for existence.
+- Must not affect ACTIVE derivation.
+- Must not affect governance slot exclusivity.
+- Must not cause restore failure if unresolved.
+
+Deletion or absence of a referenced external Area or Resolution must not alter:
+
+- Structural ACTIVE derivation.
+- Conflict detection.
+- Governance usability.
+- Blocking behavior.
+
+They are metadata only.
 
 ---
 
@@ -201,7 +223,8 @@ There is:
 
 - No automatic branch merging.  
 - No implicit precedence rule.  
-- No timestamp-based arbitration.
+- No timestamp-based arbitration.  
+- No cross-area arbitration.
 
 Explicit supersession edges define graph truth.
 
@@ -252,7 +275,8 @@ A supersession conflict exists if:
 - A session references an Authority or Scope that is no longer usable.  
 - Acceptance would introduce a cycle.  
 - Acceptance would violate exclusive governance slot constraints.  
-- Acceptance would leave a governance slot empty.
+- Acceptance would leave a governance slot empty.  
+- Acceptance attempts cross-area supersession.
 
 Conflict detection must occur:
 
@@ -264,58 +288,13 @@ Reversible conflict (UNDER_REVIEW, RETIRED) → BLOCK_TEMPORARY.
 
 ---
 
-# 8. Revalidation Triggers
-
-The engine must re-evaluate sessions when:
-
-- A referenced Resolution is superseded.  
-- Authority is superseded.  
-- Scope is superseded.  
-- A referenced Resolution enters UNDER_REVIEW.  
-- A referenced Resolution enters RETIRED.  
-- Scope enters UNDER_REVIEW.
-
-Effects:
-
-Resolution SUPERSEDED → Referencing sessions → BLOCK_PERMANENT  
-Authority SUPERSEDED → All sessions in Area → BLOCK_PERMANENT  
-Scope SUPERSEDED → All sessions in Area → BLOCK_PERMANENT  
-Resolution UNDER_REVIEW → Referencing sessions → BLOCK_TEMPORARY  
-Resolution RETIRED → Referencing sessions → BLOCK_TEMPORARY  
-Scope UNDER_REVIEW → All sessions in Area → BLOCK_TEMPORARY  
-
-Area-level acceptance blocking behavior enforced by ENG-INTEGRITY.
-
----
-
-# 9. Atomicity and Concurrency
-
-Acceptance must atomically verify:
-
-- Referenced Resolution structurally ACTIVE.  
-- Authority usable.  
-- Scope usable.  
-- Governance slots remain exactly one ACTIVE each.  
-- No cycle introduction.
-
-If any check fails:
-
-- Acceptance fails deterministically.  
-- No partial graph mutation occurs.
-
-First successful acceptance establishes graph truth.
-
-Subsequent conflicting attempts must fail.
-
----
-
-# 10. Deterministic Restore Guarantee
+# 8. Deterministic Restore Guarantee
 
 Given identical persisted objects and supersession edges:
 
-- Independent implementations must derive identical structural ACTIVE sets.  
+- Independent implementations must derive identical structural ACTIVE sets per Area.  
 - Governance slot evaluation must produce identical results.  
-- No heuristic, timestamp, or ordering-based logic permitted.  
+- No heuristic, timestamp, ordering-based, or cross-area logic permitted.  
 
 If restore produces:
 
@@ -324,7 +303,8 @@ If restore produces:
 - Multiple structurally ACTIVE Scopes  
 - Zero structurally ACTIVE Authority  
 - Zero structurally ACTIVE Scope (after definition)  
-- Invalid supersession references  
+- Invalid structural supersession references  
+- Cross-area supersession edges  
 
 Engine initialization must fail (StructuralIntegrityFailure per ENG-INTEGRITY).
 
@@ -334,7 +314,7 @@ No automatic repair is permitted.
 
 ---
 
-# 11. Permanent Blocking Doctrine
+# 9. Permanent Blocking Doctrine
 
 A session must transition to BLOCK_PERMANENT if:
 
@@ -342,6 +322,7 @@ A session must transition to BLOCK_PERMANENT if:
 - Its Authority is superseded.  
 - Its Scope is superseded.  
 - Acceptance would introduce structural violation.  
+- Acceptance attempts cross-area supersession.
 
 Permanent blocks:
 
@@ -353,20 +334,22 @@ Area-level acceptance prohibition while permanent blocks exist is defined in ENG
 
 ---
 
-# 12. Engine Invariants
+# 10. Engine Invariants
 
 - Supersession edges are immutable.  
+- Supersession graph is Area-local.  
 - Graph must remain acyclic.  
 - Structural ACTIVE derivation is deterministic.  
 - Authority and Scope participate fully in supersession graph.  
 - Governance slots must never be empty or multiply ACTIVE.  
+- Cross-area references are never structural.  
 - No implicit conflict resolution exists.  
 - First-accept wins is absolute.  
 - Structural inconsistency must halt the engine.
 
 ---
 
-# 13. Relationship to Other Specifications
+# 11. Relationship to Other Specifications
 
 ENG-DECISION governs:
 
@@ -381,6 +364,7 @@ ENG-SUPERSESSION governs:
 - Structural ACTIVE derivation  
 - Supersession integrity  
 - Conflict semantics  
+- Area-local sovereignty  
 
 ENG-INTEGRITY governs:
 

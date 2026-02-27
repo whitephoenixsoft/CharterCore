@@ -1,6 +1,6 @@
 # ENG-INTEGRITY  
 Engine Integrity & Runtime Guarantees  
-Status: FROZEN (v6 – Integrity, Governance Bootstrap, Atomicity, Time & Identity Semantics)  
+Status: FROZEN (v7 – Cross-Area Structural Boundary Formalized)  
 Applies to: Engine Core (V1/V2+)
 
 ---
@@ -16,6 +16,7 @@ It governs:
 - Governance bootstrap invariants (Authority & Scope)  
 - Area-level acceptance guards  
 - Orphan object detection and graph completeness  
+- Structural vs informational reference validation  
 - Crash and persistence boundaries  
 - Atomic commit semantics  
 - Time semantics for engine operations  
@@ -44,6 +45,7 @@ The Engine is a legitimacy compiler:
 - Does not auto-resolve ambiguity  
 - Does not continue history from corrupted or incomplete data  
 - Does not implicitly create governance structures  
+- Does not traverse external Areas  
 
 Legitimacy is:
 
@@ -51,6 +53,7 @@ Legitimacy is:
 - Deterministic  
 - Structurally verifiable  
 - Mechanically reproducible  
+- Area-local  
 
 If structural integrity cannot be proven, the Engine must halt.
 
@@ -78,69 +81,89 @@ The Engine must never implicitly create Authority or Scope.
 
 ---
 
-## 3.2 Governance Preconditions
-
-The following structural prerequisites apply:
-
-1. Scope Acceptance  
-   - Requires exactly one ACTIVE Authority.
-
-2. Regular Session Creation  
-   - Requires exactly one ACTIVE Authority.  
-   - Requires exactly one ACTIVE Scope.
-
-3. Area Restore  
-   - If an Area contains regular sessions, it must contain exactly one ACTIVE Authority and one ACTIVE Scope.
-
-If governance prerequisites are not satisfied:
-
-- Session creation must fail deterministically.
-- Acceptance must not proceed.
-- Restore must halt if invariants cannot be proven.
-
-No null Authority is allowed once governance has begun.  
-No null Scope is allowed once defined.
-
----
-
-## 3.3 Supersession Safety for Governance
-
-Supersession rules apply to Authority and Scope identically to other resolutions.
-
-However:
-
-- Supersession must never result in zero ACTIVE Authority in a governed Area.
-- Supersession must never result in zero ACTIVE Scope in an Area containing regular sessions.
-- Multiple ACTIVE governance objects in a slot triggers StructuralIntegrityFailure.
-- Governance supersession may trigger BLOCK_PERMANENT or BLOCK_TEMPORARY per defined rules.
-
-Governance integrity is structural, not advisory.
-
----
-
 # 4. Engine Initialization Guarantees
 
 ## 4.1 Deterministic Restore
 
 On startup, the Engine must:
 
-- Load all persisted domain objects  
-- Reconstruct the supersession graph  
+- Load all persisted domain objects for the Area  
+- Reconstruct the supersession graph (Area-local only)  
 - Recompute ACTIVE sets  
-- Validate exclusive legitimacy slots (including governance slots)  
+- Validate exclusive legitimacy slots  
 - Validate acyclic supersession graph  
 - Validate session, candidate, and vote consistency  
 - Validate schema versions  
 
 Restore must be deterministic across implementations.
 
+Cross-area references must not be traversed during restore.
+
 ---
 
-## 4.2 Orphan Object & Graph Completeness
+## 4.2 Structural vs Informational References
 
-- Every referenced object ID must exist in the imported graph or persisted store (unless operating in a relaxed import mode defined by the host).  
-- Superseded, retired, or active objects must be fully present to validate legitimacy.  
-- Orphan detection triggers StructuralIntegrityFailure.
+### Structural References
+
+Structural references are those that:
+
+- Affect legitimacy
+- Affect ACTIVE derivation
+- Affect supersession
+- Affect governance slot evaluation
+
+Structural references must:
+
+- Resolve to objects present in the imported Area graph  
+- Be validated during restore  
+- Be validated during acceptance  
+
+Missing structural references trigger StructuralIntegrityFailure.
+
+Structural references include:
+
+- superseded_by edges (same Area only)
+- Session → Authority
+- Session → Scope
+- Resolution → originating Session
+
+---
+
+### Informational Cross-Area References
+
+Cross-area references (as defined in ENG-DOMAIN):
+
+- Reference external Areas or external Resolutions
+- Are informational only
+- Do not affect legitimacy
+- Do not affect ACTIVE derivation
+- Do not affect governance slot evaluation
+- Do not affect conflict detection
+- Do not affect restore success
+
+The Engine must not:
+
+- Dereference cross-area references
+- Validate their existence
+- Treat missing external targets as orphaned
+- Fail restore due to unresolved cross-area references
+
+Deletion or absence of an externally referenced Area or Resolution must not alter:
+
+- Structural validity
+- Blocking state
+- Acceptance eligibility
+- Governance state
+
+Cross-area references are excluded from orphan detection.
+
+---
+
+## 4.3 Orphan Object & Graph Completeness
+
+Orphan detection applies only to structural references.
+
+Every structural referenced object ID must exist in the imported Area graph (unless operating in relaxed import mode defined by the host).
 
 Relaxed import mode:
 
@@ -150,23 +173,29 @@ Relaxed import mode:
 
 Fail if:
 
-- Missing referenced IDs outside relaxed import mode  
+- Missing structural referenced IDs outside relaxed import mode  
 - Supersession edges invalid or cyclic  
 - Participant snapshots incomplete  
 - Candidate or vote snapshots incomplete  
 
+Do not fail if:
+
+- Cross-area references are unresolved  
+- External Areas are absent  
+- External Resolutions are absent  
+
 ---
 
-## 4.3 Fatal Structural Integrity Failure
+# 5. Fatal Structural Integrity Failure
 
 Engine initialization must fail deterministically if any of the following are detected:
 
-- Supersession cycle  
+- Supersession cycle (Area-local)  
 - Multiple ACTIVE successors in an exclusive legitimacy slot  
 - Missing required governance objects  
-- Invalid superseded_by references  
+- Invalid structural superseded_by references  
 - Resolution or scope state inconsistent with supersession  
-- Cross-area supersession violation  
+- Cross-area supersession attempt  
 - Schema mismatch preventing deterministic reconstruction  
 - Any invariant violation defined in ENG-DOMAIN, ENG-SUPERSESSION, or ENG-DECISION  
 
@@ -177,13 +206,13 @@ Failure behavior:
 - No acceptance permitted  
 - Error must clearly identify invariant violation class  
 
-No automatic repair is allowed. Forward motion requires explicit host action.
+No automatic repair is allowed.
 
 ---
 
-# 5. Area Acceptance Guard
+# 6. Area Acceptance Guard
 
-## 5.1 BLOCK_PERMANENT Enforcement
+## 6.1 BLOCK_PERMANENT Enforcement
 
 If any session in an Area is in BLOCK_PERMANENT:
 
@@ -191,15 +220,15 @@ If any session in an Area is in BLOCK_PERMANENT:
 - Evaluation reports area_governance_blocked  
 - Blocking session(s) must be explicitly closed before acceptance  
 
-## 5.2 Authority or Scope Supersession
+## 6.2 Authority or Scope Supersession
 
 If Authority or Scope is SUPERSEDED:
 
 - All Area sessions transition to BLOCK_PERMANENT  
 - Acceptance is prohibited  
-- Explicit closure or restart-from required  
+- Explicit closure or restart required  
 
-## 5.3 Scope UNDER_REVIEW
+## 6.3 Scope UNDER_REVIEW
 
 If Scope is UNDER_REVIEW:
 
@@ -207,9 +236,11 @@ If Scope is UNDER_REVIEW:
 - Acceptance prohibited until Scope returns to ACTIVE  
 - Resume permitted  
 
+Cross-area state changes must not trigger blocking behavior.
+
 ---
 
-# 6. No Implicit Repair Rule
+# 7. No Implicit Repair Rule
 
 The Engine must never:
 
@@ -220,143 +251,62 @@ The Engine must never:
 - Auto-resume sessions after interruption  
 - Modify domain objects during restore  
 - Auto-create Authority or Scope  
+- Attempt to reconcile cross-area references  
 
 All corrective actions require explicit user or host command.
 
 ---
 
-# 7. Failure Class Hierarchy
-
-## 7.1 StructuralIntegrityFailure (Fatal)
-
-- Occurs during initialization or rehydration  
-- Halts Engine completely  
-- Triggered by orphaned IDs, corrupted supersession, cycles, governance slot violations, or missing snapshots  
-
-## 7.2 AreaGovernanceBlocked (Non-Fatal Runtime Guard)
-
-- Occurs when any session is BLOCK_PERMANENT  
-- Prevents acceptance in that Area  
-- Resolved only by explicit closure  
-
-## 7.3 SessionGovernanceBlocked
-
-- Occurs when session is BLOCK_TEMPORARY or BLOCK_PERMANENT  
-- Prevents acceptance of that session  
-
----
-
 # 8. Deterministic Enforcement
 
-- All checks are deterministic and reproducible from persisted data  
+- All structural checks are deterministic and reproducible from Area data  
 - No timestamp precedence or heuristic ordering  
 - No implicit ordering based on UUID time component  
+- No cross-area topology influence  
 - Side-effect-free until commit  
-- Engine halts on ambiguity  
+- Engine halts on structural ambiguity  
 
 ---
 
-# 9. Persistence & Atomic Commit Model
+# 9. Time & Identity Semantics
 
-- Acceptance is atomic: session state, resolution creation, and legitimacy receipt persist together  
-- Audit emission occurs after resolution commit  
-- Crash post-commit but pre-audit emission is valid  
-- Rehydration is non-mutating  
-- Restore or simulation failures do not alter persisted state  
-- Engine guarantees transactional integrity for atomic operations  
+Timestamps and UUIDv7 time components:
 
----
+- Are informational only  
+- Must never influence evaluation, restore, acceptance, or supersession  
+- Must never determine cross-area precedence  
 
-# 10. Time Semantics
-
-- Timestamps are informational only  
-- UUIDv7 time components are non-authoritative  
-- Timestamps must never influence evaluation, restore, acceptance, or supersession  
-- Clock drift or host inconsistencies do not affect correctness  
-- Chronology for legitimacy is determined solely by structural rules  
-
-Time is descriptive, never authoritative.
+Identity is Area-local and UUID-exclusive.
 
 ---
 
-# 11. Identity & Hash Semantics
-
-## 11.1 Canonical Identity
-
-- All engine domain objects are identified exclusively by UUIDv7  
-- UUID is the sole canonical identity mechanism  
-- Identity never depends on content hashing, serialization form, or storage location  
-
-## 11.2 Hash Independence Rule
-
-If content hashes are used:
-
-- Hashes are integrity metadata only  
-- Hash changes do not alter object identity  
-- Hash algorithm migration does not alter object identity  
-- Identity resolution relies exclusively on UUID  
-
-## 11.3 Hash Non-Semantic Guarantee
-
-Hashes must never influence:
-
-- Legitimacy evaluation  
-- Acceptance  
-- Supersession  
-- Restore logic  
-
-Hashes are descriptive, not authoritative.
-
----
-
-# 12. Cross-Document Invariant Precedence
-
-If conflicts arise:
-
-1. ENG-INTEGRITY → runtime enforcement  
-2. ENG-SUPERSESSION → graph structure  
-3. ENG-DECISION → session mechanics  
-4. ENG-REVIEW-RETIRED → suspension semantics  
-5. ENG-DOMAIN → structural encoding  
-
-Runtime must never violate structural invariants.
-
----
-
-# 13. Compiler Halt Principle
+# 10. Compiler Halt Principle
 
 The Engine prefers halt over ambiguity.
 
-- Any structural ambiguity → halt  
-- Orphan detection → halt  
-- Governance slot violation → halt  
-- Multiple ACTIVE objects in exclusive slots → halt  
-- Supersession graph inconsistency → halt  
+Structural ambiguity includes:
+
+- Orphaned structural references  
+- Governance slot violation  
+- Multiple ACTIVE objects in exclusive slots  
+- Supersession graph inconsistency  
+- Cross-area supersession edge  
 
 Integrity always preferred over convenience.
 
 ---
 
-# 14. Explicit Consolidation Doctrine
-
-When initialization fails:
-
-- User or host performs explicit consolidation  
-- Post-consolidation state must be fully deterministic  
-- No structural trust is inherited from corrupted sources  
-- New legitimacy is created only through standard session mechanics  
-
----
-
-# 15. Engine Invariants
+# 11. Engine Invariants
 
 - Legitimacy is compiled, not inferred  
 - Structural integrity precedes usability  
 - Governance must be explicitly initialized  
 - Exactly one ACTIVE Authority per governed Area  
 - Exactly one ACTIVE Scope per governed Area  
+- Structural references must resolve  
+- Cross-area references must not be validated  
 - Deterministic restore is mandatory  
-- Area hygiene enforced mechanically  
+- Area sovereignty preserved  
 - UUID is the sole identity authority  
 - Hashes are non-semantic integrity metadata  
 - No silent mutation allowed  
@@ -364,6 +314,6 @@ When initialization fails:
 
 ---
 
-This specification establishes the runtime integrity, governance bootstrap, atomicity, time semantics, and identity guarantees of the Engine Core.
+This specification establishes the runtime integrity, governance bootstrap, structural boundary, atomicity, time semantics, and identity guarantees of the Engine Core.
 
 All other specifications must conform to these guarantees.
