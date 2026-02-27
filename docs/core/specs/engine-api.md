@@ -246,7 +246,6 @@ Includes:
 
 Inputs:
 
-- area_id
 - session_type (AUTHORITY | SCOPE | REGULAR)
 - participants (initial set)
 - annotations (optional)
@@ -394,10 +393,6 @@ Must not:
 
 ## 9.1 export_area_dag
 
-Inputs:
-
-- area_id
-
 Behavior:
 
 - Returns a complete deterministic DAG snapshot of the Area:
@@ -414,6 +409,8 @@ Behavior:
 - Deterministic ordering ensures identical output from identical state.
 - Useful for backup, migration, or replication of long-running engines.
 - No mutation occurs during export.
+- Read only
+- Conforms to ENG-DOMAIN object schemas
 
 Returns:
 
