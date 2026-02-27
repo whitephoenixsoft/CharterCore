@@ -1,8 +1,8 @@
-# ENG-IMPORT — Engine Import & Area Activation Specification (v2)
-Status: FROZEN (v2 – Solo Mode + Receipts)  
+# ENG-IMPORT — Engine Import & Area Activation Specification (v3)  
+Status: FROZEN (v3 – Governance Slot Validation Integrated)  
 Applies to: Engine Core (V1/V2+)  
 Scope: Deterministic Area Restore & Baseline Consolidation  
-Purpose: Define import semantics for Charter Core Engine, structural enforcement, receipt validation, and evaluation readiness.
+Purpose: Define import semantics, governance slot enforcement, receipt validation, and evaluation readiness.
 
 ---
 
@@ -18,16 +18,19 @@ Goals:
 - Preserve structural determinism  
 - Enforce invariant compliance  
 - Validate session receipt integrity  
+- Enforce governance slot constraints  
 - Maintain audit and legitimacy traceability  
 - Keep the engine isolated from storage or CLI logic  
 
 Receipts are first-class structural artifacts and are validated during restore.
 
+Governance slots are structural invariants and must be validated during restore and rehydration.
+
 ---
 
 # 2. Engine vs Host Responsibilities
 
-## ENG-IMPORT-01 — Host / CLI
+## ENG-IMPORT-01 — Host / CLI Responsibilities
 
 The host/CLI is responsible for:
 
@@ -39,6 +42,8 @@ The host/CLI is responsible for:
 
 The host must provide a complete and canonical graph.
 
+The engine never reconstructs missing governance.
+
 ---
 
 ## ENG-IMPORT-02 — Engine Responsibilities
@@ -46,6 +51,8 @@ The host must provide a complete and canonical graph.
 The Engine is responsible for:
 
 - Structural validation of imported objects  
+- Governance slot exclusivity validation  
+- Governance slot presence validation (Restore mode)  
 - Supersession graph acyclicity  
 - Participant and candidate snapshot integrity  
 - BLOCK_PERMANENT hygiene enforcement  
@@ -58,18 +65,39 @@ The Engine must not:
 - Modify object content  
 - Generate new receipts during validation  
 - Perform storage operations  
+- Reconstruct missing Authority or Scope  
 
 Fail if:
 
 - Structural validation fails  
 - Receipt integrity fails  
+- Governance slot invariants fail  
 - Snapshot alignment fails  
 
 ---
 
-# 3. Import Modes
+# 3. Governance Slot Model
 
-## 3.1 Area Restore (Full Overwrite)
+Per Area, the following slots exist:
+
+- Authority slot  
+- Scope slot  
+
+Slots are exclusive.
+
+Derived Area Governance State (not stored):
+
+- UNINITIALIZED — no ACTIVE Authority  
+- AUTHORITY_DEFINED — exactly one ACTIVE Authority, no ACTIVE Scope  
+- FULLY_GOVERNED — exactly one ACTIVE Authority and one ACTIVE Scope  
+
+Restore validation depends on mode.
+
+---
+
+# 4. Import Modes
+
+## 4.1 Area Restore (Full Overwrite)
 
 Engine receives a complete Area graph including:
 
@@ -82,11 +110,40 @@ Engine receives a complete Area graph including:
 
 Receipts are mandatory in Restore mode.
 
-A Restore operation without receipts is invalid.
+A Restore operation without required receipts is invalid.
 
 ---
 
-### 3.1.1 Receipt Requirements (Restore Mode)
+### 4.1.1 Governance Slot Requirements (Restore Mode)
+
+For a successful full restore:
+
+The Area must contain:
+
+- Exactly one ACTIVE Authority Resolution  
+- Exactly one ACTIVE Scope  
+
+Fail if:
+
+- No ACTIVE Authority present  
+- More than one ACTIVE Authority present  
+- No ACTIVE Scope present  
+- More than one ACTIVE Scope present  
+- Orphaned Authority or Scope references exist  
+- Governance slots structurally inconsistent  
+
+The Engine must not:
+
+- Infer missing Scope  
+- Infer missing Authority  
+- Promote UNDER_REVIEW objects  
+- Auto-repair slot violations  
+
+Restore is all-or-nothing.
+
+---
+
+### 4.1.2 Receipt Requirements (Restore Mode)
 
 For every session in state:
 
@@ -108,19 +165,19 @@ The Engine must validate:
 
 Fail if:
 
-- Receipt missing for closed or accepted session  
+- Receipt missing  
 - Snapshot mismatch detected  
 - Hash mismatch detected  
 - Receipt references nonexistent session  
 
 ---
 
-### 3.1.2 Structural Enforcement (Restore)
+### 4.1.3 Structural Enforcement (Restore)
 
 Engine enforces:
 
 - Supersession graph acyclicity  
-- Exclusive slot constraints  
+- Exclusive governance slots  
 - Participant set completeness  
 - Candidate and vote snapshot completeness  
 - BLOCK_PERMANENT hygiene  
@@ -131,13 +188,13 @@ The Engine does not:
 - Recompute or regenerate receipts  
 - Implicitly accept candidates  
 
-Imported Area becomes fully active only if validation passes.
+Imported Area becomes active only if validation passes.
 
 Partial restore is rejected.
 
 ---
 
-## 3.2 Baseline Consolidation (Incremental / Review Mode)
+## 4.2 Baseline Consolidation (Incremental / Review Mode)
 
 Engine receives partial graph including:
 
@@ -150,30 +207,32 @@ Receipts are optional in Baseline mode.
 
 If receipts are provided, they must pass integrity validation.
 
-Engine behavior:
+Governance presence may be deferred in Baseline mode.
 
-- Structural validation only  
-- Imported resolutions marked UNDER_REVIEW  
-- No automatic ACCEPTED state creation  
-- Supersession edges validated against local graph  
+However:
 
-The Engine does not:
+- Any attempt to rehydrate into an active evaluation context must enforce governance slot requirements.
+- simulate_restore must fail if governance slots are missing or exclusive constraints violated.
+
+The Engine must not:
 
 - Generate new receipts  
 - Modify existing receipts  
 - Create legitimacy automatically  
+- Reconstruct governance implicitly  
 
-Host handles review aggregation and CLI-level REVIEW receipt creation.
+Imported resolutions may be marked UNDER_REVIEW per ENG-REVIEW.
 
 Fail if:
 
 - Supersession cycles detected  
 - References unresolved  
 - Receipt integrity fails (if provided)  
+- Governance slot exclusivity violated  
 
 ---
 
-# 4. Object Graph Requirements
+# 5. Object Graph Requirements
 
 ## ENG-IMPORT-03 — Required Object Properties
 
@@ -186,61 +245,41 @@ Every imported object must have:
 Fail if:
 
 - References missing  
-- Duplicate ACTIVE authority or scope detected  
+- Duplicate ACTIVE Authority detected  
+- Duplicate ACTIVE Scope detected  
 - Structural invariants violated  
 
 ---
 
-## ENG-IMPORT-04 — Receipt Integrity Model
+# 6. Governance Hygiene Enforcement
 
-Receipts are immutable structural artifacts.
+Engine enforces during restore and rehydration:
 
-Engine must validate:
+- Exactly one ACTIVE Authority (full restore)  
+- Exactly one ACTIVE Scope (full restore)  
+- No slot multiplicity  
+- No orphaned supersession references  
+- BLOCK_PERMANENT acceptance blocking  
 
-- Canonical serialization consistency  
-- content_hash determinism  
-- Snapshot alignment with session  
-- No mutation since issuance  
+Receipts do not override governance slot invariants.
 
-Receipt presence never implies legitimacy correctness.
-
-Receipt mismatch implies structural corruption.
-
-Fail loudly.
+Fail loudly on violation.
 
 ---
 
-# 5. Governance Hygiene Enforcement
-
-Engine enforces:
-
-- Exclusive Authority / Scope per Area  
-- Participant set completeness  
-- Candidate snapshot consistency  
-- BLOCK_PERMANENT invariants  
-
-Receipts do not override hygiene.
-
-Fail if:
-
-- Multiple ACTIVE Authorities detected  
-- Participant snapshot empty  
-- Candidate snapshot incomplete  
-
----
-
-# 6. Deterministic Import Guarantees
+# 7. Deterministic Import Guarantees
 
 Given identical:
 
 - Input graph  
-- Mode (Restore or Baseline)
+- Import mode  
 
 Engine must produce identical:
 
 - Validation outcome  
-- Invariant enforcement result  
+- Governance slot evaluation  
 - Receipt integrity result  
+- Readiness state  
 
 Import must not depend on:
 
@@ -249,15 +288,13 @@ Import must not depend on:
 - External timestamps  
 - Runtime environment  
 
-Fail if:
-
-- Two identical imports produce different validation results  
+Two identical imports must yield identical EvaluationReports.
 
 ---
 
-# 7. Failure Semantics
+# 8. Failure Semantics
 
-Any structural or receipt violation results in:
+Any structural, receipt, or governance violation results in:
 
 - Explicit failure  
 - Deterministic EvaluationReport  
@@ -270,55 +307,61 @@ No implicit repair permitted.
 
 ---
 
-# 8. Engine API Interaction
+# 9. Engine API Interaction
 
-The following API calls support import:
+Import validation uses:
 
 - validate_imported_area(domain_objects)  
 - simulate_restore(domain_objects)  
 - rehydrate_engine(domain_objects)  
 
-Receipt validation occurs during:
+Governance slot validation occurs during:
 
 - validate_imported_area  
+- simulate_restore  
 - rehydrate_engine  
 
-simulate_restore must not generate new receipts.
+Restore activation requires:
+
+- FULLY_GOVERNED state  
+
+Baseline mode may defer governance completeness until activation.
 
 ---
 
-# 9. Mental Model
+# 10. Mental Model
 
 Restore:
 
 - Full graph required  
+- Governance slots required  
 - Receipts mandatory  
-- Receipts validated  
-- Area activated only if fully consistent  
+- Structural validation strict  
+- Area activates only if FULLY_GOVERNED  
 
 Baseline:
 
 - Partial graph allowed  
-- Receipts optional  
+- Governance may be incomplete  
 - No automatic legitimacy  
-- CLI performs review and aggregation  
+- Activation requires governance completeness  
 
 Host provides facts.  
 Engine validates structure.  
+Governance must be structurally sound.  
 Receipts anchor closure.  
-Nothing mutates unless explicitly commanded.
+Nothing is reconstructed implicitly.
 
 ---
 
-# 10. Alignment
+# 11. Alignment
 
-- ENG-ENGINE-INITIALIZATION  
 - ENG-DOMAIN  
 - ENG-SESSION  
 - ENG-DECISION  
 - ENG-SUPERSESSION  
 - ENG-RECEIPT  
-- ENG-AUD  
 - ENG-API  
+- ENG-INTEGRITY  
 
 Violation constitutes structural engine import failure.

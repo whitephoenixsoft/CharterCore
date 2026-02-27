@@ -1,7 +1,7 @@
-# ENG-ENGINE-INITIALIZATION — Engine Initialization & Readiness Specification (v3)
-Status: FROZEN (v3)
-Applies to: Engine Core (V1/V2+)
-Scope: Structural Engine Initialization & Area Activation
+# ENG-ENGINE-INITIALIZATION — Engine Initialization & Readiness Specification (v4)  
+Status: FROZEN (v4 – Governance Completeness Enforcement)  
+Applies to: Engine Core (V1/V2+)  
+Scope: Structural Engine Initialization & Area Activation  
 
 ---
 
@@ -9,22 +9,22 @@ Scope: Structural Engine Initialization & Area Activation
 
 This document defines how the Engine Core:
 
-- Receives domain objects
-- Validates structural readiness
-- Ensures deterministic eligibility for legitimacy evaluation
-- Supports Area Activation (restore) and minimal evaluation contexts
+- Receives domain objects  
+- Validates structural readiness  
+- Enforces governance slot completeness  
+- Ensures deterministic eligibility for legitimacy evaluation  
+- Supports Area Activation (restore) and minimal evaluation contexts  
 
-Initialization replaces legacy storage-coupled boot logic.  
+Initialization is structural verification, not state evolution.
 
 The Engine:
 
-- Does not attach to storage
-- Does not traverse persistence
-- Does not compute hashes
-- Does not load refs
-- Does not perform migration
-
-Initialization is purely structural verification, not state evolution.
+- Does not attach to storage  
+- Does not traverse persistence  
+- Does not compute hashes  
+- Does not load refs  
+- Does not perform migration  
+- Does not repair governance  
 
 ---
 
@@ -32,25 +32,26 @@ Initialization is purely structural verification, not state evolution.
 
 ## ENG-INIT-01 — Host-Provided Domain Graph
 
-The host (CLI or embedding system) must provide:
+The host must provide:
 
-- Complete domain objects required for evaluation (minimal evaluation)
-- Or complete Area object graph (Area Activation / restore)
-- All referenced objects
-- Current session set
-- Current authority and scope resolutions
-- Explicit evaluation request
+- Complete domain objects required for evaluation (Minimal Evaluation Mode)  
+- Or complete Area object graph (Area Activation Mode)  
+- All referenced objects  
+- Current session set  
+- Authority and Scope objects present in graph (if required by mode)  
+- Explicit evaluation context  
 
 The Engine:
 
-- Must not discover missing objects
-- Must not traverse storage
-- Must not infer references
+- Must not discover missing objects  
+- Must not traverse storage  
+- Must not infer references  
+- Must not reconstruct missing governance  
 
 Fail if:
 
-- Evaluation depends on objects not explicitly provided
-- Engine attempts to resolve storage paths
+- Evaluation depends on objects not explicitly provided  
+- Engine attempts to resolve storage paths  
 
 ---
 
@@ -60,22 +61,23 @@ Fail if:
 
 Engine initialization must be:
 
-- Deterministic
-- Side-effect free
-- Non-mutating
+- Deterministic  
+- Side-effect free  
+- Non-mutating  
 
 Initialization must not:
 
-- Change session states
-- Alter resolution states
-- Create or delete objects
-- Emit legitimacy events
+- Change session states  
+- Alter resolution states  
+- Create or delete objects  
+- Emit legitimacy events  
+- Promote or demote governance state  
 
 Fail if:
 
-- Object state changes during initialization
-- Supersession edges are modified
-- Audit or legitimacy artifacts are created implicitly
+- Object state changes during initialization  
+- Supersession edges are modified  
+- Governance is implicitly repaired  
 
 ---
 
@@ -84,19 +86,20 @@ Fail if:
 ## ENG-INIT-03 — Two Modes
 
 1. Minimal Evaluation Mode  
-   - Graph includes only objects relevant to a specific evaluation request  
-   - Only referenced sessions, resolutions, and snapshots  
-   - Must satisfy structural invariants within the subset provided
+   - Graph includes only objects relevant to a specific evaluation  
+   - Must satisfy invariants within provided subset  
+   - Governance completeness enforced only if evaluation requires acceptance  
 
 2. Area Activation Mode (Restore)  
    - Graph includes complete Area object graph  
-   - All sessions, resolutions, Authority, Scope, and candidates present  
-   - Full invariant enforcement applied (exclusive slots, snapshot completeness, participant integrity)
+   - All sessions, resolutions, Authority, Scope, candidates present  
+   - Full invariant enforcement applied  
 
 Fail if:
 
-- Partial graph provided in Area Activation mode  
-- Structural invariants violated
+- Partial graph provided in Area Activation Mode  
+- Structural invariants violated  
+- Governance completeness violated in Area Activation Mode  
 
 ---
 
@@ -104,85 +107,116 @@ Fail if:
 
 ## ENG-INIT-04 — Identity Validity
 
-- All object identifiers are valid UUIDv7
-- No duplicate identifiers exist within type namespace
-- All cross-object references resolve to provided objects
+- All object identifiers are valid UUIDv7  
+- No duplicate identifiers exist within type namespace  
+- All cross-object references resolve to provided objects  
 
 Fail if:
 
-- Missing references
-- Invalid UUID format
-- Duplicate IDs exist
+- Missing references  
+- Invalid UUID format  
+- Duplicate IDs exist  
 
 ---
 
 ## ENG-INIT-05 — Lifecycle Consistency
 
-- Session state vs phase consistency
-- Resolution state consistency
-- Supersession invariants
-- Snapshot completeness for ACCEPTED sessions
-- BLOCK_PERMANENT invariants (structural only)
+- Session state vs phase consistency  
+- Resolution state consistency  
+- Supersession invariants  
+- Snapshot completeness for ACCEPTED sessions  
+- BLOCK_PERMANENT invariants (structural only)  
 
 Fail if:
 
-- SUPERSEDED resolution missing superseded_by
-- Non-SUPERSEDED resolution has superseded_by
-- ACCEPTED session lacks corresponding Resolution
-- TERMINAL phase conflicts with session state
+- SUPERSEDED resolution missing superseded_by  
+- Non-SUPERSEDED resolution has superseded_by  
+- ACCEPTED session lacks corresponding Resolution  
+- TERMINAL phase conflicts with session state  
 
 ---
 
-## ENG-INIT-06 — Exclusive Slot Enforcement
+## ENG-INIT-06 — Governance Slot Enforcement
 
-- Exactly one ACTIVE Authority per Area
-- Exactly one ACTIVE Scope per Area
+Per Area, governance slots must satisfy:
+
+Area Activation Mode:
+
+- Exactly one ACTIVE Authority  
+- Exactly one ACTIVE Scope  
 
 Fail if:
 
-- Multiple ACTIVE objects exist in the same Area
-- Exclusive slot conflicts present
+- No ACTIVE Authority present  
+- Multiple ACTIVE Authorities present  
+- No ACTIVE Scope present  
+- Multiple ACTIVE Scopes present  
+
+Minimal Evaluation Mode:
+
+- If Area contains sessions and acceptance evaluation is possible:
+  - Exactly one ACTIVE Authority required  
+  - Exactly one ACTIVE Scope required  
+
+Fail if:
+
+- Area contains sessions but lacks Authority  
+- Area contains sessions requiring Scope but Scope missing  
+- Multiple ACTIVE Authority or Scope detected  
+
+Derived governance state is not stored but must be structurally valid.
+
+Initialization must not:
+
+- Infer missing Scope  
+- Infer missing Authority  
+- Promote UNDER_REVIEW objects  
+- Repair slot violations  
+
+Slot violations constitute StructuralIntegrityFailure.
 
 ---
 
 ## ENG-INIT-07 — Participant Integrity
 
-- Every session must have ≥1 participant
-- ACCEPTED sessions must have at least one vote recorded
-- Resolution participant_snapshot must equal session participant set at acceptance
-- Resolution candidate_snapshot must exist and match accepted candidate
+- Every session must have ≥1 participant  
+- ACCEPTED sessions must have at least one vote recorded  
+- Resolution participant_snapshot must equal session participant set at acceptance  
+- Resolution candidate_snapshot must exist and match accepted candidate  
 
 Fail if:
 
-- Empty participant sets
-- ACCEPTED session missing vote(s)
-- Resolution snapshot incomplete
+- Empty participant sets  
+- ACCEPTED session missing vote(s)  
+- Resolution snapshot incomplete  
 
 ---
 
-## ENG-INIT-08 — Supersession Graph Integrity
+## 5.8 Supersession Graph Integrity
 
-- Graph must be acyclic
-- Superseded objects are not ACTIVE
-- Supersession edges are immutable
+- Graph must be acyclic  
+- Superseded objects must not be ACTIVE  
+- Supersession edges immutable  
+- Governance objects obey supersession rules  
 
 Fail if:
 
-- Cycle detected
-- Supersession structure conflicts with state
+- Cycle detected  
+- Supersession conflicts with state  
 
 ---
 
-## ENG-INIT-09 — UNDER_REVIEW / RETIRED Resolution Validation
+## ENG-INIT-09 — UNDER_REVIEW / RETIRED Validation
 
-- Remain structurally ACTIVE in supersession graph
-- May be superseded
-- Do not break graph integrity
+- UNDER_REVIEW and RETIRED remain structurally valid  
+- May be superseded  
+- Must not break slot exclusivity  
+- Must not alter ACTIVE slot count  
 
 Fail if:
 
-- Resolution state mutates during initialization
-- Graph integrity violated
+- Governance slot count ambiguous due to state misuse  
+- Resolution state mutates during initialization  
 
 ---
 
@@ -192,16 +226,14 @@ Fail if:
 
 If any session exists with state = BLOCK_PERMANENT:
 
-- No new session acceptance may succeed
-- Engine must reject acceptance attempts
-- No automatic closure or auto-resume permitted
+- Acceptance attempts must fail  
+- No automatic closure permitted  
+- No auto-resume permitted  
 
-Explicit operator action is required.
+Initialization must not:
 
-Fail if:
-
-- Acceptance bypasses BLOCK_PERMANENT
-- Session state changes implicitly
+- Change BLOCK_PERMANENT state  
+- Clear blocked sessions  
 
 ---
 
@@ -211,20 +243,23 @@ Fail if:
 
 Given identical:
 
-- Domain objects
-- Authority resolution
-- Scope resolution
-- Session set
+- Domain objects  
+- Authority resolution  
+- Scope resolution  
+- Session set  
 
-Initialization must produce:
+Initialization must produce identical:
 
-- Identical validation results
-- Identical evaluation eligibility
-- Identical invariant checks
+- Validation results  
+- Governance slot evaluation  
+- Evaluation eligibility  
+- Invariant checks  
 
 Fail if:
 
-- Readiness depends on storage order, import source, timestamp ordering, or runtime environment
+- Readiness depends on storage order  
+- Timestamp ordering influences validation  
+- Runtime environment influences result  
 
 ---
 
@@ -232,10 +267,23 @@ Fail if:
 
 ## ENG-INIT-12 — Fail Loud, Fail Pure
 
-- Explicit failure on any invariant violation
-- No partial readiness allowed
-- No degraded evaluation mode
-- No silent recovery or repair
+Any of the following results in failure:
+
+- Governance slot absence where required  
+- Governance slot multiplicity  
+- Structural invariant violation  
+- Snapshot inconsistency  
+- Supersession cycle  
+
+Failure must be:
+
+- Explicit  
+- Deterministic  
+- Non-mutating  
+
+No partial readiness allowed.  
+No degraded mode allowed.  
+No implicit repair allowed.
 
 ---
 
@@ -245,47 +293,50 @@ Fail if:
 
 During initialization, the Engine must not:
 
-- Rewrite objects
-- Upgrade schema versions
-- Modify identifiers
-- Rebind supersession edges
-- Normalize structure
+- Rewrite objects  
+- Upgrade schema versions  
+- Modify identifiers  
+- Rebind supersession edges  
+- Normalize structure  
+- Promote governance state  
 
 All migration must occur through explicit operator command.
 
 Fail if:
 
-- Engine mutates domain objects
+- Engine mutates domain objects  
 
 ---
 
 # 10. Readiness Definition
 
-The Engine is considered ready when:
+The Engine is ready when:
 
-- Structural validation passes
-- Supersession graph integrity holds
-- Exclusive slot enforcement passed
-- Participant and snapshot invariants satisfied
-- No implicit mutation occurred
+- Structural validation passes  
+- Supersession graph integrity holds  
+- Governance slots valid and exclusive  
+- Governance completeness satisfied (if required by mode)  
+- Participant and snapshot invariants satisfied  
+- No implicit mutation occurred  
 
 Readiness does not imply:
 
-- Legitimacy success
-- Session acceptability
-- Governance validity
+- Legitimacy success  
+- Session acceptability  
+- Political validity  
 
 ---
 
 # 11. Mental Model
 
-- Host supplies facts
-- Engine validates structure
-- Engine enforces invariants
-- Engine evaluates legitimacy
-- Nothing changes unless explicitly commanded
+- Host supplies facts  
+- Engine validates structure  
+- Governance must be structurally complete  
+- Engine enforces invariants  
+- Engine evaluates legitimacy  
+- Nothing is repaired implicitly  
 
-Initialization is structural verification, not state evolution.
+Initialization is structural verification only.
 
 ---
 
@@ -293,12 +344,12 @@ Initialization is structural verification, not state evolution.
 
 This document conforms to:
 
-- ENG-CORE-PURITY
-- ENG-DOMAIN
-- ENG-SESSION
-- ENG-DECISION
-- ENG-REVIEW-RETIRED
-- ENG-SUPERSESSION
-- ENG-AUD
+- ENG-INTEGRITY  
+- ENG-DOMAIN  
+- ENG-DECISION  
+- ENG-REVIEW-RETIRED  
+- ENG-SUPERSESSION  
+- ENG-API  
+- ENG-IMPORT  
 
-Violation of this specification constitutes a structural engine failure.
+Violation constitutes structural engine failure.

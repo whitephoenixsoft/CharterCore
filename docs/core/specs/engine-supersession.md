@@ -1,6 +1,6 @@
 # ENG-SUPERSESSION  
 Supersession & Conflict Model  
-Status: DRAFT (Pre-Freeze)  
+Status: FROZEN (v2 – Governance Slot Enforcement Integrated)  
 Applies to: Engine Core (V1/V2+)  
 
 This document must be interpreted in conjunction with:
@@ -20,7 +20,8 @@ This document defines:
 
 - Resolution graph structure  
 - Supersession linking rules  
-- Active-set derivation  
+- ACTIVE-set derivation  
+- Governance slot participation in supersession  
 - Conflict detection  
 - Race condition semantics  
 - Permanent blocking triggers  
@@ -38,6 +39,8 @@ It defines graph integrity and legitimacy conflict behavior.
 ## 2.1 Directed Supersession
 
 A Resolution may supersede zero or more prior Resolutions.
+
+Authority and Scope participate in the supersession graph exactly like any other Resolution within their respective slots.
 
 Supersession is:
 
@@ -92,9 +95,9 @@ Violation detected at restore → StructuralIntegrityFailure.
 
 ---
 
-# 3. Active Resolution Derivation
+# 3. ACTIVE Resolution Derivation
 
-## 3.1 Structural ACTIVE Set
+## 3.1 Structural ACTIVE
 
 A Resolution is structurally ACTIVE if:
 
@@ -105,36 +108,49 @@ Structural ACTIVE is derived solely from supersession edges.
 
 Structural ACTIVE does not consider UNDER_REVIEW or RETIRED.
 
+Authority and Scope ACTIVE status is derived the same way.
+
 ---
 
 ## 3.2 Legitimacy Usability
 
 A Resolution is usable for legitimacy evaluation only if:
 
-- Structurally ACTIVE.  
-- State is not UNDER_REVIEW.  
-- State is not RETIRED.  
+- Structurally ACTIVE  
+- State is not UNDER_REVIEW  
+- State is not RETIRED  
 
 Legitimacy usability is evaluated at runtime.
 
 ---
 
-## 3.3 Exclusive Legitimacy Slots
+## 3.3 Exclusive Governance Slots
 
-Authority and Scope are exclusive legitimacy slots.
+Authority and Scope are exclusive governance slots per Area.
 
-For each exclusive slot:
+For each Area:
 
-- Exactly one structurally ACTIVE Resolution must exist.
+- Exactly one structurally ACTIVE Authority must exist.  
+- Exactly one structurally ACTIVE Scope must exist (once Scope is defined).  
 
-If acceptance would result in multiple structurally ACTIVE successors in an exclusive slot:
+Supersession must never result in:
 
-- Acceptance must fail deterministically.
+- Zero structurally ACTIVE Authority.  
+- Zero structurally ACTIVE Scope (after initial definition).  
+- More than one structurally ACTIVE Authority.  
+- More than one structurally ACTIVE Scope.  
 
-If restore produces multiple structurally ACTIVE successors in an exclusive slot:
+If acceptance would violate slot exclusivity or leave a slot empty:
+
+- Acceptance must fail deterministically.  
+- No graph mutation may occur.  
+
+If restore produces slot multiplicity or emptiness:
 
 - Engine initialization must fail (StructuralIntegrityFailure).  
-- Engine must halt.
+- Engine must halt.  
+
+No automatic repair is permitted.
 
 ---
 
@@ -146,7 +162,7 @@ A session may reference:
 
 - The current usable Authority.  
 - The current usable Scope.  
-- Zero or one usable Resolution for supersession purposes.
+- Zero or more structurally ACTIVE Resolutions for supersession purposes (as permitted by ENG-DECISION).
 
 A session must not reference:
 
@@ -155,7 +171,7 @@ A session must not reference:
 
 If a session references a Resolution that becomes non-usable:
 
-- Session transitions per ENG-DECISION (BLOCK_TEMPORARY or BLOCK_PERMANENT).
+- Session transitions per ENG-DECISION (BLOCK_TEMPORARY or BLOCK_PERMANENT).  
 
 Area-level acceptance blocking is governed by ENG-INTEGRITY.
 
@@ -191,14 +207,52 @@ Explicit supersession edges define graph truth.
 
 ---
 
-# 6. Conflict Detection
+# 6. Governance Supersession Effects
+
+## 6.1 Authority Supersession
+
+When an Authority Resolution is superseded:
+
+- The prior Authority becomes non-structurally-ACTIVE.  
+- All sessions in the Area must transition to BLOCK_PERMANENT.  
+- Acceptance in the Area is prohibited until sessions are explicitly closed or restarted.
+
+Authority supersession must not leave the Authority slot empty.
+
+If acceptance would remove the only structurally ACTIVE Authority without establishing a successor:
+
+- Acceptance must fail.
+
+---
+
+## 6.2 Scope Supersession
+
+When a Scope is superseded:
+
+- The prior Scope becomes non-structurally-ACTIVE.  
+- All sessions in the Area must transition to BLOCK_PERMANENT.
+
+If Scope enters UNDER_REVIEW:
+
+- All sessions in the Area transition to BLOCK_TEMPORARY.
+
+Scope supersession must not leave the Scope slot empty once defined.
+
+If acceptance would result in zero structurally ACTIVE Scope:
+
+- Acceptance must fail.
+
+---
+
+# 7. Conflict Detection
 
 A supersession conflict exists if:
 
 - A session references a Resolution that is no longer structurally ACTIVE.  
 - A session references an Authority or Scope that is no longer usable.  
 - Acceptance would introduce a cycle.  
-- Acceptance would violate exclusive slot constraints.
+- Acceptance would violate exclusive governance slot constraints.  
+- Acceptance would leave a governance slot empty.
 
 Conflict detection must occur:
 
@@ -210,7 +264,7 @@ Reversible conflict (UNDER_REVIEW, RETIRED) → BLOCK_TEMPORARY.
 
 ---
 
-# 7. Revalidation Triggers
+# 8. Revalidation Triggers
 
 The engine must re-evaluate sessions when:
 
@@ -234,33 +288,6 @@ Area-level acceptance blocking behavior enforced by ENG-INTEGRITY.
 
 ---
 
-# 8. Under-Review and Retired Graph Semantics
-
-UNDER_REVIEW:
-
-- Does not create new Resolution.  
-- Does not modify supersession edges.  
-- Does not alter structural ACTIVE derivation.  
-- Temporarily suspends legitimacy usability.  
-- Reversible.
-
-RETIRED:
-
-- Does not modify supersession edges.  
-- Does not alter structural ACTIVE derivation.  
-- Suspends legitimacy usability.  
-- Requires session to reactivate or supersede.
-
-SUPERSEDED:
-
-- Structural and permanent.  
-- Alters ACTIVE derivation.  
-- Irreversible.
-
-These states must remain distinct.
-
----
-
 # 9. Atomicity and Concurrency
 
 Acceptance must atomically verify:
@@ -268,12 +295,10 @@ Acceptance must atomically verify:
 - Referenced Resolution structurally ACTIVE.  
 - Authority usable.  
 - Scope usable.  
-- No exclusive-slot violation.  
+- Governance slots remain exactly one ACTIVE each.  
 - No cycle introduction.
 
-Acceptance must acquire a legitimacy lock covering affected graph nodes.
-
-If any referenced node changes before commit:
+If any check fails:
 
 - Acceptance fails deterministically.  
 - No partial graph mutation occurs.
@@ -289,13 +314,16 @@ Subsequent conflicting attempts must fail.
 Given identical persisted objects and supersession edges:
 
 - Independent implementations must derive identical structural ACTIVE sets.  
-- Exclusive slot evaluation must produce identical results.  
-- No heuristic, timestamp, or ordering-based logic is permitted.  
+- Governance slot evaluation must produce identical results.  
+- No heuristic, timestamp, or ordering-based logic permitted.  
 
 If restore produces:
 
 - A cycle  
-- Multiple structurally ACTIVE successors in an exclusive slot  
+- Multiple structurally ACTIVE Authorities  
+- Multiple structurally ACTIVE Scopes  
+- Zero structurally ACTIVE Authority  
+- Zero structurally ACTIVE Scope (after definition)  
 - Invalid supersession references  
 
 Engine initialization must fail (StructuralIntegrityFailure per ENG-INTEGRITY).
@@ -313,13 +341,13 @@ A session must transition to BLOCK_PERMANENT if:
 - Its referenced Resolution becomes non-structurally-ACTIVE.  
 - Its Authority is superseded.  
 - Its Scope is superseded.  
-- Acceptance would introduce structural graph violation.  
+- Acceptance would introduce structural violation.  
 
 Permanent blocks:
 
 - Cannot resume.  
 - Require explicit closure.  
-- May be restarted via CLI `restart-from`.
+- May be restarted via explicit operator action.
 
 Area-level acceptance prohibition while permanent blocks exist is defined in ENG-INTEGRITY.
 
@@ -330,14 +358,15 @@ Area-level acceptance prohibition while permanent blocks exist is defined in ENG
 - Supersession edges are immutable.  
 - Graph must remain acyclic.  
 - Structural ACTIVE derivation is deterministic.  
-- Exclusive legitimacy slots must have exactly one structurally ACTIVE Resolution.  
+- Authority and Scope participate fully in supersession graph.  
+- Governance slots must never be empty or multiply ACTIVE.  
 - No implicit conflict resolution exists.  
 - First-accept wins is absolute.  
 - Structural inconsistency must halt the engine.
 
 ---
 
-# 13. Relationship to ENG-DECISION
+# 13. Relationship to Other Specifications
 
 ENG-DECISION governs:
 
@@ -348,6 +377,7 @@ ENG-DECISION governs:
 ENG-SUPERSESSION governs:
 
 - Resolution graph structure  
+- Governance slot participation  
 - Structural ACTIVE derivation  
 - Supersession integrity  
 - Conflict semantics  

@@ -1,6 +1,6 @@
 # ENG-DOMAIN — Domain Object Schema  
 Canonical Engine Object Definitions  
-Status: DRAFT (Pre-Freeze, Solo Mode Clarified)  
+Status: DRAFT (Pre-Freeze, Governance Slots Integrated)  
 Applies to: Engine Core (V1/V2+)
 
 ---
@@ -17,6 +17,7 @@ Its goals are to:
 - Preserve canonical hash stability.
 - Separate structural encoding from behavioral rules.
 - Centralize identity generation within the engine.
+- Define exclusive governance slot invariants.
 
 Behavioral rules are defined in:
 
@@ -24,6 +25,7 @@ Behavioral rules are defined in:
 - ENG-REVIEW-RETIRED
 - ENG-SUPERSESSION
 - ENG-API
+- ENG-INTEGRITY
 
 This document defines structure only.
 
@@ -60,9 +62,76 @@ This document defines structure only.
 
 ---
 
-# 3. Enumerations
+# 3. Governance Slot Model
 
-## 3.1 SessionState
+## 3.1 Exclusive Governance Slots
+
+Each Area contains two exclusive legitimacy slots:
+
+- Authority slot (Resolution objects)
+- Scope slot (Scope objects)
+
+Structural invariants:
+
+- At most one ACTIVE Authority per Area.
+- At most one ACTIVE Scope per Area.
+- Authority and Scope participate in standard supersession rules.
+- Slot exclusivity is structural and must be validated at restore.
+
+Multiple ACTIVE objects in either slot is a structural integrity violation.
+
+---
+
+## 3.2 Slot Presence Rules
+
+Authority slot:
+
+- Exactly one ACTIVE Authority is required before governance begins.
+- Authority slot may be empty only in UNINITIALIZED state.
+
+Scope slot:
+
+- Scope may be absent only before first Scope definition.
+- Once a Scope has been defined, the slot must never return to empty.
+- An Area containing regular sessions must have exactly one ACTIVE Scope.
+
+Absence in violation of these rules is a structural integrity failure.
+
+---
+
+## 3.3 Derived Governance State (Not Persisted)
+
+Area governance state is derived, not stored.
+
+Possible derived states:
+
+UNINITIALIZED  
+- No ACTIVE Authority exists.
+
+AUTHORITY_DEFINED  
+- Exactly one ACTIVE Authority exists.
+- No ACTIVE Scope exists.
+
+FULLY_GOVERNED  
+- Exactly one ACTIVE Authority exists.
+- Exactly one ACTIVE Scope exists.
+
+These states:
+
+- Must never be stored as fields.
+- Must be computed during evaluation or restore.
+- Are used for invariant validation only.
+
+Restore must validate:
+
+- Slot exclusivity.
+- Required presence conditions based on existing sessions.
+
+---
+
+# 4. Enumerations
+
+## 4.1 SessionState
 
 - ACTIVE
 - PAUSED
@@ -78,23 +147,21 @@ Definitions (structural only):
 - ACCEPTED — produced Resolution
 - CLOSED — explicitly terminated by user
 
-No additional states are permitted.
+No additional states permitted.
 
 ---
 
-## 3.2 SessionPhase
+## 4.2 SessionPhase
 
 - PRE_STANCE
 - VOTING
 - TERMINAL
 
-Phase is distinct from state.
-
 TERMINAL phase applies only when state is ACCEPTED or CLOSED.
 
 ---
 
-## 3.3 ResolutionState
+## 4.3 ResolutionState
 
 - ACTIVE
 - UNDER_REVIEW
@@ -109,7 +176,7 @@ SUPERSEDED is terminal and graph-altering.
 
 ---
 
-## 3.4 ScopeState
+## 4.4 ScopeState
 
 - ACTIVE
 - UNDER_REVIEW
@@ -119,7 +186,7 @@ Scope does not support RETIRED.
 
 ---
 
-## 3.5 Stance
+## 4.5 Stance
 
 - ACCEPT
 - REJECT
@@ -127,14 +194,15 @@ Scope does not support RETIRED.
 
 ---
 
-# 4. Session Schema
+# 5. Session Schema
 
 A Session object must contain:
 
 - session_id (engine-generated UUIDv7)
 - area_id (opaque external reference)
+- session_type (AUTHORITY | SCOPE | REGULAR)
 - authority_id (Resolution reference at creation)
-- scope_id (Scope reference at creation)
+- scope_id (Scope reference at creation, nullable only if governance not yet fully initialized)
 - phase (SessionPhase enum)
 - state (SessionState enum)
 - participants (set of participant IDs — current)
@@ -148,25 +216,25 @@ A Session object must contain:
 
 ---
 
-## 4.1 Structural Notes
+## 5.1 Structural Notes
 
+- session_type is immutable.
+- authority_id must reference the ACTIVE Authority at creation (unless session_type = AUTHORITY during bootstrap).
+- scope_id must reference the ACTIVE Scope at creation for SCOPE and REGULAR sessions.
 - participants reflect the current governance set for the session.
 - participants may be modified only while phase = PRE_STANCE.
 - When phase transitions to VOTING:
   - participant set becomes structurally frozen.
   - candidate set becomes structurally frozen.
 - votes are cleared when state transitions to BLOCK_TEMPORARY.
-- BLOCK_PERMANENT does not clear history; it freezes progression.
+- BLOCK_PERMANENT freezes progression but does not imply TERMINAL.
 - ACCEPTED implies phase = TERMINAL.
 - CLOSED implies phase = TERMINAL.
-- BLOCK_PERMANENT must not imply TERMINAL phase until explicitly CLOSED.
 - No boolean flags may represent blocking.
-
-Participant mutability rules are phase-bound, not state-bound.
 
 ---
 
-# 5. Candidate Schema
+# 6. Candidate Schema
 
 A Candidate must contain:
 
@@ -183,7 +251,7 @@ Candidate objects become part of the immutable Resolution snapshot if accepted.
 
 ---
 
-# 6. Vote Schema
+# 7. Vote Schema
 
 A Vote must contain:
 
@@ -194,45 +262,36 @@ A Vote must contain:
 - recorded_at (timestamp)
 - schema_version (string)
 
-Rules (structural constraints):
+Structural constraints:
 
-- At most one active vote per participant per candidate.
+- At most one vote per participant per candidate.
 - Votes are cleared upon BLOCK_TEMPORARY.
-- Votes become immutable once recorded.
+- Votes immutable once recorded.
 - Votes must not be encoded as a mapping (avoid ordering ambiguity).
-- Votes form part of the acceptance evaluation record.
 
-Votes are domain objects and must remain deterministic across implementations.
+Votes form part of the acceptance evaluation record.
 
 ---
 
-## 6.1 Solo Mode Vote Semantics (Structural Clarification)
+## 7.1 Solo Mode Structural Clarification
 
-In Solo Governance Mode (V1):
+In Solo Governance Mode:
 
-- Exactly one participant exists in the session.
-- Acceptance may occur without a prior explicit Vote object.
+- Exactly one participant exists.
 
-If acceptance is attempted and no Vote exists:
+If acceptance attempted without a Vote:
 
-- The engine must create an implicit Vote object:
+- Engine must create implicit Vote object:
   - participant_id = sole participant
   - stance = ACCEPT
   - recorded_at = deterministic timestamp
   - vote_id = engine-generated UUIDv7
-- That Vote becomes part of the session’s immutable vote list.
 
-This preserves:
-
-- Structural consistency
-- Deterministic evaluation
-- Snapshot completeness
-
-There is no alternative acceptance path that bypasses Vote modeling.
+There is no acceptance path that bypasses Vote modeling.
 
 ---
 
-# 7. Constraint Schema
+# 8. Constraint Schema
 
 A Constraint must contain:
 
@@ -244,15 +303,14 @@ A Constraint must contain:
 
 Constraints:
 
-- Immutable once session phase = VOTING.
+- Immutable once phase = VOTING.
 - Do not encode permanence or block type.
-- Are structurally neutral objects.
 
 Behavior defined in ENG-DECISION.
 
 ---
 
-# 8. Resolution Schema
+# 9. Resolution Schema
 
 A Resolution must contain:
 
@@ -271,28 +329,28 @@ A Resolution must contain:
 
 ---
 
-## 8.1 Snapshot Requirements
+## 9.1 Snapshot Requirements
 
 participant_snapshot must:
 
-- Reflect the complete participant set at the moment of acceptance.
+- Reflect complete participant set at acceptance.
 - Be immutable.
-- Be independent of any later session mutations.
+- Be independent of later session mutations.
 
 candidate_snapshot must:
 
-- Contain the full accepted candidate content.
-- Be complete and self-contained.
+- Contain full accepted candidate content.
+- Be self-contained.
 - Not rely on external references for legitimacy.
 
 In Solo Mode:
 
 - participant_snapshot contains exactly one participant ID.
-- If an implicit Vote was created, it must exist in the originating session record prior to snapshot.
+- Implicit Vote must exist in session prior to snapshot.
 
 ---
 
-# 9. Scope Schema
+# 10. Scope Schema
 
 A Scope must contain:
 
@@ -311,9 +369,9 @@ Rules:
 
 ---
 
-# 10. Supersession Encoding
+# 11. Supersession Encoding
 
-Supersession is represented structurally by:
+Supersession represented structurally by:
 
 - superseded object containing superseded_by reference
 - superseding Resolution referencing originating_session_id
@@ -327,13 +385,13 @@ Supersession is:
 - Graph-altering
 - Terminal for superseded object
 
-Behavior defined in ENG-SUPERSESSION.
+Supersession may occur only through Resolution creation via session acceptance.
 
-Supersession may occur only as a consequence of Resolution creation via session acceptance.
+Behavior defined in ENG-SUPERSESSION.
 
 ---
 
-# 11. Cross-Object References
+# 12. Cross-Object References
 
 Permitted references:
 
@@ -343,19 +401,11 @@ Permitted references:
 - Resolution → superseded Resolution
 - Scope → superseded Scope
 
-Sessions may reference objects in other Areas for informational purposes only.
-
-Legitimacy evaluation must consider only:
-
-- Authority
-- Scope
-- Referenced Resolution (if applicable)
-
 Inter-area references must not affect legitimacy.
 
 ---
 
-# 12. Deterministic Encoding Requirements
+# 13. Deterministic Encoding Requirements
 
 All implementations must ensure:
 
@@ -365,17 +415,17 @@ All implementations must ensure:
 - Stable set ordering (lexicographically sorted)
 - Canonical JSON serialization
 
+UUID ordering must never determine legitimacy.
+
 Object identity and hashing must be invariant across:
 
 - Programming languages
 - Storage backends
 - Operating systems
 
-UUID ordering must never determine legitimacy.
-
 ---
 
-# 13. Schema Versioning
+# 14. Schema Versioning
 
 Every persisted object must include:
 
@@ -390,11 +440,9 @@ Rules:
 
 ---
 
-# 14. Audit & Receipt Alignment
+# 15. Audit & Receipt Alignment
 
 Domain objects are primary legitimacy artifacts.
-
-Audit exists for accountability and traceability, not legitimacy creation.
 
 LEGITIMACY receipts must reference:
 
@@ -403,27 +451,26 @@ LEGITIMACY receipts must reference:
 - authority_snapshot_id
 - scope_snapshot_id
 
-REVIEW and EXPLORATION receipts:
+Receipts:
 
-- May reference objects
-- Must not create legitimacy
-- Must not mutate domain objects
-
-Receipts are derived artifacts only.
+- Must not create legitimacy.
+- Must not mutate domain objects.
+- Are derived artifacts only.
 
 ---
 
-# 15. Engine Invariants
+# 16. Engine Invariants
 
+- Governance slots are exclusive per Area.
+- Governance state is derived, never stored.
 - All domain object IDs are engine-generated UUIDv7.
-- No object may encode conflicting states.
-- Lifecycle must be represented by enum, not flags.
-- BLOCK_PERMANENT is a valid session state and must be explicit.
-- Participant and candidate mutability is restricted to phase = PRE_STANCE.
-- Snapshots must be complete and immutable.
-- Supersession must be structurally explicit.
-- Deterministic encoding is mandatory across implementations.
-- Legitimacy must never depend on timestamps, ordering, or external system behavior.
-- Solo Mode acceptance must not bypass vote modeling; implicit votes are structural.
+- Lifecycle represented by enum, never flags.
+- BLOCK_PERMANENT explicit.
+- Participant and candidate mutability restricted to PRE_STANCE.
+- Snapshots complete and immutable.
+- Supersession structurally explicit.
+- Deterministic encoding mandatory.
+- Legitimacy must never depend on timestamps or ordering.
+- Solo Mode must not bypass Vote modeling.
 
-Violation of this schema breaks cross-system determinism and is considered a critical engine failure.
+Violation of this schema breaks cross-system determinism and constitutes critical engine failure.
