@@ -1,7 +1,7 @@
-# ENG-CORE-PURITY — Engine Isolation & Determinism Principles  
-Status: FROZEN (v1)  
-Applies to: Engine Core (V1/V2+)  
-Scope: Constitutional Engine Guarantees  
+# ENG-CORE-PURITY — Engine Isolation & Determinism Principles
+Status: FROZEN (v2 – Evaluation Purity & Idempotence Formalized)
+Applies to: Engine Core (V1/V2+)
+Scope: Constitutional Engine Guarantees
 
 ---
 
@@ -9,7 +9,7 @@ Scope: Constitutional Engine Guarantees
 
 This document defines the isolation, identity, and determinism principles of the Engine Core.
 
-It establishes what the engine **is allowed to depend on**, and what it **must never depend on**.
+It establishes what the engine is allowed to depend on, and what it must never depend on.
 
 This specification is constitutional.
 
@@ -143,7 +143,7 @@ Fail if:
 
 # 6. Determinism Guarantee
 
-## ENG-CORE-06 — Pure Deterministic Evaluation
+## ENG-CORE-06 — Pure Deterministic Evaluation & Mutation
 
 Given identical:
 
@@ -170,9 +170,65 @@ Fail if:
 
 ---
 
-# 7. Legitimacy Boundary
+# 7. Evaluation Purity Doctrine
 
-## ENG-CORE-07 — Legitimacy Is Structural
+## ENG-CORE-07 — Evaluation Is Pure and Side-Effect Free
+
+Evaluation APIs (e.g., evaluate_session):
+
+- Must be strictly non-mutating.
+- Must not alter session state.
+- Must not alter resolution state.
+- Must not emit receipts.
+- Must not emit audit events.
+- Must not trigger lifecycle transitions.
+- Must not insert implicit votes.
+- Must not normalize or rewrite domain objects.
+
+Evaluation must not:
+
+- Cause BLOCK_TEMPORARY or BLOCK_PERMANENT transitions.
+- Recompute and persist derived state.
+- Modify participant or candidate sets.
+- Revalidate by mutating state.
+
+Fail if:
+
+- Any engine state changes during evaluation.
+- Evaluation alters future acceptance behavior.
+
+---
+
+## ENG-CORE-08 — Evaluation Idempotence
+
+Evaluation must be idempotent.
+
+Given identical:
+
+- Domain graph
+- Session state
+- Authority and Scope state
+
+Repeated evaluation calls must produce identical EvaluationReports (except non-semantic diagnostics).
+
+Evaluation must not:
+
+- Depend on prior evaluation calls.
+- Cache legitimacy state in a way that alters outcomes.
+- Require evaluation before acceptance.
+
+Acceptance must independently validate all invariants without reliance on prior evaluation.
+
+Fail if:
+
+- Evaluation changes output across repeated identical calls.
+- Acceptance correctness depends on prior evaluation invocation.
+
+---
+
+# 8. Legitimacy Boundary
+
+## ENG-CORE-09 — Legitimacy Is Structural
 
 Legitimacy is created only through:
 
@@ -182,6 +238,7 @@ Legitimacy is created only through:
 
 Legitimacy is not created by:
 
+- Evaluation
 - Audit events
 - Storage operations
 - Import actions
@@ -191,12 +248,13 @@ Legitimacy is not created by:
 Fail if:
 
 - Legitimacy can be inferred without session acceptance.
+- Evaluation creates governance effects.
 - Audit substitutes for governance.
 - Persistence implies authority.
 
 ---
 
-# 8. Non-Goals
+# 9. Non-Goals
 
 The Engine is not:
 
@@ -212,23 +270,26 @@ A deterministic legitimacy evaluator.
 
 ---
 
-# 9. Mental Model
+# 10. Mental Model
 
 - Storage remembers.
 - Audit records.
 - CLI orchestrates.
-- The Engine evaluates.
+- Evaluation inspects.
+- Acceptance commits.
 - Supersession evolves governance.
-- Sessions create legitimacy.
 
 The Engine is a legitimacy compiler.
 
+Evaluation is simulation.
+Acceptance is transaction.
+
 ---
 
-# 10. Constitutional Status
+# 11. Constitutional Status
 
 This document defines the isolation boundary of the Engine Core.
 
-All other specifications (ENG-DOMAIN, ENG-DECISION, ENG-REVIEW-RETIRED, ENG-SUPERSESSION, ENG-AUD) must conform to these principles.
+All other specifications (ENG-DOMAIN, ENG-DECISION, ENG-REVIEW-RETIRED, ENG-SUPERSESSION, ENG-AUD, ENG-API) must conform to these principles.
 
 Violation of these principles constitutes a critical constitutional failure.

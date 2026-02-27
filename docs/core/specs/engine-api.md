@@ -1,5 +1,5 @@
 # ENG-API — Minimal Engine Interface Specification
-Status: FROZEN (v5 – Bulk DAG Export Added)
+Status: FROZEN (v6 – Evaluation Purity & Idempotence Formalized)
 Applies to: Engine Core (V1/V2+)
 Scope: Deterministic, storage-agnostic engine interface
 
@@ -31,7 +31,7 @@ Bootstrap is not a special API. Authority initialization occurs through standard
 
 # 2. Global Rules
 
-## ENG-API-01 — Deterministic Evaluation
+## ENG-API-01 — Deterministic Command Reporting
 
 Every mutating API call must return exactly one EvaluationReport.
 
@@ -282,19 +282,12 @@ No side effects occur if governance validation fails.
 ---
 
 ## 6.2 pause_session
-
 ## 6.3 resume_session
-
 ## 6.4 close_session
-
 ## 6.5 add_participant
-
 ## 6.6 remove_participant
-
 ## 6.7 add_candidate
-
 ## 6.8 remove_candidate
-
 ## 6.9 record_vote
 
 All lifecycle mutation commands:
@@ -313,12 +306,15 @@ Inputs:
 
 Behavior:
 
+- Performs full validation independent of prior evaluation
 - Validates governance preconditions
 - Validates Authority usability
 - Validates Scope usability
 - Validates constraints
 - Evaluates votes
 - Performs atomic commit
+
+Acceptance must not depend on prior evaluate_session calls.
 
 On success:
 
@@ -345,18 +341,32 @@ Inputs:
 
 Behavior:
 
-- Non-mutating
-- Returns EvaluationReport with:
+- Pure and strictly non-mutating
+- Idempotent
+- Deterministic
+- May be invoked in any session state (including BLOCK_TEMPORARY or BLOCK_PERMANENT)
+- Must not alter session state
+- Must not alter resolution state
+- Must not emit receipts
+- Must not emit audit events
+- Must not trigger lifecycle transitions
+- Must not insert implicit votes
+- Must not normalize or rewrite domain objects
+- Must not trigger revalidation that mutates state
+
+Returns:
+
+- EvaluationReport with:
   - can_accept
   - blocking_reasons
   - governance violations
   - constraint violations
 
-Must not:
+Repeated calls with identical domain state must produce identical EvaluationReports (excluding non-semantic diagnostics).
 
-- Insert implicit solo vote
-- Generate receipt
-- Create legitimacy
+Evaluation is simulation only.
+
+Acceptance is transaction.
 
 ---
 
@@ -389,7 +399,7 @@ Must not:
 
 ---
 
-# 9. Bulk DAG Export (New)
+# 9. Bulk DAG Export
 
 ## 9.1 export_area_dag
 
@@ -406,20 +416,19 @@ Behavior:
   - receipts
   - annotations
 
-- Deterministic ordering ensures identical output from identical state.
-- Useful for backup, migration, or replication of long-running engines.
-- No mutation occurs during export.
-- Read only
+- Deterministic ordering ensures identical output from identical state
+- Read-only
+- No mutation occurs during export
 - Conforms to ENG-DOMAIN object schemas
 
 Returns:
 
-- Full area DAG object, canonical and immutable for the duration of the export.
-- Compatible with rehydration APIs for import into another engine instance.
+- Full area DAG object, canonical and immutable for the duration of the export
+- Compatible with rehydration APIs for import into another engine instance
 
 Fail if:
 
-- Any object references missing or structurally invalid (structural integrity enforced).
+- Any object references missing or structurally invalid
 
 ---
 
@@ -430,6 +439,8 @@ Blocking is engine-detected only.
 Receipts record closure but never trigger blocking.
 
 Area-wide BLOCK_PERMANENT enforcement occurs during acceptance attempts.
+
+Evaluation may report blocking but must not change blocking state.
 
 ---
 
@@ -442,6 +453,8 @@ Area-wide BLOCK_PERMANENT enforcement occurs during acceptance attempts.
 - Receipts immutable and deterministic
 - Governance slots exclusive per Area
 - Restore validates slot presence and exclusivity
+- Evaluation is pure, idempotent, and non-mutating
+- Acceptance does not depend on prior evaluation
 - Bulk DAG export available and deterministic
 - All error responses deterministic
 - Engine storage, import, export remain caller responsibilities
@@ -456,12 +469,10 @@ The API is a mechanical boundary.
 
 Governance must exist before legitimacy may be created.
 
-Sessions define context.
-Votes define evaluation.
-Acceptance defines legitimacy.
+Evaluation inspects.
+Acceptance commits.
+Supersession evolves governance.
 Receipts freeze closure.
-
-Bulk DAG export provides a snapshot of the full Area state.
 
 Everything deterministic.
 Nothing implicit.
