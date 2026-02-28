@@ -1,7 +1,7 @@
-# ENG-ERROR — Engine Error & EvaluationReport Model
-Status: FROZEN (v3 – Orphan & Receipt Validation Added)  
+# ENG-ERROR — Engine Error & EvaluationReport Model  
+Status: FROZEN (v4 – Single-Area & Governance Slot Invariants Formalized)  
 Applies to: Engine Core (V1/V2+)  
-Scope: Deterministic failure reporting, block classification, and evaluation output
+Scope: Deterministic failure reporting, block classification, and evaluation output  
 
 ---
 
@@ -13,17 +13,18 @@ The Engine must produce a **structured, deterministic EvaluationReport** for eve
 
 This specification defines:
 
-- Error classification
-- Block classification
-- EvaluationReport schema
-- Deterministic error codes
-- Hard vs soft failure semantics
+- Error classification  
+- Block classification  
+- EvaluationReport schema  
+- Deterministic error codes  
+- Hard vs soft failure semantics  
 
-**Requirements:**
+Requirements:
 
-- Failures must never be silent
-- No semantic meaning may reside in free-form strings
-- All failure context must be machine-readable
+- Failures must never be silent  
+- No semantic meaning may reside in free-form strings  
+- All failure context must be machine-readable  
+- Identical input conditions must yield identical reports  
 
 ---
 
@@ -33,12 +34,18 @@ This specification defines:
 
 Every Engine API invocation returns **exactly one EvaluationReport**, including:
 
-- Successful mutations
-- Rejections due to invariant or governance violations
-- Blocked operations (temporary or permanent)
-- Deterministic no-op outcomes
+- Successful mutations  
+- Rejections due to invariant or governance violations  
+- Blocked operations (temporary or permanent)  
+- Deterministic no-op outcomes  
 
-The Engine must not throw unstructured exceptions or encode legitimacy within messages
+The Engine must not:
+
+- Throw unstructured exceptions  
+- Encode legitimacy within messages  
+- Return multiple competing failure classifications  
+
+Structural restore failures during initialization are not command responses but must still resolve to a deterministic structural error classification defined in this document.
 
 ---
 
@@ -46,39 +53,39 @@ The Engine must not throw unstructured exceptions or encode legitimacy within me
 
 An EvaluationReport includes:
 
-- `evaluation_id` — UUIDv7, engine-generated
-- `command_type` — ENUM
-- `target_object_type` — ENUM or null
-- `target_object_id` — UUIDv7 or null
-- `outcome` — ENUM (SUCCESS | REJECTED | BLOCKED | NO_OP)
-- `error_code` — ENUM or null
-- `block_type` — ENUM (TEMPORARY | PERMANENT) or null
-- `related_objects` — list of object references
-- `diagnostics` — optional, non-semantic context
-- `occurred_at` — deterministic timestamp
-- `schema_version` — string
+- `evaluation_id` — UUIDv7, engine-generated  
+- `command_type` — ENUM  
+- `target_object_type` — ENUM or null  
+- `target_object_id` — UUIDv7 or null  
+- `outcome` — ENUM (SUCCESS | REJECTED | BLOCKED | NO_OP)  
+- `error_code` — ENUM or null  
+- `block_type` — ENUM (TEMPORARY | PERMANENT) or null  
+- `related_objects` — list of object references  
+- `diagnostics` — optional, non-semantic context  
+- `occurred_at` — deterministic timestamp  
+- `schema_version` — string  
 
 ---
 
 ## 3.1 Outcome Enum
 
-- **SUCCESS** — Command executed and mutated engine state
-- **REJECTED** — Command violated an invariant, structural rule, or governance precondition
-- **BLOCKED** — Command rejected due to session block state or hygiene enforcement
-- **NO_OP** — Command executed but caused no state change
+- **SUCCESS** — Command executed and mutated engine state  
+- **REJECTED** — Command violated a structural rule, invariant, or governance precondition  
+- **BLOCKED** — Command rejected due to session block state or hygiene enforcement  
+- **NO_OP** — Command executed but caused no state change  
 
 ---
 
 ## 3.2 BlockType Enum
 
-- TEMPORARY → corresponds to `BLOCK_TEMPORARY` session state
-- PERMANENT → corresponds to `BLOCK_PERMANENT` session or hygiene enforcement
+- TEMPORARY → corresponds to `BLOCK_TEMPORARY` session state  
+- PERMANENT → corresponds to `BLOCK_PERMANENT` session or hygiene enforcement  
 
-**Rules:**
+Rules:
 
-- `block_type` must be null unless `outcome = BLOCKED`
-- Fail if `block_type` is present when `outcome != BLOCKED`
-- Fail if `BLOCKED` outcome lacks a `block_type`
+- `block_type` must be null unless `outcome = BLOCKED`  
+- Fail if `block_type` is present when `outcome != BLOCKED`  
+- Fail if `BLOCKED` outcome lacks a `block_type`  
 
 ---
 
@@ -88,78 +95,94 @@ An EvaluationReport includes:
 
 Error codes are:
 
-- Explicitly enumerated
-- Stable across engine versions
-- Machine-readable and deterministic
+- Explicitly enumerated  
+- Stable across engine versions  
+- Machine-readable and deterministic  
+- Mutually exclusive per violation condition  
 
-Error codes must **never** depend on localization, formatting, or runtime behavior
-
----
-
-### 4.1 Structural Errors
-
-- `INVALID_UUID`
-- `DUPLICATE_ID`
-- `MISSING_REFERENCE`
-- `ORPHAN_REFERENCE_DETECTED` *(new)*
-- `INVALID_ENUM_VALUE`
-- `INVALID_STATE_COMBINATION`
-- `SUPERSESSION_CYCLE_DETECTED`
-- `RECEIPT_HASH_MISMATCH` *(new)*
-
-**Outcome:** REJECTED  
-**Related objects:** referencing object + missing/corrupted object
+Error codes must never depend on localization, formatting, ordering, or runtime heuristics.
 
 ---
 
-### 4.2 Session State Violations
+## 4.1 Structural Errors
 
-- `SESSION_TERMINAL_IMMUTABLE`
-- `SESSION_NOT_ACTIVE`
-- `SESSION_BLOCKED_TEMPORARY`
-- `SESSION_BLOCKED_PERMANENT`
+These represent invariant violations or graph corruption.
 
----
+- `INVALID_UUID`  
+- `DUPLICATE_ID`  
+- `MISSING_REFERENCE`  
+- `ORPHAN_REFERENCE_DETECTED`  
+- `INVALID_ENUM_VALUE`  
+- `INVALID_STATE_COMBINATION`  
+- `SUPERSESSION_CYCLE_DETECTED`  
+- `RECEIPT_HASH_MISMATCH`  
+- `MULTI_AREA_GRAPH_DETECTED`  
+- `CROSS_AREA_SUPERSESSION_PROHIBITED`  
+- `GOVERNANCE_SLOT_EMPTY`  
+- `GOVERNANCE_SLOT_MULTIPLICITY`  
 
-### 4.3 Freeze Boundary Violations
+Definitions:
 
-- `CANDIDATE_SET_FROZEN`
-- `PARTICIPANT_SET_FROZEN`
-- `CONSTRAINT_MUTATION_FORBIDDEN`
+- **MULTI_AREA_GRAPH_DETECTED** — Structural objects from more than one Area exist in a single engine instance.  
+- **CROSS_AREA_SUPERSESSION_PROHIBITED** — A supersession edge targets a Resolution from a different Area.  
+- **GOVERNANCE_SLOT_EMPTY** — An exclusive governance slot (Authority or Scope) has zero structurally ACTIVE objects when required.  
+- **GOVERNANCE_SLOT_MULTIPLICITY** — An exclusive governance slot contains more than one structurally ACTIVE object.  
 
----
-
-### 4.4 Participant Errors
-
-- `PARTICIPANT_NOT_FOUND`
-- `CANNOT_REMOVE_LAST_PARTICIPANT`
-
----
-
-### 4.5 Context & Governance Violations
-
-- `AUTHORITY_CONTEXT_MISMATCH`
-- `SCOPE_CONTEXT_MISMATCH`
+Outcome: REJECTED (for commands)  
+Restore: StructuralIntegrityFailure → Engine must halt  
 
 ---
 
-### 4.6 Acceptance & Legitimacy Violations
+## 4.2 Session State Violations
 
-- `ACCEPTANCE_CONDITIONS_NOT_MET`
-- `AREA_BLOCKED_BY_PERMANENT_SESSION`
-- `AUTHORITY_RULE_VIOLATION`
-- `CONSTRAINT_VIOLATION`
-- `SUPERSESSION_CONFLICT`
-- `RESOLUTION_ALREADY_SUPERSEDED`
+- `SESSION_TERMINAL_IMMUTABLE`  
+- `SESSION_NOT_ACTIVE`  
+- `SESSION_BLOCKED_TEMPORARY`  
+- `SESSION_BLOCKED_PERMANENT`  
 
 ---
 
-### 4.7 Resolution & Lifecycle Errors
+## 4.3 Freeze Boundary Violations
 
-- `INVALID_RESOLUTION_STATE_TRANSITION`
-- `RETIRED_STATE_VIOLATION`
-- `UNDER_REVIEW_STATE_VIOLATION`
-- `SNAPSHOT_INCOMPLETE`
+- `CANDIDATE_SET_FROZEN`  
+- `PARTICIPANT_SET_FROZEN`  
+- `CONSTRAINT_MUTATION_FORBIDDEN`  
+
+---
+
+## 4.4 Participant Errors
+
+- `PARTICIPANT_NOT_FOUND`  
+- `CANNOT_REMOVE_LAST_PARTICIPANT`  
+
+---
+
+## 4.5 Context & Governance Violations
+
+- `AUTHORITY_CONTEXT_MISMATCH`  
+- `SCOPE_CONTEXT_MISMATCH`  
+
+---
+
+## 4.6 Acceptance & Legitimacy Violations
+
+- `ACCEPTANCE_CONDITIONS_NOT_MET`  
+- `AREA_BLOCKED_BY_PERMANENT_SESSION`  
+- `AUTHORITY_RULE_VIOLATION`  
+- `CONSTRAINT_VIOLATION`  
+- `SUPERSESSION_CONFLICT`  
+- `RESOLUTION_ALREADY_SUPERSEDED`  
+
+These represent evaluation-time failures that do not indicate structural corruption.
+
+---
+
+## 4.7 Resolution & Lifecycle Errors
+
+- `INVALID_RESOLUTION_STATE_TRANSITION`  
+- `RETIRED_STATE_VIOLATION`  
+- `UNDER_REVIEW_STATE_VIOLATION`  
+- `SNAPSHOT_INCOMPLETE`  
 
 ---
 
@@ -167,25 +190,41 @@ Error codes must **never** depend on localization, formatting, or runtime behavi
 
 ## ENG-ERROR-04 — Deterministic Failure Classes
 
-**Hard Failures (REJECTED):**
+### Hard Failures (REJECTED)
 
-- Structural invalidity (UUID, duplicate IDs, missing references, orphan references, receipt hash mismatch)
-- Invariant violations
-- Authority or Scope rule violations
-- Constraint violation
-- Terminal immutability violation
-- Freeze boundary violation
-- Participant integrity violation
+Include:
 
-**Soft Blocks (BLOCKED):**
+- Structural invalidity  
+- Supersession cycle  
+- Multi-area graph detection  
+- Cross-area supersession attempt  
+- Governance slot emptiness or multiplicity  
+- Invariant violations  
+- Constraint violation  
+- Terminal immutability violation  
+- Freeze boundary violation  
+- Participant integrity violation  
 
-- BLOCK_TEMPORARY session state
-- BLOCK_PERMANENT hygiene enforcement
+Hard failures:
 
-**Rules:**
+- Do not mutate domain state  
+- Do not trigger automatic transitions  
+- Must be deterministic  
 
-- Neither hard nor soft failures alter session or domain state
-- No automatic transitions or implicit fixes are permitted
+---
+
+### Soft Blocks (BLOCKED)
+
+Triggered by:
+
+- BLOCK_TEMPORARY session state  
+- BLOCK_PERMANENT hygiene enforcement  
+- Area-level permanent blocking  
+
+Rules:
+
+- Neither hard nor soft failures alter domain objects  
+- No automatic repairs permitted  
 
 ---
 
@@ -195,12 +234,12 @@ Error codes must **never** depend on localization, formatting, or runtime behavi
 
 When acceptance is blocked by `BLOCK_PERMANENT`:
 
-- `outcome = BLOCKED`
-- `block_type = PERMANENT`
-- `error_code = AREA_BLOCKED_BY_PERMANENT_SESSION`
-- `related_objects` includes session IDs causing the block
+- `outcome = BLOCKED`  
+- `block_type = PERMANENT`  
+- `error_code = AREA_BLOCKED_BY_PERMANENT_SESSION`  
+- `related_objects` includes blocking session IDs  
 
-The Engine **must not** auto-close or suppress blocking sessions
+The Engine must not auto-close or suppress blocking sessions.
 
 ---
 
@@ -210,9 +249,10 @@ The Engine **must not** auto-close or suppress blocking sessions
 
 Mutating ACCEPTED or CLOSED sessions:
 
-- `outcome = REJECTED`
-- `error_code = SESSION_TERMINAL_IMMUTABLE`
-- No mutation is allowed
+- `outcome = REJECTED`  
+- `error_code = SESSION_TERMINAL_IMMUTABLE`  
+
+No mutation is allowed.
 
 ---
 
@@ -222,19 +262,25 @@ Mutating ACCEPTED or CLOSED sessions:
 
 Given identical:
 
-- Command input
-- Domain graph
-- Session states
-- Authority and Scope rules
+- Command input  
+- Active Area domain graph  
+- Session states  
+- Authority and Scope rules  
 
 The Engine must produce identical:
 
-- `outcome`
-- `error_code`
-- `block_type`
-- `related_objects`
+- `outcome`  
+- `error_code`  
+- `block_type`  
+- `related_objects`  
 
-Fail if multiple valid error codes exist for a single violation or ordering differs between implementations
+Fail if:
+
+- Multiple valid error codes exist for a single violation  
+- Ordering differs between implementations  
+- Mixed-area graphs are classified inconsistently  
+
+Determinism applies strictly within a single active Area.
 
 ---
 
@@ -244,16 +290,18 @@ Fail if multiple valid error codes exist for a single violation or ordering diff
 
 `related_objects` must include:
 
-- All object IDs relevant to the failure
-- Blocking session IDs
-- Violated constraints
-- Relevant participant IDs
-- Missing or corrupted object IDs
+- All object IDs relevant to the failure  
+- Blocking session IDs  
+- Violated constraint IDs  
+- Relevant participant IDs  
+- Missing or corrupted object IDs  
+- Governance slot objects (if slot invariant violated)  
 
-**Rules:**
+Rules:
 
-- Must not imply legitimacy or state mutation
-- Must only provide deterministic reporting context
+- Must not imply legitimacy  
+- Must not imply mutation  
+- Deterministic ordering required  
 
 ---
 
@@ -261,8 +309,15 @@ Fail if multiple valid error codes exist for a single violation or ordering diff
 
 ## ENG-ERROR-09 — Engine Never Modifies State
 
-- Failures are descriptive only
-- Engine must not downgrade blocks, auto-resolve conflicts, or auto-close sessions
+The Engine must not:
+
+- Auto-close sessions  
+- Auto-resolve supersession conflicts  
+- Auto-downgrade blocks  
+- Auto-repair slot multiplicity  
+- Auto-correct multi-area hosting  
+
+Failures are descriptive only.
 
 ---
 
@@ -270,37 +325,39 @@ Fail if multiple valid error codes exist for a single violation or ordering diff
 
 ## ENG-ERROR-10 — Failures Are Auditable
 
-- Audit may record rejected or blocked commands
-- Audit is append-only
-- Audit events do not affect legitimacy or session state
-- EvaluationReport remains authoritative
+- Audit may record rejected or blocked commands  
+- Audit is append-only  
+- Audit does not influence legitimacy  
+- EvaluationReport remains authoritative  
 
 ---
 
 # 12. Versioning
 
-- Every EvaluationReport includes `schema_version`
-- Error codes may only change under explicit engine version increment
+- Every EvaluationReport includes `schema_version`  
+- Error codes may only change under explicit engine version increment  
+- Additions require deterministic classification guarantee  
 
 ---
 
 # Summary Guarantees
 
-- Every command returns structured output
-- Hard vs soft failure is explicit
-- Freeze boundaries and participant integrity enforced
-- BLOCK_PERMANENT hygiene is transparent
-- Terminal sessions are immutable
-- Orphan and receipt validation deterministic
-- Determinism preserved across implementations
+- Every command returns structured output  
+- Hard vs soft failure is explicit  
+- Single-Area runtime enforced  
+- Governance slot invariants explicitly classified  
+- Cross-area supersession explicitly prohibited  
+- No silent structural ambiguity  
+- Determinism preserved across implementations  
 
 ---
 
 # Mental Model
 
-- Commands **never fail silently**
-- Every failure is classified and deterministic
-- Blocks are explicit and descriptive
-- Nothing mutates on rejection
-- Orphan and receipt issues are deterministic **hard failures**
+- Commands never fail silently  
+- Every violation has a unique mechanical identity  
+- Blocks are explicit and typed  
+- Nothing mutates on rejection  
+- Multi-area corruption halts deterministically  
+- Governance slot violations are first-class structural failures  
 - The engine communicates mechanically, never narratively

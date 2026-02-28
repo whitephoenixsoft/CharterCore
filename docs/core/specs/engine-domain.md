@@ -1,6 +1,6 @@
 # ENG-DOMAIN — Domain Object Schema  
 Canonical Engine Object Definitions  
-Status: DRAFT (Pre-Freeze, Cross-Area References Integrated)  
+Status: DRAFT (Pre-Freeze, Cross-Area References & Single-Area Runtime Integrated)  
 Applies to: Engine Core (V1/V2+)
 
 ---
@@ -19,6 +19,7 @@ Its goals are to:
 - Centralize identity generation within the engine.
 - Define exclusive governance slot invariants.
 - Distinguish structural references from informational cross-area references.
+- Formalize Area-local structural boundaries.
 
 Behavioral rules are defined in:
 
@@ -60,12 +61,33 @@ This document defines structure only.
 - The engine does not manage area lifecycle.
 - The engine does not validate area ownership.
 - area_id exists solely for scoping evaluation.
+- area_id does not imply multi-area hosting within a single engine instance.
 
 ---
 
-# 3. Governance Slot Model
+# 3. Single-Area Structural Model
 
-## 3.1 Exclusive Governance Slots
+The Engine operates on exactly one Area at a time.
+
+Structural implications:
+
+- A domain graph loaded into the Engine must contain objects belonging to exactly one area_id.
+- Objects from multiple Areas must never coexist within a single in-memory domain graph.
+- Structural validation assumes a single Area context.
+- Governance slot evaluation is Area-local.
+- Supersession graph reconstruction is Area-local.
+
+Cross-area references do not constitute multi-Area hosting.
+
+They are informational metadata only.
+
+Multi-Area orchestration is the responsibility of the host (e.g., CLI), not the Engine Core.
+
+---
+
+# 4. Governance Slot Model
+
+## 4.1 Exclusive Governance Slots
 
 Each Area contains two exclusive legitimacy slots:
 
@@ -83,9 +105,9 @@ Multiple ACTIVE objects in either slot is a structural integrity violation.
 
 ---
 
-# 4. Structural vs Informational References
+# 5. Structural vs Informational References
 
-## 4.1 Structural References
+## 5.1 Structural References
 
 Structural references are references that:
 
@@ -93,6 +115,8 @@ Structural references are references that:
 - Affect ACTIVE derivation
 - Affect supersession graph
 - Must resolve during restore
+
+Structural references must always reference objects within the same area_id.
 
 Permitted structural references:
 
@@ -104,9 +128,11 @@ Permitted structural references:
 
 Missing structural references constitute integrity failure.
 
+Cross-area structural references are prohibited.
+
 ---
 
-## 4.2 Informational Cross-Area References
+## 5.2 Informational Cross-Area References
 
 Cross-area references are informational only.
 
@@ -122,12 +148,13 @@ They must not:
 - Affect ACTIVE derivation
 - Trigger restore failure if unresolved
 - Be treated as ORPHAN or MISSING_REFERENCE
+- Be interpreted as structural references
 
 They are opaque metadata.
 
 ---
 
-# 5. CrossAreaReference Schema
+# 6. CrossAreaReference Schema
 
 A CrossAreaReference must contain:
 
@@ -145,27 +172,9 @@ Rules:
 - Engine must not attempt to update labels.
 - Absence of referenced Area or Resolution must not alter engine behavior.
 - CrossAreaReference objects are immutable.
+- CrossAreaReference must not be interpreted as belonging to the active Area.
 
 CrossAreaReference objects are informational only and excluded from structural integrity validation.
-
----
-
-# 6. Placement of Cross-Area References
-
-Cross-area references may appear in:
-
-- Resolution annotations
-- Session annotations
-- Explicit cross_area_references list field (if defined by embedding spec)
-
-They must not appear in:
-
-- superseded_by fields
-- authority_id fields
-- scope_id fields
-- Any structural reference field
-
-If future schema additions include cross-area references in new objects, they must be explicitly declared informational.
 
 ---
 
@@ -190,7 +199,10 @@ A Session object must contain:
 - updated_at (timestamp)
 - schema_version (string)
 
-Cross-area references must not affect evaluation.
+Constraints:
+
+- All structural references must share the same area_id as the Session.
+- Cross-area references must not alter evaluation.
 
 ---
 
@@ -212,7 +224,10 @@ A Resolution must contain:
 - annotations (optional)
 - schema_version (string)
 
-Cross-area references are informational only.
+Constraints:
+
+- superseded_by must reference a Resolution within the same area_id.
+- Cross-area references are informational only.
 
 ---
 
@@ -222,6 +237,8 @@ Supersession represented structurally by:
 
 - superseded object containing superseded_by reference
 - superseding Resolution referencing originating_session_id
+
+Supersession is strictly Area-local.
 
 Cross-area references must never participate in supersession.
 
@@ -275,16 +292,18 @@ Rules:
 
 # 12. Engine Invariants
 
+- Engine operates on exactly one Area at a time.
+- Domain graph loaded into Engine must contain a single area_id.
 - Governance slots are exclusive per Area.
 - Governance state is derived, never stored.
-- Structural references must resolve.
+- Structural references must resolve and must be Area-local.
 - Cross-area references must not be validated for existence.
 - All domain object IDs are engine-generated UUIDv7.
 - Lifecycle represented by enum, never flags.
 - BLOCK_PERMANENT explicit.
 - Participant and candidate mutability restricted to PRE_STANCE.
 - Snapshots complete and immutable.
-- Supersession structurally explicit.
+- Supersession structurally explicit and Area-local.
 - Deterministic encoding mandatory.
 - Legitimacy must never depend on timestamps or ordering.
 - Solo Mode must not bypass Vote modeling.
