@@ -1,6 +1,6 @@
 # ENG-SUPERSESSION  
 Supersession & Conflict Model  
-Status: FROZEN (v3 – Cross-Area Structural Boundary Formalized)  
+Status: FROZEN (v4 – Single-Area Runtime Constitutionalized)  
 Applies to: Engine Core (V1/V2+)  
 
 This document must be interpreted in conjunction with:
@@ -29,17 +29,45 @@ This document defines:
 - Deterministic restore guarantees  
 - Area-local supersession sovereignty  
 
+Supersession evaluation occurs strictly within the single active Area loaded into the Engine instance.
+
+Mixed-area resolution graphs are prohibited and constitute StructuralIntegrityFailure (per ENG-INTEGRITY).
+
 This document does not define session lifecycle mechanics.
 
 It defines graph integrity and legitimacy conflict behavior.
 
 ---
 
-# 2. Resolution Graph Model
+# 2. Single-Area Supersession Model
 
-## 2.1 Directed Supersession
+## 2.1 Area-Local Graph Sovereignty
 
-A Resolution may supersede zero or more prior Resolutions **within the same Area only**.
+The supersession graph is strictly scoped to the active Area.
+
+The Engine:
+
+- Must operate on exactly one Area at a time.
+- Must not evaluate supersession across multiple Areas.
+- Must not merge or compose resolution graphs from different Areas.
+- Must not derive ACTIVE sets across Area boundaries.
+
+If structural objects from multiple Areas are present:
+
+- Initialization must fail (StructuralIntegrityFailure per ENG-INTEGRITY).
+- The Engine must halt.
+
+Cross-area references do not constitute multi-Area hosting.
+
+They are informational metadata only.
+
+---
+
+# 3. Resolution Graph Model
+
+## 3.1 Directed Supersession
+
+A Resolution may supersede zero or more prior Resolutions within the same Area only.
 
 Authority and Scope participate in the supersession graph exactly like any other Resolution within their respective slots.
 
@@ -59,11 +87,13 @@ If Resolution B supersedes Resolution A:
 
 Supersession edges are permanent once created.
 
+Cross-area supersession is prohibited.
+
 ---
 
-## 2.2 Acyclic Requirement
+## 3.2 Acyclic Requirement
 
-The supersession graph must remain acyclic within each Area.
+The supersession graph must remain acyclic within the active Area.
 
 A Resolution may not:
 
@@ -84,48 +114,44 @@ If a cycle is detected during restore:
 
 ---
 
-## 2.3 Area Sovereignty
+## 3.3 Area Consistency Requirement
 
-Supersession is strictly scoped to a single Area.
+For any supersession edge:
 
-A Resolution may supersede only Resolutions where:
+- resolution.area_id must equal superseded_resolution.area_id.
 
-- resolution.area_id == new_resolution.area_id
+Cross-area supersession attempts:
 
-Cross-area supersession is prohibited.
+- Must fail deterministically at acceptance.
+- Must fail at restore if detected.
+- Must halt the Engine (StructuralIntegrityFailure).
 
-Violation at acceptance time:
-
-- Deterministic acceptance failure.  
-- No graph mutation.
-
-Violation detected at restore:
-
-- StructuralIntegrityFailure.  
-- Engine must halt.
-
-Cross-area references (as defined in ENG-DOMAIN) are informational only and must never be interpreted as supersession edges.
+Cross-area references defined in ENG-DOMAIN must never be interpreted as supersession edges.
 
 ---
 
-# 3. ACTIVE Resolution Derivation
+# 4. ACTIVE Resolution Derivation
 
-## 3.1 Structural ACTIVE
+## 4.1 Structural ACTIVE
 
 A Resolution is structurally ACTIVE if:
 
-- It has no accepted successor in the same Area.  
+- It has no accepted successor in the active Area.  
 - It is not structurally inconsistent.  
 
-Structural ACTIVE is derived solely from supersession edges within the Area.
+Structural ACTIVE is derived solely from supersession edges within the active Area.
 
-Cross-area references must not influence ACTIVE derivation.
+ACTIVE derivation:
 
-Authority and Scope ACTIVE status is derived the same way.
+- Must operate over exactly one Area graph.
+- Must not traverse cross-area references.
+- Must not consider external Area state.
+
+Authority and Scope ACTIVE status is derived identically.
 
 ---
 
-## 3.2 Legitimacy Usability
+## 4.2 Legitimacy Usability
 
 A Resolution is usable for legitimacy evaluation only if:
 
@@ -139,11 +165,11 @@ External Area state must not influence usability.
 
 ---
 
-## 3.3 Exclusive Governance Slots
+## 4.3 Exclusive Governance Slots
 
 Authority and Scope are exclusive governance slots per Area.
 
-For each Area:
+For the active Area:
 
 - Exactly one structurally ACTIVE Authority must exist.  
 - Exactly one structurally ACTIVE Scope must exist (once Scope is defined).  
@@ -169,9 +195,9 @@ No automatic repair is permitted.
 
 ---
 
-# 4. Structural vs Informational References
+# 5. Structural vs Informational References
 
-## 4.1 Structural References
+## 5.1 Structural References
 
 Structural references affecting supersession are limited to:
 
@@ -179,41 +205,43 @@ Structural references affecting supersession are limited to:
 
 These references:
 
-- Must resolve.
+- Must resolve within the active Area graph.
 - Must be validated during acceptance.
 - Must be validated during restore.
 - Affect ACTIVE derivation.
 
-Missing structural references constitute structural integrity failure.
+Missing structural references constitute StructuralIntegrityFailure.
 
 ---
 
-## 4.2 Informational Cross-Area References
+## 5.2 Informational Cross-Area References
 
 Cross-area references (per ENG-DOMAIN):
 
-- May reference external Areas or Resolutions.
+- May reference external Areas or external Resolutions.
 - Must not be interpreted as supersession edges.
 - Must not be traversed.
 - Must not be validated for existence.
 - Must not affect ACTIVE derivation.
 - Must not affect governance slot exclusivity.
 - Must not cause restore failure if unresolved.
+- Must not influence conflict detection.
+- Must not influence blocking behavior.
 
 Deletion or absence of a referenced external Area or Resolution must not alter:
 
 - Structural ACTIVE derivation.
-- Conflict detection.
 - Governance usability.
-- Blocking behavior.
+- Acceptance eligibility.
+- Conflict semantics.
 
 They are metadata only.
 
 ---
 
-# 5. First-Accept Wins Rule
+# 6. First-Accept Wins Rule
 
-If multiple sessions attempt to supersede the same structurally ACTIVE Resolution:
+If multiple sessions attempt to supersede the same structurally ACTIVE Resolution in the active Area:
 
 - The first successful acceptance creates the successor edge.  
 - The referenced Resolution becomes non-structurally-ACTIVE.  
@@ -224,21 +252,22 @@ There is:
 - No automatic branch merging.  
 - No implicit precedence rule.  
 - No timestamp-based arbitration.  
-- No cross-area arbitration.
+- No UUID-time arbitration.  
+- No cross-area arbitration.  
 
 Explicit supersession edges define graph truth.
 
 ---
 
-# 6. Governance Supersession Effects
+# 7. Governance Supersession Effects
 
-## 6.1 Authority Supersession
+## 7.1 Authority Supersession
 
-When an Authority Resolution is superseded:
+When an Authority Resolution is superseded within the active Area:
 
 - The prior Authority becomes non-structurally-ACTIVE.  
-- All sessions in the Area must transition to BLOCK_PERMANENT.  
-- Acceptance in the Area is prohibited until sessions are explicitly closed or restarted.
+- All sessions in the active Area must transition to BLOCK_PERMANENT.  
+- Acceptance in the active Area is prohibited until sessions are explicitly closed or restarted.
 
 Authority supersession must not leave the Authority slot empty.
 
@@ -248,16 +277,16 @@ If acceptance would remove the only structurally ACTIVE Authority without establ
 
 ---
 
-## 6.2 Scope Supersession
+## 7.2 Scope Supersession
 
-When a Scope is superseded:
+When a Scope is superseded within the active Area:
 
 - The prior Scope becomes non-structurally-ACTIVE.  
-- All sessions in the Area must transition to BLOCK_PERMANENT.
+- All sessions in the active Area must transition to BLOCK_PERMANENT.
 
 If Scope enters UNDER_REVIEW:
 
-- All sessions in the Area transition to BLOCK_TEMPORARY.
+- All sessions in the active Area transition to BLOCK_TEMPORARY.
 
 Scope supersession must not leave the Scope slot empty once defined.
 
@@ -265,9 +294,11 @@ If acceptance would result in zero structurally ACTIVE Scope:
 
 - Acceptance must fail.
 
+Cross-area state changes must not trigger blocking behavior.
+
 ---
 
-# 7. Conflict Detection
+# 8. Conflict Detection
 
 A supersession conflict exists if:
 
@@ -276,23 +307,25 @@ A supersession conflict exists if:
 - Acceptance would introduce a cycle.  
 - Acceptance would violate exclusive governance slot constraints.  
 - Acceptance would leave a governance slot empty.  
-- Acceptance attempts cross-area supersession.
+- Acceptance attempts cross-area supersession.  
 
 Conflict detection must occur:
 
 - During evaluation.  
-- Immediately before acceptance commit.
+- Immediately before acceptance commit.  
 
 Irreversible conflict → BLOCK_PERMANENT (session-level).  
 Reversible conflict (UNDER_REVIEW, RETIRED) → BLOCK_TEMPORARY.
 
+Conflict semantics are strictly Area-local.
+
 ---
 
-# 8. Deterministic Restore Guarantee
+# 9. Deterministic Restore Guarantee
 
-Given identical persisted objects and supersession edges:
+Given identical persisted objects and supersession edges for a single Area:
 
-- Independent implementations must derive identical structural ACTIVE sets per Area.  
+- Independent implementations must derive identical structural ACTIVE sets.  
 - Governance slot evaluation must produce identical results.  
 - No heuristic, timestamp, ordering-based, or cross-area logic permitted.  
 
@@ -305,39 +338,22 @@ If restore produces:
 - Zero structurally ACTIVE Scope (after definition)  
 - Invalid structural supersession references  
 - Cross-area supersession edges  
+- Mixed-area structural object graphs  
 
 Engine initialization must fail (StructuralIntegrityFailure per ENG-INTEGRITY).
 
-The engine must halt.
+The Engine must halt.
 
 No automatic repair is permitted.
-
----
-
-# 9. Permanent Blocking Doctrine
-
-A session must transition to BLOCK_PERMANENT if:
-
-- Its referenced Resolution becomes non-structurally-ACTIVE.  
-- Its Authority is superseded.  
-- Its Scope is superseded.  
-- Acceptance would introduce structural violation.  
-- Acceptance attempts cross-area supersession.
-
-Permanent blocks:
-
-- Cannot resume.  
-- Require explicit closure.  
-- May be restarted via explicit operator action.
-
-Area-level acceptance prohibition while permanent blocks exist is defined in ENG-INTEGRITY.
 
 ---
 
 # 10. Engine Invariants
 
 - Supersession edges are immutable.  
-- Supersession graph is Area-local.  
+- Supersession graph is strictly Area-local.  
+- Engine operates on exactly one Area at a time.  
+- Mixed-area resolution graphs are prohibited.  
 - Graph must remain acyclic.  
 - Structural ACTIVE derivation is deterministic.  
 - Authority and Scope participate fully in supersession graph.  
@@ -345,7 +361,7 @@ Area-level acceptance prohibition while permanent blocks exist is defined in ENG
 - Cross-area references are never structural.  
 - No implicit conflict resolution exists.  
 - First-accept wins is absolute.  
-- Structural inconsistency must halt the engine.
+- Structural inconsistency must halt the Engine.  
 
 ---
 
@@ -369,7 +385,8 @@ ENG-SUPERSESSION governs:
 ENG-INTEGRITY governs:
 
 - Engine halt conditions  
+- Single-Area runtime enforcement  
 - Area-level acceptance guards  
 - Structural failure handling  
 
-Together they define complete legitimacy mechanics.
+Together they define complete legitimacy mechanics for a single-Area deterministic legitimacy compiler.
