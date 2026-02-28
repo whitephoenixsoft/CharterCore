@@ -1,35 +1,37 @@
-# ENG-DOMAIN — Domain Object Schema  
+# ENG-DOMAIN — Domain Object Schema (Rewritten v8)
 Canonical Engine Object Definitions  
-Status: DRAFT (Pre-Freeze, Cross-Area References & Single-Area Runtime Integrated)  
+Status: FROZEN (v8 – Single-Area Runtime, Receipt & Degraded Mode Integrated)  
 Applies to: Engine Core (V1/V2+)
 
 ---
 
 # 1. Purpose
 
-This document freezes the canonical domain object schemas for the engine.
+This document freezes the canonical domain object schemas for the Engine Core.
 
-Its goals are to:
+Goals:
 
-- Ensure determinism across independent implementations.
-- Guarantee audit reconstructability.
-- Prevent schema drift in multi-language embedding.
-- Preserve canonical hash stability.
-- Separate structural encoding from behavioral rules.
-- Centralize identity generation within the engine.
-- Define exclusive governance slot invariants.
-- Distinguish structural references from informational cross-area references.
-- Formalize Area-local structural boundaries.
+- Ensure determinism across independent implementations  
+- Guarantee audit reconstructability  
+- Preserve canonical hash stability  
+- Prevent schema drift in multi-language embedding  
+- Separate structural encoding from behavioral rules  
+- Centralize identity generation within the engine  
+- Define exclusive governance slot invariants  
+- Distinguish structural references from informational cross-area references  
+- Formalize Area-local structural boundaries  
+- Integrate receipt integrity and degraded mode semantics  
 
 Behavioral rules are defined in:
 
-- ENG-DECISION
-- ENG-REVIEW-RETIRED
-- ENG-SUPERSESSION
-- ENG-API
-- ENG-INTEGRITY
+- ENG-DECISION  
+- ENG-REVIEW-RETIRED  
+- ENG-SUPERSESSION  
+- ENG-API  
+- ENG-INTEGRITY  
+- ENG-ERROR  
 
-This document defines structure only.
+This document defines **structure only**.
 
 ---
 
@@ -37,31 +39,30 @@ This document defines structure only.
 
 2.1 All persisted domain objects are immutable once written.
 
-2.2 All objects must use canonical JSON encoding with:
+2.2 All objects must use canonical JSON encoding:
 
-- Deterministic field ordering
-- Deterministic enum values
-- No implicit defaults
-- No nullable ambiguity unless explicitly defined
+- Deterministic field ordering  
+- Deterministic enum values  
+- No implicit defaults  
+- Nullability explicit  
 
-2.3 Optional annotations and informational references are allowed but must not affect object identity or hashing unless explicitly declared.
+2.3 Optional annotations and informational references may exist but **must not** affect object identity or hash unless explicitly declared.
 
-2.4 Lifecycle state must be encoded using a single enum field — never boolean flags.
+2.4 Lifecycle state must be represented as a single enum field.
 
 2.5 Schema changes require explicit versioning.
 
-2.6 All engine-generated identifiers must be UUID version 7.
+2.6 All engine-generated identifiers must be UUIDv7:
 
-- IDs must be generated exclusively by the engine.
-- External systems (including CLI) must not inject domain object IDs.
-- UUID timestamp components must not influence legitimacy, precedence, or restore behavior.
+- Engine exclusively generates IDs  
+- Caller-provided IDs prohibited  
+- UUID timestamp components **must not** influence legitimacy, precedence, or restore  
 
-2.7 area_id is externally provided and treated as opaque.
+2.7 `area_id` is externally provided, opaque:
 
-- The engine does not manage area lifecycle.
-- The engine does not validate area ownership.
-- area_id exists solely for scoping evaluation.
-- area_id does not imply multi-area hosting within a single engine instance.
+- Used solely for scoping evaluation  
+- Does not imply multi-Area hosting  
+- Engine does not manage Area lifecycle or ownership  
 
 ---
 
@@ -69,19 +70,20 @@ This document defines structure only.
 
 The Engine operates on exactly one Area at a time.
 
-Structural implications:
+Implications:
 
-- A domain graph loaded into the Engine must contain objects belonging to exactly one area_id.
-- Objects from multiple Areas must never coexist within a single in-memory domain graph.
-- Structural validation assumes a single Area context.
-- Governance slot evaluation is Area-local.
-- Supersession graph reconstruction is Area-local.
+- Domain graph must contain objects from exactly one `area_id`  
+- Mixed-area graphs are invalid and trigger **StructuralIntegrityFailure**  
+- Governance slot evaluation is Area-local  
+- Supersession reconstruction is Area-local  
 
-Cross-area references do not constitute multi-Area hosting.
+Cross-area references are **informational only** and do not constitute multi-Area hosting.  
+Multi-Area orchestration is the host’s responsibility.
 
-They are informational metadata only.
+Degraded/read-only mode may activate if:
 
-Multi-Area orchestration is the responsibility of the host (e.g., CLI), not the Engine Core.
+- Receipt integrity is compromised  
+- Structural corruption is detected but exportable  
 
 ---
 
@@ -91,17 +93,20 @@ Multi-Area orchestration is the responsibility of the host (e.g., CLI), not the 
 
 Each Area contains two exclusive legitimacy slots:
 
-- Authority slot (Resolution objects)
-- Scope slot (Scope objects)
+- Authority slot (Resolution objects)  
+- Scope slot (Scope objects)  
 
-Structural invariants:
+Invariants:
 
-- At most one ACTIVE Authority per Area.
-- At most one ACTIVE Scope per Area.
-- Authority and Scope participate in standard supersession rules.
-- Slot exclusivity is structural and must be validated at restore.
+- At most one ACTIVE Authority per Area  
+- At most one ACTIVE Scope per Area  
+- Slot exclusivity is **structural** and validated at restore  
+- Authority and Scope participate in standard supersession rules  
 
-Multiple ACTIVE objects in either slot is a structural integrity violation.
+Violations:
+
+- Multiple ACTIVE objects → structural integrity failure  
+- Empty slot after initial definition → structural integrity failure  
 
 ---
 
@@ -109,203 +114,167 @@ Multiple ACTIVE objects in either slot is a structural integrity violation.
 
 ## 5.1 Structural References
 
-Structural references are references that:
+Structural references **affect legitimacy**:
 
-- Affect legitimacy
-- Affect ACTIVE derivation
-- Affect supersession graph
-- Must resolve during restore
+- Must resolve during restore  
+- Must reference objects in the same `area_id`  
 
-Structural references must always reference objects within the same area_id.
+Permitted:
 
-Permitted structural references:
+- Session → Authority (Resolution)  
+- Session → Scope  
+- Resolution → originating Session  
+- Resolution → superseded Resolution  
+- Scope → superseded Scope  
 
-- Session → Authority (Resolution)
-- Session → Scope
-- Resolution → originating Session
-- Resolution → superseded Resolution
-- Scope → superseded Scope
-
-Missing structural references constitute integrity failure.
-
-Cross-area structural references are prohibited.
-
----
+Missing references → structural failure.
 
 ## 5.2 Informational Cross-Area References
 
-Cross-area references are informational only.
+Cross-area references:
 
-They may reference:
+- May reference external Areas or Resolutions  
+- Must not affect legitimacy, ACTIVE derivation, or supersession  
+- Must not trigger restore failure  
+- Excluded from orphan detection  
 
-- External Areas
-- External Resolutions in other Areas
-
-They must not:
-
-- Affect legitimacy
-- Affect supersession
-- Affect ACTIVE derivation
-- Trigger restore failure if unresolved
-- Be treated as ORPHAN or MISSING_REFERENCE
-- Be interpreted as structural references
-
-They are opaque metadata.
+Immutable and treated as opaque metadata.
 
 ---
 
 # 6. CrossAreaReference Schema
 
-A CrossAreaReference must contain:
-
-- external_area_id (opaque identifier, UUIDv7 format recommended)
-- external_area_label (string, human-readable snapshot)
-- external_resolution_id (nullable, opaque identifier)
-- external_resolution_label (nullable string, human-readable snapshot)
-- created_at (timestamp)
-- schema_version (string)
+- `external_area_id` (opaque UUIDv7 recommended)  
+- `external_area_label` (snapshot)  
+- `external_resolution_id` (nullable)  
+- `external_resolution_label` (nullable)  
+- `created_at` (timestamp)  
+- `schema_version` (string)  
 
 Rules:
 
-- external identifiers are not dereferenced by the engine.
-- Labels are snapshots and must not be validated or canonicalized.
-- Engine must not attempt to update labels.
-- Absence of referenced Area or Resolution must not alter engine behavior.
-- CrossAreaReference objects are immutable.
-- CrossAreaReference must not be interpreted as belonging to the active Area.
-
-CrossAreaReference objects are informational only and excluded from structural integrity validation.
+- Engine does not dereference or update external identifiers  
+- Absence of external references does not affect evaluation  
 
 ---
 
 # 7. Session Schema
 
-A Session object must contain:
+A Session object contains:
 
-- session_id (engine-generated UUIDv7)
-- area_id (opaque external reference)
-- session_type (AUTHORITY | SCOPE | REGULAR)
-- authority_id (Resolution reference at creation)
-- scope_id (Scope reference at creation, nullable only if governance not yet fully initialized)
-- phase (SessionPhase enum)
-- state (SessionState enum)
-- participants (set of participant IDs — current)
-- candidates (list of Candidate objects)
-- constraints (list of Constraint objects)
-- votes (list of Vote objects)
-- cross_area_references (optional list of CrossAreaReference)
-- annotations (optional)
-- created_at (timestamp)
-- updated_at (timestamp)
-- schema_version (string)
+- `session_id` (UUIDv7)  
+- `area_id`  
+- `session_type` (AUTHORITY | SCOPE | REGULAR)  
+- `authority_id` (Resolution reference)  
+- `scope_id` (Scope reference, nullable before governance initialization)  
+- `phase` (SessionPhase enum)  
+- `state` (SessionState enum)  
+- `participants` (current IDs)  
+- `candidates` (Candidate objects)  
+- `constraints` (Constraint objects)  
+- `votes` (Vote objects)  
+- `receipts` (immutable list, one per CLOSED or ACCEPTED session)  
+- `cross_area_references` (optional)  
+- `annotations` (optional)  
+- `created_at` / `updated_at`  
+- `schema_version`  
 
 Constraints:
 
-- All structural references must share the same area_id as the Session.
-- Cross-area references must not alter evaluation.
+- Structural references must share the Session’s `area_id`  
+- Receipts must exist for CLOSED/ACCEPTED sessions and match canonical snapshot  
+- Cross-area references do not affect evaluation  
 
 ---
 
 # 8. Resolution Schema
 
-A Resolution must contain:
+A Resolution object contains:
 
-- resolution_id (engine-generated UUIDv7)
-- area_id (opaque external reference)
-- originating_session_id (reference)
-- authority_snapshot_id (reference)
-- scope_snapshot_id (reference)
-- participant_snapshot (set of participant IDs at acceptance)
-- candidate_snapshot (complete accepted candidate content)
-- state (ResolutionState enum)
-- superseded_by (resolution_id, nullable)
-- cross_area_references (optional list of CrossAreaReference)
-- created_at (timestamp)
-- annotations (optional)
-- schema_version (string)
+- `resolution_id` (UUIDv7)  
+- `area_id`  
+- `originating_session_id`  
+- `authority_snapshot_id`  
+- `scope_snapshot_id`  
+- `participant_snapshot` (set at acceptance)  
+- `candidate_snapshot` (complete accepted candidate content)  
+- `state` (ResolutionState enum)  
+- `superseded_by` (nullable, Resolution ID in same Area)  
+- `cross_area_references` (optional)  
+- `receipts` (optional, for validation only)  
+- `created_at`  
+- `annotations` (optional)  
+- `schema_version`  
 
 Constraints:
 
-- superseded_by must reference a Resolution within the same area_id.
-- Cross-area references are informational only.
+- `superseded_by` must reference Resolution in same `area_id`  
+- Receipts must match CLOSED/ACCEPTED sessions  
+- Cross-area references are informational  
 
 ---
 
 # 9. Supersession Encoding
 
-Supersession represented structurally by:
-
-- superseded object containing superseded_by reference
-- superseding Resolution referencing originating_session_id
-
-Supersession is strictly Area-local.
-
-Cross-area references must never participate in supersession.
-
-Supersession is:
-
-- Explicit
-- Permanent
-- Graph-altering
-- Terminal for superseded object
-
-Supersession may occur only through Resolution creation via session acceptance.
+- Supersession represented via `superseded_by` reference  
+- Explicit, immutable, Area-local  
+- Graph-altering for superseded object  
+- Only occurs via session acceptance  
+- Cross-area references must **never** participate  
 
 ---
 
-# 10. Deterministic Encoding Requirements
+# 10. Receipt Integration
 
-All implementations must ensure:
-
-- Deterministic field ordering
-- Deterministic enum string values
-- Stable timestamp format
-- Stable set ordering (lexicographically sorted)
-- Canonical JSON serialization
-
-Cross-area references must be serialized deterministically but excluded from legitimacy computation.
-
-UUID ordering must never determine legitimacy.
-
-Object identity and hashing must be invariant across:
-
-- Programming languages
-- Storage backends
-- Operating systems
+- Receipts are persistent, immutable integrity artifacts  
+- One receipt per CLOSED or ACCEPTED session  
+- Must match deterministic canonical snapshot  
+- Regeneration is prohibited  
+- Missing or mismatched receipts trigger **restore halt**  
+- Reproducing a receipt implies tampering  
+- Engine may enter **degraded mode** if receipts are invalid but DAG export is possible  
 
 ---
 
-# 11. Schema Versioning
+# 11. Deterministic Encoding Requirements
 
-Every persisted object must include:
-
-- schema_version (string)
-
-Rules:
-
-- Backward-incompatible changes require version increment.
-- Migrations must be explicit and deterministic.
-- Multiple schema versions may coexist.
-- No implicit migration allowed.
+- Field ordering deterministic  
+- Enum string values deterministic  
+- Set ordering lexicographically sorted  
+- Timestamps stable but not used for legitimacy  
+- UUID ordering must **never** affect legitimacy  
+- Canonical JSON serialization mandatory  
+- Cross-area references serialized deterministically but excluded from legitimacy  
 
 ---
 
-# 12. Engine Invariants
+# 12. Schema Versioning
 
-- Engine operates on exactly one Area at a time.
-- Domain graph loaded into Engine must contain a single area_id.
-- Governance slots are exclusive per Area.
-- Governance state is derived, never stored.
-- Structural references must resolve and must be Area-local.
-- Cross-area references must not be validated for existence.
-- All domain object IDs are engine-generated UUIDv7.
-- Lifecycle represented by enum, never flags.
-- BLOCK_PERMANENT explicit.
-- Participant and candidate mutability restricted to PRE_STANCE.
-- Snapshots complete and immutable.
-- Supersession structurally explicit and Area-local.
-- Deterministic encoding mandatory.
-- Legitimacy must never depend on timestamps or ordering.
-- Solo Mode must not bypass Vote modeling.
+- All persisted objects must include `schema_version`  
+- Backward-incompatible changes require version increment  
+- Migrations must be explicit and deterministic  
+- Multiple schema versions may coexist  
+- No implicit migration allowed  
 
-Violation of this schema breaks cross-system determinism and constitutes critical engine failure.
+---
+
+# 13. Engine Invariants
+
+- Engine operates on exactly one Area at a time  
+- Domain graph must contain a single `area_id`  
+- Governance slots are exclusive per Area  
+- Governance state derived, never stored  
+- Structural references must resolve and be Area-local  
+- Cross-area references **never** validated for existence  
+- All domain object IDs are engine-generated UUIDv7  
+- Lifecycle represented by enums, never flags  
+- Receipts mandatory for CLOSED/ACCEPTED sessions  
+- BLOCK_PERMANENT explicit  
+- Participant and candidate mutability restricted to PRE_STANCE  
+- Snapshots complete and immutable  
+- Supersession structurally explicit and Area-local  
+- Deterministic encoding mandatory  
+- Legitimacy never depends on timestamps, ordering, or cross-area state  
+- Degraded mode enables DAG export when structural or receipt integrity is compromised  
+
+Violation of this schema breaks cross-system determinism and constitutes critical Engine failure.

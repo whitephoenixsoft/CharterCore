@@ -1,7 +1,7 @@
 # ENG-ERROR — Engine Error & EvaluationReport Model  
-Status: FROZEN (v5 – Receipt Integrity Formalized)  
+Status: FROZEN (v6 – Degraded Mode & Receipt Integrity)  
 Applies to: Engine Core (V1/V2+)  
-Scope: Deterministic failure reporting, block classification, restore failure semantics, and evaluation output  
+Scope: Deterministic failure reporting, block classification, restore failure semantics, receipt enforcement, and evaluation output  
 
 ---
 
@@ -19,6 +19,7 @@ This specification defines:
 - EvaluationReport schema  
 - Deterministic error codes  
 - Hard vs soft failure semantics  
+- Degraded read-only mode  
 
 Requirements:
 
@@ -47,7 +48,7 @@ The Engine must not:
 - Encode legitimacy in text  
 - Emit multiple competing classifications  
 
-Restore-time structural failures are not command responses, but must map to a deterministic structural error class defined here.
+Restore-time structural failures are not command responses, but must map to a deterministic structural error code defined here.
 
 ---
 
@@ -106,7 +107,7 @@ Error codes are:
 
 # 4.1 Structural Errors (Restore-Halting)
 
-These indicate structural corruption or integrity violation.
+Indicate corruption or integrity violation.
 
 - INVALID_UUID  
 - DUPLICATE_ID  
@@ -133,17 +134,11 @@ For every CLOSED or ACCEPTED session:
 
 Violations:
 
-- RECEIPT_MISSING  
-- RECEIPT_HASH_MISMATCH  
-- RECEIPT_ORPHAN_DETECTED  
-
-Definitions:
-
 - RECEIPT_MISSING → CLOSED or ACCEPTED session lacks a receipt  
 - RECEIPT_HASH_MISMATCH → Persisted receipt does not match canonical snapshot  
 - RECEIPT_ORPHAN_DETECTED → Receipt exists without matching CLOSED or ACCEPTED session  
 
-All receipt violations are structural integrity failures.
+All receipt violations are **structural integrity failures**.  
 
 Restore behavior:
 
@@ -155,7 +150,19 @@ Outcome (command-time detection): REJECTED
 
 ---
 
-# 4.2 Session State Violations
+# 4.2 Degraded Mode Error
+
+If non-critical receipt or non-primary structural violations occur:
+
+- Engine may enter **degraded read-only mode**  
+- Command outcome: REJECTED  
+- Error code: DEGRADED_MODE_ACTIVE  
+- Only allowed operations: read-only queries and DAG export  
+- Mutating commands are prohibited and reported deterministically  
+
+---
+
+# 4.3 Session State Violations
 
 - SESSION_TERMINAL_IMMUTABLE  
 - SESSION_NOT_ACTIVE  
@@ -164,7 +171,7 @@ Outcome (command-time detection): REJECTED
 
 ---
 
-# 4.3 Freeze Boundary Violations
+# 4.4 Freeze Boundary Violations
 
 - CANDIDATE_SET_FROZEN  
 - PARTICIPANT_SET_FROZEN  
@@ -172,21 +179,21 @@ Outcome (command-time detection): REJECTED
 
 ---
 
-# 4.4 Participant Errors
+# 4.5 Participant Errors
 
 - PARTICIPANT_NOT_FOUND  
 - CANNOT_REMOVE_LAST_PARTICIPANT  
 
 ---
 
-# 4.5 Governance & Context Violations
+# 4.6 Governance & Context Violations
 
 - AUTHORITY_CONTEXT_MISMATCH  
 - SCOPE_CONTEXT_MISMATCH  
 
 ---
 
-# 4.6 Acceptance & Legitimacy Violations
+# 4.7 Acceptance & Legitimacy Violations
 
 - ACCEPTANCE_CONDITIONS_NOT_MET  
 - AREA_BLOCKED_BY_PERMANENT_SESSION  
@@ -199,7 +206,7 @@ These do not represent structural corruption.
 
 ---
 
-# 4.7 Resolution & Lifecycle Errors
+# 4.8 Resolution & Lifecycle Errors
 
 - INVALID_RESOLUTION_STATE_TRANSITION  
 - RETIRED_STATE_VIOLATION  
@@ -213,8 +220,6 @@ These do not represent structural corruption.
 ## ENG-ERROR-04 — Deterministic Failure Classes
 
 ### Hard Failures (REJECTED)
-
-Include:
 
 - Structural graph violations  
 - Supersession cycle  
@@ -234,11 +239,7 @@ Hard failures:
 - Never trigger automatic repair  
 - Deterministic classification required  
 
----
-
 ### Soft Blocks (BLOCKED)
-
-Triggered by:
 
 - BLOCK_TEMPORARY session state  
 - BLOCK_PERMANENT hygiene enforcement  
@@ -253,25 +254,16 @@ Soft blocks:
 
 # 6. Receipt Integrity Doctrine
 
-## ENG-ERROR-05 — Receipts Are Persistent Integrity Artifacts
-
 Receipts:
 
-- Are not caches  
-- Are not recomputable substitutes  
-- Must not be regenerated  
-- Must persist exactly as originally written  
+- Are persistent, immutable, integrity artifacts  
+- Are not caches or recomputable  
+- Must match canonical session snapshots  
+- Reproducing a receipt implies tampering  
+- Missing receipts imply corruption  
+- Orphaned receipts imply corruption  
 
-Reproducing a receipt implies tampering.
-
-Receipt absence implies corruption.
-
-Receipt mismatch implies tampering.
-
-Receipt without session implies corruption.
-
-The Engine must halt on restore if receipt integrity cannot be proven.
-
+The Engine must halt on restore if receipt integrity cannot be proven.  
 No implicit regeneration allowed.
 
 ---
@@ -301,8 +293,6 @@ Ordering of related_objects must be deterministic.
 
 # 8. Related Objects
 
-## ENG-ERROR-07 — Contextual References
-
 Must include:
 
 - Corrupted object IDs  
@@ -317,23 +307,17 @@ Must not imply mutation or legitimacy semantics.
 
 # 9. No Implicit Repair
 
-## ENG-ERROR-08 — Engine Never Modifies State on Failure
-
-The Engine must not:
-
-- Auto-generate missing receipts  
-- Auto-correct receipt mismatches  
-- Auto-repair slot multiplicity  
-- Auto-resolve conflicts  
-- Auto-close sessions  
+- Engine must not auto-generate receipts  
+- Engine must not auto-correct receipt mismatches  
+- Engine must not auto-repair slot multiplicity  
+- Engine must not auto-resolve conflicts  
+- Engine must not auto-close sessions  
 
 Failures are descriptive only.
 
 ---
 
 # 10. Audit Interaction
-
-## ENG-ERROR-09 — Failures Are Auditable
 
 - Audit may record rejected or blocked commands  
 - Audit does not influence legitimacy  
@@ -349,7 +333,7 @@ Failures are descriptive only.
 
 ---
 
-# Summary Guarantees
+# 12. Summary Guarantees
 
 - Every command produces structured output  
 - Structural corruption halts deterministically  
@@ -358,14 +342,16 @@ Failures are descriptive only.
 - Governance slot violations are first-class structural failures  
 - Cross-area supersession is prohibited  
 - Determinism preserved across implementations  
+- Degraded read-only mode allows DAG export for recovery  
 
 ---
 
-# Mental Model
+# 13. Mental Model
 
 The engine compiles legitimacy.  
 Receipts attest to what was compiled.  
 
 If receipts are missing or altered,  
 the engine cannot prove history —  
-and must halt.
+and must halt.  
+Degraded mode allows read-only access and export for consolidation.

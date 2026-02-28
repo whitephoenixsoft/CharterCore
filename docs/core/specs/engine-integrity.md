@@ -1,7 +1,7 @@
 # ENG-INTEGRITY  
 Engine Integrity & Runtime Guarantees  
-Status: FROZEN (v8 – Single-Area Runtime Constitutionalized)  
-Applies to: Engine Core (V1/V2+)
+Status: FROZEN (v9 – Single-Area Runtime with Degraded Mode)  
+Applies to: Engine Core (V1/V2+)  
 
 ---
 
@@ -17,12 +17,14 @@ It governs:
 - Area-level acceptance guards  
 - Single-Area runtime enforcement  
 - Orphan object detection and graph completeness  
+- Receipt integrity and rehydration  
 - Structural vs informational reference validation  
+- Degraded read-only mode  
 - Crash and persistence boundaries  
 - Atomic commit semantics  
 - Time semantics for engine operations  
 - Identity and hash separation rules  
-- Fatal failure semantics  
+- Fatal vs degraded failure semantics  
 - Cross-document invariant precedence  
 - Legitimacy compiler doctrine  
 
@@ -33,7 +35,7 @@ It does **not** define:
 - Suspension and deprecation semantics (ENG-REVIEW-RETIRED)  
 - Object schemas (ENG-DOMAIN)  
 
-This specification defines system-level halting conditions and runtime enforcement behavior.
+This specification defines system-level halting conditions, runtime enforcement behavior, and degraded mode rules.
 
 ---
 
@@ -43,7 +45,7 @@ The Engine is a legitimacy compiler.
 
 It:
 
-- Operates on exactly one Area at a time
+- Operates on exactly one Area at a time  
 - Does not infer legitimacy  
 - Does not repair legitimacy  
 - Does not auto-resolve ambiguity  
@@ -60,9 +62,15 @@ Legitimacy is:
 - Mechanically reproducible  
 - Strictly Area-local  
 
-If structural integrity cannot be proven, the Engine must halt.
+If **structural integrity of primary domain objects** cannot be proven, the Engine must halt.
 
 Convenience never overrides legitimacy invariants.
+
+Receipts are **integrity artifacts**:
+
+- Missing receipts **do not trigger fatal failure**, but may prevent acceptance operations.  
+- Receipts without matching sessions or with mismatched content hash **are fatal structural failures**.  
+- Receipts are read-only and may be included in **DAG export** for audit or consolidation.
 
 ---
 
@@ -74,29 +82,27 @@ At any moment in time, an Engine instance must contain exactly one active Area.
 
 During initialization or rehydration:
 
-- All loaded domain objects must share the same area_id.
-- Mixed-area object graphs are prohibited.
-- Cross-area references do not count as multi-Area hosting.
+- All loaded **structural domain objects** must share the same area_id.  
+- Mixed-area object graphs are prohibited.  
+- Cross-area references do not count as multi-Area hosting.  
 
 If multiple distinct area_id values are detected among structural domain objects:
 
-- Engine initialization must fail with StructuralIntegrityFailure.
+- Engine initialization must fail with StructuralIntegrityFailure.  
 - Engine must halt.
-
----
 
 ## 3.2 Rehydration Replacement Rule
 
-Calling rehydrate_engine:
+Calling `rehydrate_engine`:
 
-- Replaces any previously loaded Area state.
-- Discards prior Area legitimacy state entirely.
+- Replaces any previously loaded Area state.  
+- Discards prior Area legitimacy state entirely.  
 - Establishes a new single active Area.
 
 The Engine must not:
 
-- Merge Areas.
-- Retain governance slot memory from prior Area.
+- Merge Areas.  
+- Retain governance slot memory from prior Area.  
 - Preserve supersession graph from prior Area.
 
 Area switching is exclusively a host responsibility.
@@ -109,15 +115,15 @@ Area switching is exclusively a host responsibility.
 
 Each Area contains two exclusive legitimacy slots:
 
-- Authority slot
-- Scope slot
+- Authority slot  
+- Scope slot  
 
 Invariants:
 
-- At most one ACTIVE Authority per Area.
-- At most one ACTIVE Scope per Area.
-- Authority and Scope participate in standard supersession rules.
-- Governance objects are created and modified only via standard session mechanics.
+- At most one ACTIVE Authority per Area.  
+- At most one ACTIVE Scope per Area.  
+- Authority and Scope participate in standard supersession rules.  
+- Governance objects are created and modified only via standard session mechanics.  
 
 The Engine must never implicitly create Authority or Scope.
 
@@ -137,106 +143,76 @@ On startup or rehydration, the Engine must:
 - Validate acyclic supersession graph  
 - Validate session, candidate, and vote consistency  
 - Validate schema versions  
+- Validate receipt integrity (hash consistency)  
 
 Restore must be deterministic across implementations.
 
 Cross-area references must not be traversed during restore.
 
----
-
 ## 5.2 Structural vs Informational References
 
 ### Structural References
 
-Structural references are those that:
-
-- Affect legitimacy
-- Affect ACTIVE derivation
-- Affect supersession
-- Affect governance slot evaluation
-
-Structural references must:
-
-- Resolve to objects present in the imported Area graph  
-- Share the same area_id  
-- Be validated during restore  
-- Be validated during acceptance  
-
-Missing structural references trigger StructuralIntegrityFailure.
+- Affect legitimacy, ACTIVE derivation, supersession, and governance evaluation  
+- Must resolve to objects present in the imported Area graph  
+- Must be Area-local  
+- Missing structural references **trigger StructuralIntegrityFailure**  
 
 Structural references include:
 
-- superseded_by edges (same Area only)
-- Session → Authority
-- Session → Scope
-- Resolution → originating Session
+- superseded_by edges (same Area only)  
+- Session → Authority  
+- Session → Scope  
+- Resolution → originating Session  
 
 Cross-area structural references are prohibited.
 
----
-
 ### Informational Cross-Area References
 
-Cross-area references (as defined in ENG-DOMAIN):
+- Reference external Areas or Resolutions  
+- Informational only: no effect on legitimacy, ACTIVE derivation, supersession, or governance  
+- Must not trigger restore failure  
+- Excluded from orphan detection  
 
-- Reference external Areas or external Resolutions
-- Are informational only
-- Do not affect legitimacy
-- Do not affect ACTIVE derivation
-- Do not affect governance slot evaluation
-- Do not affect conflict detection
-- Do not affect restore success
-- Do not create multi-Area runtime context
+## 5.3 Receipt Rehydration Rules
 
-The Engine must not:
+- Missing receipts: **do not trigger fatal failure**  
+- Orphaned receipts (no matching session or resolution): **trigger StructuralIntegrityFailure**  
+- Receipt hash mismatch: **trigger StructuralIntegrityFailure**  
+- Receipts are read-only; no mutation allowed  
+- Receipts are included in DAG export  
 
-- Dereference cross-area references
-- Validate their existence
-- Treat missing external targets as orphaned
-- Fail restore due to unresolved cross-area references
+## 5.4 Orphan Object & Graph Completeness
 
-Deletion or absence of an externally referenced Area or Resolution must not alter:
-
-- Structural validity
-- Blocking state
-- Acceptance eligibility
-- Governance state
-
-Cross-area references are excluded from orphan detection.
+- Orphan detection applies only to structural references  
+- Missing referenced objects outside relaxed import mode → StructuralIntegrityFailure  
+- Supersession edges invalid or cyclic → StructuralIntegrityFailure  
+- Participant, candidate, vote snapshots incomplete → StructuralIntegrityFailure  
+- Cross-area references unresolved → no failure  
 
 ---
 
-## 5.3 Orphan Object & Graph Completeness
+# 6. Degraded Read-Only Mode
 
-Orphan detection applies only to structural references within the active Area.
+If any structural integrity violation **does not compromise core domain objects** but prevents acceptance:
 
-Every structural referenced object ID must exist in the imported Area graph (unless operating in relaxed import mode defined by the host).
+- Engine enters **degraded read-only mode**  
+- ACCEPTED/CLOSED sessions remain readable, but **mutating operations are prohibited**  
+- Only allowed operations:  
+  - Read queries (`list_sessions`, `list_resolutions`, `get_session_receipt`)  
+  - `export_area_dag` for consolidation or recovery  
+- EvaluationReport for any mutating attempt:  
+  - `outcome = REJECTED`  
+  - `error_code = DEGRADED_MODE_ACTIVE`  
+- DAG export includes all objects deterministically, including receipts  
 
-Relaxed import mode:
-
-- May relax structural completeness for ingestion of external proposals.
-- Must not create legitimacy automatically.
-- Full legitimacy evaluation requires standard session mechanics.
-
-Fail if:
-
-- Missing structural referenced IDs outside relaxed import mode  
-- Supersession edges invalid or cyclic  
-- Participant snapshots incomplete  
-- Candidate or vote snapshots incomplete  
-- Mixed-area structural graph detected  
-
-Do not fail if:
-
-- Cross-area references are unresolved  
-- External Areas are absent  
-- External Resolutions are absent  
+Degraded mode allows recovery workflows without violating deterministic integrity of canonical domain objects.
 
 ---
 
-# 6. Fatal Structural Integrity Failure
+# 7. Fatal Structural Integrity Failure
 
-Engine initialization must fail deterministically if any of the following are detected:
+Engine must halt if any of the following are detected:
 
 - Supersession cycle (Area-local)  
 - Multiple ACTIVE successors in an exclusive legitimacy slot  
@@ -246,112 +222,92 @@ Engine initialization must fail deterministically if any of the following are de
 - Cross-area supersession attempt  
 - Mixed-area structural object graph  
 - Schema mismatch preventing deterministic reconstruction  
+- Receipt hash mismatch  
+- Orphaned receipts (no matching session or resolution)  
 - Any invariant violation defined in ENG-DOMAIN, ENG-SUPERSESSION, or ENG-DECISION  
 
-Failure behavior:
+Halt behavior:
 
-- Engine must halt completely  
 - No session evaluation permitted  
 - No acceptance permitted  
 - Error must clearly identify invariant violation class  
 
-No automatic repair is allowed.
+No automatic repair allowed.
 
 ---
 
-# 7. Area Acceptance Guard
+# 8. Area Acceptance Guard
 
-## 7.1 BLOCK_PERMANENT Enforcement
+## 8.1 BLOCK_PERMANENT Enforcement
 
-If any session in the active Area is in BLOCK_PERMANENT:
+- Any session in BLOCK_PERMANENT → acceptance fails  
+- Evaluation reports `area_governance_blocked`  
+- Explicit closure required before acceptance  
 
-- Acceptance of any session in that Area fails  
-- Evaluation reports area_governance_blocked  
-- Blocking session(s) must be explicitly closed before acceptance  
+## 8.2 Authority or Scope Supersession
 
-Blocking is strictly Area-local.
+- SUPERSEDED Authority/Scope → all sessions BLOCK_PERMANENT  
+- Acceptance prohibited until explicit closure or restart  
 
-## 7.2 Authority or Scope Supersession
+## 8.3 Scope UNDER_REVIEW
 
-If Authority or Scope is SUPERSEDED:
+- Scope UNDER_REVIEW → all sessions BLOCK_TEMPORARY  
+- Acceptance prohibited until ACTIVE  
 
-- All sessions in the active Area transition to BLOCK_PERMANENT  
-- Acceptance is prohibited  
-- Explicit closure or restart required  
-
-## 7.3 Scope UNDER_REVIEW
-
-If Scope is UNDER_REVIEW:
-
-- All sessions in the active Area transition to BLOCK_TEMPORARY  
-- Acceptance prohibited until Scope returns to ACTIVE  
-- Resume permitted  
-
-Cross-area state changes must not trigger blocking behavior.
+Cross-area changes do not affect blocking.
 
 ---
 
-# 8. Deterministic Enforcement
+# 9. Deterministic Enforcement
 
-- All structural checks are deterministic and reproducible from active Area data  
-- No timestamp precedence or heuristic ordering  
-- No implicit ordering based on UUID time component  
-- No cross-area topology influence  
+- Structural checks must be deterministic  
+- No timestamp or UUID-based precedence  
 - Side-effect-free until commit  
-- Engine halts on structural ambiguity  
+- Engine halts on ambiguity  
 
 ---
 
-# 9. Time & Identity Semantics
+# 10. Time & Identity Semantics
 
-Timestamps and UUIDv7 time components:
-
-- Are informational only  
-- Must never influence evaluation, restore, acceptance, or supersession  
-- Must never determine cross-area precedence  
-
-Identity is Area-local and UUID-exclusive.
+- Timestamps / UUIDv7 time components: informational only  
+- Identity is Area-local and UUID-exclusive  
 
 ---
 
-# 10. Compiler Halt Principle
+# 11. Compiler Halt Principle
 
-The Engine prefers halt over ambiguity.
-
-Structural ambiguity includes:
-
-- Orphaned structural references  
-- Governance slot violation  
-- Multiple ACTIVE objects in exclusive slots  
-- Supersession graph inconsistency  
-- Cross-area supersession edge  
-- Mixed-area structural graph  
-
-Integrity always preferred over convenience.
+- Prefer halt over ambiguity  
+- Structural ambiguity includes orphaned references, governance slot violation, multiple ACTIVE objects, supersession inconsistency, cross-area supersession, mixed-area graphs, receipt hash mismatch, orphaned receipts  
 
 ---
 
-# 11. Engine Invariants
+# 12. Engine Invariants
 
-- Engine operates on exactly one Area at a time  
-- Mixed-area structural graphs are prohibited  
-- Legitimacy is compiled, not inferred  
+- Operates on exactly one Area at a time  
+- Mixed-area graphs prohibited  
+- Legitimacy compiled, not inferred  
 - Structural integrity precedes usability  
 - Governance must be explicitly initialized  
-- Exactly one ACTIVE Authority per governed Area  
-- Exactly one ACTIVE Scope per governed Area  
+- Exactly one ACTIVE Authority per Area  
+- Exactly one ACTIVE Scope per Area  
 - Structural references must resolve and be Area-local  
-- Cross-area references must not be validated  
-- Deterministic restore is mandatory  
+- Cross-area references not validated  
+- Deterministic restore mandatory  
 - Area sovereignty preserved  
-- UUID is the sole identity authority  
+- UUID is sole identity authority  
 - Hashes are non-semantic integrity metadata  
-- No silent mutation allowed  
+- No silent mutation  
 - Halt preferred to ambiguity  
+- Degraded read-only mode allowed for DAG export if receipts or non-critical invariants fail  
 
 ---
 
-This specification establishes the runtime integrity, governance bootstrap, single-Area enforcement, structural boundary, atomicity, time semantics, and identity guarantees of the Engine Core.
+# 13. Receipts & DAG Export
 
-All other specifications must conform to these guarantees.
+- All receipts must be deterministic and immutable  
+- Export includes all domain objects and receipts  
+- Consolidation or recovery relies exclusively on exported DAG  
 
+---
+
+This specification introduces **degraded read-only mode** and formalizes **receipt integrity rules** while preserving single-Area, deterministic, and legitimacy-first guarantees.
