@@ -1,13 +1,13 @@
 # ENG-ERROR — Engine Error & EvaluationReport Model  
-Status: FROZEN (v7 – Participant Epoch Errors Added)  
+Status: FROZEN (v8 – Canonical EvaluationReport Contract Added)  
 Applies to: Engine Core (V1/V2+)  
-Scope: Deterministic failure reporting, block classification, restore failure semantics, receipt enforcement, and evaluation output  
+Scope: Deterministic failure reporting, block classification, restore failure semantics, receipt enforcement, participant epoch enforcement, and canonical evaluation output  
 
 ---
 
-# 1. Purpose
+# 1. Purpose  
 
-## ENG-ERROR-01 — Deterministic Evaluation Reporting
+## ENG-ERROR-01 — Deterministic Evaluation Reporting  
 
 The Engine must produce a structured, deterministic EvaluationReport for every API command.
 
@@ -21,20 +21,21 @@ This specification defines:
 - Deterministic error codes  
 - Hard vs soft failure semantics  
 - Degraded read-only mode  
+- Canonical representation guarantees  
 
 Requirements:
 
 - No silent failures  
 - No semantic meaning in free-form strings  
 - All violations machine-readable  
-- Identical input → identical report  
+- Identical input → identical report (semantic and canonical form)  
 - Restore-time failures must classify deterministically  
 
 ---
 
-# 2. Evaluation Model
+# 2. Evaluation Model  
 
-## ENG-ERROR-02 — Command Outcome Determinism
+## ENG-ERROR-02 — Command Outcome Determinism  
 
 Every Engine API invocation returns exactly one EvaluationReport:
 
@@ -53,25 +54,29 @@ Restore-time structural failures are not command responses, but must map to a de
 
 ---
 
-# 3. EvaluationReport Schema
+# 3. EvaluationReport Schema  
 
-An EvaluationReport includes:
+An EvaluationReport includes the following fields in fixed order:
 
-- `evaluation_id` — UUIDv7 (engine-generated)  
-- `command_type` — ENUM  
-- `target_object_type` — ENUM or null  
-- `target_object_id` — UUIDv7 or null  
-- `outcome` — ENUM (SUCCESS | REJECTED | BLOCKED | NO_OP)  
-- `error_code` — ENUM or null  
-- `block_type` — ENUM (TEMPORARY | PERMANENT) or null  
-- `related_objects` — ordered list of object references  
-- `diagnostics` — optional, non-semantic context  
-- `occurred_at` — deterministic timestamp  
-- `schema_version` — string  
+1. evaluation_id — UUIDv7 (engine-generated)  
+2. command_type — ENUM  
+3. target_object_type — ENUM or null  
+4. target_object_id — UUIDv7 or null  
+5. outcome — ENUM (SUCCESS | REJECTED | BLOCKED | NO_OP)  
+6. error_code — ENUM or null  
+7. block_type — ENUM (TEMPORARY | PERMANENT) or null  
+8. related_objects — ordered list of object references  
+9. diagnostics — optional structured, non-semantic context  
+10. occurred_at — deterministic timestamp  
+11. schema_version — string  
+
+No reordering permitted.
+
+Future schema fields may only be appended to the end and require a schema_version increment.
 
 ---
 
-## 3.1 Outcome Enum
+## 3.1 Outcome Enum  
 
 - SUCCESS — Command mutated state  
 - REJECTED — Invariant or structural violation  
@@ -80,22 +85,22 @@ An EvaluationReport includes:
 
 ---
 
-## 3.2 BlockType Enum
+## 3.2 BlockType Enum  
 
 - TEMPORARY  
 - PERMANENT  
 
 Rules:
 
-- `block_type` must be null unless outcome = BLOCKED  
+- block_type must be null unless outcome = BLOCKED  
 - BLOCKED must include block_type  
 - REJECTED must not include block_type  
 
 ---
 
-# 4. Error Codes
+# 4. Error Codes  
 
-## ENG-ERROR-03 — Deterministic, Enumerated Codes
+## ENG-ERROR-03 — Deterministic, Enumerated Codes  
 
 Error codes are:
 
@@ -106,7 +111,7 @@ Error codes are:
 
 ---
 
-# 4.1 Structural Errors (Restore-Halting)
+## 4.1 Structural Errors (Restore-Halting)
 
 Indicate corruption or integrity violation.
 
@@ -125,18 +130,6 @@ Indicate corruption or integrity violation.
 
 ### Receipt Integrity Errors (Structural)
 
-Receipts are persistent integrity artifacts.
-
-For every CLOSED or ACCEPTED session:
-
-- Exactly one receipt must exist  
-- Receipt must match deterministic canonical snapshot  
-- Receipt must be immutable  
-- Receipt must not be regenerated  
-- Snapshot participant IDs must match session state at acceptance  
-
-Violations:
-
 - RECEIPT_MISSING  
 - RECEIPT_HASH_MISMATCH  
 - RECEIPT_ORPHAN_DETECTED  
@@ -147,26 +140,25 @@ All receipt violations are structural integrity failures.
 Restore behavior:
 
 - Engine must halt  
-- No session evaluation permitted  
+- No evaluation permitted  
 - No mutation permitted  
 
 Outcome (command-time detection): REJECTED  
 
 ---
 
-# 4.2 Degraded Mode Error
+## 4.2 Degraded Mode Error  
 
-If non-critical receipt or non-primary structural violations occur:
+- DEGRADED_MODE_ACTIVE  
 
-- Engine may enter degraded read-only mode  
-- Command outcome: REJECTED  
-- Error code: DEGRADED_MODE_ACTIVE  
-- Only allowed operations: read-only queries and DAG export  
-- Mutating commands are prohibited and reported deterministically  
+In degraded mode:
+
+- Only read-only operations and DAG export permitted  
+- All mutating commands rejected deterministically  
 
 ---
 
-# 4.3 Session State Violations
+## 4.3 Session State Violations  
 
 - SESSION_TERMINAL_IMMUTABLE  
 - SESSION_NOT_ACTIVE  
@@ -175,7 +167,7 @@ If non-critical receipt or non-primary structural violations occur:
 
 ---
 
-# 4.4 Freeze Boundary Violations
+## 4.4 Freeze Boundary Violations  
 
 - CANDIDATE_SET_FROZEN  
 - PARTICIPANT_SET_FROZEN  
@@ -183,7 +175,7 @@ If non-critical receipt or non-primary structural violations occur:
 
 ---
 
-# 4.5 Participant Errors
+## 4.5 Participant Errors  
 
 - PARTICIPANT_NOT_FOUND  
 - CANNOT_REMOVE_LAST_PARTICIPANT  
@@ -191,32 +183,18 @@ If non-critical receipt or non-primary structural violations occur:
 - PARTICIPANT_ALREADY_REMOVED  
 - INVALID_PARTICIPANT_EPOCH  
 
-Semantics:
-
-- DUPLICATE_PARTICIPANT_DISPLAY_NAME  
-  Triggered when `add_participant` attempts to add a display_name that already exists in the active participant set for the session.
-
-- PARTICIPANT_ALREADY_REMOVED  
-  Triggered when `remove_participant` is invoked on a participant_id that is not part of the active participant set.
-
-- INVALID_PARTICIPANT_EPOCH  
-  Triggered when:
-  - A vote references a non-active or terminated participant_id  
-  - A participant_id is reused after termination  
-  - A snapshot references a participant_id not valid for that session  
-
-Participant errors do not imply structural corruption unless detected during restore.
+Participant errors imply structural corruption only if detected during restore.
 
 ---
 
-# 4.6 Governance & Context Violations
+## 4.6 Governance & Context Violations  
 
 - AUTHORITY_CONTEXT_MISMATCH  
 - SCOPE_CONTEXT_MISMATCH  
 
 ---
 
-# 4.7 Acceptance & Legitimacy Violations
+## 4.7 Acceptance & Legitimacy Violations  
 
 - ACCEPTANCE_CONDITIONS_NOT_MET  
 - AREA_BLOCKED_BY_PERMANENT_SESSION  
@@ -225,11 +203,9 @@ Participant errors do not imply structural corruption unless detected during res
 - SUPERSESSION_CONFLICT  
 - RESOLUTION_ALREADY_SUPERSEDED  
 
-These do not represent structural corruption.
-
 ---
 
-# 4.8 Resolution & Lifecycle Errors
+## 4.8 Resolution & Lifecycle Errors  
 
 - INVALID_RESOLUTION_STATE_TRANSITION  
 - RETIRED_STATE_VIOLATION  
@@ -238,31 +214,24 @@ These do not represent structural corruption.
 
 ---
 
-# 5. Hard vs Soft Failure
+# 5. Hard vs Soft Failure  
 
-## ENG-ERROR-04 — Deterministic Failure Classes
+## ENG-ERROR-04 — Deterministic Failure Classes  
 
 ### Hard Failures (REJECTED)
 
-- Structural graph violations  
-- Supersession cycle  
-- Multi-area detection  
-- Cross-area supersession  
-- Governance slot violation  
+- Structural violations  
+- Governance slot violations  
 - Receipt violations  
 - Snapshot participant mismatch  
 - Participant ID reuse  
 - Invariant violations  
-- Constraint violations  
-- Terminal immutability  
 - Freeze boundary violations  
-- Participant integrity violations  
 
 Hard failures:
 
 - Never mutate state  
 - Never trigger automatic repair  
-- Deterministic classification required  
 
 ### Soft Blocks (BLOCKED)
 
@@ -273,30 +242,26 @@ Hard failures:
 Soft blocks:
 
 - Do not mutate domain objects  
-- Are reversible only by explicit operator action  
+- Reversible only by explicit operator action  
 
 ---
 
-# 6. Receipt Integrity Doctrine
+# 6. Receipt Integrity Doctrine  
 
 Receipts:
 
-- Are persistent, immutable, integrity artifacts  
-- Are not caches or recomputable  
-- Must match canonical session snapshots  
+- Are persistent, immutable integrity artifacts  
+- Must match canonical session snapshot  
 - Snapshot participant IDs must match final epoch set  
-- Reproducing a receipt implies tampering  
-- Missing receipts imply corruption  
-- Orphaned receipts imply corruption  
+- Must never be regenerated  
 
-The Engine must halt on restore if receipt integrity cannot be proven.  
-No implicit regeneration allowed.
+Receipt corruption requires halt on restore.
 
 ---
 
-# 7. Determinism Guarantees
+# 7. Determinism Guarantees  
 
-## ENG-ERROR-06 — Identical Input → Identical Report
+## ENG-ERROR-05 — Semantic Determinism  
 
 Given identical:
 
@@ -313,76 +278,93 @@ The Engine must produce identical:
 - block_type  
 - related_objects  
 
-Ordering of related_objects must be deterministic.
+---
+
+## ENG-ERROR-06 — Canonical Representation Guarantee  
+
+EvaluationReport must be canonicalizable.
+
+Identical input must produce a byte-identical canonical representation when serialized.
+
+### Field Ordering
+
+Fields must appear in the fixed order defined in Section 3.
+
+### Collection Ordering
+
+- related_objects → lexicographically sorted by object_id  
+- diagnostics → lexicographically sorted by key  
+- Any future list field → lexicographically sorted unless otherwise defined  
+
+No insertion-order dependence permitted.
+
+### Null Handling
+
+- Optional fields must appear explicitly as null when not applicable  
+- Fields must not be omitted conditionally  
+
+### Serialization Stability
+
+Canonical form must not depend on:
+
+- Runtime environment  
+- Map iteration order  
+- Platform serializer behavior  
+- Whitespace formatting  
+
+Implementations may expose non-canonical representations, but must be able to emit canonical form deterministically.
 
 ---
 
-# 8. Related Objects
+# 8. Related Objects  
 
-Must include:
-
-- Corrupted object IDs  
-- Blocking session IDs  
-- Missing reference IDs  
-- Governance slot objects  
-- Receipt IDs (if violated)  
-- Participant IDs (if epoch violations detected)  
+Must include relevant object identifiers in deterministic order.
 
 Must not imply mutation or legitimacy semantics.
 
 ---
 
-# 9. No Implicit Repair
+# 9. No Implicit Repair  
 
-- Engine must not auto-generate receipts  
-- Engine must not auto-correct receipt mismatches  
-- Engine must not auto-repair slot multiplicity  
-- Engine must not auto-resolve conflicts  
-- Engine must not auto-close sessions  
-- Engine must not auto-reconcile participant epochs  
+The Engine must not:
+
+- Regenerate receipts  
+- Repair slot violations  
+- Reconcile participant epochs  
+- Auto-resolve conflicts  
+- Auto-close sessions  
 
 Failures are descriptive only.
 
 ---
 
-# 10. Audit Interaction
-
-- Audit may record rejected or blocked commands  
-- Audit does not influence legitimacy  
-- EvaluationReport remains authoritative  
-
----
-
-# 11. Versioning
+# 10. Versioning  
 
 - Every EvaluationReport includes schema_version  
-- Error codes may only change with explicit engine version increment  
-- Receipt or participant epoch doctrine changes require version increment  
+- Schema changes require explicit version increment  
+- Error code changes require version increment  
 
 ---
 
-# 12. Summary Guarantees
+# 11. Summary Guarantees  
 
 - Every command produces structured output  
 - Structural corruption halts deterministically  
-- Receipts are mandatory integrity artifacts  
-- Participant epochs are strictly enforced  
-- Receipt regeneration is prohibited  
-- Governance slot violations are first-class structural failures  
-- Cross-area supersession is prohibited  
-- Determinism preserved across implementations  
-- Degraded read-only mode allows DAG export for recovery  
+- Participant epochs strictly enforced  
+- Receipts are immutable integrity artifacts  
+- EvaluationReport is semantically and canonically deterministic  
+- Cross-implementation output stability guaranteed  
+- Degraded read-only mode permits recovery export only  
 
 ---
 
-# 13. Mental Model
+# 12. Mental Model  
 
 The engine compiles legitimacy.  
 Receipts attest to what was compiled.  
 Participant IDs represent participation epochs.  
+EvaluationReports describe the compiler’s decision deterministically and canonically.  
 
-If receipts are missing, altered, or participant epochs are inconsistent,  
+If structure, receipts, or participant epochs are inconsistent,  
 the engine cannot prove history —  
-and must halt.  
-
-Degraded mode allows read-only access and export for consolidation.
+and must halt. 
