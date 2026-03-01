@@ -1,6 +1,6 @@
 # ENG-INTEGRITY  
 Engine Integrity & Runtime Guarantees  
-Status: FROZEN (v10 – Single-Area Runtime, No Foreign DAG Evaluation)  
+Status: FROZEN (v11 – Participant Epoch Invariants Integrated)  
 Applies to: Engine Core (V1/V2+)  
 
 ---
@@ -19,6 +19,7 @@ It governs:
 - Orphan object detection and graph completeness  
 - Receipt integrity and rehydration  
 - Structural vs informational reference validation  
+- Participant epoch integrity invariants  
 - Fatal vs degraded failure semantics  
 - Atomic commit semantics  
 - Legitimacy compiler doctrine  
@@ -77,8 +78,8 @@ All legitimacy derivation requires:
 2. Single-Area structural validation  
 3. Deterministic reconstruction of supersession graph and governance state  
 
-There is no “import preview” mode.
-There is no relaxed validation mode.
+There is no “import preview” mode.  
+There is no relaxed validation mode.  
 There is no parallel evaluation path.
 
 If rehydration fails, legitimacy evaluation is not permitted.
@@ -134,6 +135,7 @@ On rehydration, the Engine must:
 - Recompute structurally ACTIVE sets  
 - Validate exclusive governance slots  
 - Validate session and resolution consistency  
+- Validate participant epoch invariants  
 - Validate receipt integrity (if receipts provided)  
 
 Restore must be deterministic across implementations.
@@ -180,7 +182,46 @@ They are excluded from structural integrity checks.
 
 ---
 
-# 7. Receipt Integrity Rules
+# 7. Participant Epoch Integrity Invariants
+
+Participant identity is session-scoped and epoch-based.
+
+The following invariants are structural and must be validated during restore:
+
+1. **No participant_id reuse within a Session**
+
+   - A `participant_id` must appear at most once within a Session’s lifecycle.  
+   - A `participant_id` must never be reassigned to represent a different participation epoch.  
+   - Duplicate or conflicting reuse → StructuralIntegrityFailure.
+
+2. **Snapshot participant IDs must match session state at acceptance**
+
+   For any ACCEPTED session:
+
+   - The `participant_snapshot` recorded in the receipt must exactly match  
+     the final active participant epoch set at the moment of acceptance.  
+   - No missing participant_id values.  
+   - No additional participant_id values.  
+   - No rewritten or merged epochs.  
+
+   Any mismatch between:
+
+   - Frozen session state  
+   - Resolution snapshot  
+   - Receipt participant_snapshot  
+
+   → StructuralIntegrityFailure.
+
+3. **No historical epoch merging**
+
+   - Participation epochs terminated by resume or removal must not reappear.  
+   - Receipt snapshots must reference only the final epoch set.  
+
+These invariants ensure deterministic reproduction of session state and receipt artifacts.
+
+---
+
+# 8. Receipt Integrity Rules
 
 Receipts are integrity artifacts.
 
@@ -195,6 +236,7 @@ Receipt rules:
 - Missing receipts prevent future acceptance operations  
 - Orphaned receipts (no matching session or resolution) → StructuralIntegrityFailure  
 - Receipt content hash mismatch → StructuralIntegrityFailure  
+- Snapshot mismatch → StructuralIntegrityFailure  
 - Receipts are immutable  
 
 Receipt verification occurs only after successful structural restore.
@@ -203,7 +245,7 @@ Receipt failure must never be downgraded to degraded mode.
 
 ---
 
-# 8. Degraded Read-Only Mode
+# 9. Degraded Read-Only Mode
 
 Degraded mode exists solely for controlled recovery scenarios.
 
@@ -213,7 +255,7 @@ It may activate only if:
 - Supersession graph is reconstructable  
 - Governance slots are derivable  
 - No fatal structural invariant is violated  
-- But acceptance safety cannot be guaranteed due to missing non-fatal artifacts (e.g., missing receipts)
+- Acceptance safety cannot be guaranteed due to missing non-fatal artifacts (e.g., missing receipts)
 
 In degraded mode:
 
@@ -234,7 +276,7 @@ If structural corruption is detected, degraded mode is not allowed — the Engin
 
 ---
 
-# 9. Fatal Structural Integrity Failure
+# 10. Fatal Structural Integrity Failure
 
 The Engine must halt if any of the following occur:
 
@@ -246,7 +288,8 @@ The Engine must halt if any of the following occur:
 - Schema incompatibility preventing deterministic reconstruction  
 - Orphaned receipts  
 - Receipt hash mismatch  
-- Snapshot inconsistency  
+- Snapshot inconsistency (including participant epoch mismatch)  
+- participant_id reuse within a session  
 - Any invariant violation defined in ENG-DOMAIN, ENG-SUPERSESSION, or ENG-DECISION  
 
 Halt behavior:
@@ -260,11 +303,12 @@ No automatic repair permitted.
 
 ---
 
-# 10. Determinism Guarantee
+# 11. Determinism Guarantee
 
 - Restore must be deterministic  
 - ACTIVE derivation must be deterministic  
 - Governance slot evaluation must be deterministic  
+- Participant epoch validation deterministic  
 - No timestamp-based precedence  
 - No UUID-time precedence  
 - No ordering-based inference  
@@ -274,7 +318,7 @@ Identical inputs must produce identical runtime state across implementations.
 
 ---
 
-# 11. Engine Invariants
+# 12. Engine Invariants
 
 - Exactly one Area active at runtime  
 - No foreign DAG evaluation  
@@ -285,15 +329,16 @@ Identical inputs must produce identical runtime state across implementations.
 - Cross-area references are non-structural  
 - Governance slots exclusive  
 - Supersession strictly Area-local  
+- Participant epochs strictly enforced  
 - Determinism mandatory  
 - Halt preferred to ambiguity  
 
 ---
 
-# 12. Compiler Halt Principle
+# 13. Compiler Halt Principle
 
 If legitimacy cannot be mechanically proven from structural domain objects,
 the Engine must prefer halt over ambiguity.
 
-The Engine is not a repair tool.
+The Engine is not a repair tool.  
 It is a deterministic legitimacy compiler.

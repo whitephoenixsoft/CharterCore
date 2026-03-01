@@ -1,5 +1,5 @@
 # ENG-ERROR — Engine Error & EvaluationReport Model  
-Status: FROZEN (v6 – Degraded Mode & Receipt Integrity)  
+Status: FROZEN (v7 – Participant Epoch Errors Added)  
 Applies to: Engine Core (V1/V2+)  
 Scope: Deterministic failure reporting, block classification, restore failure semantics, receipt enforcement, and evaluation output  
 
@@ -16,6 +16,7 @@ This specification defines:
 - Error classification  
 - Block classification  
 - Receipt integrity enforcement  
+- Participant epoch error semantics  
 - EvaluationReport schema  
 - Deterministic error codes  
 - Hard vs soft failure semantics  
@@ -120,6 +121,7 @@ Indicate corruption or integrity violation.
 - CROSS_AREA_SUPERSESSION_PROHIBITED  
 - GOVERNANCE_SLOT_EMPTY  
 - GOVERNANCE_SLOT_MULTIPLICITY  
+- PARTICIPANT_ID_REUSE_DETECTED  
 
 ### Receipt Integrity Errors (Structural)
 
@@ -131,14 +133,16 @@ For every CLOSED or ACCEPTED session:
 - Receipt must match deterministic canonical snapshot  
 - Receipt must be immutable  
 - Receipt must not be regenerated  
+- Snapshot participant IDs must match session state at acceptance  
 
 Violations:
 
-- RECEIPT_MISSING → CLOSED or ACCEPTED session lacks a receipt  
-- RECEIPT_HASH_MISMATCH → Persisted receipt does not match canonical snapshot  
-- RECEIPT_ORPHAN_DETECTED → Receipt exists without matching CLOSED or ACCEPTED session  
+- RECEIPT_MISSING  
+- RECEIPT_HASH_MISMATCH  
+- RECEIPT_ORPHAN_DETECTED  
+- SNAPSHOT_PARTICIPANT_MISMATCH  
 
-All receipt violations are **structural integrity failures**.  
+All receipt violations are structural integrity failures.
 
 Restore behavior:
 
@@ -154,7 +158,7 @@ Outcome (command-time detection): REJECTED
 
 If non-critical receipt or non-primary structural violations occur:
 
-- Engine may enter **degraded read-only mode**  
+- Engine may enter degraded read-only mode  
 - Command outcome: REJECTED  
 - Error code: DEGRADED_MODE_ACTIVE  
 - Only allowed operations: read-only queries and DAG export  
@@ -183,6 +187,25 @@ If non-critical receipt or non-primary structural violations occur:
 
 - PARTICIPANT_NOT_FOUND  
 - CANNOT_REMOVE_LAST_PARTICIPANT  
+- DUPLICATE_PARTICIPANT_DISPLAY_NAME  
+- PARTICIPANT_ALREADY_REMOVED  
+- INVALID_PARTICIPANT_EPOCH  
+
+Semantics:
+
+- DUPLICATE_PARTICIPANT_DISPLAY_NAME  
+  Triggered when `add_participant` attempts to add a display_name that already exists in the active participant set for the session.
+
+- PARTICIPANT_ALREADY_REMOVED  
+  Triggered when `remove_participant` is invoked on a participant_id that is not part of the active participant set.
+
+- INVALID_PARTICIPANT_EPOCH  
+  Triggered when:
+  - A vote references a non-active or terminated participant_id  
+  - A participant_id is reused after termination  
+  - A snapshot references a participant_id not valid for that session  
+
+Participant errors do not imply structural corruption unless detected during restore.
 
 ---
 
@@ -227,6 +250,8 @@ These do not represent structural corruption.
 - Cross-area supersession  
 - Governance slot violation  
 - Receipt violations  
+- Snapshot participant mismatch  
+- Participant ID reuse  
 - Invariant violations  
 - Constraint violations  
 - Terminal immutability  
@@ -259,6 +284,7 @@ Receipts:
 - Are persistent, immutable, integrity artifacts  
 - Are not caches or recomputable  
 - Must match canonical session snapshots  
+- Snapshot participant IDs must match final epoch set  
 - Reproducing a receipt implies tampering  
 - Missing receipts imply corruption  
 - Orphaned receipts imply corruption  
@@ -300,6 +326,7 @@ Must include:
 - Missing reference IDs  
 - Governance slot objects  
 - Receipt IDs (if violated)  
+- Participant IDs (if epoch violations detected)  
 
 Must not imply mutation or legitimacy semantics.
 
@@ -312,6 +339,7 @@ Must not imply mutation or legitimacy semantics.
 - Engine must not auto-repair slot multiplicity  
 - Engine must not auto-resolve conflicts  
 - Engine must not auto-close sessions  
+- Engine must not auto-reconcile participant epochs  
 
 Failures are descriptive only.
 
@@ -329,7 +357,7 @@ Failures are descriptive only.
 
 - Every EvaluationReport includes schema_version  
 - Error codes may only change with explicit engine version increment  
-- Receipt doctrine changes require version increment  
+- Receipt or participant epoch doctrine changes require version increment  
 
 ---
 
@@ -338,6 +366,7 @@ Failures are descriptive only.
 - Every command produces structured output  
 - Structural corruption halts deterministically  
 - Receipts are mandatory integrity artifacts  
+- Participant epochs are strictly enforced  
 - Receipt regeneration is prohibited  
 - Governance slot violations are first-class structural failures  
 - Cross-area supersession is prohibited  
@@ -350,8 +379,10 @@ Failures are descriptive only.
 
 The engine compiles legitimacy.  
 Receipts attest to what was compiled.  
+Participant IDs represent participation epochs.  
 
-If receipts are missing or altered,  
+If receipts are missing, altered, or participant epochs are inconsistent,  
 the engine cannot prove history —  
 and must halt.  
+
 Degraded mode allows read-only access and export for consolidation.

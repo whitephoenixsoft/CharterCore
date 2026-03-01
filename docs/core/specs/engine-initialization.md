@@ -1,7 +1,7 @@
-# ENG-ENGINE-INITIALIZATION — Engine Initialization & Readiness Specification (v4)  
-Status: FROZEN (v4 – Governance Completeness Enforcement)  
+# ENG-INITIALIZATION — Engine Initialization & Readiness Specification (v5)  
+Status: FROZEN (v5 – Governance & Participant Epoch Enforcement)  
 Applies to: Engine Core (V1/V2+)  
-Scope: Structural Engine Initialization & Area Activation  
+Scope: Structural Engine Initialization, Area Activation, and Deterministic Readiness  
 
 ---
 
@@ -13,18 +13,19 @@ This document defines how the Engine Core:
 - Validates structural readiness  
 - Enforces governance slot completeness  
 - Ensures deterministic eligibility for legitimacy evaluation  
+- Validates participant epoch integrity  
 - Supports Area Activation (restore) and minimal evaluation contexts  
 
-Initialization is structural verification, not state evolution.
+Initialization is **structural verification only**, not state evolution.
 
 The Engine:
 
 - Does not attach to storage  
 - Does not traverse persistence  
 - Does not compute hashes  
-- Does not load refs  
+- Does not load external references  
 - Does not perform migration  
-- Does not repair governance  
+- Does not repair governance or session state  
 
 ---
 
@@ -34,11 +35,9 @@ The Engine:
 
 The host must provide:
 
-- Complete domain objects required for evaluation (Minimal Evaluation Mode)  
+- Complete domain objects for evaluation (Minimal Evaluation Mode)  
 - Or complete Area object graph (Area Activation Mode)  
-- All referenced objects  
-- Current session set  
-- Authority and Scope objects present in graph (if required by mode)  
+- All referenced objects including sessions, candidates, Authority, and Scope  
 - Explicit evaluation context  
 
 The Engine:
@@ -67,7 +66,7 @@ Engine initialization must be:
 
 Initialization must not:
 
-- Change session states  
+- Change session states or phases  
 - Alter resolution states  
 - Create or delete objects  
 - Emit legitimacy events  
@@ -85,14 +84,14 @@ Fail if:
 
 ## ENG-INIT-03 — Two Modes
 
-1. Minimal Evaluation Mode  
+1. **Minimal Evaluation Mode**  
    - Graph includes only objects relevant to a specific evaluation  
    - Must satisfy invariants within provided subset  
-   - Governance completeness enforced only if evaluation requires acceptance  
+   - Governance completeness enforced only if acceptance evaluation is possible  
 
-2. Area Activation Mode (Restore)  
+2. **Area Activation Mode (Restore)**  
    - Graph includes complete Area object graph  
-   - All sessions, resolutions, Authority, Scope, candidates present  
+   - All sessions, resolutions, Authority, Scope, and candidates present  
    - Full invariant enforcement applied  
 
 Fail if:
@@ -107,8 +106,8 @@ Fail if:
 
 ## ENG-INIT-04 — Identity Validity
 
-- All object identifiers are valid UUIDv7  
-- No duplicate identifiers exist within type namespace  
+- All object identifiers must be valid UUIDv7  
+- No duplicate identifiers exist within the same type namespace  
 - All cross-object references resolve to provided objects  
 
 Fail if:
@@ -129,8 +128,8 @@ Fail if:
 
 Fail if:
 
-- SUPERSEDED resolution missing superseded_by  
-- Non-SUPERSEDED resolution has superseded_by  
+- SUPERSEDED resolution missing `superseded_by`  
+- Non-SUPERSEDED resolution has `superseded_by`  
 - ACCEPTED session lacks corresponding Resolution  
 - TERMINAL phase conflicts with session state  
 
@@ -140,59 +139,71 @@ Fail if:
 
 Per Area, governance slots must satisfy:
 
-Area Activation Mode:
-
-- Exactly one ACTIVE Authority  
-- Exactly one ACTIVE Scope  
+- **Area Activation Mode:** exactly one ACTIVE Authority and one ACTIVE Scope  
+- **Minimal Evaluation Mode:** required if sessions exist and acceptance evaluation is possible  
 
 Fail if:
 
-- No ACTIVE Authority present  
-- Multiple ACTIVE Authorities present  
-- No ACTIVE Scope present  
-- Multiple ACTIVE Scopes present  
-
-Minimal Evaluation Mode:
-
-- If Area contains sessions and acceptance evaluation is possible:
-  - Exactly one ACTIVE Authority required  
-  - Exactly one ACTIVE Scope required  
-
-Fail if:
-
-- Area contains sessions but lacks Authority  
-- Area contains sessions requiring Scope but Scope missing  
-- Multiple ACTIVE Authority or Scope detected  
-
-Derived governance state is not stored but must be structurally valid.
+- No ACTIVE Authority or Scope present  
+- Multiple ACTIVE Authorities or Scopes detected  
 
 Initialization must not:
 
-- Infer missing Scope  
-- Infer missing Authority  
+- Infer missing Scope or Authority  
 - Promote UNDER_REVIEW objects  
 - Repair slot violations  
 
-Slot violations constitute StructuralIntegrityFailure.
+Slot violations constitute **StructuralIntegrityFailure**.
 
 ---
 
-## ENG-INIT-07 — Participant Integrity
+## ENG-INIT-07 — Participant Epoch Integrity
 
 - Every session must have ≥1 participant  
 - ACCEPTED sessions must have at least one vote recorded  
-- Resolution participant_snapshot must equal session participant set at acceptance  
-- Resolution candidate_snapshot must exist and match accepted candidate  
+- Resolution `participant_snapshot` must equal session participant set at acceptance  
+- **Participant IDs represent participation epochs**; no historical epoch merging  
+- IDs in snapshot must correspond to the **final participant epoch set**  
+- Resolution `candidate_snapshot` must match accepted candidate set  
 
 Fail if:
 
 - Empty participant sets  
-- ACCEPTED session missing vote(s)  
+- ACCEPTED session missing votes  
 - Resolution snapshot incomplete  
+- Participant IDs reused across participation epochs  
 
 ---
 
-## 5.8 Supersession Graph Integrity
+## ENG-INIT-08 — BLOCK_TEMPORARY Reconfirmation
+
+- Sessions in BLOCK_TEMPORARY must terminate prior participant epochs on resume  
+- New participant set must be explicitly added  
+- New participant IDs must be generated  
+- Votes must be cleared  
+- Initialization validates that reconfirmation rules are enforceable  
+
+Fail if:
+
+- Participant set persisted without reconfirmation  
+- Votes remain from prior epoch  
+
+---
+
+## ENG-INIT-09 — Solo Mode Considerations
+
+- If only one participant exists, an implicit ACCEPT vote is expected  
+- Validation ensures deterministic vote insertion if acceptance is evaluated  
+- Phase and participant structure conform to SOLO mode invariants  
+
+Fail if:
+
+- Solo mode session lacks participant  
+- Implicit vote rules cannot be deterministically enforced  
+
+---
+
+## ENG-INIT-10 — Supersession Graph Integrity
 
 - Graph must be acyclic  
 - Superseded objects must not be ACTIVE  
@@ -206,29 +217,25 @@ Fail if:
 
 ---
 
-## ENG-INIT-09 — UNDER_REVIEW / RETIRED Validation
+## ENG-INIT-11 — UNDER_REVIEW / RETIRED Validation
 
-- UNDER_REVIEW and RETIRED remain structurally valid  
-- May be superseded  
+- UNDER_REVIEW and RETIRED objects must remain structurally valid  
 - Must not break slot exclusivity  
 - Must not alter ACTIVE slot count  
 
 Fail if:
 
-- Governance slot count ambiguous due to state misuse  
+- Governance slot count ambiguous  
 - Resolution state mutates during initialization  
 
 ---
 
 # 6. Governance Hygiene Enforcement
 
-## ENG-INIT-10 — BLOCK_PERMANENT Enforcement
+## ENG-INIT-12 — BLOCK_PERMANENT Enforcement
 
-If any session exists with state = BLOCK_PERMANENT:
-
-- Acceptance attempts must fail  
-- No automatic closure permitted  
-- No auto-resume permitted  
+- Acceptance attempts must fail if any session = BLOCK_PERMANENT  
+- No automatic closure or resume permitted  
 
 Initialization must not:
 
@@ -239,7 +246,7 @@ Initialization must not:
 
 # 7. Deterministic Readiness Guarantee
 
-## ENG-INIT-11 — Pure Deterministic Initialization
+## ENG-INIT-13 — Pure Deterministic Initialization
 
 Given identical:
 
@@ -253,26 +260,24 @@ Initialization must produce identical:
 - Validation results  
 - Governance slot evaluation  
 - Evaluation eligibility  
-- Invariant checks  
+- Participant epoch validation  
+- Snapshot checks  
 
 Fail if:
 
-- Readiness depends on storage order  
-- Timestamp ordering influences validation  
-- Runtime environment influences result  
+- Readiness depends on storage order, timestamp ordering, or environment  
 
 ---
 
 # 8. Failure Semantics
 
-## ENG-INIT-12 — Fail Loud, Fail Pure
+## ENG-INIT-14 — Fail Loud, Fail Pure
 
 Any of the following results in failure:
 
-- Governance slot absence where required  
-- Governance slot multiplicity  
+- Governance slot absence or multiplicity  
 - Structural invariant violation  
-- Snapshot inconsistency  
+- Participant or snapshot integrity violation  
 - Supersession cycle  
 
 Failure must be:
@@ -289,7 +294,7 @@ No implicit repair allowed.
 
 # 9. No Migration Rule
 
-## ENG-INIT-13 — No Implicit Migration
+## ENG-INIT-15 — No Implicit Migration
 
 During initialization, the Engine must not:
 
@@ -299,8 +304,6 @@ During initialization, the Engine must not:
 - Rebind supersession edges  
 - Normalize structure  
 - Promote governance state  
-
-All migration must occur through explicit operator command.
 
 Fail if:
 
@@ -315,11 +318,11 @@ The Engine is ready when:
 - Structural validation passes  
 - Supersession graph integrity holds  
 - Governance slots valid and exclusive  
-- Governance completeness satisfied (if required by mode)  
-- Participant and snapshot invariants satisfied  
+- Governance completeness satisfied (if required)  
+- Participant epoch and snapshot invariants satisfied  
 - No implicit mutation occurred  
 
-Readiness does not imply:
+Readiness does **not** imply:
 
 - Legitimacy success  
 - Session acceptability  
@@ -332,17 +335,14 @@ Readiness does not imply:
 - Host supplies facts  
 - Engine validates structure  
 - Governance must be structurally complete  
+- Participant epochs must be unique and deterministic  
 - Engine enforces invariants  
-- Engine evaluates legitimacy  
+- Initialization evaluates readiness, not acceptance  
 - Nothing is repaired implicitly  
-
-Initialization is structural verification only.
 
 ---
 
 # 12. Constitutional Alignment
-
-This document conforms to:
 
 - ENG-INTEGRITY  
 - ENG-DOMAIN  
@@ -352,4 +352,4 @@ This document conforms to:
 - ENG-API  
 - ENG-IMPORT  
 
-Violation constitutes structural engine failure.
+Violation constitutes **structural engine failure**.

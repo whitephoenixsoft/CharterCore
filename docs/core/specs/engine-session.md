@@ -1,5 +1,5 @@
 # ENG-SESSION — Session Lifecycle, Governance Enforcement & Receipt Emission Specification  
-Status: FROZEN (v5 – Governance Bootstrap Integrated)  
+Status: FROZEN (v6 – Participant Epoch Semantics Integrated)  
 Applies to: Engine Core (V1/V2+)  
 Scope: Session lifecycle, session classification, governance enforcement, legitimacy boundaries, and receipt emission  
 
@@ -130,6 +130,23 @@ Fail if:
 
 ---
 
+## ENG-SESSION-04A — Participant Identity as Participation Epoch
+
+- Each `participant_id` represents a single participation epoch.  
+- `participant_id` values are engine-generated UUIDv7 identifiers.  
+- A `participant_id` must never be reused within a session lifecycle.  
+- Participation epochs are terminated explicitly (removal or resume reset).  
+
+Fail if:
+
+- A `participant_id` is reused  
+- A terminated epoch reappears as active  
+- A vote references a non-active or terminated epoch  
+
+Participant identity continuity across resumes is not assumed.
+
+---
+
 # 4. State & Phase Model
 
 Sessions have two independent lifecycle dimensions:
@@ -208,6 +225,9 @@ Resume requires participant reconfirmation.
 - Votes preserved  
 - Session progression frozen  
 - Acceptance permanently disallowed  
+
+BLOCK_PERMANENT is not terminal.  
+Receipt emission does not occur until CLOSED.
 
 Area Hygiene Rule:
 
@@ -288,6 +308,8 @@ At session creation:
 
 These references are immutable for the lifetime of the session.
 
+Resume does not renegotiate governance.
+
 Fail if:
 
 - Authority changes mid-session  
@@ -329,12 +351,13 @@ Fail if:
 
 - Candidates modifiable only in PRE_STANCE  
 - No edits after VOTING  
+- Candidate content immutable at all times  
 
 Fail if:
 
 - Candidate added after VOTING  
 - Candidate removed after VOTING  
-- Candidate content mutated at any time  
+- Candidate content mutated  
 
 ---
 
@@ -342,7 +365,7 @@ Fail if:
 
 ## ENG-SESSION-08 — Votes Are Mechanical
 
-- One vote per participant per candidate  
+- One vote per participant epoch per candidate  
 - Votes immutable once recorded  
 - Silence is not consent  
 - Acceptance purely mechanical  
@@ -361,7 +384,7 @@ Fail if:
 
 In Solo Mode:
 
-- Exactly one participant exists  
+- Exactly one participant epoch exists  
 
 If acceptance attempted with no vote:
 
@@ -376,7 +399,7 @@ Acceptance requires a vote object.
 
 # 11. Pause, Resume & Participant Reconfirmation
 
-## ENG-SESSION-09 — Reconfirmation Requirement
+## ENG-SESSION-09 — Reconfirmation & Epoch Reset Requirement
 
 Resume allowed only from:
 
@@ -385,8 +408,11 @@ Resume allowed only from:
 
 On resume:
 
-- Votes cleared  
-- Participant set explicitly re-specified  
+- All prior participation epochs are terminated  
+- Participant set is cleared  
+- No `participant_id` values are preserved  
+- Re-addition generates new `participant_id` values  
+- Votes are cleared  
 - Phase resets to PRE_STANCE  
 
 Engine must record reconfirmation event.
@@ -397,12 +423,13 @@ Reconfirmation:
 - Does not emit receipt immediately  
 - Included in final receipt snapshot  
 
-BLOCK_PERMANENT, ACCEPTED, CLOSED cannot resume.
-
 Fail if:
 
 - Resume without reconfirmation  
 - Votes persist after resume  
+- Prior participant_id values are reused  
+
+BLOCK_PERMANENT, ACCEPTED, CLOSED cannot resume.
 
 ---
 
@@ -444,18 +471,16 @@ Receipt emission:
 - Deterministic  
 - Immutable  
 
-Receipt must capture:
+Receipt snapshot must exactly match frozen session state at TERMINAL transition, including:
 
-- session_id  
-- final state  
-- participant snapshot  
-- candidate snapshot  
-- stance snapshot  
-- participant reconfirmation history  
-- authority snapshot reference  
-- scope snapshot reference  
-- annotations  
-- content_hash  
+- Final participant epoch set  
+- Candidate snapshot  
+- Stance snapshot  
+- Participant reconfirmation history  
+- Authority snapshot reference  
+- Scope snapshot reference  
+- Annotations  
+- Deterministic content_hash  
 
 Fail if:
 
@@ -549,7 +574,8 @@ Engine must not:
 - Authority and Scope snapshotted  
 - PRE_STANCE sole mutable boundary  
 - First vote freezes structure  
-- Resume requires reconfirmation  
+- Resume terminates prior participant epochs  
+- No participant_id reuse permitted  
 - Terminal states emit exactly one receipt  
 - Acceptance deterministic  
 - Governance hygiene enforced  
@@ -567,7 +593,7 @@ PRE_STANCE is the only mutable boundary.
 
 First vote freezes structure.
 
-Resume resets voting and requires reconfirmation.
+Resume terminates prior participation epochs and requires explicit re-addition.
 
 Acceptance is deterministic.
 
