@@ -1,7 +1,9 @@
-# ENG-RECEIPT — Engine Session Receipt Specification (V3)
-Status: DRAFT (Participant Epoch Snapshot Clarified)  
-Applies to: Engine Core (V1 Solo Mode, forward-compatible)  
-Scope: Deterministic session receipts for audit, reconstruction, legitimacy verification, and federation portability
+# ENG-RECEIPT — Engine Session Receipt Specification  
+Status: FROZEN (v4 – Deterministic Canonicalization & Multi-Error Alignment)  
+Applies to: Engine Core (V1/V2+)  
+Scope: Deterministic session receipts for audit, reconstruction, legitimacy verification, and federation portability  
+
+Authority: Subordinate to ENG-DOMAIN, ENG-SESSION, ENG-ERROR, ENG-INTEGRITY, ENG-API  
 
 ---
 
@@ -11,16 +13,18 @@ This specification defines how the Engine produces canonical session receipts.
 
 Receipts:
 
-- Provide immutable, verifiable records of session closure  
-- Capture participant, candidate, and stance snapshots  
-- Record acceptance or abandonment deterministically  
-- Enable reconstruction of chronological governance history  
-- Provide portable legitimacy artifacts for federation and external verification  
+- Provide immutable, verifiable records of session terminal transition  
+- Capture frozen governance, participant epoch, candidate, and stance snapshots  
+- Record deterministic acceptance or abandonment outcomes  
+- Enable reconstruction of governance chronology  
+- Provide portable legitimacy artifacts  
 
-Receipts are **engine-authoritative descriptive artifacts** of session outcomes.
+Receipts are engine-authoritative descriptive artifacts.
 
 Receipts do not create legitimacy.  
-They describe legitimacy created by ACCEPTED sessions.
+Legitimacy is created only by successful session acceptance.
+
+Receipts formalize and freeze closure.
 
 Participant identity within receipts is epoch-based and session-scoped.
 
@@ -34,13 +38,15 @@ Emitted when a session transitions to ACCEPTED.
 
 Captures:
 
-- Full governance context  
+- Governance context snapshot  
 - Final participant epoch set  
 - Frozen candidate set  
-- Final stance set (including implicit votes)  
-- Deterministic acceptance result  
+- Final stance set (explicit and implicit votes)  
+- Deterministic acceptance outcome  
 
-This receipt anchors legitimacy history.
+LEGITIMACY receipts anchor governance history.
+
+---
 
 ## 2.2 EXPLORATION
 
@@ -50,99 +56,182 @@ Captures:
 
 - Final participant epoch set  
 - Final candidate set  
-- Closure context  
-- Explicit abandonment  
+- Final stance state (if any)  
+- Explicit abandonment outcome  
 
 Does not create legitimacy.
 
 ---
 
-# 3. Receipt Structure
+# 3. Generation Rules
 
-A receipt must include the following fields:
+## 3.1 Terminal Transition Requirement
+
+Exactly one receipt must be emitted per session.
+
+Receipt emission is:
+
+- Atomic with terminal state transition  
+- Deterministic  
+- Immutable  
+
+If:
+
+- ACCEPTED → LEGITIMACY receipt  
+- CLOSED → EXPLORATION receipt  
+
+No receipt may be emitted outside a TERMINAL transition.
+
+Fail if:
+
+- Terminal state reached without receipt  
+- Receipt emitted without terminal transition  
+- More than one receipt exists for a session  
+
+---
+
+## 3.2 Acceptance Preconditions
+
+LEGITIMACY receipt may only be emitted after:
+
+- Full deterministic validation pass  
+- All violations accumulated  
+- No blocking conditions remain  
+- Outcome derived  
+
+Receipt must reflect the fully frozen state created during acceptance commit.
+
+---
+
+# 4. Receipt Structure
+
+A receipt must contain the following canonical fields:
 
 - `receipt_type` (LEGITIMACY | EXPLORATION)  
-- `receipt_id` (engine-generated UUIDv7)  
+- `receipt_id` (UUIDv7, engine-generated)  
 - `session_id`  
-- `engine_version`  
-- `topic`  
 - `area_id`  
+- `engine_version`  
 - `authority_snapshot_id`  
 - `scope_snapshot_id`  
-- `participant_snapshot` (ordered, deterministic set of participation epochs)  
-- `candidate_snapshot` (ordered, deterministic list)  
-- `stance_snapshot` (explicit and implicit votes, deterministic order)  
+- `participant_snapshot` (deterministically ordered)  
+- `candidate_snapshot` (deterministically ordered)  
+- `stance_snapshot` (deterministically ordered)  
+- `participant_reconfirmation` (ordered reconfirmation history, if any)  
 - `annotations` (optional, immutable)  
 - `session_state_at_close` (ACCEPTED | CLOSED)  
 - `session_phase_at_close` (TERMINAL)  
 - `acceptance_result` (SUCCESS | ABANDONED)  
-- `participant_reconfirmation` (ordered list of reconfirmation events, if any)  
-- `lineage_references` (optional list of related receipt_ids)  
-- `created_at` (timestamp, informational only)  
-- `hash_algorithm` (string identifier, e.g., SHA-256)  
-- `content_hash` (hash of canonical serialized receipt content)
+- `created_at` (UTC ISO 8601 with timezone, informational only)  
+- `hash_algorithm`  
+- `content_hash`  
+
+Optional:
+
+- `lineage_references` (deterministically ordered list of related receipt_ids)
+
+All fields participate in canonical serialization unless explicitly marked informational.
+
+`created_at` is informational and must not influence ordering, identity, or legitimacy.
 
 ---
 
-# 4. Participant Snapshot Semantics
+# 5. Participant Snapshot Semantics
 
-## 4.1 Participation Epoch Model
+## 5.1 Participation Epoch Model
 
-Participants in receipts represent **participation epochs**, not abstract human identities.
+Participants represent participation epochs, not human identities.
 
-Each entry in `participant_snapshot` must include:
+Each `participant_snapshot` entry must include:
 
-- `participant_id` (UUIDv7, engine-generated)  
-- `display_name` (string at time of acceptance/closure)  
+- `participant_id` (UUIDv7)  
+- `display_name` (string at time of closure)  
 
 Rules:
 
-- `participant_id` represents a single, non-reusable participation epoch.  
-- IDs in the snapshot correspond exclusively to the final active epoch set at acceptance or closure.  
-- No historical epoch merging is permitted.  
-- If a participant left and rejoined, the receipt must contain only the final epoch instance active at closure.  
-- Prior epochs are not merged, rewritten, or inferred.  
+- `participant_id` represents a single non-reusable participation epoch  
+- Only the final active epoch set at closure appears  
+- No merging of historical epochs permitted  
+- No inference of identity continuity  
+- No rewriting of prior epochs  
 
-Participant identity continuity across resumes is not assumed by the Engine.
+If a participant left and rejoined:
+
+- Only the final active epoch appears  
+- Prior epochs are not included  
+
+Participant identity continuity across resumes is not assumed.
 
 ---
 
-## 4.2 Deterministic Ordering
+## 5.2 Deterministic Ordering
 
-`participant_snapshot` must be serialized in deterministic order.
+`participant_snapshot` must be ordered lexicographically by `participant_id`.
 
-Ordering rule:
-
-- Lexicographic ordering by `participant_id`  
-
-No ordering may depend on:
+Ordering must not depend on:
 
 - Timestamp  
-- Addition order  
+- Insertion order  
 - Display name  
 - Vote order  
 
-Given identical session state, participant ordering must be identical across implementations.
+Identical session state → identical participant ordering across implementations.
 
 ---
 
-## 4.3 Reconfirmation Recording
+## 5.3 Reconfirmation Recording
 
-If the session experienced resume events requiring reconfirmation:
+If resume events occurred:
 
 - Each reconfirmation event must be recorded in `participant_reconfirmation`  
-- Reconfirmation history must allow deterministic reconstruction of participation epochs  
-- Chronology must be reconstructable independent of timestamps  
+- Ordering must be deterministic  
+- Reconstruction must not rely on timestamps  
 
-The receipt captures the final epoch set and the reconfirmation history that led to it.
+Reconfirmation history is descriptive only and does not alter legitimacy.
 
 ---
 
-# 5. Canonical Serialization & Hashing
+# 6. Candidate Snapshot Semantics
 
-## 5.1 Canonical Form
+`candidate_snapshot` must:
 
-The `content_hash` must be computed over canonical serialization of the receipt.
+- Contain the fully frozen candidate set  
+- Preserve canonical candidate content  
+- Be ordered deterministically  
+
+Ordering rule:
+
+- Lexicographic by `candidate_id`  
+
+Candidate content must match frozen state at transition.
+
+---
+
+# 7. Stance Snapshot Semantics
+
+`stance_snapshot` must:
+
+- Include all explicit votes  
+- Include implicit Solo Mode vote if applicable  
+- Reference participant_id and candidate_id  
+- Be ordered deterministically  
+
+Ordering rule:
+
+1. Lexicographic by candidate_id  
+2. Then lexicographic by participant_id  
+
+Votes are immutable once recorded.
+
+No inference permitted.
+
+---
+
+# 8. Canonical Serialization & Hashing
+
+## 8.1 Canonicalization Requirement
+
+`content_hash` must be computed over canonical serialized receipt content.
 
 Canonicalization must ensure:
 
@@ -150,162 +239,134 @@ Canonicalization must ensure:
 - Deterministic list ordering  
 - Stable encoding format  
 - Cross-language reproducibility  
+- UTF-8 encoding  
 
-Any deviation invalidates determinism.
+EvaluationReport ordering rules do not apply here; receipt ordering rules are defined in this specification.
 
-## 5.2 Hash Semantics
+Deviation constitutes engine defect.
 
-- `content_hash` is integrity metadata only.  
-- Hash does not influence legitimacy.  
-- Hash does not influence acceptance.  
-- Hash does not influence restore.  
-- Hash does not influence identity resolution.  
+---
+
+## 8.2 Hash Semantics
+
+- `content_hash` ensures integrity only  
+- Does not influence legitimacy  
+- Does not influence acceptance  
+- Does not influence restore  
+- Does not influence identity  
 
 Identity is defined exclusively by `receipt_id`.
 
-## 5.3 Algorithm Migration
+---
 
-- `hash_algorithm` must be explicitly declared.  
-- Hash algorithm changes do not alter receipt identity.  
-- Historical receipts remain valid under their original algorithm.  
+## 8.3 Algorithm Declaration
 
-Hash migration never alters legitimacy history.
+- `hash_algorithm` must be explicitly declared  
+- Algorithm migration does not alter receipt identity  
+- Historical receipts remain valid under their original algorithm  
+
+Hash changes never rewrite legitimacy history.
 
 ---
 
-# 6. Generation Triggers
+# 9. Deterministic Guarantees
 
-## 6.1 Session Accepted
+Given identical session state at terminal transition:
 
-When a session transitions to ACCEPTED:
-
-- Produce LEGITIMACY receipt  
-- Freeze participant epoch snapshot  
-- Freeze candidate snapshot  
-- Freeze stance snapshot  
-- Insert implicit solo vote if applicable  
-- Capture participant reconfirmation events  
-- Compute canonical hash  
-- Persist receipt atomically with acceptance  
-
-## 6.2 Session Closed Without Acceptance
-
-When a session transitions to CLOSED:
-
-- Produce EXPLORATION receipt  
-- Capture final participant epoch snapshot  
-- Capture final candidate state  
-- Mark `acceptance_result = ABANDONED`  
-- Compute canonical hash  
-
-## 6.3 Resume & Reconfirmation
-
-On resume:
-
-- Prior participation epochs are terminated (per ENG-DECISION)  
-- Re-additions generate new participant_id values  
-- Receipt must reflect only the final epoch set  
-- Historical epoch reuse is prohibited  
-
----
-
-# 7. Deterministic Guarantees
-
-Receipts must be:
-
-- Fully reconstructable from engine state  
-- Deterministic across implementations  
-- Canonically hashable across environments  
-- Independent of storage backend  
-
-Given identical session state, the receipt and its `content_hash` must be identical.
+- Receipt content must be identical  
+- Field ordering must be identical  
+- Snapshots must be identical  
+- `content_hash` must be identical  
 
 A mismatch indicates:
 
 - Non-determinism  
-- Engine defect  
 - Canonicalization violation  
+- Engine defect  
+
+Receipts must be reconstructable from engine state.
 
 ---
 
-# 8. Immutability
+# 10. Immutability
 
-- Receipts are immutable once emitted.  
-- No field may be modified.  
-- Session modifications after receipt creation do not alter prior receipts.  
-- Receipts survive restore operations.  
+- Receipts are immutable once emitted  
+- No field may be modified  
+- Receipts survive restore and rehydration  
+- Later governance changes do not alter prior receipts  
 
 Receipts are append-only artifacts.
 
 ---
 
-# 9. Integration with Restore & Import
+# 11. Integration with Rehydration & Degraded Mode
 
-## 9.1 Restore Mode
+## 11.1 Rehydration Validation
 
-- Receipts may be included with domain objects.  
-- Receipt hash may be revalidated.  
-- Restore must not alter receipt content.  
+During rehydration:
 
-## 9.2 Relaxed Import / CLI Baseline Review
+- Receipt integrity may be revalidated  
+- Hash may be recomputed and compared  
+- Structural references must be validated  
 
-- Receipts may be absent in proposal-only imports.  
-- No legitimacy is inferred from imported receipts without structural validation.  
-- CLI may aggregate receipts into higher-level REVIEW artifacts.  
+Structural violation results in initialization failure.
 
----
-
-# 10. Audit & Legal Alignment
-
-Receipts provide:
-
-- Canonical closure proof  
-- Deterministic participant epoch record  
-- Explicit vote record  
-- Tamper-evident integrity (via hash)  
-
-Receipts may be:
-
-- Serialized externally  
-- Anchored in external audit systems  
-- Used in compliance or legal contexts  
-
-Receipts remain descriptive; legitimacy originates in session acceptance.
+Non-fatal integrity issues may trigger degraded read-only mode per ENG-INTEGRITY.
 
 ---
 
-# 11. Solo Mode Considerations
+## 11.2 Degraded Mode
 
-- Implicit ACCEPT vote must appear in `stance_snapshot`.  
-- Participant snapshot contains exactly one participation epoch.  
-- Any resume-triggered reconfirmation must be recorded.  
+In degraded mode:
 
-Solo Mode does not bypass receipt requirements.
+- No new receipts may be emitted  
+- Existing receipts remain readable  
+- Integrity defects must not be masked  
 
----
-
-# 12. Mental Model
-
-- Receipts are frozen session-state artifacts.  
-- Participant IDs represent participation epochs.  
-- Snapshot reflects the final epoch set only.  
-- No historical epoch merging.  
-- LEGITIMACY receipts anchor governance history.  
-- EXPLORATION receipts anchor deliberation history.  
-- UUID defines identity.  
-- Hash defines integrity.  
-- Timestamps are informational only.  
-- Receipts describe legitimacy; they do not create it.  
+Degraded mode prohibits partial legitimacy compilation.
 
 ---
 
-# Alignment
+# 12. Solo Mode
 
-- ENG-INTEGRITY  
-- ENG-DOMAIN  
-- ENG-DECISION  
-- ENG-API  
-- ENG-IMPORT  
-- ENG-AUD  
+If session operated in Solo Mode:
 
-Receipts formalize session closure, enforce deterministic participation epochs, enable reconstruction, and provide portable legitimacy artifacts for federation and long-term verification.
+- Implicit ACCEPT vote must appear in `stance_snapshot`  
+- Exactly one participation epoch must appear  
+- Any resume-triggered reconfirmation must be recorded  
+
+Solo Mode does not bypass receipt emission.
+
+---
+
+# 13. Audit Alignment
+
+Receipts:
+
+- Are distinct from audit events  
+- Do not replace lifecycle audit  
+- Do not encode EvaluationReport errors  
+- Represent only terminal state outcome  
+
+Audit is descriptive runtime telemetry.  
+Receipt is terminal structural artifact.
+
+---
+
+# 14. Mental Model
+
+Receipts freeze terminal session state.
+
+Participant IDs represent participation epochs.  
+Only final epoch set appears.  
+No historical merging.  
+
+LEGITIMACY receipts anchor governance history.  
+EXPLORATION receipts anchor deliberation history.  
+
+UUID defines identity.  
+Hash defines integrity.  
+Timestamps are informational only.  
+
+Receipts describe legitimacy.  
+They do not create it.

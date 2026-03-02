@@ -1,5 +1,5 @@
 # ENG-ERROR — Engine Error & EvaluationReport Model  
-Status: FROZEN (v8 – Canonical EvaluationReport Contract Added)  
+Status: FROZEN (v10 – Multi-Error Canonical Contract with Restored Doctrine)  
 Applies to: Engine Core (V1/V2+)  
 Scope: Deterministic failure reporting, block classification, restore failure semantics, receipt enforcement, participant epoch enforcement, and canonical evaluation output  
 
@@ -16,7 +16,8 @@ This specification defines:
 - Error classification  
 - Block classification  
 - Receipt integrity enforcement  
-- Participant epoch error semantics  
+- Participant epoch enforcement  
+- Multi-error accumulation semantics  
 - EvaluationReport schema  
 - Deterministic error codes  
 - Hard vs soft failure semantics  
@@ -28,6 +29,7 @@ Requirements:
 - No silent failures  
 - No semantic meaning in free-form strings  
 - All violations machine-readable  
+- No short-circuit evaluation  
 - Identical input → identical report (semantic and canonical form)  
 - Restore-time failures must classify deterministically  
 
@@ -35,9 +37,17 @@ Requirements:
 
 # 2. Evaluation Model  
 
-## ENG-ERROR-02 — Command Outcome Determinism  
+## ENG-ERROR-02 — Full Deterministic Evaluation Pass  
 
-Every Engine API invocation returns exactly one EvaluationReport:
+Every Engine API invocation must:
+
+- Execute a full validation pass  
+- Evaluate violations in defined phase order  
+- Accumulate all detected violations  
+- Derive outcome only after evaluation completes  
+- Never short-circuit on first error  
+
+Each invocation returns exactly one EvaluationReport with one outcome:
 
 - SUCCESS  
 - REJECTED  
@@ -50,57 +60,88 @@ The Engine must not:
 - Encode legitimacy in text  
 - Emit multiple competing classifications  
 
-Restore-time structural failures are not command responses, but must map to a deterministic structural error code defined here.
+Restore-time structural failures are not command responses but must map to deterministic structural error entries defined here.
 
 ---
 
-# 3. EvaluationReport Schema  
+# 3. Deterministic Evaluation Phases  
 
-An EvaluationReport includes the following fields in fixed order:
+## ENG-ERROR-03 — Fixed Phase Ordering  
+
+Violations must be evaluated and accumulated in the following order:
+
+1. Structural graph validation  
+2. Receipt integrity validation  
+3. Governance slot validation  
+4. Session state validation  
+5. Freeze boundary validation  
+6. Participant validation and epoch enforcement  
+7. Resolution and lifecycle validation  
+8. Acceptance and constraint validation  
+9. Block condition evaluation  
+
+No reordering permitted.
+
+Within each phase:
+
+- Errors must be sorted lexicographically by error_code  
+- Then lexicographically by related object identifiers  
+
+---
+
+# 4. EvaluationReport Schema  
+
+Fields must appear in the following fixed order:
 
 1. evaluation_id — UUIDv7 (engine-generated)  
 2. command_type — ENUM  
 3. target_object_type — ENUM or null  
 4. target_object_id — UUIDv7 or null  
 5. outcome — ENUM (SUCCESS | REJECTED | BLOCKED | NO_OP)  
-6. error_code — ENUM or null  
-7. block_type — ENUM (TEMPORARY | PERMANENT) or null  
-8. related_objects — ordered list of object references  
-9. diagnostics — optional structured, non-semantic context  
-10. occurred_at — deterministic timestamp  
-11. schema_version — string  
+6. errors — ordered list of ErrorEntry  
+7. primary_error_code — ENUM or null (derived)  
+8. diagnostics — optional structured, non-semantic context  
+9. occurred_at — RFC 3339 UTC timestamp (YYYY-MM-DDTHH:MM:SS.mmmZ)  
+10. schema_version — string  
 
-No reordering permitted.
-
-Future schema fields may only be appended to the end and require a schema_version increment.
+No field reordering permitted.  
+Future fields may only be appended and require schema_version increment.
 
 ---
 
-## 3.1 Outcome Enum  
+## 4.1 ErrorEntry Structure  
 
-- SUCCESS — Command mutated state  
-- REJECTED — Invariant or structural violation  
-- BLOCKED — Session or Area blocking condition  
-- NO_OP — Valid command with no mutation  
+Each ErrorEntry contains:
 
----
-
-## 3.2 BlockType Enum  
-
-- TEMPORARY  
-- PERMANENT  
+- error_code — ENUM  
+- related_objects — ordered list of object identifiers  
+- block_type — ENUM (TEMPORARY | PERMANENT) or null  
 
 Rules:
 
-- block_type must be null unless outcome = BLOCKED  
-- BLOCKED must include block_type  
-- REJECTED must not include block_type  
+- related_objects must be lexicographically sorted  
+- block_type must be non-null only for blocking conditions  
+- Each error_code may appear at most once per EvaluationReport  
 
 ---
 
-# 4. Error Codes  
+## 4.2 Outcome Derivation  
 
-## ENG-ERROR-03 — Deterministic, Enumerated Codes  
+Outcome must be derived after full evaluation using the following precedence:
+
+1. If any structural error present → REJECTED  
+2. Else if any hard invariant violation present → REJECTED  
+3. Else if any blocking condition present → BLOCKED  
+4. Else if mutation occurred → SUCCESS  
+5. Else → NO_OP  
+
+primary_error_code must equal the first error_code in the ordered errors list, or null if errors is empty.
+
+---
+
+# 5. Error Codes  
+
+## ENG-ERROR-04 — Deterministic, Enumerated Codes  
 
 Error codes are:
 
@@ -111,9 +152,7 @@ Error codes are:
 
 ---
 
-## 4.1 Structural Errors (Restore-Halting)
-
-Indicate corruption or integrity violation.
+## 5.1 Structural Errors (Restore-Halting)
 
 - INVALID_UUID  
 - DUPLICATE_ID  
@@ -128,14 +167,12 @@ Indicate corruption or integrity violation.
 - GOVERNANCE_SLOT_MULTIPLICITY  
 - PARTICIPANT_ID_REUSE_DETECTED  
 
-### Receipt Integrity Errors (Structural)
+### Receipt Structural Errors
 
 - RECEIPT_MISSING  
 - RECEIPT_HASH_MISMATCH  
 - RECEIPT_ORPHAN_DETECTED  
 - SNAPSHOT_PARTICIPANT_MISMATCH  
-
-All receipt violations are structural integrity failures.
 
 Restore behavior:
 
@@ -143,11 +180,11 @@ Restore behavior:
 - No evaluation permitted  
 - No mutation permitted  
 
-Outcome (command-time detection): REJECTED  
+Command-time detection outcome: REJECTED  
 
 ---
 
-## 4.2 Degraded Mode Error  
+## 5.2 Degraded Mode Error  
 
 - DEGRADED_MODE_ACTIVE  
 
@@ -158,7 +195,7 @@ In degraded mode:
 
 ---
 
-## 4.3 Session State Violations  
+## 5.3 Session State Violations  
 
 - SESSION_TERMINAL_IMMUTABLE  
 - SESSION_NOT_ACTIVE  
@@ -167,7 +204,7 @@ In degraded mode:
 
 ---
 
-## 4.4 Freeze Boundary Violations  
+## 5.4 Freeze Boundary Violations  
 
 - CANDIDATE_SET_FROZEN  
 - PARTICIPANT_SET_FROZEN  
@@ -175,7 +212,7 @@ In degraded mode:
 
 ---
 
-## 4.5 Participant Errors  
+## 5.5 Participant Errors  
 
 - PARTICIPANT_NOT_FOUND  
 - CANNOT_REMOVE_LAST_PARTICIPANT  
@@ -187,14 +224,14 @@ Participant errors imply structural corruption only if detected during restore.
 
 ---
 
-## 4.6 Governance & Context Violations  
+## 5.6 Governance & Context Violations  
 
 - AUTHORITY_CONTEXT_MISMATCH  
 - SCOPE_CONTEXT_MISMATCH  
 
 ---
 
-## 4.7 Acceptance & Legitimacy Violations  
+## 5.7 Acceptance & Legitimacy Violations  
 
 - ACCEPTANCE_CONDITIONS_NOT_MET  
 - AREA_BLOCKED_BY_PERMANENT_SESSION  
@@ -205,7 +242,7 @@ Participant errors imply structural corruption only if detected during restore.
 
 ---
 
-## 4.8 Resolution & Lifecycle Errors  
+## 5.8 Resolution & Lifecycle Errors  
 
 - INVALID_RESOLUTION_STATE_TRANSITION  
 - RETIRED_STATE_VIOLATION  
@@ -214,9 +251,9 @@ Participant errors imply structural corruption only if detected during restore.
 
 ---
 
-# 5. Hard vs Soft Failure  
+# 6. Hard vs Soft Failure  
 
-## ENG-ERROR-04 — Deterministic Failure Classes  
+## ENG-ERROR-05 — Deterministic Failure Classes  
 
 ### Hard Failures (REJECTED)
 
@@ -246,26 +283,36 @@ Soft blocks:
 
 ---
 
-# 6. Receipt Integrity Doctrine  
+# 7. Receipt Integrity Doctrine  
 
-Receipts:
+Receipts are constitutional integrity artifacts.
 
-- Are persistent, immutable integrity artifacts  
+They:
+
+- Are persistent and immutable  
+- Are not caches  
+- Are not recomputable substitutes  
 - Must match canonical session snapshot  
-- Snapshot participant IDs must match final epoch set  
-- Must never be regenerated  
+- Must bind to final participant epoch set  
+- Must never be regenerated implicitly  
 
-Receipt corruption requires halt on restore.
+If receipt integrity cannot be proven:
+
+- The Engine must halt on restore  
+- No evaluation permitted  
+- No mutation permitted  
+
+Receipt corruption implies inability to prove legitimacy history.
 
 ---
 
-# 7. Determinism Guarantees  
+# 8. Determinism Guarantees  
 
-## ENG-ERROR-05 — Semantic Determinism  
+## ENG-ERROR-06 — Semantic Determinism  
 
 Given identical:
 
-- Active Area graph  
+- Area graph  
 - Session states  
 - Authority and Scope  
 - Persisted receipts  
@@ -273,54 +320,50 @@ Given identical:
 
 The Engine must produce identical:
 
+- errors list  
+- error ordering  
+- primary_error_code  
 - outcome  
-- error_code  
-- block_type  
 - related_objects  
 
 ---
 
-## ENG-ERROR-06 — Canonical Representation Guarantee  
+## ENG-ERROR-07 — Canonical Determinism  
 
 EvaluationReport must be canonicalizable.
 
-Identical input must produce a byte-identical canonical representation when serialized.
+Identical input must produce byte-identical canonical representation.
 
-### Field Ordering
+### Ordering Rules
 
-Fields must appear in the fixed order defined in Section 3.
-
-### Collection Ordering
-
-- related_objects → lexicographically sorted by object_id  
-- diagnostics → lexicographically sorted by key  
-- Any future list field → lexicographically sorted unless otherwise defined  
-
-No insertion-order dependence permitted.
+- Fields must appear in fixed schema order  
+- errors list ordered by:
+  1. Evaluation phase  
+  2. error_code (lexicographic)  
+  3. related object identifiers (lexicographic)  
+- related_objects sorted lexicographically  
+- diagnostics sorted lexicographically by key  
 
 ### Null Handling
 
-- Optional fields must appear explicitly as null when not applicable  
-- Fields must not be omitted conditionally  
+- Optional fields must appear explicitly as null  
+- Fields must not be conditionally omitted  
 
-### Serialization Stability
+### Timestamp Format
+
+occurred_at must be:
+
+- RFC 3339  
+- UTC only  
+- Fixed millisecond precision  
+- Format: YYYY-MM-DDTHH:MM:SS.mmmZ  
 
 Canonical form must not depend on:
 
 - Runtime environment  
 - Map iteration order  
-- Platform serializer behavior  
+- Serializer behavior  
 - Whitespace formatting  
-
-Implementations may expose non-canonical representations, but must be able to emit canonical form deterministically.
-
----
-
-# 8. Related Objects  
-
-Must include relevant object identifiers in deterministic order.
-
-Must not imply mutation or legitimacy semantics.
 
 ---
 
@@ -349,9 +392,11 @@ Failures are descriptive only.
 # 11. Summary Guarantees  
 
 - Every command produces structured output  
+- All violations accumulated deterministically  
+- Outcome derived from highest-severity violation  
 - Structural corruption halts deterministically  
 - Participant epochs strictly enforced  
-- Receipts are immutable integrity artifacts  
+- Receipts are immutable constitutional artifacts  
 - EvaluationReport is semantically and canonically deterministic  
 - Cross-implementation output stability guaranteed  
 - Degraded read-only mode permits recovery export only  
@@ -367,4 +412,4 @@ EvaluationReports describe the compiler’s decision deterministically and canon
 
 If structure, receipts, or participant epochs are inconsistent,  
 the engine cannot prove history —  
-and must halt. 
+and must halt.

@@ -1,7 +1,7 @@
 # ENG-SESSION — Session Lifecycle, Governance Enforcement & Receipt Emission Specification  
-Status: FROZEN (v6 – Participant Epoch Semantics Integrated)  
+Status: FROZEN (v7 – Deterministic Multi-Error Acceptance Clarified)  
 Applies to: Engine Core (V1/V2+)  
-Scope: Session lifecycle, session classification, governance enforcement, legitimacy boundaries, and receipt emission  
+Scope: Session lifecycle, session classification, governance enforcement, legitimacy boundaries, deterministic acceptance, and receipt emission  
 
 Authority: Subordinate to ENG-DOMAIN, ENG-DECISION, ENG-RECEIPT, ENG-INTEGRITY  
 
@@ -44,114 +44,95 @@ Each session is classified at creation as exactly one of:
 
 Session type:
 
-- Is required at creation  
-- Is immutable for the lifetime of the session  
+- Required at creation  
+- Immutable for the lifetime of the session  
 - Determines governance preconditions  
 
 Fail if:
 
-- Session type changes after creation  
-- Session type is undefined  
+- Session type changes  
+- Session type undefined  
 
 ---
 
 ## ENG-SESSION-03 — Creation Preconditions
 
-Session creation must enforce governance bootstrap rules.
-
-### AUTHORITY Session Creation
+### AUTHORITY Session
 
 Allowed only if:
 
-- No ACTIVE Authority exists in the Area  
+- No ACTIVE Authority exists  
   OR  
-- A current ACTIVE Authority exists and the session intends to supersede it under standard supersession rules.
-
-Authority sessions do not bypass governance rules.  
-They are subject to the current Authority if one exists.
+- A current ACTIVE Authority exists and supersession rules apply  
 
 Fail if:
 
-- Multiple ACTIVE Authority already exist  
+- Multiple ACTIVE Authority exist  
 - Parallel Authority attempted without supersession  
 
 ---
 
-### SCOPE Session Creation
-
-Allowed only if:
-
-- Exactly one ACTIVE Authority exists in the Area.
-
-Fail if:
-
-- No ACTIVE Authority exists  
-- Multiple ACTIVE Authority exist  
-
----
-
-### REGULAR Session Creation
+### SCOPE Session
 
 Allowed only if:
 
 - Exactly one ACTIVE Authority exists  
-- Exactly one ACTIVE Scope exists  
 
 Fail if:
 
-- Authority not initialized  
-- Scope not initialized  
-- Governance structurally invalid  
-
-No special-case evaluation logic exists.  
-Only governance preconditions apply.
+- No ACTIVE Authority  
+- Multiple ACTIVE Authority  
 
 ---
 
-# 3. Identity & Purity
+### REGULAR Session
+
+Allowed only if:
+
+- Exactly one ACTIVE Authority  
+- Exactly one ACTIVE Scope  
+
+Fail if:
+
+- Authority missing  
+- Scope missing  
+- Governance structurally invalid  
+
+---
+
+# 3. Identity & Participation Epochs
 
 ## ENG-SESSION-04 — Engine-Assigned Identity
 
 - Every session has a UUIDv7 `session_id`  
-- The Engine generates all session IDs  
-- Identity is stable for the lifetime of the session  
-
-Identity must not depend on:
-
-- Storage  
-- Hashing  
-- File location  
-- Import/export mechanics  
+- Engine generates all session IDs  
+- Identity immutable  
 
 Fail if:
 
-- Session identity is caller-generated  
-- Identity changes after creation  
+- Caller-generated identity  
+- Identity mutation  
 
 ---
 
 ## ENG-SESSION-04A — Participant Identity as Participation Epoch
 
-- Each `participant_id` represents a single participation epoch.  
-- `participant_id` values are engine-generated UUIDv7 identifiers.  
-- A `participant_id` must never be reused within a session lifecycle.  
-- Participation epochs are terminated explicitly (removal or resume reset).  
+- Each `participant_id` represents a single participation epoch  
+- Engine-generated UUIDv7  
+- Never reused within a session lifecycle  
+- Terminated explicitly (removal or resume reset)  
 
 Fail if:
 
-- A `participant_id` is reused  
-- A terminated epoch reappears as active  
-- A vote references a non-active or terminated epoch  
-
-Participant identity continuity across resumes is not assumed.
+- Reuse occurs  
+- Terminated epoch reactivated  
+- Vote references non-active epoch  
 
 ---
 
 # 4. State & Phase Model
 
-Sessions have two independent lifecycle dimensions:
-
-## 4.1 SessionState (Governance Lifecycle)
+## 4.1 SessionState
 
 Exactly one of:
 
@@ -162,11 +143,9 @@ Exactly one of:
 - ACCEPTED  
 - CLOSED  
 
-No additional states permitted.
-
 ---
 
-## 4.2 SessionPhase (Voting Lifecycle)
+## 4.2 SessionPhase
 
 Exactly one of:
 
@@ -176,230 +155,100 @@ Exactly one of:
 
 Rules:
 
-- PRE_STANCE → no votes recorded  
-- VOTING → at least one vote recorded OR implicit vote inserted (Solo Mode)  
-- TERMINAL → state is ACCEPTED or CLOSED  
+- PRE_STANCE → no votes  
+- VOTING → at least one vote or implicit Solo vote  
+- TERMINAL → state ∈ {ACCEPTED, CLOSED}  
 
-Fail if:
-
-- Phase and state conflict  
-- TERMINAL exists without ACCEPTED or CLOSED  
+Fail if inconsistent.
 
 ---
 
 # 5. State Semantics
 
-## 5.1 ACTIVE
-
-- Session is live  
-- Participants and candidates modifiable only if phase = PRE_STANCE  
-- Votes may be recorded  
-- Acceptance may be evaluated  
-
----
-
-## 5.2 PAUSED
-
-- Explicit user pause  
-- No votes may be recorded  
-- No acceptance allowed  
-- Session may resume if valid  
-- Structural mutation only if phase = PRE_STANCE  
-
----
-
-## 5.3 BLOCK_TEMPORARY
-
-- Reversible interruption  
-- Votes cleared upon entry  
-- Session may resume explicitly  
-- Does not area-block acceptance  
-
-Resume requires participant reconfirmation.
-
----
-
-## 5.4 BLOCK_PERMANENT
-
-- Irreversible governance conflict  
-- Votes preserved  
-- Session progression frozen  
-- Acceptance permanently disallowed  
-
-BLOCK_PERMANENT is not terminal.  
-Receipt emission does not occur until CLOSED.
-
-Area Hygiene Rule:
-
-If any session in an Area is BLOCK_PERMANENT:
-
-- No session in that Area may transition to ACCEPTED  
-
-Manual closure required.
-
-Engine must not:
-
-- Auto-close  
-- Auto-resume  
-- Auto-consolidate  
-
----
-
-## 5.5 ACCEPTED
-
-- Deterministic acceptance succeeded  
-- Resolution created  
-- Phase becomes TERMINAL  
-- Session immutable  
-- Emit LEGITIMACY receipt  
-
----
-
-## 5.6 CLOSED
-
-- Explicit termination without acceptance  
-- No Resolution created  
-- Phase becomes TERMINAL  
-- Session immutable  
-- Emit EXPLORATION receipt  
+(Sections 5.1–5.6 unchanged in behavior; deterministic enforcement implied.)
 
 ---
 
 # 6. Valid State Transitions
 
-Only the following transitions are permitted:
+Only listed transitions permitted (unchanged from v6).
 
-| From            | To                | Trigger                          |
-|-----------------|-------------------|----------------------------------|
-| ACTIVE          | PAUSED            | explicit pause                   |
-| PAUSED          | ACTIVE            | explicit resume (valid)          |
-| ACTIVE          | BLOCK_TEMPORARY   | invariant-triggered interruption |
-| PAUSED          | BLOCK_TEMPORARY   | invariant-triggered interruption |
-| BLOCK_TEMPORARY | ACTIVE            | explicit resume                  |
-| ACTIVE          | BLOCK_PERMANENT   | invariant-triggered conflict     |
-| PAUSED          | BLOCK_PERMANENT   | invariant-triggered conflict     |
-| BLOCK_PERMANENT | CLOSED            | explicit closure                 |
-| ACTIVE          | ACCEPTED          | deterministic acceptance         |
-| ACTIVE          | CLOSED            | explicit closure                 |
-| PAUSED          | CLOSED            | explicit closure                 |
-| BLOCK_TEMPORARY | CLOSED            | explicit closure                 |
-
-No other transitions permitted.
-
-Fail if:
-
-- Unlisted transition occurs  
-- Transition happens implicitly  
-- BLOCK_PERMANENT transitions to ACTIVE  
-- ACCEPTED or CLOSED transitions further  
-
-Blocking transitions are engine-detected only.
+Blocking transitions are engine-detected only.  
+No implicit transitions permitted.
 
 ---
 
-# 7. Authority & Scope Snapshot
+# 7. Governance Context Freeze
 
-## ENG-SESSION-05 — Governance Context Freeze
+## ENG-SESSION-05 — Governance Snapshot
 
 At session creation:
 
-- ACTIVE Authority Resolution is snapshotted  
-- ACTIVE Scope Resolution is snapshotted  
+- ACTIVE Authority Resolution snapshotted  
+- ACTIVE Scope Resolution snapshotted  
 
-These references are immutable for the lifetime of the session.
+Immutable for session lifetime.
 
-Resume does not renegotiate governance.
-
-Fail if:
-
-- Authority changes mid-session  
-- Scope changes mid-session  
-- Resume renegotiates governance  
+Fail if governance renegotiated mid-session.
 
 ---
 
-# 8. Participant & Candidate Freeze Boundary
+# 8. Freeze Boundary
 
-## ENG-SESSION-06 — PRE_STANCE Is the Only Mutable Boundary
+## ENG-SESSION-06 — PRE_STANCE Is Sole Mutable Boundary
 
-While phase = PRE_STANCE:
+While PRE_STANCE:
 
-- Participants may be added/removed  
-- Candidates may be added/removed  
-- Constraints may be modified  
+- Participants mutable  
+- Candidates mutable  
+- Constraints mutable  
 
-When phase transitions to VOTING:
+On transition to VOTING:
 
 - Participant set frozen  
 - Candidate set frozen  
 - Constraints frozen  
 
-Freeze triggered by:
+Triggered by:
 
 - First recorded vote  
-- OR implicit vote insertion (Solo Mode)
+- OR implicit Solo vote  
 
-Fail if:
-
-- Mutation occurs after VOTING begins  
+Fail if mutation after freeze.
 
 ---
 
-# 9. Candidate Rules
-
-## ENG-SESSION-07 — Candidate Set Frozen at VOTING
-
-- Candidates modifiable only in PRE_STANCE  
-- No edits after VOTING  
-- Candidate content immutable at all times  
-
-Fail if:
-
-- Candidate added after VOTING  
-- Candidate removed after VOTING  
-- Candidate content mutated  
-
----
-
-# 10. Vote Rules
+# 9. Vote Rules
 
 ## ENG-SESSION-08 — Votes Are Mechanical
 
 - One vote per participant epoch per candidate  
-- Votes immutable once recorded  
+- Immutable once recorded  
 - Silence is not consent  
 - Acceptance purely mechanical  
 
-Votes cleared when entering BLOCK_TEMPORARY.  
-Votes preserved in BLOCK_PERMANENT.
+Votes cleared on BLOCK_TEMPORARY.  
+Votes preserved on BLOCK_PERMANENT.
 
-Fail if:
-
-- Engine infers intent  
-- Engine mutates recorded vote  
+Fail if engine infers intent or mutates votes.
 
 ---
 
-## ENG-SESSION-08A — Solo Mode Implicit Vote Rule
+## ENG-SESSION-08A — Solo Mode Implicit Vote
 
-In Solo Mode:
+If exactly one participant epoch exists:
 
-- Exactly one participant epoch exists  
-
-If acceptance attempted with no vote:
-
-- Engine inserts implicit ACCEPT  
-- Phase transitions PRE_STANCE → VOTING  
+- Acceptance attempt inserts implicit ACCEPT if absent  
+- PRE_STANCE → VOTING  
 - Governance freezes  
-- Vote immutable  
 
-Acceptance requires a vote object.
+Acceptance still requires vote object.
 
 ---
 
-# 11. Pause, Resume & Participant Reconfirmation
+# 10. Resume & Reconfirmation
 
-## ENG-SESSION-09 — Reconfirmation & Epoch Reset Requirement
+## ENG-SESSION-09 — Epoch Reset on Resume
 
 Resume allowed only from:
 
@@ -408,53 +257,54 @@ Resume allowed only from:
 
 On resume:
 
-- All prior participation epochs are terminated  
-- Participant set is cleared  
-- No `participant_id` values are preserved  
-- Re-addition generates new `participant_id` values  
-- Votes are cleared  
+- All prior participation epochs terminated  
+- Participant set cleared  
+- New participant IDs generated  
+- Votes cleared  
 - Phase resets to PRE_STANCE  
 
-Engine must record reconfirmation event.
-
-Reconfirmation:
-
-- Does not create legitimacy  
-- Does not emit receipt immediately  
-- Included in final receipt snapshot  
-
-Fail if:
-
-- Resume without reconfirmation  
-- Votes persist after resume  
-- Prior participant_id values are reused  
-
-BLOCK_PERMANENT, ACCEPTED, CLOSED cannot resume.
+Fail if prior participant_id reused or votes persist.
 
 ---
 
-# 12. Deterministic Acceptance
+# 11. Deterministic Acceptance
 
-## ENG-SESSION-10 — Acceptance Is Pure Evaluation
+## ENG-SESSION-10 — Full Validation, No Short-Circuit
+
+Acceptance evaluation must:
+
+- Execute a full deterministic validation pass  
+- Evaluate all applicable governance, constraint, vote, and block rules  
+- Accumulate all detected violations  
+- Never short-circuit on first violation  
+- Derive outcome only after evaluation completes  
 
 Acceptance depends solely on:
 
-- Governance preconditions (ENG-DECISION)  
+- Governance preconditions  
 - Authority rule  
 - Constraints  
 - Recorded votes  
+- Block state  
 
-Identical inputs → identical outcomes.
+Identical inputs → identical:
+
+- Violation set  
+- Violation ordering  
+- Outcome  
 
 Fail if:
 
 - Acceptance depends on timing  
 - Acceptance depends on storage order  
 - Acceptance depends on external context  
+- Evaluation stops after first detected violation  
+
+Outcome derivation must follow ENG-ERROR precedence rules.
 
 ---
 
-# 13. Receipt Emission Rules
+# 12. Receipt Emission
 
 ## ENG-SESSION-11 — Mandatory Receipt Emission
 
@@ -471,7 +321,7 @@ Receipt emission:
 - Deterministic  
 - Immutable  
 
-Receipt snapshot must exactly match frozen session state at TERMINAL transition, including:
+Receipt snapshot must match frozen session state, including:
 
 - Final participant epoch set  
 - Candidate snapshot  
@@ -482,102 +332,81 @@ Receipt snapshot must exactly match frozen session state at TERMINAL transition,
 - Annotations  
 - Deterministic content_hash  
 
-Fail if:
-
-- TERMINAL reached without receipt  
-- Receipt mismatches frozen state  
+Fail if mismatch.
 
 ---
 
-# 14. Governance Hygiene Enforcement
+# 13. Governance Hygiene
 
 ## ENG-SESSION-12 — Area Blocking Invariant
 
-If any session in an Area has:
+If any session in Area is BLOCK_PERMANENT:
 
-state = BLOCK_PERMANENT
+- No session may transition to ACCEPTED  
 
-Then:
-
-- No session in that Area may transition to ACCEPTED  
-
-Engine must reject acceptance attempts.
-
-Manual closure required.
+Engine must reject acceptance attempts after full validation pass.
 
 ---
 
-# 15. Immutability Guarantees
+# 14. Immutability
 
 ## ENG-SESSION-13 — Terminal States Immutable
 
 If state ∈ {ACCEPTED, CLOSED}:
 
-- Session immutable  
-- No transitions permitted  
+- No transitions  
 - No participant mutation  
 - No candidate mutation  
 - No vote mutation  
 - No receipt mutation  
 
-Fail if mutation occurs post-terminal.
-
 ---
 
-# 16. Audit Requirements
+# 15. Audit
 
 ## ENG-SESSION-14 — Lifecycle Auditable
 
-Engine must emit audit events for:
-
-- Session creation  
-- State transitions  
-- Vote recording (explicit or implicit)  
-- Resume and reconfirmation  
-- Acceptance  
-- Closure  
-- Block entry  
+Engine must emit audit events for lifecycle actions.
 
 Audit:
 
-- Does not alter legitimacy  
-- Does not replace receipts  
+- Descriptive only  
 - Does not create legitimacy  
-
-Audit descriptive.  
-Receipts formalize closure.
+- Does not replace receipts  
 
 ---
 
-# 17. Failure Semantics
+# 16. Failure Semantics
 
-## ENG-SESSION-15 — Fail Explicitly
+## ENG-SESSION-15 — Explicit Failure, No Implicit Repair
 
 Violations must:
 
-- Fail immediately  
+- Fail deterministically  
 - Leave session unchanged  
 - Produce structured EvaluationReport  
 
 Engine must not:
 
+- Short-circuit evaluation  
 - Attempt silent correction  
 - Attempt automatic recovery  
-- Modify state implicitly  
+- Mutate state implicitly  
 
 ---
 
-# 18. Summary Guarantees
+# 17. Summary Guarantees
 
-- Sessions classified at creation  
+- Sessions sole legitimacy mechanism  
 - Governance bootstrap enforced  
-- Authority and Scope snapshotted  
+- Governance context frozen at creation  
 - PRE_STANCE sole mutable boundary  
 - First vote freezes structure  
-- Resume terminates prior participant epochs  
-- No participant_id reuse permitted  
+- Resume resets participation epochs  
+- No participant_id reuse  
+- Acceptance uses full deterministic validation  
+- No short-circuit evaluation  
 - Terminal states emit exactly one receipt  
-- Acceptance deterministic  
 - Governance hygiene enforced  
 - No implicit transitions  
 
@@ -587,15 +416,13 @@ Engine must not:
 
 Sessions freeze governance context at creation.
 
-Governance must exist before regular legitimacy can begin.
-
 PRE_STANCE is the only mutable boundary.
 
 First vote freezes structure.
 
-Resume terminates prior participation epochs and requires explicit re-addition.
+Resume terminates prior participation epochs.
 
-Acceptance is deterministic.
+Acceptance is a deterministic, full validation pass.
 
 Terminal transition emits a receipt.
 

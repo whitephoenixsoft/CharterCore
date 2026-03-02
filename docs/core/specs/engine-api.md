@@ -1,5 +1,5 @@
 # ENG-API — Minimal Engine Interface Specification  
-Status: FROZEN (v10 – Participant Epoch Lifecycle Clarified)  
+Status: FROZEN (v11 – Multi-Error EvaluationReport Alignment)  
 Applies to: Engine Core (V1/V2+)  
 Scope: Deterministic, storage-agnostic engine interface  
 
@@ -52,7 +52,7 @@ Area switching is exclusively a host responsibility via `rehydrate_engine`.
 
 ## ENG-API-01 — Deterministic Command Reporting
 
-Every mutating API call must return exactly one EvaluationReport.
+Every mutating API call must return exactly one EvaluationReport as defined in ENG-ERROR.
 
 Read-only calls return deterministic snapshots.
 
@@ -63,6 +63,13 @@ The Engine must not:
 - Encode semantic meaning in narrative strings  
 
 All outcomes must be structured and machine-readable.
+
+Clients must:
+
+- Consume the ordered `errors` list  
+- Not depend on a single `error_code` field  
+- Treat `primary_error_code` as optional convenience only  
+- Not assume first-error-wins semantics  
 
 ---
 
@@ -121,17 +128,16 @@ Inputs:
 Behavior:
 
 - Replaces any previously loaded Area state  
-- Validates single-area consistency  
-- Validates supersession graph  
-- Validates governance slot exclusivity  
-- Validates structural references  
+- Executes full structural validation pass per ENG-INITIALIZATION  
+- Accumulates all structural violations  
+- Does not short-circuit on first violation  
 - Validates receipt integrity  
 - Derives ACTIVE sets  
 
 Outcome:
 
-- Success → Engine enters normal runtime  
-- Fatal structural violation → Engine halts  
+- No structural violations → Engine enters normal runtime  
+- Structural violations present → initialization fails and all violations reported deterministically  
 - Non-fatal integrity issue (per ENG-INTEGRITY) → Engine enters degraded read-only mode  
 
 The Engine exposes no API to evaluate domain graphs without successful rehydration.
@@ -152,8 +158,8 @@ Properties:
 - Idempotent  
 - Deterministic  
 - Strictly non-mutating  
-
-May be invoked in any session state.
+- Executes full validation pass  
+- Accumulates violations without short-circuit  
 
 Must not:
 
@@ -165,16 +171,18 @@ Must not:
 
 Returns:
 
-EvaluationReport including:
+EvaluationReport containing:
 
-- session_state  
-- session_phase  
-- can_accept  
-- blocking_reasons  
-- governance violations  
-- constraint violations  
+- Ordered `errors` list  
+- Derived `primary_error_code` (optional convenience)  
+- Deterministic outcome  
+- Canonical ordering per ENG-ERROR  
 
-Repeated calls with identical domain state must produce identical results.
+Repeated calls with identical domain state must produce identical:
+
+- errors list  
+- error ordering  
+- outcome  
 
 Evaluation is simulation only.
 
@@ -189,8 +197,12 @@ All lifecycle mutation commands:
 - Enforce phase invariants  
 - Enforce governance invariants  
 - Enforce participant epoch invariants  
-- Return deterministic EvaluationReport  
+- Execute full validation pass  
+- Accumulate violations deterministically  
+- Derive outcome only after validation completes  
 - Must not mutate state on invariant failure  
+
+No command may short-circuit on first detected violation.
 
 ---
 
@@ -211,7 +223,7 @@ Behavior:
 
 All participant_id values are newly generated and unique.
 
-Failure → deterministic governance or validation error codes.
+Violations accumulated deterministically.
 
 ---
 
@@ -226,7 +238,7 @@ Must fail if:
 - Session terminal  
 - BLOCK_PERMANENT  
 
-No participant mutation occurs at pause time.
+Full validation pass required before transition.
 
 ---
 
@@ -242,16 +254,12 @@ Behavior:
 - Terminates all existing participation epochs  
 - Clears the participant set  
 - Clears all recorded votes  
-- Does not preserve any prior participant_id values  
+- Does not preserve prior participant_id values  
 - Does not auto-reconfirm participants  
 
-After resume:
+Each re-addition generates new participant_id.
 
-- Participants must be explicitly re-added via add_participant  
-- Each re-addition generates a new participant_id  
-- No participant_id reuse is permitted  
-
-Resume represents a new participation epoch set within the same Session container.
+Full validation pass required before mutation.
 
 ---
 
@@ -267,53 +275,35 @@ Emits EXPLORATION receipt.
 
 Terminal state.
 
+Full validation pass required.
+
 ---
 
 ## ENG-API-10 — add_participant
 
-Inputs:
-
-- session_id  
-- display_name  
+Allowed only in PRE_STANCE.
 
 Behavior:
 
-- Allowed only in PRE_STANCE  
-- Generates a new participant_id (UUIDv7)  
-- participant_id must be unique within the Session  
-- Must fail if display_name already exists in the active participant set  
-- Must fail if session not in PRE_STANCE  
+- Generates new participant_id  
+- Enforces display_name uniqueness within active set  
+- No participant_id reuse  
 
-The Engine must never:
-
-- Reuse participant_id  
-- Merge with prior participation epochs  
-- Infer identity continuity  
-
-Each call creates a new participation epoch.
+Violations accumulated deterministically.
 
 ---
 
 ## ENG-API-11 — remove_participant
 
-Inputs:
-
-- session_id  
-- participant_id  
+Allowed only in PRE_STANCE.
 
 Behavior:
 
-- Allowed only in PRE_STANCE  
-- Terminates the referenced participation epoch  
-- Removes participant from active set  
-- participant_id becomes permanently invalid for reuse  
+- Terminates participation epoch  
+- Removes from active set  
+- participant_id permanently invalid  
 
-Must fail if:
-
-- participant_id not active  
-- Session not in PRE_STANCE  
-
-Removal does not delete historical references already frozen in snapshots.
+Violations accumulated deterministically.
 
 ---
 
@@ -323,13 +313,13 @@ Removal does not delete historical references already frozen in snapshots.
 
 All:
 
-- Enforce PRE_STANCE / VOTING constraints  
-- Enforce immutability after first stance  
+- Enforce PRE_STANCE / VOTING invariants  
+- Enforce immutability post-freeze  
 - Enforce BLOCK semantics  
 - Reject in degraded mode  
-- Validate participant_id existence for vote recording  
+- Validate participant_id existence  
 
-Votes must reference active participant_id values.
+Full validation pass required.
 
 ---
 
@@ -341,16 +331,10 @@ Inputs:
 
 Behavior:
 
-Performs full validation independent of prior evaluation.
-
-Validation steps:
-
-- Governance preconditions  
-- Authority usability  
-- Scope usability  
-- Structural ACTIVE checks  
-- Constraint checks  
-- Vote evaluation  
+- Executes full deterministic validation pass  
+- Accumulates all governance, constraint, vote, lifecycle, and block violations  
+- Does not short-circuit on first violation  
+- Derives outcome only after validation completes  
 
 On success:
 
@@ -365,13 +349,14 @@ On success:
 On failure:
 
 - No mutation  
-- Deterministic error code  
+- Ordered errors returned  
+- primary_error_code derived from first error entry  
 
 Acceptance is atomic.
 
 Crash before commit → no resolution and no receipt.
 
-Acceptance is prohibited in degraded mode.
+Acceptance prohibited in degraded mode.
 
 ---
 
@@ -386,7 +371,10 @@ Acceptance is prohibited in degraded mode.
 
 All read-only.
 
-Deterministic ordering required.
+Must:
+
+- Return deterministic ordering  
+- Not depend on storage iteration order  
 
 Receipt absence must fail deterministically when explicitly requested.
 
@@ -448,17 +436,17 @@ Degraded mode must not:
 
 Blocking is engine-detected.
 
-Evaluation may report blocking.
+Evaluation may report blocking via ordered error entries with block_type.
 
 Only lifecycle or acceptance operations may change blocking state.
 
-Area-wide BLOCK_PERMANENT enforcement applies during acceptance attempts.
+Area-wide BLOCK_PERMANENT enforcement applies during acceptance attempts after full validation pass.
 
 ---
 
 # 10. Determinism Guarantees
 
-- Identical inputs → identical EvaluationReports  
+- Identical inputs → identical ordered `errors` list  
 - Acceptance independent of prior evaluation  
 - No timestamp-based precedence  
 - No UUID-time precedence  
@@ -466,6 +454,7 @@ Area-wide BLOCK_PERMANENT enforcement applies during acceptance attempts.
 - No implicit behavior  
 - No participant_id reuse  
 - No silent participant persistence across resume  
+- Canonical EvaluationReport serialization guaranteed per ENG-ERROR  
 
 ---
 
@@ -481,7 +470,7 @@ Area-wide BLOCK_PERMANENT enforcement applies during acceptance attempts.
 - Acceptance atomic  
 - Degraded mode strictly read-only  
 - DAG export deterministic  
-- All error responses structured and stable  
+- All error responses structured, ordered, and stable  
 
 ---
 
@@ -492,9 +481,13 @@ The Engine is a deterministic legitimacy compiler.
 Evaluation inspects.  
 Acceptance commits.  
 Supersession evolves governance.  
-Participant epochs bound presence in time.  
+Participant epochs bind presence in time.  
 Receipts freeze closure.  
 Rehydration defines the universe.  
+
+All validation is full-pass.  
+All violations are accumulated.  
+All results are ordered and canonical.  
 
 Everything explicit.  
 Everything deterministic.  
