@@ -1,5 +1,5 @@
-# ENG-CORE-PURITY — Engine Isolation & Determinism Principles
-Status: FROZEN (v3 – Cross-Area Opacity Doctrine Added)
+# ENG-CORE-PURITY — Engine Isolation, Determinism & Resource Envelope Principles
+Status: FROZEN (v4 – Resource Envelope Doctrine Added)
 Applies to: Engine Core (V1/V2+)
 Scope: Constitutional Engine Guarantees
 
@@ -7,9 +7,9 @@ Scope: Constitutional Engine Guarantees
 
 # 1. Purpose
 
-This document defines the isolation, identity, locality, and determinism principles of the Engine Core.
+This document defines the isolation, identity, locality, determinism, and resource-boundary principles of the Engine Core.
 
-It establishes what the engine is allowed to depend on, and what it must never depend on.
+It establishes what the engine is allowed to depend on, what it must never depend on, and the limits of its determinism guarantees.
 
 This specification is constitutional.
 
@@ -191,13 +191,6 @@ Cross-area references:
 - Do not affect governance slot evaluation.
 - Do not affect restore validation.
 
-The Engine must not:
-
-- Require the referenced Area to exist.
-- Fail restore due to unresolved cross-area references.
-- Treat missing external targets as ORPHAN or MISSING_REFERENCE.
-- Attempt to update or canonicalize labels.
-
 Deletion or absence of a referenced external Area or Resolution must not alter:
 
 - Session state.
@@ -239,7 +232,7 @@ No behavior may depend on:
 
 Fail if:
 
-- Two independent implementations produce different results from identical inputs.
+- Two independent implementations produce different logical results from identical inputs within sufficient resource bounds.
 
 ---
 
@@ -261,7 +254,7 @@ Evaluation APIs (e.g., evaluate_session):
 
 Evaluation must not:
 
-- Cause BLOCK_TEMPORARY or BLOCK_PERMANENT transitions.
+- Cause BLOCK transitions.
 - Recompute and persist derived state.
 - Modify participant or candidate sets.
 
@@ -282,20 +275,102 @@ Given identical:
 - Session state
 - Authority and Scope state
 
-Repeated evaluation calls must produce identical EvaluationReports (except non-semantic diagnostics).
+Repeated evaluation calls must produce identical EvaluationReports (excluding informational diagnostics).
 
 Acceptance must independently validate all invariants without reliance on prior evaluation.
 
 Fail if:
 
-- Evaluation changes output across repeated identical calls.
+- Evaluation output changes across repeated identical calls.
 - Acceptance correctness depends on prior evaluation invocation.
 
 ---
 
-# 10. Legitimacy Boundary
+# 10. Resource Envelope Doctrine
 
-## ENG-CORE-11 — Legitimacy Is Structural and Local
+## ENG-CORE-11 — Logical Determinism Within Resource Envelope
+
+The Engine guarantees logical determinism within a sufficient resource envelope.
+
+Logical determinism means:
+
+Given identical:
+
+- Domain objects
+- Structural references
+- Governance state
+
+The Engine produces identical:
+
+- EvaluationReports
+- State transitions
+- Receipts
+- Supersession effects
+
+This guarantee applies only when sufficient computational resources are available.
+
+The Engine does not guarantee:
+
+- Liveness under arbitrary memory constraints
+- Success under arbitrary graph size
+- Completion under arbitrary CPU limits
+
+Resource exhaustion is outside the logical determinism model.
+
+---
+
+## ENG-CORE-12 — Atomic Failure Under Resource Exhaustion
+
+If resource exhaustion occurs (e.g., memory exhaustion, stack overflow, allocation failure):
+
+The Engine must:
+
+- Fail explicitly.
+- Abort the current operation atomically.
+- Leave all domain state unchanged.
+- Emit no partial receipts.
+- Emit no partial state transitions.
+
+The Engine must not:
+
+- Partially mutate state.
+- Emit partially constructed receipts.
+- Persist partially derived ACTIVE sets.
+- Silently truncate graphs.
+- Succeed with incomplete validation.
+
+Acceptance, rehydration, and receipt emission must be all-or-nothing operations.
+
+Fail if:
+
+- Resource exhaustion leaves structural state altered.
+- Partial legitimacy artifacts are observable.
+- Behavior differs due to partial mutation.
+
+---
+
+## ENG-CORE-13 — Resource Limits Are Implementation-Defined
+
+The specification does not define:
+
+- Maximum graph size
+- Maximum session count
+- Maximum receipt size
+- Maximum candidate count
+- Memory ceilings
+- CPU ceilings
+
+These are implementation-defined.
+
+However:
+
+Given identical inputs and identical resource limits, compliant implementations must exhibit identical logical behavior.
+
+---
+
+# 11. Legitimacy Boundary
+
+## ENG-CORE-14 — Legitimacy Is Structural and Local
 
 Legitimacy is created only through:
 
@@ -312,6 +387,7 @@ Legitimacy is not created by:
 - Timestamps
 - Actor identity
 - Cross-area references
+- Resource conditions
 
 Fail if:
 
@@ -320,10 +396,11 @@ Fail if:
 - Audit substitutes for governance.
 - Persistence implies authority.
 - External Areas influence legitimacy.
+- Resource pressure alters legitimacy outcome.
 
 ---
 
-# 11. Non-Goals
+# 12. Non-Goals
 
 The Engine is not:
 
@@ -333,14 +410,15 @@ The Engine is not:
 - A permission system
 - A distributed consensus protocol
 - A cross-area integrity validator
+- A real-time system with guaranteed liveness
 
 The Engine is:
 
-A deterministic, Area-local legitimacy evaluator.
+A deterministic, Area-local legitimacy evaluator operating within a resource envelope.
 
 ---
 
-# 12. Mental Model
+# 13. Mental Model
 
 - Storage remembers.
 - Audit records.
@@ -349,19 +427,21 @@ A deterministic, Area-local legitimacy evaluator.
 - Acceptance commits.
 - Supersession evolves governance.
 - Areas are sovereign.
+- Resources bound execution, not legitimacy.
 
 The Engine is a legitimacy compiler.
 
 Evaluation is simulation.
 Acceptance is transaction.
 Cross-area references are context only.
+Resource exhaustion aborts — it never mutates.
 
 ---
 
-# 13. Constitutional Status
+# 14. Constitutional Status
 
-This document defines the isolation and locality boundary of the Engine Core.
+This document defines the isolation, locality, determinism, and resource boundary of the Engine Core.
 
-All other specifications (ENG-DOMAIN, ENG-DECISION, ENG-REVIEW-RETIRED, ENG-SUPERSESSION, ENG-AUD, ENG-API, ENG-INTEGRITY) must conform to these principles.
+All other specifications (ENG-DOMAIN, ENG-SESSION, ENG-RECEIPT, ENG-AUD, ENG-API, ENG-INTEGRITY, ENG-ERROR) must conform to these principles.
 
 Violation of these principles constitutes a critical constitutional failure.

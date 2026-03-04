@@ -1,6 +1,6 @@
 # ENG-INTEGRITY  
-Engine Integrity & Runtime Guarantees  
-Status: FROZEN (v11 – Participant Epoch Invariants Integrated)  
+Engine Integrity, Runtime & Resource Guarantees  
+Status: FROZEN (v12 – Resource Exhaustion & Atomic Failure Integrated)  
 Applies to: Engine Core (V1/V2+)  
 
 ---
@@ -22,15 +22,16 @@ It governs:
 - Participant epoch integrity invariants  
 - Fatal vs degraded failure semantics  
 - Atomic commit semantics  
+- Resource exhaustion semantics  
 - Legitimacy compiler doctrine  
 
 It does **not** define:
 
-- Session mechanics (ENG-DECISION)  
+- Session mechanics (ENG-SESSION)  
 - Supersession graph structure (ENG-SUPERSESSION)  
 - Object schemas (ENG-DOMAIN)  
 
-This specification defines halting conditions, runtime enforcement behavior, and the limits of degraded operation.
+This specification defines halting conditions, runtime enforcement behavior, and the limits of degraded and resource-constrained operation.
 
 ---
 
@@ -58,7 +59,7 @@ Legitimacy is:
 - Strictly Area-local  
 
 If structural integrity of required domain objects cannot be proven,
-the Engine must halt or enter degraded read-only mode (as strictly defined below).
+the Engine must halt or enter degraded read-only mode (strictly defined below).
 
 Convenience never overrides legitimacy invariants.
 
@@ -78,13 +79,12 @@ All legitimacy derivation requires:
 2. Single-Area structural validation  
 3. Deterministic reconstruction of supersession graph and governance state  
 
-There is no “import preview” mode.  
 There is no relaxed validation mode.  
-There is no parallel evaluation path.
+There is no parallel evaluation path.  
 
 If rehydration fails, legitimacy evaluation is not permitted.
 
-Any import, transformation, or normalization of external artifacts
+All import, transformation, normalization, or pre-validation of external artifacts
 is the responsibility of the host system and occurs strictly outside the Engine boundary.
 
 ---
@@ -138,7 +138,7 @@ On rehydration, the Engine must:
 - Validate participant epoch invariants  
 - Validate receipt integrity (if receipts provided)  
 
-Restore must be deterministic across implementations.
+Restore must be deterministic across implementations within a sufficient resource envelope.
 
 Cross-area references must never be traversed during restore.
 
@@ -276,7 +276,64 @@ If structural corruption is detected, degraded mode is not allowed — the Engin
 
 ---
 
-# 10. Fatal Structural Integrity Failure
+# 10. Resource Exhaustion & Atomic Failure
+
+## 10.1 Resource Envelope Assumption
+
+The Engine guarantees deterministic behavior within a sufficient resource envelope.
+
+The specification does not define:
+
+- Maximum graph size  
+- Maximum session count  
+- Maximum receipt size  
+- Memory ceilings  
+- CPU ceilings  
+
+Resource limits are implementation-defined.
+
+Logical determinism applies only when sufficient resources are available.
+
+---
+
+## 10.2 Atomic Failure Requirement
+
+If resource exhaustion occurs during:
+
+- Rehydration  
+- ACTIVE derivation  
+- Acceptance  
+- Receipt emission  
+- Supersession application  
+- Canonical serialization  
+- Hash computation  
+
+The Engine must:
+
+- Fail explicitly  
+- Abort the operation atomically  
+- Leave all structural domain objects unchanged  
+- Emit no partial receipts  
+- Emit no partial state transitions  
+
+The Engine must not:
+
+- Partially mutate domain state  
+- Partially emit legitimacy artifacts  
+- Silently truncate graph validation  
+- Succeed with incomplete validation  
+
+Resource exhaustion must never result in:
+
+- Divergent legitimacy state  
+- Partially applied acceptance  
+- Partially reconstructed supersession graph  
+
+If atomicity cannot be guaranteed, the Engine must halt.
+
+---
+
+# 11. Fatal Structural Integrity Failure
 
 The Engine must halt if any of the following occur:
 
@@ -290,7 +347,8 @@ The Engine must halt if any of the following occur:
 - Receipt hash mismatch  
 - Snapshot inconsistency (including participant epoch mismatch)  
 - participant_id reuse within a session  
-- Any invariant violation defined in ENG-DOMAIN, ENG-SUPERSESSION, or ENG-DECISION  
+- Any invariant violation defined in ENG-DOMAIN, ENG-SUPERSESSION, or ENG-SESSION  
+- Any resource exhaustion that leaves state partially mutated  
 
 Halt behavior:
 
@@ -303,7 +361,9 @@ No automatic repair permitted.
 
 ---
 
-# 11. Determinism Guarantee
+# 12. Determinism Guarantee
+
+Within the resource envelope:
 
 - Restore must be deterministic  
 - ACTIVE derivation must be deterministic  
@@ -314,11 +374,11 @@ No automatic repair permitted.
 - No ordering-based inference  
 - No cross-area influence  
 
-Identical inputs must produce identical runtime state across implementations.
+Identical inputs and identical resource limits must produce identical runtime state across implementations.
 
 ---
 
-# 12. Engine Invariants
+# 13. Engine Invariants
 
 - Exactly one Area active at runtime  
 - No foreign DAG evaluation  
@@ -331,14 +391,18 @@ Identical inputs must produce identical runtime state across implementations.
 - Supersession strictly Area-local  
 - Participant epochs strictly enforced  
 - Determinism mandatory  
+- Resource failure atomic  
 - Halt preferred to ambiguity  
 
 ---
 
-# 13. Compiler Halt Principle
+# 14. Compiler Halt Principle
 
 If legitimacy cannot be mechanically proven from structural domain objects,
 the Engine must prefer halt over ambiguity.
 
+If atomic safety cannot be guaranteed under resource exhaustion,
+the Engine must prefer halt over partial mutation.
+
 The Engine is not a repair tool.  
-It is a deterministic legitimacy compiler.
+It is a deterministic legitimacy compiler operating within a resource envelope.
