@@ -1,7 +1,7 @@
 # ENG-INTEGRITY  
-Engine Integrity, Runtime & Resource Guarantees  
-Status: FROZEN (v12 – Resource Exhaustion & Atomic Failure Integrated)  
-Applies to: Engine Core (V1/V2+)  
+Engine Integrity, Runtime, Resource & Compatibility Guarantees  
+Status: FROZEN (v13 – Schema Compatibility & Version Enforcement Integrated)  
+Applies to: Engine Core (V1/V2+)
 
 ---
 
@@ -23,6 +23,7 @@ It governs:
 - Fatal vs degraded failure semantics  
 - Atomic commit semantics  
 - Resource exhaustion semantics  
+- Schema compatibility enforcement  
 - Legitimacy compiler doctrine  
 
 It does **not** define:
@@ -31,7 +32,7 @@ It does **not** define:
 - Supersession graph structure (ENG-SUPERSESSION)  
 - Object schemas (ENG-DOMAIN)  
 
-This specification defines halting conditions, runtime enforcement behavior, and the limits of degraded and resource-constrained operation.
+This specification defines halting conditions, compatibility enforcement, runtime guarantees, and the limits of degraded and resource-constrained operation.
 
 ---
 
@@ -58,14 +59,86 @@ Legitimacy is:
 - Mechanically reproducible  
 - Strictly Area-local  
 
-If structural integrity of required domain objects cannot be proven,
+If structural integrity or schema compatibility cannot be proven,
 the Engine must halt or enter degraded read-only mode (strictly defined below).
 
 Convenience never overrides legitimacy invariants.
 
 ---
 
-# 3. No Foreign DAG Evaluation
+# 3. Schema Compatibility Enforcement
+
+Schema compatibility is enforced during rehydration.
+
+## 3.1 Major Version Enforcement
+
+If any structural domain object contains a `schema_version`
+whose **major version** exceeds the Engine’s supported major version:
+
+- Rehydration must fail deterministically.
+- Error classification must be `UNSUPPORTED_SCHEMA_VERSION`.
+- Degraded mode is not permitted.
+
+Major version mismatches are fatal because structural semantics may differ.
+
+---
+
+## 3.2 Unknown Enum Handling
+
+If any structural enum field contains an unknown value:
+
+- Rehydration must fail deterministically.
+- Error classification must be `UNSUPPORTED_SCHEMA_VERSION`.
+- Degraded mode is not permitted.
+
+Unknown enum values must never:
+
+- Be ignored  
+- Be coerced  
+- Be mapped to defaults  
+- Be treated as informational  
+
+Enums are structural.
+
+---
+
+## 3.3 Unknown Field Handling
+
+During rehydration:
+
+- Unknown structural fields → `UNSUPPORTED_SCHEMA_VERSION`
+- Unknown informational fields → ignored
+
+Unknown informational fields must:
+
+- Not participate in canonical hashing  
+- Not affect legitimacy  
+- Not affect restore validation  
+- Not alter ACTIVE derivation  
+
+Canonical reconstruction must include only recognized structural fields.
+
+If structural/informational classification cannot be determined deterministically,
+restore must fail.
+
+---
+
+## 3.4 Minor Version Forward Compatibility
+
+Minor version increments must be strictly additive.
+
+If a domain object’s minor version exceeds the Engine’s supported minor version:
+
+- Rehydration may proceed only if all new fields are informational.
+- If new structural meaning is detected, restore must fail.
+
+Enum expansion requires a major version bump.
+
+Structural interpretation must never be forward-inferred.
+
+---
+
+# 4. No Foreign DAG Evaluation
 
 The Engine exposes no API for:
 
@@ -76,7 +149,7 @@ The Engine exposes no API for:
 All legitimacy derivation requires:
 
 1. Successful `rehydrate_engine(domain_graph)`  
-2. Single-Area structural validation  
+2. Single-Area structural and schema validation  
 3. Deterministic reconstruction of supersession graph and governance state  
 
 There is no relaxed validation mode.  
@@ -89,9 +162,9 @@ is the responsibility of the host system and occurs strictly outside the Engine 
 
 ---
 
-# 4. Single-Area Runtime Enforcement
+# 5. Single-Area Runtime Enforcement
 
-## 4.1 Single-Area Initialization Rule
+## 5.1 Single-Area Initialization Rule
 
 At any moment, an Engine instance must contain exactly one active Area.
 
@@ -106,7 +179,7 @@ If multiple structural `area_id` values are detected:
 - Initialization must fail with StructuralIntegrityFailure.  
 - Engine must halt.
 
-## 4.2 Rehydration Replacement Rule
+## 5.2 Rehydration Replacement Rule
 
 Calling `rehydrate_engine`:
 
@@ -124,11 +197,12 @@ Area switching is exclusively a host responsibility.
 
 ---
 
-# 5. Deterministic Restore
+# 6. Deterministic Restore
 
 On rehydration, the Engine must:
 
 - Load all provided structural domain objects  
+- Validate schema compatibility  
 - Verify single-area consistency  
 - Reconstruct Area-local supersession graph  
 - Validate acyclicity  
@@ -147,9 +221,9 @@ initialization must fail.
 
 ---
 
-# 6. Structural vs Informational References
+# 7. Structural vs Informational References
 
-## 6.1 Structural References
+## 7.1 Structural References
 
 Structural references:
 
@@ -168,7 +242,7 @@ Missing structural references → StructuralIntegrityFailure.
 
 Cross-area structural references are prohibited.
 
-## 6.2 Informational Cross-Area References
+## 7.2 Informational Cross-Area References
 
 Cross-area references:
 
@@ -182,46 +256,23 @@ They are excluded from structural integrity checks.
 
 ---
 
-# 7. Participant Epoch Integrity Invariants
+# 8. Participant Epoch Integrity Invariants
 
 Participant identity is session-scoped and epoch-based.
 
 The following invariants are structural and must be validated during restore:
 
-1. **No participant_id reuse within a Session**
+1. No `participant_id` reuse within a Session.  
+2. Snapshot participant IDs must exactly match final active epoch set at acceptance.  
+3. No historical epoch merging permitted.  
 
-   - A `participant_id` must appear at most once within a Session’s lifecycle.  
-   - A `participant_id` must never be reassigned to represent a different participation epoch.  
-   - Duplicate or conflicting reuse → StructuralIntegrityFailure.
-
-2. **Snapshot participant IDs must match session state at acceptance**
-
-   For any ACCEPTED session:
-
-   - The `participant_snapshot` recorded in the receipt must exactly match  
-     the final active participant epoch set at the moment of acceptance.  
-   - No missing participant_id values.  
-   - No additional participant_id values.  
-   - No rewritten or merged epochs.  
-
-   Any mismatch between:
-
-   - Frozen session state  
-   - Resolution snapshot  
-   - Receipt participant_snapshot  
-
-   → StructuralIntegrityFailure.
-
-3. **No historical epoch merging**
-
-   - Participation epochs terminated by resume or removal must not reappear.  
-   - Receipt snapshots must reference only the final epoch set.  
+Any violation → StructuralIntegrityFailure.
 
 These invariants ensure deterministic reproduction of session state and receipt artifacts.
 
 ---
 
-# 8. Receipt Integrity Rules
+# 9. Receipt Integrity Rules
 
 Receipts are integrity artifacts.
 
@@ -234,28 +285,29 @@ Receipt rules:
 
 - Missing receipts do not invalidate structural legitimacy  
 - Missing receipts prevent future acceptance operations  
-- Orphaned receipts (no matching session or resolution) → StructuralIntegrityFailure  
+- Orphaned receipts → StructuralIntegrityFailure  
 - Receipt content hash mismatch → StructuralIntegrityFailure  
 - Snapshot mismatch → StructuralIntegrityFailure  
 - Receipts are immutable  
 
-Receipt verification occurs only after successful structural restore.
+Receipt verification occurs only after successful structural and schema restore.
 
 Receipt failure must never be downgraded to degraded mode.
 
 ---
 
-# 9. Degraded Read-Only Mode
+# 10. Degraded Read-Only Mode
 
 Degraded mode exists solely for controlled recovery scenarios.
 
 It may activate only if:
 
 - Structural domain objects are internally consistent  
+- Schema compatibility is satisfied  
 - Supersession graph is reconstructable  
 - Governance slots are derivable  
 - No fatal structural invariant is violated  
-- Acceptance safety cannot be guaranteed due to missing non-fatal artifacts (e.g., missing receipts)
+- Acceptance safety cannot be guaranteed due to missing non-fatal artifacts  
 
 In degraded mode:
 
@@ -268,17 +320,18 @@ In degraded mode:
 Degraded mode must never:
 
 - Mask structural corruption  
+- Mask schema incompatibility  
 - Allow acceptance  
 - Allow governance mutation  
-- Allow partial legitimacy compilation  
 
-If structural corruption is detected, degraded mode is not allowed — the Engine must halt.
+If structural corruption or schema incompatibility is detected,
+the Engine must halt.
 
 ---
 
-# 10. Resource Exhaustion & Atomic Failure
+# 11. Resource Exhaustion & Atomic Failure
 
-## 10.1 Resource Envelope Assumption
+## 11.1 Resource Envelope Assumption
 
 The Engine guarantees deterministic behavior within a sufficient resource envelope.
 
@@ -296,7 +349,7 @@ Logical determinism applies only when sufficient resources are available.
 
 ---
 
-## 10.2 Atomic Failure Requirement
+## 11.2 Atomic Failure Requirement
 
 If resource exhaustion occurs during:
 
@@ -316,13 +369,6 @@ The Engine must:
 - Emit no partial receipts  
 - Emit no partial state transitions  
 
-The Engine must not:
-
-- Partially mutate domain state  
-- Partially emit legitimacy artifacts  
-- Silently truncate graph validation  
-- Succeed with incomplete validation  
-
 Resource exhaustion must never result in:
 
 - Divergent legitimacy state  
@@ -333,7 +379,7 @@ If atomicity cannot be guaranteed, the Engine must halt.
 
 ---
 
-# 11. Fatal Structural Integrity Failure
+# 12. Fatal Structural Integrity Failure
 
 The Engine must halt if any of the following occur:
 
@@ -342,10 +388,12 @@ The Engine must halt if any of the following occur:
 - Cross-area structural supersession  
 - Invalid structural references  
 - Governance slot multiplicity or emptiness  
-- Schema incompatibility preventing deterministic reconstruction  
+- Unsupported schema version  
+- Unknown structural enum value  
+- Unknown structural field  
 - Orphaned receipts  
 - Receipt hash mismatch  
-- Snapshot inconsistency (including participant epoch mismatch)  
+- Snapshot inconsistency  
 - participant_id reuse within a session  
 - Any invariant violation defined in ENG-DOMAIN, ENG-SUPERSESSION, or ENG-SESSION  
 - Any resource exhaustion that leaves state partially mutated  
@@ -361,30 +409,32 @@ No automatic repair permitted.
 
 ---
 
-# 12. Determinism Guarantee
+# 13. Determinism Guarantee
 
-Within the resource envelope:
+Within the resource envelope and schema compatibility boundary:
 
 - Restore must be deterministic  
 - ACTIVE derivation must be deterministic  
 - Governance slot evaluation must be deterministic  
 - Participant epoch validation deterministic  
+- Schema enforcement deterministic  
 - No timestamp-based precedence  
 - No UUID-time precedence  
 - No ordering-based inference  
 - No cross-area influence  
 
-Identical inputs and identical resource limits must produce identical runtime state across implementations.
+Identical inputs, identical schema support, and identical resource limits must produce identical runtime state across implementations.
 
 ---
 
-# 13. Engine Invariants
+# 14. Engine Invariants
 
 - Exactly one Area active at runtime  
 - No foreign DAG evaluation  
 - No relaxed import mode  
 - No partial restore mode  
 - Legitimacy only compiled after successful rehydration  
+- Schema compatibility enforced before legitimacy compilation  
 - Structural references must resolve  
 - Cross-area references are non-structural  
 - Governance slots exclusive  
@@ -396,13 +446,13 @@ Identical inputs and identical resource limits must produce identical runtime st
 
 ---
 
-# 14. Compiler Halt Principle
+# 15. Compiler Halt Principle
 
-If legitimacy cannot be mechanically proven from structural domain objects,
+If legitimacy or schema compatibility cannot be mechanically proven from structural domain objects,
 the Engine must prefer halt over ambiguity.
 
 If atomic safety cannot be guaranteed under resource exhaustion,
 the Engine must prefer halt over partial mutation.
 
 The Engine is not a repair tool.  
-It is a deterministic legitimacy compiler operating within a resource envelope.
+It is a deterministic legitimacy compiler operating within a schema boundary and resource envelope.

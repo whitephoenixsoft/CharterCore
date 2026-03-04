@@ -1,6 +1,6 @@
-# ENG-DOMAIN — Domain Object Schema (Rewritten v9)  
+# ENG-DOMAIN — Domain Object Schema (Rewritten v10)  
 Canonical Engine Object Definitions  
-Status: FROZEN (v9 – Participant Epoch Model Integrated)  
+Status: FROZEN (v10 – Forward Compatibility & Schema Evolution Integrated)  
 Applies to: Engine Core (V1/V2+)
 
 ---
@@ -22,15 +22,17 @@ Goals:
 - Formalize Area-local structural boundaries  
 - Integrate receipt integrity and degraded mode semantics  
 - Formalize session-scoped Participant epoch identity  
+- Define forward and backward compatibility guarantees  
 
 Behavioral rules are defined in:
 
-- ENG-DECISION  
-- ENG-REVIEW-RETIRED  
+- ENG-SESSION  
 - ENG-SUPERSESSION  
 - ENG-API  
 - ENG-INTEGRITY  
 - ENG-ERROR  
+- ENG-RECEIPT  
+- ENG-AUD  
 
 This document defines structure only.
 
@@ -43,11 +45,11 @@ This document defines structure only.
 2.2 All objects must use canonical JSON encoding:
 
 - Deterministic field ordering  
-- Deterministic enum values  
+- Deterministic enum string values  
 - No implicit defaults  
 - Nullability explicit  
 
-2.3 Optional annotations and informational references may exist but must not affect object identity or hash unless explicitly declared.
+2.3 Optional annotations and informational references may exist but must not affect structural legitimacy unless explicitly declared structural.
 
 2.4 Lifecycle state must be represented as a single enum field.
 
@@ -59,7 +61,7 @@ This document defines structure only.
 - Caller-provided IDs prohibited  
 - UUID timestamp components must not influence legitimacy, precedence, or restore  
 
-2.7 area_id is externally provided and opaque:
+2.7 `area_id` is externally provided and opaque:
 
 - Used solely for scoping evaluation  
 - Does not imply multi-Area hosting  
@@ -67,27 +69,135 @@ This document defines structure only.
 
 ---
 
-# 3. Single-Area Structural Model
+# 3. Schema Versioning & Compatibility Doctrine
+
+## 3.1 Schema Version Field
+
+Every domain object must include:
+
+- `schema_version` (string, semantic version format recommended)
+
+Schema version applies to structural interpretation.
+
+---
+
+## 3.2 Major Version Compatibility
+
+If an Engine encounters a domain object whose **major schema version** exceeds the Engine’s supported major version:
+
+- Rehydration must fail deterministically.
+- Error classification must be `UNSUPPORTED_SCHEMA_VERSION`.
+- Degraded mode is not permitted.
+
+Major version increments may:
+
+- Add new enum values
+- Change structural meaning
+- Add or remove structural fields
+- Change canonicalization rules
+
+Major version mismatches are fatal to restore.
+
+---
+
+## 3.3 Minor Version Compatibility (Forward-Compatible Additive Rule)
+
+Minor version increments must be strictly additive.
+
+Permitted in minor versions:
+
+- Addition of informational fields  
+- Addition of optional non-structural metadata  
+- Addition of new annotation types  
+
+Minor versions must not:
+
+- Introduce new enum values that affect structural behavior  
+- Change canonical ordering rules  
+- Change structural reference semantics  
+- Change legitimacy computation  
+- Change supersession interpretation  
+
+Enum expansion requires a **major version bump**.
+
+---
+
+## 3.4 Unknown Enum Handling
+
+If the Engine encounters an unknown enum value in any structural field:
+
+- Rehydration must fail deterministically.
+- Error classification must be `UNSUPPORTED_SCHEMA_VERSION`.
+
+Unknown enum values must never:
+
+- Be ignored  
+- Be coerced to defaults  
+- Be treated as informational  
+
+Enums are structural.
+
+---
+
+## 3.5 Unknown Field Handling
+
+Unknown fields are handled as follows:
+
+- Unknown structural fields → `UNSUPPORTED_SCHEMA_VERSION`
+- Unknown informational fields → ignored
+
+A field is structural if:
+
+- It affects legitimacy  
+- It affects ACTIVE derivation  
+- It affects supersession  
+- It affects governance slot evaluation  
+- It affects canonical receipt snapshot  
+
+Unknown informational fields:
+
+- Must not participate in canonical hashing  
+- Must not affect legitimacy  
+- Must not affect restore validation  
+- Must be safely ignored  
+
+Canonical serialization and hashing must include **only recognized structural fields**.
+
+---
+
+## 3.6 Backward Compatibility Guarantee
+
+An Engine must:
+
+- Successfully rehydrate objects from earlier minor versions of the same major version.
+- Interpret missing fields as invalid unless explicitly defined as optional in that version.
+
+No implicit defaults are permitted.
+
+Backward compatibility must never require inference.
+
+---
+
+# 4. Single-Area Structural Model
 
 The Engine operates on exactly one Area at a time.
 
 Implications:
 
-- Domain graph must contain objects from exactly one area_id  
+- Domain graph must contain objects from exactly one `area_id`  
 - Mixed-area graphs are invalid and trigger StructuralIntegrityFailure  
 - Governance slot evaluation is Area-local  
 - Supersession reconstruction is Area-local  
 
-Cross-area references are informational only and do not constitute multi-Area hosting.  
-Multi-Area orchestration is the host’s responsibility.
+Cross-area references are informational only and do not constitute multi-Area hosting.
 
-Degraded/read-only mode semantics are defined in ENG-INTEGRITY.
+Multi-Area orchestration is the host’s responsibility.
 
 ---
 
-# 4. Governance Slot Model
+# 5. Governance Slot Model
 
-## 4.1 Exclusive Governance Slots
+## 5.1 Exclusive Governance Slots
 
 Each Area contains two exclusive legitimacy slots:
 
@@ -103,19 +213,19 @@ Invariants:
 
 Violations:
 
-- Multiple ACTIVE objects → structural integrity failure  
-- Empty required slot after initialization → structural integrity failure  
+- Multiple ACTIVE objects → StructuralIntegrityFailure  
+- Empty required slot after initialization → StructuralIntegrityFailure  
 
 ---
 
-# 5. Structural vs Informational References
+# 6. Structural vs Informational References
 
-## 5.1 Structural References
+## 6.1 Structural References
 
 Structural references affect legitimacy:
 
 - Must resolve during restore  
-- Must reference objects within the same area_id  
+- Must reference objects within the same `area_id`  
 
 Permitted:
 
@@ -127,7 +237,9 @@ Permitted:
 
 Missing references trigger structural failure.
 
-## 5.2 Informational Cross-Area References
+Cross-area structural references are prohibited.
+
+## 6.2 Informational Cross-Area References
 
 Cross-area references:
 
@@ -140,107 +252,106 @@ They are immutable and treated as opaque metadata.
 
 ---
 
-# 6. CrossAreaReference Schema
+# 7. CrossAreaReference Schema
 
 A CrossAreaReference contains:
 
-- external_area_id (opaque UUIDv7 recommended)  
-- external_area_label (snapshot string)  
+- external_area_id  
+- external_area_label  
 - external_resolution_id (nullable)  
 - external_resolution_label (nullable)  
-- created_at (timestamp)  
-- schema_version (string)  
+- created_at  
+- schema_version  
 
 Rules:
 
 - Engine does not dereference or update external identifiers  
 - Absence of external references does not affect evaluation  
 - Labels are historical snapshots and are legitimacy-bearing within the referencing object  
+- Unknown fields in CrossAreaReference follow minor-version additive rules  
 
 ---
 
-# 7. Participant Schema
+# 8. Participant Schema
 
 A Participant represents a session-scoped participation epoch.
 
-Participant objects are embedded within a Session.
-
 A Participant contains:
 
-- participant_id (UUIDv7, engine-generated)  
+- participant_id (UUIDv7)  
 - session_id  
 - area_id  
-- display_name (string, canonical)  
+- display_name  
 - created_at  
 - schema_version  
 
 Structural Rules:
 
-- participant_id is unique within a Session.  
-- participant_id must never be reused within the same Session.  
-- participant_id represents a continuous participation epoch.  
-- Removal of a Participant terminates that epoch.  
-- Re-adding a participant — even with identical display_name — must generate a new participant_id.  
+- participant_id is unique within a Session  
+- participant_id must never be reused within the same Session  
+- participant_id represents a continuous participation epoch  
+- Removal terminates the epoch  
+- Re-adding generates a new participant_id  
 
 Display Name Rules:
 
-- display_name is legitimacy-bearing.  
-- display_name must be unique among active Participants in a Session.  
-- display_name is included in canonical hashing.  
-- display_name is frozen in Resolution snapshots upon acceptance.  
+- display_name is legitimacy-bearing  
+- display_name must be unique among active Participants  
+- display_name participates in canonical hashing  
+- Frozen in Resolution snapshots upon acceptance  
 
 Participant identity is strictly session-scoped.
 
-The Engine does not infer identity continuity across Sessions.
-
-Host-level participant grouping or real-world identity mapping is outside the Engine boundary.
+Host-level grouping is outside Engine boundary.
 
 ---
 
-# 8. Session Schema
+# 9. Session Schema
 
 A Session object contains:
 
-- session_id (UUIDv7)  
+- session_id  
 - area_id  
 - session_type (AUTHORITY | SCOPE | REGULAR)  
-- authority_id (Resolution reference)  
-- scope_id (Scope reference, nullable before governance initialization)  
+- authority_id  
+- scope_id (nullable before initialization)  
 - phase (SessionPhase enum)  
 - state (SessionState enum)  
-- participants (set of active Participant objects)  
-- candidates (Candidate objects)  
-- constraints (Constraint objects)  
-- votes (Vote objects referencing participant_id)  
-- receipts (immutable list, one per CLOSED or ACCEPTED session)  
+- participants  
+- candidates  
+- constraints  
+- votes  
+- receipts  
 - cross_area_references (optional)  
 - annotations (optional)  
-- created_at / updated_at  
+- created_at  
+- updated_at  
 - schema_version  
 
 Constraints:
 
 - Structural references must share the Session’s area_id  
 - Active Participants must have unique display_name values  
-- Votes must reference existing active participant_id values  
-- Receipts must exist for CLOSED/ACCEPTED sessions and match canonical snapshot  
-- Cross-area references do not affect evaluation  
+- Votes must reference active participant_id values  
+- Receipts must exist for CLOSED/ACCEPTED sessions  
+- Unknown enum values → `UNSUPPORTED_SCHEMA_VERSION`  
+- Unknown structural fields → `UNSUPPORTED_SCHEMA_VERSION`  
 
 ---
 
-# 9. Resolution Schema
+# 10. Resolution Schema
 
 A Resolution object contains:
 
-- resolution_id (UUIDv7)  
+- resolution_id  
 - area_id  
 - originating_session_id  
 - authority_snapshot_id  
 - scope_snapshot_id  
-- participant_snapshot (set of Participant objects frozen at acceptance)  
-- candidate_snapshot (complete accepted candidate content)  
+- participant_snapshot  
+- candidate_snapshot  
 - state (ResolutionState enum)  
-- superseded_by (nullable, Resolution ID in same Area)  
+- superseded_by (nullable)  
 - cross_area_references (optional)  
 - created_at  
 - annotations (optional)  
@@ -248,69 +359,68 @@ A Resolution object contains:
 
 Constraints:
 
-- participant_snapshot must exactly match the active Participant epoch set at acceptance  
-- Snapshot participant_id values must not have been reused within the Session  
-- superseded_by must reference Resolution in same area_id  
-- Cross-area references are informational only  
+- participant_snapshot must exactly match active epoch set at acceptance  
+- Snapshot participant_id values must not have been reused  
+- superseded_by must reference same-area Resolution  
+- Unknown enum values → `UNSUPPORTED_SCHEMA_VERSION`  
 
 ---
 
-# 10. Supersession Encoding
+# 11. Supersession Encoding
 
-- Supersession represented via superseded_by reference  
+- Represented via `superseded_by`  
 - Explicit, immutable, Area-local  
-- Graph-altering for superseded object  
-- Occurs only via session acceptance  
+- Occurs only via acceptance  
 - Cross-area references must never participate  
+- Enum expansion requires major version bump  
 
 ---
 
-# 11. Receipt Integration
+# 12. Receipt Integration
 
-- Receipts are persistent, immutable integrity artifacts  
+- Receipts are immutable integrity artifacts  
 - One receipt per CLOSED or ACCEPTED session  
 - Must match deterministic canonical snapshot  
 - Regeneration prohibited  
-- Missing or mismatched receipts trigger restore halt (per ENG-INTEGRITY)  
+- Missing or mismatched receipts trigger restore halt  
 
-Receipt snapshot includes:
+Receipt canonicalization must include only recognized structural fields.
 
-- Frozen Participant objects  
-- Frozen candidate content  
-- Governance snapshot references  
+Unknown informational fields must be excluded from canonical hashing.
 
 ---
 
-# 12. Deterministic Encoding Requirements
+# 13. Deterministic Encoding Requirements
 
 - Field ordering deterministic  
 - Enum string values deterministic  
 - Set ordering lexicographically sorted by UUID  
-- Timestamps stable but not legitimacy-bearing  
+- Timestamps informational only  
 - UUID ordering must never affect legitimacy  
 - Canonical JSON serialization mandatory  
-- Cross-area references serialized deterministically but excluded from legitimacy evaluation  
+- Canonical hashing must include only recognized structural fields  
+- Unknown informational fields excluded from canonical hash  
 
 ---
 
-# 13. Engine Invariants
+# 14. Engine Invariants
 
-- Engine operates on exactly one Area at a time  
-- Domain graph must contain a single area_id  
-- Governance slots exclusive per Area  
-- Governance state derived, never stored  
-- Structural references must resolve and be Area-local  
-- Cross-area references never validated for existence  
-- All domain object IDs are engine-generated UUIDv7  
-- Participant identity is session-scoped and epoch-based  
-- participant_id must never be reused within a Session  
-- display_name must be unique among active Participants  
+- Exactly one Area active at runtime  
+- Domain graph contains a single `area_id`  
+- Governance slots exclusive  
+- Structural references resolve and are Area-local  
+- Cross-area references non-structural  
+- All domain IDs engine-generated UUIDv7  
+- Participant identity session-scoped and epoch-based  
+- participant_id never reused within Session  
+- display_name unique among active Participants  
 - Participant snapshots immutable once accepted  
-- Lifecycle represented by enums, never flags  
-- Receipts mandatory for CLOSED/ACCEPTED sessions  
-- BLOCK_PERMANENT explicit  
-- Supersession structurally explicit and Area-local  
+- Lifecycle represented by enums  
+- Unknown enum values → `UNSUPPORTED_SCHEMA_VERSION`  
+- Unknown structural fields → `UNSUPPORTED_SCHEMA_VERSION`  
+- Minor versions additive only  
+- Major version mismatch → restore failure  
 - Deterministic encoding mandatory  
-- Legitimacy never depends on timestamps, ordering, or cross-area state  
+- Legitimacy never depends on timestamps, ordering, cross-area state, or unknown fields  
 
 Violation of this schema breaks cross-system determinism and constitutes critical Engine failure.
