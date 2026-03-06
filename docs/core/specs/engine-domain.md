@@ -1,6 +1,7 @@
 # ENG-DOMAIN — Domain Object Schema
 Canonical Engine Object Definitions
-Status: FROZEN (v12 – Round Epoch Identity & Complete Structural Object Model)
+
+Status: FROZEN (v13 – Canonical Serialization Alignment & Round-State Clarification)  
 Applies to: Engine Core (V1/V2+)
 
 ---
@@ -37,6 +38,7 @@ Behavioral rules are defined in:
 - ENG-ERROR
 - ENG-RECEIPT
 - ENG-AUD
+- ENG-CANON
 
 This document defines structure only.
 
@@ -44,22 +46,58 @@ This document defines structure only.
 
 # 2. General Principles
 
-2.1 All persisted domain objects are immutable once written.
+## 2.1 Immutability
 
-2.2 All objects must use canonical JSON encoding:
+All persisted domain objects are immutable once written.
+
+Objects may only be replaced by new objects via engine-controlled lifecycle operations.
+
+---
+
+## 2.2 Canonical Serialization
+
+All objects must be serialized according to ENG-CANON.
+
+Requirements:
 
 - Deterministic field ordering
 - Deterministic enum string values
+- Canonical UTF-8 JSON encoding
 - No implicit defaults
 - Explicit nullability
 
-2.3 Optional annotations and informational references may exist but must not affect structural legitimacy unless explicitly declared structural.
+Canonical serialization is required for:
 
-2.4 Lifecycle state must be represented as a single enum field.
+- Receipt hashing
+- Deterministic restore validation
 
-2.5 Schema changes require explicit versioning.
+---
 
-2.6 All engine-generated identifiers must be UUIDv7.
+## 2.3 Informational vs Structural Data
+
+Optional annotations and informational references may exist but must not affect structural legitimacy unless explicitly declared structural.
+
+---
+
+## 2.4 Lifecycle State
+
+Lifecycle state must be represented as a single enum field.
+
+---
+
+## 2.5 Schema Versioning
+
+Every domain object must include:
+
+schema_version
+
+The schema version determines structural interpretation.
+
+---
+
+## 2.6 Identifier Generation
+
+All engine-generated identifiers must be UUIDv7.
 
 Rules:
 
@@ -67,11 +105,18 @@ Rules:
 - Caller-provided IDs prohibited
 - UUID timestamp components must not influence legitimacy, precedence, or restore
 
-2.7 area_id is externally provided and opaque:
+---
 
-- Used solely for scoping evaluation
-- Does not imply multi-Area hosting
-- Engine does not manage Area lifecycle
+## 2.7 Area Identity
+
+area_id is externally provided and opaque.
+
+The Engine:
+
+- does not manage Area lifecycle
+- does not interpret Area identity
+
+area_id is used solely for scoping evaluation.
 
 ---
 
@@ -79,11 +124,7 @@ Rules:
 
 ## 3.1 Schema Version Field
 
-Every domain object must include:
-
-schema_version
-
-The schema version determines structural interpretation.
+Every domain object must include schema_version.
 
 ---
 
@@ -213,7 +254,6 @@ Session → Authority Resolution
 Session → Scope Resolution  
 Resolution → originating Session  
 Resolution → superseded Resolution  
-Scope → superseded Scope  
 Receipt → Session  
 Receipt → Resolution (LEGITIMACY receipts only)
 
@@ -301,8 +341,8 @@ schema_version
 
 Rules:
 
-- candidate_id unique within its round
 - candidate belongs to exactly one round
+- candidate_id unique within the session
 - candidate_id never reused
 - candidate content immutable once VOTING begins
 
@@ -329,7 +369,6 @@ Rules:
 
 - Constraints belong to exactly one round
 - Constraints immutable after VOTING begins
-- Constraints affect acceptance eligibility only
 - Constraint evaluation defined in ENG-DECISION
 
 ---
@@ -356,8 +395,7 @@ Rules:
 - Vote references participant and candidate from same round
 - One vote per participant per candidate
 - Votes immutable once recorded
-
-Votes never cross round boundaries.
+- Votes never cross round boundaries
 
 ---
 
@@ -367,18 +405,26 @@ Fields:
 
 session_id  
 area_id  
-session_type (AUTHORITY | SCOPE | REGULAR)  
+session_type (AUTHORITY | SCOPE | REGULAR)
+
 authority_id  
-scope_id (nullable during bootstrap)  
+scope_id (nullable during bootstrap)
+
 phase (SessionPhase)  
-state (SessionState)  
+state (SessionState)
+
+round_index
+
 participants  
 candidates  
 constraints  
-votes  
-terminal_receipt_id (nullable)  
+votes
+
+terminal_receipt_id (nullable)
+
 cross_area_references (optional)  
-annotations (optional)  
+annotations (optional)
+
 created_at  
 updated_at  
 schema_version
@@ -391,9 +437,17 @@ ACCEPTED session → terminal_receipt_id references LEGITIMACY receipt
 
 CLOSED session → terminal_receipt_id references EXPLORATION receipt
 
+round_index represents the current active round.
+
+Collections contain objects belonging to the active round only.
+
+Historical rounds are preserved exclusively inside receipts.
+
 ---
 
 # 13. Resolution Schema
+
+Resolutions are minimal legitimacy artifacts.
 
 Fields:
 
@@ -402,9 +456,8 @@ area_id
 originating_session_id  
 authority_snapshot_id  
 scope_snapshot_id  
-participant_snapshot  
-candidate_snapshot  
-state (ResolutionState)  
+accepted_candidate_id  
+state (ACTIVE | SUPERSEDED)  
 superseded_by (nullable)  
 cross_area_references (optional)  
 created_at  
@@ -413,9 +466,13 @@ schema_version
 
 Rules:
 
-- participant_snapshot must match final round participant set
-- candidate_snapshot must match accepted candidate
-- supersession references must remain Area-local
+- Created only through session acceptance
+- Represents the accepted candidate
+- Supersession must remain Area-local
+
+Participant and vote history is not stored in the Resolution.
+
+That history exists only in the receipt.
 
 ---
 
@@ -457,7 +514,7 @@ EXPLORATION receipts:
 
 Round sequence must be contiguous.
 
-Receipt content_hash must match canonical serialization.
+Receipt content_hash must match canonical serialization defined in ENG-CANON.
 
 ---
 
@@ -474,7 +531,7 @@ vote_set
 
 Rules:
 
-- Sets represent full round state
+- Sets represent full structural state of that round
 - No diffs permitted
 - Ordering deterministic
 - Sets ordered lexicographically by UUID
@@ -498,7 +555,9 @@ Rules:
 
 # 17. Deterministic Encoding Requirements
 
-All canonical serialization must ensure:
+All canonical serialization must follow ENG-CANON.
+
+Requirements:
 
 - Deterministic field ordering
 - Deterministic enum values

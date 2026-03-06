@@ -1,9 +1,10 @@
 # ENG-SESSION — Session Lifecycle, Governance Enforcement & Receipt Emission Specification
-Status: FROZEN (v9 – Round-Scoped Identity & Deterministic Constraint Semantics Integrated)
-Applies to: Engine Core (V1/V2+)
-Scope: Session lifecycle, session classification, governance enforcement, legitimacy boundaries, deterministic acceptance, round segmentation, and receipt emission
 
-Authority: Subordinate to ENG-DOMAIN, ENG-DECISION, ENG-RECEIPT, ENG-INTEGRITY
+Status: FROZEN (v10 – Domain Model Alignment & Canonical Serialization Integration)  
+Applies to: Engine Core (V1/V2+)  
+Scope: Session lifecycle, governance enforcement, deterministic acceptance, round segmentation, and receipt emission
+
+Authority: Subordinate to ENG-DOMAIN, ENG-DECISION, ENG-RECEIPT, ENG-INTEGRITY, ENG-CANON
 
 ---
 
@@ -11,18 +12,18 @@ Authority: Subordinate to ENG-DOMAIN, ENG-DECISION, ENG-RECEIPT, ENG-INTEGRITY
 
 ## ENG-SESSION-01 — Sessions Are the Sole Legitimacy Mechanism
 
-Sessions are the only structure through which legitimacy may be created.
+Sessions are the only mechanism through which legitimacy may be created.
 
 All:
 
 - Resolution acceptance
-- Supersession
+- Resolution supersession
 - Authority evolution
 - Scope evolution
 
-must occur through a valid session.
+must occur through a valid session acceptance.
 
-Receipts formalize session closure but do not create legitimacy.
+Receipts formalize terminal closure but do not create legitimacy.
 
 Fail if:
 
@@ -63,12 +64,12 @@ Allowed only if:
 
 - No ACTIVE Authority exists  
   OR  
-- A current ACTIVE Authority exists and supersession rules apply
+- An ACTIVE Authority exists and supersession rules apply
 
 Fail if:
 
-- Multiple ACTIVE Authority exist
-- Parallel Authority attempted without supersession
+- Multiple ACTIVE Authorities exist
+- Parallel Authority creation attempted without supersession
 
 ---
 
@@ -81,7 +82,7 @@ Allowed only if:
 Fail if:
 
 - No ACTIVE Authority
-- Multiple ACTIVE Authority
+- Multiple ACTIVE Authorities
 
 ---
 
@@ -102,55 +103,63 @@ Fail if:
 
 # 3. Identity & Participation Epochs
 
-## ENG-SESSION-04 — Engine-Assigned Identity
+## ENG-SESSION-04 — Session Identity
 
-- Every session has a UUIDv7 `session_id`
+Every session has a UUIDv7 `session_id`.
+
+Rules:
+
 - Engine generates all session IDs
 - Identity immutable
+- Caller-provided IDs prohibited
 
-Fail if:
-
-- Caller-generated identity
-- Identity mutation
+Fail if identity is externally supplied or mutated.
 
 ---
 
 ## ENG-SESSION-04A — Participant Identity as Participation Epoch
 
-- Each `participant_id` represents a single participation epoch
+Each `participant_id` represents a single participation epoch.
+
+Rules:
+
 - Engine-generated UUIDv7
-- Never reused within a session lifecycle
-- Terminated explicitly (removal or resume reset)
+- Never reused within a session
+- Belongs to exactly one round
+- Terminated by removal or round reset
 
 Fail if:
 
 - Reuse occurs
 - Terminated epoch reactivated
-- Vote references non-active epoch
+- Vote references a participant from a different round
 
 ---
 
-## ENG-SESSION-04B — Candidate Identity as Round Epoch
+## ENG-SESSION-04B — Candidate Identity as Proposal Epoch
 
-Candidates represent proposal epochs scoped to a specific round.
+Candidates represent proposals introduced during a specific round.
 
-- Each `candidate_id` is engine-generated (UUIDv7)
-- Candidate IDs are unique within the round in which they are created
-- Candidate identity must not persist across rounds
+Rules:
+
+- Each `candidate_id` is engine-generated UUIDv7
+- candidate_id must be unique within the session
+- candidate belongs to exactly one round
+- candidate identity never reused across rounds
 
 On RESUME:
 
-- The candidate set is cleared
+- Candidate set is cleared
 - New candidates receive new candidate_id values
 
 Fail if:
 
-- candidate_id reused across rounds
-- vote references a candidate_id not present in the current round
+- candidate_id reused
+- vote references candidate from another round
 
 ---
 
-# 4. State & Phase Model
+# 4. Session State & Phase Model
 
 ## 4.1 SessionState
 
@@ -175,11 +184,19 @@ Exactly one of:
 
 Rules:
 
-- PRE_STANCE → no votes
-- VOTING → at least one vote or implicit Solo vote
-- TERMINAL → state ∈ {ACCEPTED, CLOSED}
+PRE_STANCE
 
-Fail if inconsistent.
+- No votes recorded
+
+VOTING
+
+- At least one vote exists
+
+TERMINAL
+
+- session_state ∈ {ACCEPTED, CLOSED}
+
+Fail if phase contradicts state or vote presence.
 
 ---
 
@@ -191,38 +208,39 @@ Sessions are segmented into deterministic rounds.
 
 A session begins with:
 
-- `round_index = 1`
+round_index = 1
 
 Round indices must:
 
 - Increase monotonically
-- Be contiguous
+- Remain contiguous
 - Never be renumbered
 
-Fail if round ordering becomes inconsistent.
+Fail if ordering becomes inconsistent.
 
 ---
 
 ## ENG-SESSION-05A — Round Creation Rule
 
-A new round is created **only** when a RESUME transition occurs.
+A new round is created only by a RESUME transition.
 
-RESUME is permitted only from:
+RESUME permitted only from:
 
 - PAUSED
 - BLOCK_TEMPORARY
 
 On RESUME:
 
-- `round_index` increments by 1
-- Participant set cleared
-- Candidate set cleared
-- Constraint set cleared
-- Vote set cleared
-- Phase resets to PRE_STANCE
-- Participation epochs reset
+- round_index increments
+- participant set cleared
+- candidate set cleared
+- constraint set cleared
+- vote set cleared
+- phase resets to PRE_STANCE
 
-No other transition may create a round.
+Session collections always represent the current active round only.
+
+Historical rounds exist only in the terminal receipt.
 
 Fail if:
 
@@ -231,97 +249,80 @@ Fail if:
 
 ---
 
-# 6. State Semantics
-
-State semantics remain deterministic and explicitly enforced by the engine.
-
----
-
-# 7. Valid State Transitions
-
-Only listed transitions permitted.
-
-Blocking transitions are engine-detected only.
-
-No implicit transitions permitted.
-
----
-
-# 8. Governance Context Freeze
+# 6. Governance Context Freeze
 
 ## ENG-SESSION-06 — Governance Snapshot
 
 At session creation:
 
-- ACTIVE Authority Resolution snapshotted
-- ACTIVE Scope Resolution snapshotted
+- ACTIVE Authority Resolution is snapshotted
+- ACTIVE Scope Resolution is snapshotted
 
-Immutable for session lifetime.
+These references remain immutable for the lifetime of the session.
 
-Fail if governance renegotiated mid-session.
+Fail if governance context changes mid-session.
 
 ---
 
-# 9. Freeze Boundary
+# 7. Freeze Boundary
 
 ## ENG-SESSION-07 — PRE_STANCE Is Sole Mutable Boundary
 
-While PRE_STANCE:
+While phase = PRE_STANCE:
 
-- Participants mutable
-- Candidates mutable
-- Constraints mutable
+Mutable:
 
-On transition to VOTING:
+- Participants
+- Candidates
+- Constraints
 
-- Participant set frozen
-- Candidate set frozen
-- Constraints frozen
+When transitioning to VOTING:
+
+- Participant set freezes
+- Candidate set freezes
+- Constraint set freezes
 
 Triggered by:
 
-- First recorded vote
+- First vote
 - OR implicit Solo vote
 
-Fail if mutation after freeze.
+Fail if mutation occurs after freeze.
 
 ---
 
-# 10. Vote Rules
+# 8. Vote Rules
 
 ## ENG-SESSION-08 — Votes Are Mechanical
 
+Rules:
+
 - One vote per participant epoch per candidate
-- Immutable once recorded
-- Silence is not consent
-- Acceptance purely mechanical
+- Vote references participant and candidate from same round
+- Votes immutable once recorded
+- Silence never counts as consent
 
-Votes cleared on:
+Votes cleared when a new round begins.
 
-- RESUME
-- BLOCK_TEMPORARY
+Votes preserved only if the session remains in the same round.
 
-Votes preserved on:
-
-- BLOCK_PERMANENT
-
-Fail if engine infers intent or mutates votes.
+Fail if the engine infers intent or mutates existing votes.
 
 ---
 
 ## ENG-SESSION-08A — Solo Mode Implicit Vote
 
-If exactly one participant epoch exists:
+If exactly one participant exists:
 
 - Acceptance attempt inserts implicit ACCEPT vote if absent
-- PRE_STANCE → VOTING
+- PRE_STANCE transitions to VOTING
 - Governance freezes
 
-Acceptance still requires a vote object to exist in state.
+The inserted vote must exist as a normal vote object.
 
 ---
 
-# 11. Resume & Reconfirmation
+# 9. Resume & Reconfirmation
 
 ## ENG-SESSION-09 — Epoch Reset on Resume
 
@@ -332,51 +333,41 @@ Resume allowed only from:
 
 On resume:
 
-- All prior participation epochs terminated
+- All participant epochs terminate
 - Participant set cleared
 - Candidate set cleared
-- Votes cleared
+- Constraint set cleared
+- Vote set cleared
 - Phase resets to PRE_STANCE
-- Round index increments
+- round_index increments
 
 Fail if:
 
-- Prior participant_id reused
-- Votes persist across rounds
+- participant_id reused
+- votes persist across rounds
 
 ---
 
-# 12. Deterministic Acceptance
+# 10. Deterministic Acceptance
 
-## ENG-SESSION-10 — Full Validation, No Short-Circuit
+## ENG-SESSION-10 — Full Validation Pass
 
 Acceptance evaluation must:
 
 - Execute a full deterministic validation pass
-- Evaluate all applicable governance, constraint, vote, and block rules
-- Accumulate all detected violations
-- Never short-circuit on first violation
-- Derive outcome only after evaluation completes
+- Evaluate governance, constraints, votes, and blocking rules
+- Accumulate all violations
+- Never short-circuit
 
-Acceptance depends solely on:
+Acceptance outcome determined only after evaluation completes.
 
-- Governance preconditions
-- Authority rule
-- Constraints
-- Recorded votes
-- Block state
+Acceptance must not depend on:
 
-Identical inputs → identical:
+- storage order
+- timing
+- host behavior
 
-- Violation set
-- Violation ordering
-- Outcome
-
-Fail if:
-
-- Acceptance depends on timing
-- Acceptance depends on storage order
-- Acceptance depends on external context
+Identical inputs must produce identical outcomes.
 
 ---
 
@@ -386,16 +377,15 @@ Session constraints act as mechanical acceptance gates.
 
 Constraints:
 
-- May tighten the authority decision rule
-- May designate participants with mandatory voting rights
-- Are evaluated only during acceptance
+- May tighten authority decision rules
+- May require specific participants to vote ACCEPT
 
 If constraints are not satisfied:
 
 - Acceptance must fail deterministically
 - Session may only transition to CLOSED
 
-Constraints never appear as violations within emitted receipts because a LEGITIMACY receipt can only occur when all constraints are satisfied.
+Constraints never appear in a successful LEGITIMACY receipt.
 
 ---
 
@@ -407,61 +397,69 @@ Acceptance:
 - Transitions session state to ACCEPTED
 - Transitions phase to TERMINAL
 
-Acceptance must occur atomically with:
+Acceptance occurs atomically with:
 
 - Resolution creation
-- Supersession application (if applicable)
+- Supersession application
 - Receipt emission
 
-No new round is created during acceptance.
+Acceptance never creates a new round.
 
 ---
 
-# 13. Receipt Emission
+# 11. Receipt Emission
 
 ## ENG-SESSION-11 — Mandatory Receipt Emission
 
-Exactly one receipt must be emitted per session upon TERMINAL transition.
+Exactly one receipt must be emitted for each session.
 
-If:
+Terminal outcomes:
 
-- ACCEPTED → LEGITIMACY receipt
-- CLOSED → EXPLORATION receipt
+ACCEPTED → LEGITIMACY receipt  
+CLOSED → EXPLORATION receipt
 
-Receipt emission is:
+Receipt emission must be:
 
 - Atomic with terminal transition
 - Deterministic
 - Immutable
 
-Receipt must contain:
+Receipt snapshot derived from:
+
+- Current session state
+- Current round structures
+- Governance snapshot
+
+Receipt must include:
 
 - Ordered round history
 - Final round index
-- Participant epoch snapshots per round
-- Candidate snapshots per round
-- Constraint snapshots per round
-- Vote snapshots per round
-- Governance snapshot references
-- Deterministic `content_hash`
+- Participant snapshots
+- Candidate snapshots
+- Constraint snapshots
+- Vote snapshots
+- Governance references
+- Deterministic content_hash
 
-Fail if receipt snapshot diverges from session state.
+Canonical serialization defined in ENG-CANON.
+
+Fail if receipt diverges from session state.
 
 ---
 
-# 14. Governance Hygiene
+# 12. Governance Hygiene
 
 ## ENG-SESSION-12 — Area Blocking Invariant
 
-If any session in Area is BLOCK_PERMANENT:
+If any session in an Area is BLOCK_PERMANENT:
 
 - No session may transition to ACCEPTED
 
-Engine must reject acceptance attempts after full validation pass.
+Acceptance must fail after deterministic validation.
 
 ---
 
-# 15. Immutability
+# 13. Immutability
 
 ## ENG-SESSION-13 — Terminal States Immutable
 
@@ -475,23 +473,25 @@ If state ∈ {ACCEPTED, CLOSED}:
 
 ---
 
-# 16. Audit
+# 14. Audit
 
 ## ENG-SESSION-14 — Lifecycle Auditable
 
-Engine must emit audit events for lifecycle actions.
+The engine must emit audit events for lifecycle actions.
 
-Audit:
+Audit events:
 
 - Descriptive only
-- Does not create legitimacy
-- Does not replace receipts
+- Do not create legitimacy
+- Do not replace receipts
+
+Receipts remain the canonical legitimacy artifact.
 
 ---
 
-# 17. Failure Semantics
+# 15. Failure Semantics
 
-## ENG-SESSION-15 — Explicit Failure, No Implicit Repair
+## ENG-SESSION-15 — Explicit Failure Only
 
 Violations must:
 
@@ -499,7 +499,7 @@ Violations must:
 - Leave session unchanged
 - Produce structured EvaluationReport
 
-Engine must not:
+The engine must never:
 
 - Short-circuit evaluation
 - Attempt silent correction
@@ -508,19 +508,19 @@ Engine must not:
 
 ---
 
-# 18. Summary Guarantees
+# 16. Summary Guarantees
 
 - Sessions are the sole legitimacy mechanism
 - Governance bootstrap enforced
 - Governance context frozen at creation
 - PRE_STANCE sole mutable boundary
 - First vote freezes structure
-- Resume creates new round
+- Resume creates a new round
 - Resume resets participation epochs
 - Candidates are round-scoped
 - Votes never cross round boundaries
-- No participant_id reuse
-- No candidate_id reuse across rounds
+- participant_id never reused
+- candidate_id never reused
 - Acceptance uses full deterministic validation
 - Acceptance finalizes current round
 - Terminal states emit exactly one receipt
@@ -539,10 +539,12 @@ First vote freezes structure.
 
 Resume resets participation epochs and begins a new round.
 
-Each round captures a complete structural snapshot.
+Session collections always represent the current round only.
+
+Historical rounds exist exclusively in the terminal receipt.
 
 Acceptance deterministically finalizes the current round.
 
-Terminal transition emits exactly one receipt.
+Terminal transition emits exactly one immutable receipt.
 
 Nothing changes unless explicitly commanded.
