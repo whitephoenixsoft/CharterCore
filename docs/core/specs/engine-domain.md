@@ -1,7 +1,7 @@
 # ENG-DOMAIN — Domain Object Schema
 Canonical Engine Object Definitions
 
-Status: FROZEN (v13 – Canonical Serialization Alignment & Round-State Clarification)  
+Status: FROZEN (v14 – Spec Identity Binding & Receipt Rule Context Integrated)  
 Applies to: Engine Core (V1/V2+)
 
 ---
@@ -488,6 +488,7 @@ resolution_id (nullable)
 receipt_type (LEGITIMACY | EXPLORATION)  
 area_id  
 engine_version  
+spec_set_hash  
 authority_snapshot_id  
 scope_snapshot_id  
 problem_statement (optional)  
@@ -516,6 +517,15 @@ Round sequence must be contiguous.
 
 Receipt content_hash must match canonical serialization defined in ENG-CANON.
 
+engine_version and spec_set_hash together define the **rule context** under which the session was evaluated.
+
+spec_set_hash must match the specification manifest embedded in the Engine binary that produced the receipt.
+
+spec_set_hash is a structural field and participates in canonical serialization used to compute content_hash.
+
+Changing spec_set_hash must produce a different content_hash.
+
+This ensures that receipt integrity binds the legitimacy artifact to the exact rule system that evaluated it.
 ---
 
 # 15. Round Snapshot Schema
@@ -569,7 +579,6 @@ Canonical hashing includes only recognized structural fields.
 Unknown informational fields excluded.
 
 ---
-
 # 18. Engine Invariants
 
 - Exactly one Area active at runtime
@@ -583,6 +592,7 @@ Unknown informational fields excluded.
 - Vote and constraint objects bound to a single round
 - terminal_receipt_id required for terminal sessions
 - LEGITIMACY receipts bind to Resolution
+- spec_set_hash must match the spec manifest of the Engine that emitted the receipt
 - Round indices contiguous
 - Deterministic encoding mandatory
 - Legitimacy independent of timestamps or ordering

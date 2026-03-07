@@ -1,10 +1,10 @@
 # ENG-RECEIPT — Engine Session Receipt Specification
 
-Status: FROZEN (v7 – Domain Round Alignment & Constraint Snapshot Schema Integrated)  
+Status: FROZEN (v8 – Spec Identity Binding & Rule Context Integrity Integrated)  
 Applies to: Engine Core (V1/V2+)  
 Scope: Deterministic session receipts for audit, reconstruction, legitimacy verification, and federation portability
 
-Authority: Subordinate to ENG-DOMAIN, ENG-SESSION, ENG-ERROR, ENG-INTEGRITY, ENG-API
+Authority: Subordinate to ENG-DOMAIN, ENG-SESSION, ENG-ERROR, ENG-INTEGRITY, ENG-API, ENG-SPECVERIFY
 
 
 ---
@@ -19,6 +19,7 @@ Receipts:
 - Capture frozen governance and round-segmented structural state
 - Preserve participant and candidate epoch integrity
 - Record deterministic acceptance or abandonment outcomes
+- Bind session outcomes to the exact rule set that evaluated them
 - Enable reconstruction of procedural legitimacy boundaries
 - Provide portable legitimacy artifacts independent of host audit logs
 
@@ -46,6 +47,7 @@ Captures:
 - Full ordered round history
 - Final accepted round
 - Deterministic acceptance outcome
+- Rule set identity used to evaluate the decision
 
 LEGITIMACY receipts anchor governance history.
 
@@ -59,6 +61,7 @@ Captures:
 - Full ordered round history
 - Final non-accepted state
 - Explicit abandonment outcome
+- Rule set identity used during the session
 
 Does not create legitimacy.
 
@@ -152,6 +155,7 @@ A receipt must contain the following canonical fields:
 - session_id
 - area_id
 - engine_version
+- spec_set_hash
 - authority_snapshot_id
 - scope_snapshot_id
 - problem_statement (optional, immutable across rounds)
@@ -175,7 +179,61 @@ created_at is informational only and must not influence ordering, identity, or l
 
 ---
 
-# 6. Round Structure
+# 6. Rule Context Binding
+
+Receipts must record the rule set that evaluated the session.
+
+Rule context fields:
+
+- engine_version
+- spec_set_hash
+
+Definitions:
+
+engine_version  
+Identifies the Engine binary version that executed the session.
+
+spec_set_hash  
+Identifies the deterministic specification set embedded in the Engine.
+
+spec_set_hash must match the value defined by ENG-SPECVERIFY for the executing Engine.
+
+Rule context fields provide rule provenance for the receipt.
+
+They allow later systems to determine:
+
+- which Engine produced the receipt
+- which specification set governed the evaluation
+
+
+---
+
+# 7. Canonical Serialization Rule Context
+
+spec_set_hash must participate in canonical serialization.
+
+Therefore:
+
+content_hash = hash(canonical_receipt_content)
+
+Where canonical_receipt_content includes:
+
+- engine_version
+- spec_set_hash
+
+This ensures that the receipt integrity hash binds:
+
+- the decision outcome
+- the exact rule system used to produce it
+
+Changing spec_set_hash must change content_hash.
+
+This prevents silent reinterpretation of receipts under different rule sets.
+
+
+---
+
+# 8. Round Structure
 
 Each round must contain:
 
@@ -194,9 +252,9 @@ No inference permitted.
 
 ---
 
-# 7. Participant Snapshot Semantics
+# 9. Participant Snapshot Semantics
 
-## 7.1 Participation Epoch Model
+## 9.1 Participation Epoch Model
 
 Participants represent participation epochs, not human identities.
 
@@ -221,7 +279,7 @@ If a participant left and rejoined:
 - Only epochs active in that round appear
 
 
-## 7.2 Deterministic Ordering
+## 9.2 Deterministic Ordering
 
 participant_set must be ordered lexicographically by participant_id using canonical UUID byte ordering.
 
@@ -237,7 +295,7 @@ Identical round state → identical participant ordering across implementations.
 
 ---
 
-# 8. Candidate Snapshot Semantics
+# 10. Candidate Snapshot Semantics
 
 Candidates represent round-scoped proposal epochs.
 
@@ -257,7 +315,7 @@ Rules:
 - Only candidates active in that round appear
 
 
-## 8.1 Deterministic Ordering
+## 10.1 Deterministic Ordering
 
 candidate_set must be ordered lexicographically by candidate_id using canonical UUID byte ordering.
 
@@ -269,7 +327,7 @@ Ordering must not depend on:
 
 ---
 
-# 9. Constraint Snapshot Semantics
+# 11. Constraint Snapshot Semantics
 
 Constraints represent mechanical acceptance gates active during the round.
 
@@ -289,14 +347,12 @@ Rules:
 - constraints are immutable once VOTING begins
 - only constraints active in that round appear
 
-## 9.1 Deterministic Ordering
-
 constraint_set must be ordered lexicographically by constraint_id.
 
 
 ---
 
-# 10. Vote Snapshot Semantics
+# 12. Vote Snapshot Semantics
 
 vote_set must include all explicit votes cast in that round.
 
@@ -321,7 +377,7 @@ vote_set must be ordered lexicographically by vote_id using canonical UUID byte 
 
 ---
 
-# 11. Solo Mode
+# 13. Solo Mode
 
 If session operated in Solo Mode:
 
@@ -336,9 +392,9 @@ Solo Mode does not bypass receipt emission.
 
 ---
 
-# 12. Canonical Serialization & Hashing
+# 14. Canonical Serialization & Hashing
 
-## 12.1 Canonicalization Requirement
+## 14.1 Canonicalization Requirement
 
 content_hash must be computed over canonical serialized receipt content.
 
@@ -351,7 +407,7 @@ Canonicalization must ensure:
 - Cross-language reproducibility
 
 
-## 12.2 Hash Semantics
+## 14.2 Hash Semantics
 
 content_hash ensures integrity only.
 
@@ -365,7 +421,7 @@ It does not influence:
 Identity is defined exclusively by receipt_id.
 
 
-## 12.3 Algorithm Declaration
+## 14.3 Algorithm Declaration
 
 hash_algorithm must be explicitly declared.
 
@@ -378,7 +434,7 @@ Algorithm migration:
 
 ---
 
-# 13. Deterministic Guarantees
+# 15. Deterministic Guarantees
 
 Given identical session state and identical round segmentation at terminal transition:
 
@@ -398,7 +454,7 @@ Receipts must be reconstructable from engine state.
 
 ---
 
-# 14. Immutability
+# 16. Immutability
 
 Receipts are immutable once emitted.
 
@@ -413,9 +469,9 @@ Receipts are append-only artifacts.
 
 ---
 
-# 15. Integration with Rehydration & Degraded Mode
+# 17. Integration with Rehydration & Degraded Mode
 
-## 15.1 Rehydration Validation
+## 17.1 Rehydration Validation
 
 During rehydration:
 
@@ -428,7 +484,7 @@ During rehydration:
 Structural violation results in initialization failure.
 
 
-## 15.2 Degraded Mode
+## 17.2 Degraded Mode
 
 In degraded mode:
 
@@ -440,7 +496,7 @@ In degraded mode:
 
 ---
 
-# 16. Audit Alignment
+# 18. Audit Alignment
 
 Receipts:
 
@@ -456,7 +512,7 @@ Receipt is terminal structural artifact.
 
 ---
 
-# 17. Mental Model
+# 19. Mental Model
 
 Rounds represent structural legitimacy epochs.
 
@@ -472,6 +528,8 @@ display_name and candidate_content are frozen per round snapshot.
 
 UUID defines identity.  
 content_hash defines integrity.
+
+spec_set_hash defines the rule system under which the receipt was created.
 
 Timestamps are informational only.
 

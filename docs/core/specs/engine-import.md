@@ -102,10 +102,7 @@ Restore validation depends on mode.
 Engine receives a complete Area graph including:
 
 - Sessions  
-- Candidates  
-- Votes  
 - Resolutions  
-- Scopes  
 - Session Receipts  
 
 Receipts are mandatory in Restore mode.
@@ -311,22 +308,19 @@ No implicit repair permitted.
 
 Import validation uses:
 
-- validate_imported_area(domain_objects)  
-- simulate_restore(domain_objects)  
 - rehydrate_engine(domain_objects)  
 
 Governance slot validation occurs during:
 
-- validate_imported_area  
-- simulate_restore  
 - rehydrate_engine  
 
 Restore activation requires:
 
 - FULLY_GOVERNED state  
+- session receipts
 
 Baseline mode may defer governance completeness until activation.
-
+ 
 ---
 
 # 10. Mental Model
