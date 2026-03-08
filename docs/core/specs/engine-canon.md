@@ -1,9 +1,9 @@
 # ENG-CANON — Canonical Serialization & Hashing Specification
-Status: FROZEN (v1 – Deterministic Engine Serialization)
+Status: FROZEN (v2 – Deterministic Engine Serialization & Rule Identity Alignment)
 Applies to: Engine Core (V1/V2+)
 Scope: Canonical serialization rules used for deterministic hashing of structural artifacts
 
-Authority: Subordinate to ENG-DOMAIN, ENG-RECEIPT, ENG-INTEGRITY
+Authority: Subordinate to ENG-DOMAIN, ENG-RECEIPT, ENG-INTEGRITY, ENG-SPECVERIFY
 
 
 ---
@@ -18,6 +18,7 @@ Goals:
 - Prevent cross-language serialization drift
 - Ensure receipts and other structural artifacts produce identical hashes everywhere
 - Eliminate ambiguity in encoding, ordering, or formatting
+- Bind structural artifacts to the rule identity that produced them
 
 Canonical serialization is used when computing:
 
@@ -35,9 +36,9 @@ Deviation constitutes an Engine defect.
 
 Canonical serialization must use:
 
-- **UTF-8 encoded JSON**
-- **No BOM (Byte Order Mark)**
-- **No whitespace outside of string values**
+- UTF-8 encoded JSON
+- No BOM (Byte Order Mark)
+- No whitespace outside of string values
 
 Allowed whitespace characters inside string values:
 
@@ -56,7 +57,7 @@ Example canonical JSON:
 
 # 3. Deterministic Object Field Ordering
 
-JSON object fields must be serialized in **strict lexicographic order by field name**.
+JSON object fields must be serialized in strict lexicographic order by field name.
 
 Ordering uses:
 
@@ -73,7 +74,6 @@ Correct ordering:
 Incorrect:
 
 {"session_id":"S","area_id":"A","engine_version":"1"}
-
 
 Field ordering must never depend on:
 
@@ -106,14 +106,66 @@ Rounds:
 
 ordered by ascending `round_index`
 
-Implementations must **not reorder arrays during serialization**.
+Implementations must not reorder arrays during serialization.
 
 The ordering must already be correct before serialization.
 
 
 ---
 
-# 5. String Encoding
+# 5. Structural vs Informational Fields
+
+Canonical hashing includes only structural fields.
+
+Structural fields affect:
+
+- legitimacy evaluation
+- governance semantics
+- receipt identity
+- canonical artifact integrity
+- rule identity provenance
+
+Examples of structural fields include:
+
+- session identifiers
+- participant identifiers
+- candidate identifiers
+- governance references
+- vote structures
+- rule identity fields (`engine_version`, `spec_set_hash`)
+
+Informational fields must not influence canonical hashing.
+
+Examples include:
+
+- external labels
+- annotations
+- host metadata
+- presentation-only data
+
+Unknown informational fields must be excluded from canonical hashing.
+
+Unknown structural fields must cause canonicalization failure.
+
+
+---
+
+# 6. Object Completeness Rule
+
+Canonical objects must contain every structural field defined by their schema.
+
+Rules:
+
+- Missing structural fields must cause serialization failure
+- Structural null values must be explicitly represented
+- Fields must never be inferred or synthesized during serialization
+
+Canonical serialization must represent the complete structural state.
+
+
+---
+
+# 7. String Encoding
 
 Strings must be encoded using standard JSON string rules.
 
@@ -133,7 +185,6 @@ Allowed but discouraged:
 
 "\u004a\u006f\u0073\u00e9"
 
-
 Implementations must never:
 
 - normalize Unicode
@@ -144,7 +195,7 @@ Implementations must never:
 
 ---
 
-# 6. Number Encoding
+# 8. Number Encoding
 
 Numbers must follow strict canonical rules.
 
@@ -167,7 +218,7 @@ Invalid:
 
 ### Floating-Point Numbers
 
-Floating-point numbers are **not permitted in canonical structural artifacts**.
+Floating-point numbers are not permitted in canonical structural artifacts.
 
 Structural Engine objects must use:
 
@@ -181,7 +232,7 @@ If encountered, the engine must fail serialization.
 
 ---
 
-# 7. Boolean Encoding
+# 9. Boolean Encoding
 
 Booleans must use standard JSON values:
 
@@ -193,7 +244,7 @@ No capitalization variation allowed.
 
 ---
 
-# 8. Null Encoding
+# 10. Null Encoding
 
 Null values must be represented using:
 
@@ -206,7 +257,7 @@ Missing fields are not equivalent to null.
 
 ---
 
-# 9. Timestamp Representation
+# 11. Timestamp Representation
 
 Timestamps must be serialized as strings using:
 
@@ -220,14 +271,17 @@ Rules:
 
 - UTC required
 - Z suffix required
-- Milliseconds optional but must not vary within identical objects
+- Milliseconds optional
+- If milliseconds are present they must remain consistent for identical objects
 
 Timestamps are informational unless explicitly declared structural.
+
+Timestamps must never influence canonical ordering or legitimacy evaluation.
 
 
 ---
 
-# 10. Canonical Hash Input
+# 12. Canonical Hash Input
 
 The canonical hash input must be:
 
@@ -236,7 +290,8 @@ UTF-8 bytes of the canonical serialized JSON object.
 Hash input must include:
 
 - all recognized structural fields
-- all canonical arrays
+- rule identity fields (`engine_version`, `spec_set_hash`)
+- canonical arrays
 - nested structures
 
 Hash input must exclude:
@@ -248,7 +303,7 @@ Hash input must exclude:
 
 ---
 
-# 11. Hash Algorithms
+# 13. Hash Algorithms
 
 The algorithm used to compute a canonical hash must be explicitly declared in the object containing the hash.
 
@@ -266,13 +321,12 @@ Example:
 
 "7e9a5e1a3b1c6a7c0e2a1c9a6f7e5c1a3d6f9a8b4c1d0e2f3a4b5c6d7e8f9a0"
 
-
 Algorithm migration does not change the identity of the artifact.
 
 
 ---
 
-# 12. Determinism Guarantee
+# 14. Determinism Guarantee
 
 Given identical structural input objects:
 
@@ -291,7 +345,7 @@ Any divergence indicates:
 
 ---
 
-# 13. Prohibited Behaviors
+# 15. Prohibited Behaviors
 
 The Engine must never:
 
@@ -306,7 +360,7 @@ The Engine must never:
 
 ---
 
-# 14. Engine Invariants
+# 16. Engine Invariants
 
 Canonical serialization guarantees:
 
@@ -314,18 +368,21 @@ Canonical serialization guarantees:
 - Stable receipt verification
 - Federation-safe legitimacy artifacts
 - Deterministic DAG reconstruction validation
+- Stable rule identity binding through `spec_set_hash`
 
 Violation of canonical serialization rules constitutes a critical Engine defect.
 
 
 ---
 
-# Mental Model
+# 17. Mental Model
 
 Canonical serialization defines the exact byte representation of structural artifacts.
 
 The same object must always produce the same bytes.
 
 The same bytes must always produce the same hash.
+
+Rule identity fields ensure artifacts are bound to the specification set that produced them.
 
 Canonical serialization is the foundation of deterministic legitimacy verification.

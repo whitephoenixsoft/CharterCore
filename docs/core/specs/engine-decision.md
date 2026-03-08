@@ -1,6 +1,6 @@
 # ENG-DECISION — Decision Execution, Session Governance, Acceptance, and Receipt Verification
 
-Status: FROZEN (v9 – Canonical Model Alignment & Runtime/Receipt Separation)  
+Status: FROZEN (v10 – Rule Identity Binding & Canonical Evaluation Alignment)  
 Applies to: Engine Core (V1/V2+)
 
 ---
@@ -318,9 +318,10 @@ Rules:
 
 - Created explicitly
 - Engine generates candidate_id
-- candidate_id must be unique within the session
+- candidate_id must be unique within the round
 - Candidate belongs to the round where it was created
-- Candidate content immutable after creation
+- Candidate content mutable during PRE_STANCE
+- Candidate content immutable once VOTING begins
 
 Candidates never persist across rounds.
 
@@ -345,7 +346,7 @@ Constraint failure during evaluation:
 
 Sessions that cannot satisfy constraints may only transition to CLOSED.
 
-Constraints never appear in successful LEGITIMACY receipts.
+Constraint snapshots remain present in receipts for full round reconstruction.
 
 ---
 
@@ -533,6 +534,9 @@ Receipts must include:
 - Constraint snapshots
 - Vote snapshots
 - Governance references
+- engine_version
+- spec_set_hash
+- hash_algorithm
 - Deterministic content_hash
 
 Canonical serialization defined in ENG-CANON.
@@ -575,6 +579,8 @@ Non-mutating
 Deterministic  
 Idempotent  
 Side-effect-free
+
+EvaluationReport must be canonicalizable to ensure deterministic comparison across implementations.
 
 Evaluation must not:
 
@@ -623,7 +629,7 @@ Votes never cross round boundaries.
 
 participant_id never reused.
 
-candidate_id never reused.
+candidate_id never reused within a round.
 
 BLOCK_TEMPORARY requires resume.
 

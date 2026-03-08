@@ -295,3 +295,20 @@ This dual structure ensures the engine remains:
 - verifiable
 - scalable
 - maintainable
+
+---
+
+## 16. Architecture Invariants 
+
+- Objects are immutable facts.
+- Compilation is deterministic and reproducible.
+- Runtime only performs incremental state transitions.
+- Indexes are always derivable and disposable.
+- Invalid transitions are rejected, never repaired.
+- State can always be rebuilt from history alone.
+
+---
+
+## 17. Future Considerations
+
+- Incremental compilation of the DAG to support federation

@@ -352,7 +352,26 @@ This mechanism enables transparent fork detection.
 
 ---
 
-# 14. Non-Goals
+# 14. Binary Authenticity Considerations
+
+Specification identity verifies the rule set enforced by a binary.
+
+It does not verify the authenticity or integrity of the binary itself.
+
+Operators are expected to verify the integrity of distributed Engine binaries using checksums or cryptographic signatures provided through the software distribution channel.
+
+Binary packaging, signing, and supply-chain verification are intentionally outside the scope of the Engine specifications.
+
+This separation preserves the distinction between:
+
+Rule Identity — defined by the embedded specification manifest  
+Binary Authenticity — defined by external distribution and packaging processes
+
+Users may combine binary checksum verification with specification identity to create a complete trust chain for operational environments.
+
+---
+
+# 15. Non-Goals
 
 Specification verification does not:
 
@@ -369,7 +388,7 @@ Specification verification concerns only rule identity.
 
 ---
 
-# 15. Stability Guarantees
+# 16. Stability Guarantees
 
 The specification verification mechanism must remain:
 
@@ -392,7 +411,23 @@ Future versions must not:
 
 ---
 
-# 16. Engine Invariants
+# 17. Long-Term Institutional Durability
+
+Receipts and exported artifacts include spec_set_hash and engine_version.
+
+These fields allow artifacts to remain interpretable independently of the original Engine implementation or repository.
+
+If the specifications referenced by spec_set_hash remain available, future systems can reconstruct:
+
+- which rules governed the decision
+- how the session was evaluated
+- which governance structures were applied
+
+This property enables long-term institutional auditability and prevents silent reinterpretation of historical decisions.
+
+---
+
+# 18. Engine Invariants
 
 Every Engine binary must:
 
@@ -414,6 +449,16 @@ Violation of these invariants constitutes an Engine integrity defect.
 
 ---
 
+# 19. Possible Future Extensions
+
+Future versions of the Engine specifications may define mechanisms that allow receipts or exported artifacts to be evaluated independently of the Engine runtime.
+
+Such mechanisms could allow artifacts to act as self-contained verification objects capable of re-evaluating legitimacy decisions using the referenced specification set.
+
+This document does not define such mechanisms but preserves compatibility for future expansion.
+
+---
+
 # Mental Model
 
 Audit answers:
@@ -428,7 +473,11 @@ Specification verification answers:
 
 “Under which rules did it happen?”
 
-All three together provide long-term institutional integrity.
+Binary verification answers:
+
+“Is this the binary I intended to run?”
+
+Together these layers provide long-term institutional integrity.
 
 Nothing in this mechanism grants authority.
 

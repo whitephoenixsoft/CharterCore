@@ -1,5 +1,5 @@
 # ENG-CORE-PURITY — Engine Isolation, Determinism & Resource Envelope Principles
-Status: FROZEN (v4 – Resource Envelope Doctrine Added)
+Status: FROZEN (v5 – Structural Edge Clarification & Canonical Hash Alignment)
 Applies to: Engine Core (V1/V2+)
 Scope: Constitutional Engine Guarantees
 
@@ -25,11 +25,12 @@ The Engine:
 
 - Does not read from storage directly.
 - Does not write to storage directly.
-- Does not compute or validate file hashes.
 - Does not validate persistence envelopes.
 - Does not manage area lifecycle.
 
-Persistence is the responsibility of the caller (e.g., CLI layer).
+Persistence is the responsibility of the caller.
+
+The Engine may compute canonical integrity hashes for receipts as defined in ENG-RECEIPT and ENG-CANON.
 
 Fail if:
 
@@ -60,7 +61,6 @@ Fail if:
 - Mere existence of an object affects legitimacy.
 - Unreferenced objects influence evaluation.
 - Implicit graph traversal alters outcomes.
-- External area presence or absence affects legitimacy.
 
 ---
 
@@ -72,9 +72,9 @@ Each Area is structurally sovereign.
 
 Legitimacy within an Area must be computable from:
 
-- That Area’s domain objects only.
-- Supersession relationships within that Area.
-- Governance state derived within that Area.
+- That Area’s domain objects
+- Supersession relationships within that Area
+- Governance state derived within that Area
 
 The Engine must not:
 
@@ -85,8 +85,6 @@ The Engine must not:
 Fail if:
 
 - Removal of an external Area alters legitimacy of a local Area.
-- Cross-area existence influences ACTIVE derivation.
-- Federation topology affects evaluation outcome.
 
 ---
 
@@ -111,12 +109,6 @@ UUID timestamp components:
 - Must not determine supersession precedence.
 - Must not determine restore ordering.
 
-Fail if:
-
-- Identity depends on storage.
-- Identity depends on import source.
-- Timestamp ordering affects governance outcome.
-
 ---
 
 # 5. Immutability Principle
@@ -126,43 +118,33 @@ Fail if:
 Domain objects:
 
 - Must never be modified after creation.
-- May only transition via explicit state changes defined in domain specs.
-- May only evolve via supersession where defined.
+- May only transition via explicit lifecycle rules.
+- May evolve only via supersession where defined.
 
 History must never be rewritten.
-
-Fail if:
-
-- Objects are mutated in place.
-- Supersession edges are altered after creation.
-- State transitions occur implicitly.
 
 ---
 
 # 6. Structural Reference Boundary
 
-## ENG-CORE-06 — Supersession Is the Only Structural Graph Edge
+## ENG-CORE-06 — Structural Edge Doctrine
 
-Within an Area, the only structural inter-object graph edge that affects legitimacy is:
+Structural references between domain objects may exist.
 
-- Supersession between Resolutions.
+Examples include:
 
-No other domain object references may:
+- Session → Authority Resolution
+- Session → Scope Resolution
+- Resolution → originating Session
+- Receipt → Session
+- Receipt → Resolution
+- Resolution → superseded Resolution
 
-- Affect ACTIVE derivation.
-- Create structural dependency.
-- Influence legitimacy computation.
+However:
 
-If additional internal references are introduced in future specifications, they must explicitly declare:
+Supersession edges are the **only structural edges that affect ACTIVE derivation**.
 
-- Whether they are structural or informational.
-- Their legitimacy impact.
-- Their integrity validation rules.
-
-Fail if:
-
-- An undeclared reference alters legitimacy.
-- Informational references are treated as structural.
+All other structural references exist solely for integrity validation and audit reconstruction.
 
 ---
 
@@ -170,39 +152,21 @@ Fail if:
 
 ## ENG-CORE-07 — Cross-Area References Are Informational Only
 
-Domain objects may contain cross-area references to:
+Domain objects may contain cross-area references.
 
-- External Areas.
-- External Resolutions.
+These references:
 
-A cross-area reference must contain:
+- Identify external Areas or Resolutions
+- Provide informational lineage context
 
-- An external identifier (e.g., area_id and optionally resolution_id).
-- A human-readable label snapshot.
+The Engine:
 
-Cross-area references:
+- Never dereferences cross-area references
+- Never validates their existence
+- Never treats them as structural edges
+- Never allows them to influence legitimacy
 
-- Are opaque identifiers.
-- Are not dereferenced by the Engine.
-- Are not validated for existence.
-- Are not structural graph edges.
-- Do not participate in supersession.
-- Do not affect ACTIVE derivation.
-- Do not affect governance slot evaluation.
-- Do not affect restore validation.
-
-Deletion or absence of a referenced external Area or Resolution must not alter:
-
-- Session state.
-- Resolution state.
-- Blocking state.
-- Acceptance eligibility.
-
-Fail if:
-
-- Cross-area references influence legitimacy.
-- Cross-area references create structural dependency.
-- External availability affects deterministic evaluation.
+External availability must not affect evaluation outcomes.
 
 ---
 
@@ -220,19 +184,18 @@ Given identical:
 
 The Engine must produce identical outcomes.
 
-No behavior may depend on:
+Behavior must depend only on:
 
-- Hash algorithm
-- Serialization format
+- Canonical serialization rules defined in ENG-CANON
+- Deterministic evaluation rules defined in the Engine specifications
+
+Behavior must not depend on:
+
 - Storage order
 - Import source
 - Runtime environment
-- System clock (beyond UUID generation)
+- System clock (except UUID generation)
 - External system availability
-
-Fail if:
-
-- Two independent implementations produce different logical results from identical inputs within sufficient resource bounds.
 
 ---
 
@@ -240,28 +203,15 @@ Fail if:
 
 ## ENG-CORE-09 — Evaluation Is Pure and Side-Effect Free
 
-Evaluation APIs (e.g., evaluate_session):
+Evaluation APIs:
 
 - Must be strictly non-mutating.
 - Must not alter session state.
-- Must not alter resolution state.
 - Must not emit receipts.
 - Must not emit audit events.
 - Must not trigger lifecycle transitions.
-- Must not insert implicit votes.
-- Must not normalize or rewrite domain objects.
-- Must not traverse cross-area references.
 
-Evaluation must not:
-
-- Cause BLOCK transitions.
-- Recompute and persist derived state.
-- Modify participant or candidate sets.
-
-Fail if:
-
-- Any engine state changes during evaluation.
-- Evaluation alters future acceptance behavior.
+Evaluation must simulate acceptance without committing state.
 
 ---
 
@@ -269,20 +219,9 @@ Fail if:
 
 Evaluation must be idempotent.
 
-Given identical:
+Given identical inputs, repeated evaluation must produce identical EvaluationReports.
 
-- Domain graph
-- Session state
-- Authority and Scope state
-
-Repeated evaluation calls must produce identical EvaluationReports (excluding informational diagnostics).
-
-Acceptance must independently validate all invariants without reliance on prior evaluation.
-
-Fail if:
-
-- Evaluation output changes across repeated identical calls.
-- Acceptance correctness depends on prior evaluation invocation.
+Acceptance must independently validate invariants.
 
 ---
 
@@ -292,60 +231,26 @@ Fail if:
 
 The Engine guarantees logical determinism within a sufficient resource envelope.
 
-Logical determinism means:
-
-Given identical:
-
-- Domain objects
-- Structural references
-- Governance state
-
-The Engine produces identical:
+Logical determinism means identical inputs produce identical:
 
 - EvaluationReports
 - State transitions
 - Receipts
 - Supersession effects
 
-This guarantee applies only when sufficient computational resources are available.
-
-The Engine does not guarantee:
-
-- Liveness under arbitrary memory constraints
-- Success under arbitrary graph size
-- Completion under arbitrary CPU limits
-
-Resource exhaustion is outside the logical determinism model.
+The Engine does not guarantee liveness under arbitrary resource limits.
 
 ---
 
 ## ENG-CORE-12 — Atomic Failure Under Resource Exhaustion
 
-If resource exhaustion occurs (e.g., memory exhaustion, stack overflow, allocation failure):
+If resource exhaustion occurs:
 
-The Engine must:
-
-- Fail explicitly.
-- Abort the current operation atomically.
-- Leave all domain state unchanged.
-- Emit no partial receipts.
-- Emit no partial state transitions.
-
-The Engine must not:
-
-- Partially mutate state.
-- Emit partially constructed receipts.
-- Persist partially derived ACTIVE sets.
-- Silently truncate graphs.
-- Succeed with incomplete validation.
+- The operation must fail atomically.
+- No partial mutations allowed.
+- No partial receipts allowed.
 
 Acceptance, rehydration, and receipt emission must be all-or-nothing operations.
-
-Fail if:
-
-- Resource exhaustion leaves structural state altered.
-- Partial legitimacy artifacts are observable.
-- Behavior differs due to partial mutation.
 
 ---
 
@@ -356,15 +261,10 @@ The specification does not define:
 - Maximum graph size
 - Maximum session count
 - Maximum receipt size
-- Maximum candidate count
 - Memory ceilings
 - CPU ceilings
 
 These are implementation-defined.
-
-However:
-
-Given identical inputs and identical resource limits, compliant implementations must exhibit identical logical behavior.
 
 ---
 
@@ -389,15 +289,6 @@ Legitimacy is not created by:
 - Cross-area references
 - Resource conditions
 
-Fail if:
-
-- Legitimacy can be inferred without session acceptance.
-- Evaluation creates governance effects.
-- Audit substitutes for governance.
-- Persistence implies authority.
-- External Areas influence legitimacy.
-- Resource pressure alters legitimacy outcome.
-
 ---
 
 # 12. Non-Goals
@@ -409,31 +300,23 @@ The Engine is not:
 - A hash registry
 - A permission system
 - A distributed consensus protocol
-- A cross-area integrity validator
-- A real-time system with guaranteed liveness
+- A cross-area validator
+- A real-time system
 
-The Engine is:
-
-A deterministic, Area-local legitimacy evaluator operating within a resource envelope.
+The Engine is a deterministic, Area-local legitimacy evaluator.
 
 ---
 
 # 13. Mental Model
 
-- Storage remembers.
-- Audit records.
-- CLI orchestrates.
-- Evaluation inspects.
-- Acceptance commits.
-- Supersession evolves governance.
-- Areas are sovereign.
-- Resources bound execution, not legitimacy.
+Storage remembers.  
+Audit records.  
+CLI orchestrates.  
+Evaluation inspects.  
+Acceptance commits.  
+Supersession evolves governance.  
+Areas are sovereign.  
 
-The Engine is a legitimacy compiler.
-
-Evaluation is simulation.
-Acceptance is transaction.
-Cross-area references are context only.
 Resource exhaustion aborts — it never mutates.
 
 ---
@@ -442,6 +325,16 @@ Resource exhaustion aborts — it never mutates.
 
 This document defines the isolation, locality, determinism, and resource boundary of the Engine Core.
 
-All other specifications (ENG-DOMAIN, ENG-SESSION, ENG-RECEIPT, ENG-AUD, ENG-API, ENG-INTEGRITY, ENG-ERROR) must conform to these principles.
+All other specifications must conform to these principles:
 
-Violation of these principles constitutes a critical constitutional failure.
+- ENG-DOMAIN
+- ENG-SESSION
+- ENG-DECISION
+- ENG-SUPERSESSION
+- ENG-RECEIPT
+- ENG-API
+- ENG-INTEGRITY
+- ENG-CANON
+- ENG-SPECVERIFY
+
+Violation constitutes a constitutional failure.

@@ -1,10 +1,10 @@
 # ENG-SESSION — Session Lifecycle, Governance Enforcement & Receipt Emission Specification
 
-Status: FROZEN (v10 – Domain Model Alignment & Canonical Serialization Integration)  
+Status: FROZEN (v11 – Rule Identity Binding & Candidate Epoch Alignment)  
 Applies to: Engine Core (V1/V2+)  
 Scope: Session lifecycle, governance enforcement, deterministic acceptance, round segmentation, and receipt emission
 
-Authority: Subordinate to ENG-DOMAIN, ENG-DECISION, ENG-RECEIPT, ENG-INTEGRITY, ENG-CANON
+Authority: Subordinate to ENG-DOMAIN, ENG-DECISION, ENG-RECEIPT, ENG-INTEGRITY, ENG-CANON, ENG-SPECVERIFY
 
 ---
 
@@ -143,7 +143,7 @@ Candidates represent proposals introduced during a specific round.
 Rules:
 
 - Each `candidate_id` is engine-generated UUIDv7
-- candidate_id must be unique within the session
+- candidate_id must be unique within the round
 - candidate belongs to exactly one round
 - candidate identity never reused across rounds
 
@@ -385,7 +385,7 @@ If constraints are not satisfied:
 - Acceptance must fail deterministically
 - Session may only transition to CLOSED
 
-Constraints never appear in a successful LEGITIMACY receipt.
+Constraint snapshots must still appear in the final receipt to preserve full round reconstruction.
 
 ---
 
@@ -439,9 +439,16 @@ Receipt must include:
 - Constraint snapshots
 - Vote snapshots
 - Governance references
+- Rule identity fields (`engine_version`, `spec_set_hash`)
 - Deterministic content_hash
 
 Canonical serialization defined in ENG-CANON.
+
+The receipt hash therefore binds:
+
+- the decision outcome
+- the structural state
+- the rule system that evaluated the session
 
 Fail if receipt diverges from session state.
 
@@ -520,7 +527,7 @@ The engine must never:
 - Candidates are round-scoped
 - Votes never cross round boundaries
 - participant_id never reused
-- candidate_id never reused
+- candidate_id never reused within a round
 - Acceptance uses full deterministic validation
 - Acceptance finalizes current round
 - Terminal states emit exactly one receipt
@@ -529,7 +536,7 @@ The engine must never:
 
 ---
 
-# Mental Model
+# 17. Mental Model
 
 Sessions freeze governance context at creation.
 

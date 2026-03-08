@@ -1,7 +1,7 @@
 # ENG-DOMAIN — Domain Object Schema
 Canonical Engine Object Definitions
 
-Status: FROZEN (v14 – Spec Identity Binding & Receipt Rule Context Integrated)  
+Status: FROZEN (v15 – Resolution Provenance & Candidate Epoch Alignment)  
 Applies to: Engine Core (V1/V2+)
 
 ---
@@ -26,6 +26,7 @@ Goals:
 - Formalize round-scoped candidate epochs
 - Define forward and backward compatibility guarantees
 - Integrate round-segmented receipt verification
+- Bind legitimacy artifacts to the rule system that produced them
 - Define the complete canonical structural object model
 
 Behavioral rules are defined in:
@@ -39,6 +40,7 @@ Behavioral rules are defined in:
 - ENG-RECEIPT
 - ENG-AUD
 - ENG-CANON
+- ENG-SPECVERIFY
 
 This document defines structure only.
 
@@ -76,6 +78,16 @@ Canonical serialization is required for:
 ## 2.3 Informational vs Structural Data
 
 Optional annotations and informational references may exist but must not affect structural legitimacy unless explicitly declared structural.
+
+Structural fields affect:
+
+- legitimacy evaluation
+- governance semantics
+- receipt identity
+- rule provenance
+- canonical hash integrity
+
+Rule identity fields (`engine_version`, `spec_set_hash`) are structural.
 
 ---
 
@@ -184,8 +196,7 @@ Unknown enums must never be ignored.
 
 Unknown fields are handled as follows:
 
-Unknown structural fields → UNSUPPORTED_SCHEMA_VERSION
-
+Unknown structural fields → UNSUPPORTED_SCHEMA_VERSION  
 Unknown informational fields → ignored
 
 A field is structural if it affects:
@@ -195,6 +206,7 @@ A field is structural if it affects:
 - Governance slot evaluation
 - ACTIVE derivation
 - Canonical receipt validation
+- Rule provenance
 
 Canonical hashing must include only recognized structural fields.
 
@@ -309,7 +321,7 @@ schema_version
 
 Rules:
 
-- participant_id unique within Session
+- participant_id unique within the session
 - participant_id never reused
 - Participant belongs to exactly one round
 - Removal terminates the epoch
@@ -342,11 +354,11 @@ schema_version
 Rules:
 
 - candidate belongs to exactly one round
-- candidate_id unique within the session
-- candidate_id never reused
+- candidate_id unique within the round
+- candidate_id never reused within that round
 - candidate content immutable once VOTING begins
 
-Candidate identity is round-scoped.
+Candidate identity is round-scoped proposal epochs.
 
 ---
 
@@ -457,6 +469,8 @@ originating_session_id
 authority_snapshot_id  
 scope_snapshot_id  
 accepted_candidate_id  
+engine_version  
+spec_set_hash  
 state (ACTIVE | SUPERSEDED)  
 superseded_by (nullable)  
 cross_area_references (optional)  
@@ -469,6 +483,8 @@ Rules:
 - Created only through session acceptance
 - Represents the accepted candidate
 - Supersession must remain Area-local
+
+engine_version and spec_set_hash record the rule context under which the resolution was created.
 
 Participant and vote history is not stored in the Resolution.
 
@@ -517,7 +533,7 @@ Round sequence must be contiguous.
 
 Receipt content_hash must match canonical serialization defined in ENG-CANON.
 
-engine_version and spec_set_hash together define the **rule context** under which the session was evaluated.
+engine_version and spec_set_hash together define the rule context under which the session was evaluated.
 
 spec_set_hash must match the specification manifest embedded in the Engine binary that produced the receipt.
 
@@ -526,6 +542,7 @@ spec_set_hash is a structural field and participates in canonical serialization 
 Changing spec_set_hash must produce a different content_hash.
 
 This ensures that receipt integrity binds the legitimacy artifact to the exact rule system that evaluated it.
+
 ---
 
 # 15. Round Snapshot Schema
@@ -579,6 +596,7 @@ Canonical hashing includes only recognized structural fields.
 Unknown informational fields excluded.
 
 ---
+
 # 18. Engine Invariants
 
 - Exactly one Area active at runtime
@@ -588,7 +606,7 @@ Unknown informational fields excluded.
 - Cross-area references informational only
 - IDs engine-generated UUIDv7
 - participant_id never reused
-- candidate_id never reused
+- candidate_id never reused within a round
 - Vote and constraint objects bound to a single round
 - terminal_receipt_id required for terminal sessions
 - LEGITIMACY receipts bind to Resolution

@@ -1,11 +1,10 @@
 # ENG-RECEIPT — Engine Session Receipt Specification
 
-Status: FROZEN (v8 – Spec Identity Binding & Rule Context Integrity Integrated)  
+Status: FROZEN (v9 – Canonical Ordering & Proposal Epoch Alignment)  
 Applies to: Engine Core (V1/V2+)  
 Scope: Deterministic session receipts for audit, reconstruction, legitimacy verification, and federation portability
 
 Authority: Subordinate to ENG-DOMAIN, ENG-SESSION, ENG-ERROR, ENG-INTEGRITY, ENG-API, ENG-SPECVERIFY
-
 
 ---
 
@@ -32,7 +31,6 @@ Receipts formalize and freeze closure.
 
 Participant and candidate identity within receipts is epoch-based and session-scoped.
 
-
 ---
 
 # 2. Receipt Types
@@ -51,6 +49,7 @@ Captures:
 
 LEGITIMACY receipts anchor governance history.
 
+---
 
 ## 2.2 EXPLORATION
 
@@ -64,7 +63,6 @@ Captures:
 - Rule set identity used during the session
 
 Does not create legitimacy.
-
 
 ---
 
@@ -95,6 +93,7 @@ Fail if:
 - Receipt emitted without terminal transition
 - More than one receipt exists for a session
 
+---
 
 ## 3.2 Acceptance Preconditions
 
@@ -111,7 +110,6 @@ Acceptance finalizes the current round.
 Acceptance does not create a new round.
 
 Receipt must reflect the fully frozen state created during atomic acceptance commit.
-
 
 ---
 
@@ -135,14 +133,17 @@ On RESUME:
 
 No other state transition creates a round.
 
+---
 
 ## 4.2 Round Ordering
 
-- Rounds form an ordered sequence.
-- Ordered strictly by ascending round_index.
-- Round indices must be contiguous.
-- No re-numbering permitted.
+Rounds must be ordered by ascending `round_index`.
 
+Rules:
+
+- Round indices must be contiguous
+- No re-numbering permitted
+- Serialization order must match round_index order
 
 ---
 
@@ -176,7 +177,6 @@ All fields participate in canonical serialization unless explicitly marked infor
 
 created_at is informational only and must not influence ordering, identity, or legitimacy.
 
-
 ---
 
 # 6. Rule Context Binding
@@ -205,7 +205,6 @@ They allow later systems to determine:
 - which Engine produced the receipt
 - which specification set governed the evaluation
 
-
 ---
 
 # 7. Canonical Serialization Rule Context
@@ -220,6 +219,7 @@ Where canonical_receipt_content includes:
 
 - engine_version
 - spec_set_hash
+- hash_algorithm
 
 This ensures that the receipt integrity hash binds:
 
@@ -229,7 +229,6 @@ This ensures that the receipt integrity hash binds:
 Changing spec_set_hash must change content_hash.
 
 This prevents silent reinterpretation of receipts under different rule sets.
-
 
 ---
 
@@ -249,14 +248,11 @@ All sets represent full structural state for that round.
 No diffs permitted.  
 No inference permitted.
 
-
 ---
 
 # 9. Participant Snapshot Semantics
 
-## 9.1 Participation Epoch Model
-
-Participants represent participation epochs, not human identities.
+Participants represent participation epochs.
 
 Each participant_set entry must include:
 
@@ -273,25 +269,7 @@ Rules:
 - No inference of identity continuity
 - display_name is legitimacy-bearing and frozen per round snapshot
 
-If a participant left and rejoined:
-
-- A new participant_id must exist
-- Only epochs active in that round appear
-
-
-## 9.2 Deterministic Ordering
-
-participant_set must be ordered lexicographically by participant_id using canonical UUID byte ordering.
-
-Ordering must not depend on:
-
-- Timestamp
-- Insertion order
-- Display name
-- Vote order
-
-Identical round state → identical participant ordering across implementations.
-
+participant_set must be ordered lexicographically by participant_id.
 
 ---
 
@@ -309,27 +287,17 @@ Each candidate_set entry must include:
 
 Rules:
 
-- candidate_id unique within session
-- candidate_id never reused
-- Candidate content frozen at round finalization
+- candidate_id unique within the round
+- candidate_id never reused across rounds
+- Candidate content mutable during PRE_STANCE
+- Candidate content immutable once VOTING begins
 - Only candidates active in that round appear
 
-
-## 10.1 Deterministic Ordering
-
-candidate_set must be ordered lexicographically by candidate_id using canonical UUID byte ordering.
-
-Ordering must not depend on:
-
-- Creation order
-- Candidate content
-
+candidate_set must be ordered lexicographically by candidate_id.
 
 ---
 
 # 11. Constraint Snapshot Semantics
-
-Constraints represent mechanical acceptance gates active during the round.
 
 Each constraint_set entry must include:
 
@@ -340,25 +308,15 @@ Each constraint_set entry must include:
 - constraint_type
 - constraint_parameters
 
-Rules:
-
-- constraint definitions must match those active at round freeze
-- constraint_set represents the full constraint configuration for the round
-- constraints are immutable once VOTING begins
-- only constraints active in that round appear
-
 constraint_set must be ordered lexicographically by constraint_id.
-
 
 ---
 
 # 12. Vote Snapshot Semantics
 
-vote_set must include all explicit votes cast in that round.
+vote_set must include:
 
-Each vote entry must include:
-
-- vote_id (UUIDv7)
+- vote_id
 - session_id
 - area_id
 - round_index
@@ -366,14 +324,7 @@ Each vote entry must include:
 - candidate_id
 - stance (ACCEPT | REJECT | ABSTAIN)
 
-Rules:
-
-- Includes implicit Solo Mode vote if applicable
-- Votes immutable once recorded in a finalized round snapshot
-- No inference permitted
-
-vote_set must be ordered lexicographically by vote_id using canonical UUID byte ordering.
-
+vote_set must be ordered lexicographically by vote_id.
 
 ---
 
@@ -389,48 +340,19 @@ Solo Mode does not bypass validation.
 
 Solo Mode does not bypass receipt emission.
 
-
 ---
 
 # 14. Canonical Serialization & Hashing
 
-## 14.1 Canonicalization Requirement
+content_hash must be computed over canonical serialized receipt content using ENG-CANON rules.
 
-content_hash must be computed over canonical serialized receipt content.
+Canonicalization guarantees:
 
-Canonicalization must ensure:
-
-- Deterministic field ordering
-- Deterministic round ordering
-- Deterministic set ordering
-- Stable UTF-8 JSON encoding
-- Cross-language reproducibility
-
-
-## 14.2 Hash Semantics
-
-content_hash ensures integrity only.
-
-It does not influence:
-
-- legitimacy
-- acceptance
-- restore
-- identity
-
-Identity is defined exclusively by receipt_id.
-
-
-## 14.3 Algorithm Declaration
-
-hash_algorithm must be explicitly declared.
-
-Algorithm migration:
-
-- does not alter receipt identity
-- does not rewrite historical receipts
-- does not alter legitimacy history
-
+- deterministic field ordering
+- deterministic round ordering
+- deterministic set ordering
+- stable UTF-8 JSON encoding
+- cross-language reproducibility
 
 ---
 
@@ -451,7 +373,6 @@ Mismatch indicates:
 
 Receipts must be reconstructable from engine state.
 
-
 ---
 
 # 16. Immutability
@@ -466,33 +387,23 @@ Later governance changes do not alter prior receipts.
 
 Receipts are append-only artifacts.
 
-
 ---
 
 # 17. Integration with Rehydration & Degraded Mode
-
-## 17.1 Rehydration Validation
 
 During rehydration:
 
 - Receipt integrity must be revalidated
 - Hash must be recomputed and compared
 - Round contiguity must be validated
-- Snapshot round_index values must match their containing round
-- Final round must match resolution snapshot (if ACCEPTED)
 
 Structural violation results in initialization failure.
-
-
-## 17.2 Degraded Mode
 
 In degraded mode:
 
 - No new receipts may be emitted
 - Existing receipts remain readable
 - Integrity defects must not be masked
-- Degraded mode prohibits partial legitimacy compilation
-
 
 ---
 
@@ -502,13 +413,11 @@ Receipts:
 
 - Are distinct from audit events
 - Do not replace lifecycle audit
-- Do not encode EvaluationReport errors
 - Represent only terminal structural outcome
 
 Audit is descriptive runtime telemetry.
 
 Receipt is terminal structural artifact.
-
 
 ---
 
@@ -524,11 +433,8 @@ Acceptance finalizes the current round atomically.
 
 Participant and candidate IDs represent participation and proposal epochs.
 
-display_name and candidate_content are frozen per round snapshot.
-
 UUID defines identity.  
-content_hash defines integrity.
-
+content_hash defines integrity.  
 spec_set_hash defines the rule system under which the receipt was created.
 
 Timestamps are informational only.
