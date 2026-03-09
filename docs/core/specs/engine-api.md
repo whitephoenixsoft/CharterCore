@@ -1,9 +1,9 @@
 # ENG-API — Minimal Engine Interface Specification  
-Status: FROZEN (v12 – Domain Graph Alignment & Canonical Evaluation Serialization)  
+Status: FROZEN (v13 – Domain Graph Alignment, Incremental Compilation & Spec Verification)  
 Applies to: Engine Core (V1/V2+)  
 Scope: Deterministic, storage-agnostic engine interface  
 
-Authority: Subordinate to ENG-DOMAIN, ENG-ERROR, ENG-CANON, ENG-SESSION, ENG-DECISION, ENG-SUPERSESSION, ENG-RECEIPT, ENG-INTEGRITY  
+Authority: Subordinate to ENG-DOMAIN, ENG-ERROR, ENG-CANON, ENG-SESSION, ENG-DECISION, ENG-SUPERSESSION, ENG-RECEIPT, ENG-INTEGRITY, ENG-SPECVERIFY  
 
 ---
 
@@ -333,6 +333,91 @@ Acceptance is atomic.
 
 ---
 
+# 5a. Incremental Compilation APIs
+
+## ENG-API-23 — begin_incremental_compilation
+
+**Purpose:** Begin an incremental compilation transaction.  
+**Inputs:** 
+- `area_id` (required)
+- `historical_sessions` (optional, list of session_ids)
+- `historical_resolutions` (optional, list of resolution_ids)
+- `historical_receipts` (optional, list of receipt_ids)
+
+**Behavior:** 
+- Pauses normal runtime.
+- Initializes incremental DAG batch.
+- Historical objects required for legitimacy; missing objects → validation error.
+
+**Outcome:** 
+- Engine ready to accept batched incremental objects.
+- Runtime is suspended for the Area.
+
+---
+
+## ENG-API-24 — add_incremental_batch
+
+**Purpose:** Add a batch of domain objects to the incremental compilation transaction.  
+**Inputs:** 
+- `sessions` (optional)
+- `resolutions` (optional)
+- `receipts` (optional)
+- `annotations` (optional)
+
+**Behavior:** 
+- Objects validated for historical consistency, legitimacy, and schema compliance.
+- Validation is deterministic.
+- No objects are permanently committed until `end_incremental_compilation`.
+- Mixed-area or incomplete historical references → StructuralIntegrityFailure.
+
+---
+
+## ENG-API-25 — end_incremental_compilation
+
+**Purpose:** Commit the incremental compilation batch.  
+**Inputs:** none  
+
+**Behavior:** 
+- Performs full structural validation per ENG-INTEGRITY.
+- Derives ACTIVE sets and applies supersession.
+- Commits objects atomically to domain graph.
+- Resumes normal runtime.
+- Any validation failure aborts batch; no partial commit.
+
+---
+
+# 5b. Administrative / Under Review APIs
+
+## ENG-API-26 — set_resolution_under_review
+
+**Purpose:** Mark a Resolution as UNDER_REVIEW (administrative state).  
+**Inputs:** 
+- `resolution_id` (required)
+- `admin_actor` (optional, informational)
+
+**Behavior:** 
+- Transition Resolution state from ACTIVE → UNDER_REVIEW.
+- Only Engine-administered; not participant-driven.
+- Supersession and legitimacy remain paused for this Resolution.
+- Emits deterministic EvaluationReport and audit event.
+
+---
+
+## ENG-API-27 — restore_resolution_active
+
+**Purpose:** Restore a Resolution from UNDER_REVIEW → ACTIVE.  
+**Inputs:** 
+- `resolution_id` (required)
+- `admin_actor` (optional, informational)
+
+**Behavior:** 
+- Only allowed if Resolution previously marked UNDER_REVIEW.
+- Deterministically restores ACTIVE state.
+- Resumes normal governance and supersession participation.
+- Emits deterministic EvaluationReport and audit event.
+
+---
+
 # 6. Read-Only Queries
 
 ## ENG-API-16 — list_sessions  
@@ -350,6 +435,40 @@ Receipt queries must return:
 - hash_algorithm  
 - spec_set_hash  
 - engine_version  
+
+---
+
+# 6a. Spec Verification APIs
+
+## ENG-API-28 — get_spec_set_hash
+
+**Purpose:** Retrieve current Engine binary spec_set_hash.  
+**Outputs:** 
+- `spec_set_hash` (string, deterministic)
+- Read-only, no side effects.
+
+---
+
+## ENG-API-29 — verify_spec_hash
+
+**Purpose:** Verify an external spec_set_hash against the Engine’s current and optionally historical sets.  
+**Inputs:** 
+- `incoming_spec_set_hash` (required)
+- `allow_legacy` (boolean, optional, default=false)
+
+**Outputs:** 
+- `verification_result` (enum: MATCH | LEGACY_MATCH | SPEC_SET_UNKNOWN)
+- `current_spec_set_hash` (string)
+- `supported_legacy_spec_set_hashes` (optional list of strings)
+
+**Behavior:** 
+- Compares `incoming_spec_set_hash` to current Engine spec_set_hash.
+- If `allow_legacy=true`, compares also to historical spec_set_hashes.
+- Deterministic, read-only, purely observational.
+- Does not mutate Engine state.
+
+**Failure Semantics:** 
+- `SPEC_SET_UNKNOWN` indicates divergence; no silent reinterpretation of legitimacy.
 
 ---
 
@@ -419,6 +538,9 @@ Supersession evolves governance.
 Participant epochs bind presence in time.  
 Receipts freeze closure.  
 Rehydration defines the universe.  
+Incremental compilation batches legitimate historical DAGs.  
+Spec verification ensures backward-compatible rule provenance.  
+Under review resolutions allow administrative state without affecting legitimacy.
 
 Everything explicit.  
 Everything deterministic.  

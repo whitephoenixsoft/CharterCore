@@ -306,9 +306,3 @@ This dual structure ensures the engine remains:
 - Indexes are always derivable and disposable.
 - Invalid transitions are rejected, never repaired.
 - State can always be rebuilt from history alone.
-
----
-
-## 17. Future Considerations
-
-- Incremental compilation of the DAG to support federation

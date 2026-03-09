@@ -1,5 +1,5 @@
 # ENG-SUPERSESSION — Supersession & Conflict Model
-Status: FROZEN (v6 – Canonical Receipt Validation & Domain Alignment)
+Status: DRAFT (Adjusted for V3 Governance & Incremental Compilation)
 Applies to: Engine Core (V1/V2+)
 
 ---
@@ -8,22 +8,22 @@ Applies to: Engine Core (V1/V2+)
 
 Defines:
 
-- Resolution supersession graph structure
-- Supersession linking rules
-- ACTIVE resolution derivation
-- Governance slot participation in supersession
-- Conflict detection
-- Acceptance race semantics
-- Blocking triggers
-- Receipt validation during acceptance and restore
-- Deterministic restore guarantees
-- Area-local supersession sovereignty
+- Resolution supersession graph structure  
+- Supersession linking rules  
+- ACTIVE resolution derivation including UNDER_REVIEW/RETIRED semantics  
+- Governance slot participation in supersession  
+- Conflict detection  
+- Acceptance race semantics  
+- Blocking triggers  
+- Receipt validation during acceptance and restore  
+- Deterministic restore guarantees  
+- Area-local supersession sovereignty  
+- Incremental compilation integration
 
-Supersession evaluation occurs strictly within the single active Area.
+Supersession evaluation occurs strictly within a single active Area.  
+Mixed-area resolution graphs are prohibited (StructuralIntegrityFailure per ENG-INTEGRITY).  
 
-Mixed-area resolution graphs are prohibited (StructuralIntegrityFailure per ENG-INTEGRITY).
-
-Session lifecycle mechanics are defined in ENG-SESSION and ENG-DECISION.
+Session lifecycle mechanics defined in ENG-SESSION and ENG-DECISION.
 
 ---
 
@@ -31,20 +31,15 @@ Session lifecycle mechanics are defined in ENG-SESSION and ENG-DECISION.
 
 ## 2.1 Area-Local Graph Sovereignty
 
-The supersession graph is scoped to exactly one Area.
+- Supersession graph scoped to exactly one Area  
+- Engine operates on exactly one Area at runtime  
+- Supersession evaluation must not cross Area boundaries  
+- Resolution graphs must not contain structural objects from multiple Areas  
+- ACTIVE derivation strictly within Area  
 
-Rules:
+Cross-area references are informational only.  
 
-- The Engine operates on exactly one Area at runtime
-- Supersession evaluation must not cross Area boundaries
-- Resolution graphs must not contain structural objects from multiple Areas
-- ACTIVE derivation must occur strictly within the Area
-
-Cross-area references are informational metadata only.
-
-If mixed-area structural objects are detected:
-
-StructuralIntegrityFailure must occur during acceptance or restore.
+Mixed-area structural objects → StructuralIntegrityFailure during acceptance or restore.
 
 ---
 
@@ -52,34 +47,25 @@ StructuralIntegrityFailure must occur during acceptance or restore.
 
 ## 3.1 Directed Supersession
 
-Resolutions may supersede zero or more prior Resolutions within the same Area.
+- Resolutions may supersede zero or more prior Resolutions within the same Area  
+- Supersession edges are explicit, directional, immutable  
+- Supersession edges recorded during session acceptance  
+- Supersession edges remain Area-local  
 
-Rules:
-
-- Supersession edges are explicit
-- Supersession edges are directional
-- Supersession edges are immutable
-- Supersession edges are recorded during session acceptance
-- Supersession edges must remain Area-local
-
-Cross-area supersession is prohibited.
+Cross-area supersession prohibited.
 
 ---
 
 ## 3.2 Acyclic Requirement
 
-The supersession graph must remain acyclic.
+Supersession graph must remain acyclic.  
 
-Cycle detection must occur:
+Cycle detection occurs:
 
-- During acceptance
-- During restore
+- During acceptance  
+- During restore  
 
-Cycle detection failure causes:
-
-- Acceptance rejection  
-or
-- Engine restore halt
+Failure → acceptance rejection or Engine restore halt.  
 
 No automatic repair permitted.
 
@@ -89,11 +75,9 @@ No automatic repair permitted.
 
 All supersession edges must satisfy:
 
-resolution.area_id == superseded_resolution.area_id
+resolution.area_id == superseded_resolution.area_id  
 
-Cross-area supersession attempts must deterministically fail.
-
-Restore-time detection must halt Engine initialization.
+Cross-area supersession → deterministic failure.
 
 ---
 
@@ -103,12 +87,14 @@ Restore-time detection must halt Engine initialization.
 
 A Resolution is structurally ACTIVE if:
 
-- Its state == ACTIVE
-- No accepted successor exists within the Area
+- Its state == ACTIVE  
+- No accepted successor exists within the Area  
+
+UNDER_REVIEW and RETIRED do not alter structural ACTIVE but **suspend usability** in legitimacy evaluation.
 
 Superseded Resolutions are not ACTIVE.
 
-ACTIVE derivation must be deterministic across implementations.
+ACTIVE derivation deterministic across implementations.
 
 ---
 
@@ -116,13 +102,11 @@ ACTIVE derivation must be deterministic across implementations.
 
 Authority and Scope Resolutions participate fully in the supersession graph.
 
-Governance slot invariants are defined in ENG-DOMAIN.
+- Authority must always be ACTIVE for legitimacy evaluation  
+- Scope may enter UNDER_REVIEW, which blocks dependent sessions  
+- Scope RETIRED is structural SUPERSSEDED equivalent for usage but does not alter supersession  
 
-Supersession evaluation must enforce those invariants during acceptance and restore.
-
-Violations cause:
-
-StructuralIntegrityFailure or deterministic acceptance failure.
+Violations → StructuralIntegrityFailure or deterministic acceptance failure.
 
 ---
 
@@ -130,33 +114,21 @@ StructuralIntegrityFailure or deterministic acceptance failure.
 
 ## 5.1 Structural References
 
-Structural references affect legitimacy and must resolve.
+Structural references affect legitimacy and must resolve:
 
-Examples:
-
-Resolution → superseded Resolution
+- Resolution → superseded Resolution  
 
 Rules:
 
-- Must resolve during acceptance
-- Must resolve during restore
-- Must remain Area-local
-
-Missing structural references cause StructuralIntegrityFailure.
-
----
+- Must resolve during acceptance and restore  
+- Must remain Area-local  
+- Missing references → StructuralIntegrityFailure
 
 ## 5.2 Informational Cross-Area References
 
-Cross-area references:
-
-- May reference external Areas
-- May reference external Resolutions
-- Must not be interpreted as supersession edges
-- Must not affect ACTIVE derivation
-- Must not influence governance slot evaluation
-
-They are informational metadata only.
+- May reference external Areas or Resolutions  
+- Must not be interpreted as supersession edges  
+- Must not affect ACTIVE derivation or governance slot evaluation  
 
 ---
 
@@ -164,18 +136,12 @@ They are informational metadata only.
 
 Multiple sessions may attempt to supersede the same Resolution.
 
-Race resolution follows the first-successful-accept rule.
+- First-successful-accept rule enforced  
+- Competing sessions transition to BLOCK_PERMANENT  
+- Incremental compilation sessions consult index to resolve historical conflicts  
 
-Concurrency enforcement is defined in ENG-DECISION via the legitimacy lock.
-
-Outcome:
-
-- First successful acceptance commits the supersession edge
-- Competing sessions transition to BLOCK_PERMANENT
-
-No branch merge permitted.
-
-No timestamp arbitration permitted.
+No branch merge permitted.  
+No timestamp arbitration for live sessions; only index or canonical order used.
 
 ---
 
@@ -183,126 +149,119 @@ No timestamp arbitration permitted.
 
 ## 7.1 Authority Supersession
 
-When an Authority Resolution is superseded:
-
-- The prior Authority becomes SUPERSEDED
-- ACTIVE Authority changes deterministically
-
-Sessions created under the prior Authority may transition to BLOCK_PERMANENT.
-
-Acceptance under an obsolete Authority must fail during validation.
-
----
+- Prior Authority becomes SUPERSEDED  
+- ACTIVE Authority changes deterministically  
+- Initial bootstrapping may assume SOLE_ACTOR if no Authority exists, but rehydrated DAG requires explicit Authority  
+- Sessions under prior Authority → BLOCK_PERMANENT  
 
 ## 7.2 Scope Supersession
 
-When a Scope Resolution is superseded:
-
-- The prior Scope becomes SUPERSEDED
-- ACTIVE Scope changes deterministically
-
-Sessions referencing the prior Scope may transition to BLOCK_PERMANENT depending on evaluation rules defined in ENG-DECISION.
+- Prior Scope becomes SUPERSEDED  
+- ACTIVE Scope changes deterministically  
+- Sessions referencing prior Scope may → BLOCK_PERMANENT depending on evaluation rules (ENG-DECISION)  
+- Scope RETIRED blocks forward usability, cannot be reactivated  
 
 ---
 
-# 8. Conflict Detection
+# 8. Resolution States & Incremental Compilation
 
-A supersession conflict exists if acceptance would:
+- ACTIVE: normal, structurally usable  
+- UNDER_REVIEW: administrative suspension, blocks dependent sessions, does not alter structural ACTIVE  
+- RETIRED: deprecated, blocks forward usability, cannot transition to SUPERSEDED  
+- SUPERSEDED: terminal, structural, blocks all dependent sessions permanently  
 
-- Reference a non-ACTIVE Resolution
-- Introduce a supersession cycle
-- Violate governance slot invariants
-- Introduce cross-area supersession
-- Reference missing structural objects
-- Reference receipts that fail integrity validation
+Incremental compilation:
 
-Conflict detection must occur:
-
-- During evaluation
-- Immediately before acceptance commit
-
-Irreversible conflicts cause BLOCK_PERMANENT.
+- Consults resolution index with acceptance timestamps  
+- Determines canonical order for historical replays  
+- Early acceptance → wins; later acceptance → rejected  
+- Engine enforces deterministic index resolution  
 
 ---
 
-# 9. Receipt Validation
+# 9. Conflict Detection
 
-Receipt integrity must be validated during:
+Conflict exists if acceptance would:
 
-- acceptance evaluation
-- engine restore
+- Reference non-ACTIVE Resolution  
+- Introduce supersession cycle  
+- Violate governance slot invariants  
+- Introduce cross-area supersession  
+- Reference missing structural objects  
+- Reference receipts failing integrity validation  
 
-Validation must confirm:
+Conflict detection occurs:
 
-- Receipt exists for terminal sessions
-- Canonical serialization is valid
-- content_hash recomputation matches stored value
-- spec_set_hash matches the specification set embedded in the executing Engine
+- During evaluation  
+- Immediately before acceptance commit  
 
-Canonical rules are defined in ENG-CANON.
-
-Receipt mismatch constitutes StructuralIntegrityFailure.
+Irreversible conflicts → BLOCK_PERMANENT.
 
 ---
 
-# 10. Deterministic Restore Guarantee
+# 10. Receipt Validation
+
+Receipt integrity validated during:
+
+- Acceptance evaluation  
+- Engine restore  
+
+Checks:
+
+- Receipt exists for terminal sessions  
+- Canonical serialization valid  
+- content_hash recomputation matches stored value  
+- spec_set_hash matches executing Engine manifest  
+
+Receipt mismatch → StructuralIntegrityFailure.
+
+---
+
+# 11. Deterministic Restore Guarantee
 
 Given identical persisted objects and supersession edges:
 
-- ACTIVE resolution sets must be identical
-- Governance slot derivation must be identical
-- Supersession graph evaluation must be identical
+- ACTIVE resolution sets identical  
+- Governance slot derivation identical  
+- Supersession graph evaluation identical  
 
-Restore must fail if:
+Restore fails if:
 
-- Cycles exist
-- Cross-area supersession exists
-- Structural references are missing
-- Receipt integrity validation fails
-- Governance slot invariants are violated
+- Cycles exist  
+- Cross-area supersession exists  
+- Structural references missing  
+- Receipt integrity fails  
+- Governance slot invariants violated  
 
-No heuristic ordering permitted.
+No heuristic ordering, no timestamp ordering, no automatic repair.
 
-No timestamp ordering permitted.
-
-No automatic repair permitted.
+Incremental compilation index consulted for historical determinism.
 
 ---
 
-# 11. Engine Invariants
+# 12. Engine Invariants
 
-- Supersession edges immutable
-- Supersession graph strictly Area-local
-- Engine operates on exactly one Area
-- Graph must remain acyclic
-- ACTIVE derivation deterministic
-- Governance slot invariants enforced
-- Cross-area references informational only
-- First successful acceptance wins
-- Receipt integrity validated
-- Canonical hashing rules enforced
-- Structural corruption causes deterministic failure
-
-Optional degraded read-only mode behavior is defined in ENG-INTEGRITY.
+- Supersession edges immutable  
+- Supersession graph strictly Area-local  
+- Engine operates on exactly one Area  
+- Graph remains acyclic  
+- ACTIVE derivation deterministic  
+- Governance slot invariants enforced  
+- Cross-area references informational only  
+- First successful acceptance wins  
+- Receipt integrity validated  
+- Canonical hashing enforced  
+- Structural corruption → deterministic failure  
+- UNDER_REVIEW/RETIRED semantics enforced  
+- Incremental compilation consults resolution index  
 
 ---
 
-# 12. Relationship to Other Specifications
+# 13. Relationship to Other Specifications
 
-ENG-DECISION  
-Defines acceptance transactions, blocking semantics, and legitimacy lock behavior.
-
-ENG-DOMAIN  
-Defines structural schemas and governance slot invariants.
-
-ENG-INTEGRITY  
-Defines engine halt conditions and degraded read-only mode.
-
-ENG-CANON  
-Defines canonical serialization and hash computation rules.
-
-ENG-RECEIPT  
-Defines receipt structure and canonical integrity verification.
-
-ENG-SPECVERIFY  
-Defines rule identity binding through spec_set_hash.
+ENG-DECISION: acceptance transactions, blocking semantics, legitimacy lock behavior.  
+ENG-DOMAIN: structural schemas, governance slot invariants.  
+ENG-INTEGRITY: engine halt conditions, degraded read-only mode, incremental compilation index enforcement.  
+ENG-CANON: canonical serialization and hash computation rules.  
+ENG-RECEIPT: receipt structure and canonical integrity verification.  
+ENG-SPECVERIFY: rule identity binding via spec_set_hash.

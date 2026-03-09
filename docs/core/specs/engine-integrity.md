@@ -1,19 +1,19 @@
 # ENG-INTEGRITY  
 Engine Integrity, Runtime, Resource & Compatibility Guarantees  
-Status: FROZEN (v14 – Canonical Receipt Verification & Round Snapshot Alignment)  
+Status: DRAFT (Adjusted for V3 Governance & Incremental Compilation)  
 Applies to: Engine Core (V1/V2+)
 
 ---
 
 # 1. Purpose
 
-ENG-INTEGRITY defines the global runtime integrity rules of the Engine Core.
+ENG-INTEGRITY defines global runtime integrity rules of the Engine Core.
 
 It governs:
 
 - Engine initialization guarantees  
 - Structural invariant enforcement  
-- Governance bootstrap invariants  
+- Governance bootstrap invariants, including SOLE_ACTOR initial Authority  
 - Area-level acceptance guards  
 - Single-Area runtime enforcement  
 - Orphan object detection and graph completeness  
@@ -25,12 +25,13 @@ It governs:
 - Resource exhaustion semantics  
 - Schema compatibility enforcement  
 - Legitimacy compiler doctrine  
+- Incremental compilation determinism
 
-Session mechanics are defined in ENG-SESSION.  
-Supersession graph structure is defined in ENG-SUPERSESSION.  
-Object schemas and compatibility rules are defined in ENG-DOMAIN.
+Session mechanics defined in ENG-DECISION.  
+Supersession graph structure in ENG-SUPERSESSION.  
+Object schemas and compatibility in ENG-DOMAIN.
 
-This specification defines halting conditions and runtime guarantees.
+Defines halting conditions and runtime guarantees.
 
 ---
 
@@ -38,10 +39,9 @@ This specification defines halting conditions and runtime guarantees.
 
 The Engine is a legitimacy compiler.
 
-It:
-
 - Operates on exactly one Area at a time  
 - Compiles legitimacy only from successfully rehydrated domain graphs  
+- Respects Resolution states: ACTIVE, UNDER_REVIEW, RETIRED, SUPERSEDED  
 - Does not infer legitimacy  
 - Does not repair legitimacy  
 - Does not partially evaluate corrupted graphs  
@@ -57,25 +57,21 @@ Legitimacy is:
 - Mechanically reproducible  
 - Strictly Area-local  
 
-If structural integrity or schema compatibility cannot be proven,
+If structural integrity or schema compatibility cannot be proven,  
 the Engine must halt or enter degraded read-only mode.
-
-Convenience never overrides legitimacy invariants.
 
 ---
 
 # 3. Schema Compatibility Enforcement
 
-Schema compatibility rules are defined in ENG-DOMAIN.
+Schema compatibility rules defined in ENG-DOMAIN.
 
-ENG-INTEGRITY enforces those rules during rehydration.
+ENG-INTEGRITY enforces rules during rehydration.
 
-If schema compatibility cannot be verified deterministically,
-initialization must fail.
+If schema compatibility cannot be verified deterministically:
 
-Major version mismatches or unknown structural enums must produce:
-
-UNSUPPORTED_SCHEMA_VERSION
+- Initialization fails  
+- Major version mismatches or unknown structural enums → UNSUPPORTED_SCHEMA_VERSION  
 
 Degraded mode is not permitted for schema incompatibility.
 
@@ -96,7 +92,7 @@ All legitimacy derivation requires:
 3. Supersession reconstruction  
 4. Governance slot derivation  
 
-There is no relaxed validation mode.
+No relaxed validation mode.
 
 ---
 
@@ -104,15 +100,13 @@ There is no relaxed validation mode.
 
 ## 5.1 Single-Area Initialization Rule
 
-An Engine instance must contain exactly one active Area.
+Engine instance must contain exactly one active Area.
 
 During rehydration:
 
-All structural objects must share identical `area_id`.
-
-Mixed-area graphs cause StructuralIntegrityFailure.
-
-Cross-area references are informational only.
+- All structural objects must share identical `area_id`  
+- Mixed-area graphs → StructuralIntegrityFailure  
+- Cross-area references are informational only  
 
 ---
 
@@ -124,7 +118,7 @@ Calling `rehydrate_engine`:
 - Discards prior legitimacy state  
 - Establishes a new single active Area  
 
-The Engine must never merge Areas.
+Engine must never merge Areas.
 
 ---
 
@@ -137,12 +131,13 @@ During restore the Engine must:
 - Reconstruct supersession graph  
 - Verify graph acyclicity  
 - Derive ACTIVE resolutions  
+- Validate Authority and Scope usability, including UNDER_REVIEW/RETIRED semantics  
 - Validate governance slot exclusivity  
 - Validate participant epoch invariants  
 - Validate receipt integrity  
+- Validate incremental compilation index if present  
 
-Restore must be deterministic across implementations.
-
+Restore must be deterministic across implementations.  
 Cross-area references must never be traversed.
 
 ---
@@ -155,11 +150,10 @@ Structural references:
 - Affect supersession  
 - Affect ACTIVE derivation  
 
-They must resolve locally within the Area.
+Must resolve locally within the Area.
 
-Missing structural references → StructuralIntegrityFailure.
-
-Cross-area structural references are prohibited.
+Missing structural references → StructuralIntegrityFailure.  
+Cross-area structural references prohibited.
 
 Informational cross-area references:
 
@@ -185,9 +179,7 @@ Violation → StructuralIntegrityFailure.
 
 # 9. Receipt Integrity Rules
 
-Receipts are integrity artifacts.
-
-They do not create legitimacy.
+Receipts are integrity artifacts. They do not create legitimacy.
 
 Rules:
 
@@ -202,9 +194,9 @@ Receipt verification must confirm:
 - Canonical serialization validity (ENG-CANON)  
 - content_hash recomputation matches stored value  
 - hash_algorithm declared and valid  
-- spec_set_hash matches the rule manifest embedded in the executing Engine  
+- spec_set_hash matches rule manifest  
 
-Receipt verification occurs after structural restore succeeds.
+Receipts remain authoritative even if Resolutions enter UNDER_REVIEW or RETIRED after acceptance.
 
 ---
 
@@ -212,16 +204,16 @@ Receipt verification occurs after structural restore succeeds.
 
 Degraded mode may activate only if:
 
-- Structural graph is internally consistent  
+- Structural graph internally consistent  
 - Schema compatibility satisfied  
 - Supersession graph reconstructable  
 - Governance slots derivable  
 - Acceptance safety cannot be guaranteed due to missing non-fatal artifacts
 
-Possible triggers include:
+Triggers include:
 
-- Missing optional artifacts
-- Host-configured audit artifacts unavailable
+- Missing optional artifacts  
+- Host-configured audit artifacts unavailable  
 
 In degraded mode:
 
@@ -238,9 +230,9 @@ Degraded mode must never mask structural corruption.
 
 ## 11.1 Resource Envelope Assumption
 
-The Engine guarantees determinism within a sufficient resource envelope.
+Engine guarantees determinism within sufficient resource envelope.
 
-Resource ceilings are implementation-defined.
+Resource ceilings implementation-defined.
 
 ---
 
@@ -256,20 +248,19 @@ If resource exhaustion occurs during:
 - Canonical serialization  
 - Hash computation  
 
-The Engine must:
+Engine must:
 
-- Abort the operation atomically  
+- Abort operation atomically  
 - Leave all structural objects unchanged  
-- Emit no partial receipts  
-- Emit no partial transitions  
+- Emit no partial receipts or transitions  
 
-If atomic safety cannot be guaranteed, the Engine must halt.
+If atomic safety cannot be guaranteed, Engine must halt.
 
 ---
 
 # 12. Fatal Structural Integrity Failure
 
-The Engine must halt if:
+Engine must halt if:
 
 - Supersession cycle detected  
 - Mixed-area structural graph detected  
@@ -277,8 +268,7 @@ The Engine must halt if:
 - Invalid structural references detected  
 - Governance slot multiplicity or emptiness detected  
 - Unsupported schema version detected  
-- Unknown structural enum detected  
-- Unknown structural field detected  
+- Unknown structural enum or field detected  
 - Missing terminal receipt detected  
 - Receipt hash mismatch detected  
 - Snapshot mismatch detected  
@@ -294,12 +284,13 @@ No automatic repair permitted.
 Within schema compatibility and resource envelope:
 
 - Restore deterministic  
-- ACTIVE derivation deterministic  
+- ACTIVE derivation deterministic, respecting UNDER_REVIEW/RETIRED  
 - Governance slot evaluation deterministic  
 - Participant epoch validation deterministic  
 - Receipt verification deterministic  
+- Incremental compilation index resolves conflicts deterministically by earliest acceptance timestamp  
 
-No timestamp-based precedence permitted.
+No timestamp-based precedence for live session conflicts; all must reference index or canonical ordering.
 
 ---
 
@@ -315,15 +306,19 @@ No timestamp-based precedence permitted.
 - Participant epochs strictly enforced  
 - Determinism mandatory  
 - Resource failure atomic  
+- RETIRED/UNDER_REVIEW semantics enforced  
+- Incremental compilation index consulted for historical Resolutions  
 
 ---
 
 # 15. Compiler Halt Principle
 
-If legitimacy cannot be mechanically proven from structural domain objects,
-the Engine must halt.
+If legitimacy cannot be mechanically proven from structural domain objects:
 
-If atomic safety cannot be guaranteed,
-the Engine must halt.
+- Engine must halt  
 
-The Engine is a deterministic legitimacy compiler operating within a schema boundary and resource envelope.
+If atomic safety cannot be guaranteed:
+
+- Engine must halt  
+
+Engine is a deterministic legitimacy compiler operating within a schema boundary and resource envelope.

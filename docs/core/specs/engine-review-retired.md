@@ -1,6 +1,6 @@
 # ENG-REVIEW-RETIRED  
 Dynamic Legitimacy Suspension & Deprecation Model  
-Status: DRAFT (Pre-Freeze)  
+Status: DRAFT (Adjusted for V3 Invariants)  
 Applies to: Engine Core (V1/V2+)  
 
 This document must be interpreted in conjunction with:
@@ -16,10 +16,7 @@ If conflict exists, ENG-INTEGRITY runtime guarantees take precedence.
 
 # 1. Purpose
 
-This document defines the semantics of UNDER_REVIEW and RETIRED states for:
-
-- Resolution  
-- Scope  
+This document defines the semantics of UNDER_REVIEW and RETIRED states for Resolutions.
 
 These states govern:
 
@@ -31,7 +28,7 @@ These states govern:
 - Legitimacy neutrality guarantees  
 
 UNDER_REVIEW is an administrative suspension mechanism.  
-RETIRED is a governance-level deprecation mechanism.  
+RETIRED is a governance-level deprecation mechanism.
 
 Neither:
 
@@ -42,58 +39,135 @@ Neither:
 
 SUPERSEDED remains the only graph-altering state.
 
----
-
-# 2. Reviewable Objects
-
-- Resolution supports: ACTIVE, UNDER_REVIEW, RETIRED, SUPERSEDED  
-- Scope supports: ACTIVE, UNDER_REVIEW, SUPERSEDED  
-
-Authority does not support UNDER_REVIEW or RETIRED.
-
-Authority changes require supersession and are governed exclusively by ENG-SUPERSESSION.
+The Resolution state enumeration is defined in ENG-DOMAIN.
 
 ---
 
-# 3. Structural vs Usability Distinction
+# 2. Governance Control Model
 
-## 3.1 Structural ACTIVE
+## 2.1 Session Governance Rule
 
-Structural ACTIVE is derived solely from supersession edges (ENG-SUPERSESSION).
+All legitimacy-affecting changes to Resolutions must occur through a successful governance session acceptance.
 
-UNDER_REVIEW and RETIRED do not affect structural ACTIVE derivation.
+The only exception is the administrative transition:
+
+ACTIVE ↔ UNDER_REVIEW
+
+This transition may occur without a governance session.
+
+All other transitions require a governance session:
+
+- ACTIVE ↔ RETIRED  
+- ACTIVE → SUPERSEDED  
+- UNDER_REVIEW → SUPERSEDED  
+- RETIRED → SUPERSEDED  
+
+This guarantees:
+
+- Governance evolution is explicit  
+- Legitimacy changes are session-mediated  
+- Administrative suspension remains lightweight  
 
 ---
 
-## 3.2 Usable for Legitimacy
+## 2.2 Authority Primacy Rule
 
-A Resolution or Scope is usable for legitimacy evaluation only if:
+Authority is the foundational governance object for an Area.
+
+Rules:
+
+- Authority must be defined before any other governance object  
+- Authority must always be ACTIVE for legitimacy evaluation to proceed  
+- If Authority is not ACTIVE, all REGULAR sessions are blocked  
+- Authority cannot enter UNDER_REVIEW or RETIRED  
+- Authority evolution occurs only via supersession sessions (ENG-SUPERSESSION)
+
+---
+
+## 2.3 Scope Definition Rule
+
+Scope defines the semantic boundaries of an Area.
+
+Rules:
+
+- Scope exists for human governance interpretation  
+- Scope must be defined after Authority is established  
+- Scope supports ACTIVE, UNDER_REVIEW, SUPERSEDED  
+- Scope does not support RETIRED  
+- If Scope is undefined or UNDER_REVIEW, all REGULAR sessions are blocked  
+- Administrative transitions (UNDER_REVIEW) are explicit and auditable  
+- Scope can be superseded by a new Scope via governance session  
+
+---
+
+# 3. Reviewable Objects
+
+Resolution supports:
+
+- ACTIVE  
+- UNDER_REVIEW  
+- RETIRED  
+- SUPERSEDED  
+
+Scope Resolution supports:
+
+- ACTIVE  
+- UNDER_REVIEW  
+- SUPERSEDED  
+
+Authority Resolution supports:
+
+- ACTIVE  
+- SUPERSEDED  
+
+Authority cannot enter UNDER_REVIEW or RETIRED.
+
+---
+
+# 4. Structural vs Usability Distinction
+
+## 4.1 Structural ACTIVE
+
+Structural ACTIVE is derived solely from supersession edges (ENG-SUPERSESSION).  
+UNDER_REVIEW and RETIRED do not alter structural ACTIVE.
+
+---
+
+## 4.2 Usable for Legitimacy
+
+A Resolution is usable for legitimacy evaluation only if:
 
 - Structurally ACTIVE  
 - Not UNDER_REVIEW  
 - Not RETIRED  
 
-Usability is evaluated at runtime.
+A Scope Resolution is usable only if:
+
+- Structurally ACTIVE  
+- Not UNDER_REVIEW  
+
+Authority must always be ACTIVE.  
+Usability is evaluated per session in ENG-DECISION.
 
 ---
 
-# 4. Allowed State Transitions
+# 5. Allowed State Transitions
 
-## 4.1 Resolution
+## 5.1 Resolution
 
-- ACTIVE ↔ UNDER_REVIEW (no session required)  
+- ACTIVE ↔ UNDER_REVIEW (administrative)  
 - ACTIVE ↔ RETIRED (requires session)  
 - ACTIVE → SUPERSEDED (requires session)  
 - UNDER_REVIEW → SUPERSEDED (requires session)  
-- RETIRED → SUPERSEDED (requires session)  
 
-SUPERSEDED is structural and terminal.
+SUPERSEDED is structural and terminal.  
+RETIRED cannot transition to SUPERSEDED.
 
 ---
 
-## 4.2 Scope
+## 5.2 Scope Resolution
 
-- ACTIVE ↔ UNDER_REVIEW (no session required)  
+- ACTIVE ↔ UNDER_REVIEW (administrative)  
 - ACTIVE → SUPERSEDED (requires session)  
 - UNDER_REVIEW → SUPERSEDED (requires session)  
 
@@ -101,7 +175,7 @@ SUPERSEDED is terminal.
 
 ---
 
-# 5. Legitimacy Neutrality
+# 6. Legitimacy Neutrality
 
 UNDER_REVIEW:
 
@@ -117,7 +191,7 @@ RETIRED:
 - Does not modify supersession edges  
 - Does not alter structural ACTIVE  
 - Does not affect historical legitimacy  
-- Marks Resolution deprecated  
+- Marks the Resolution deprecated  
 - Suspends forward usability  
 
 SUPERSEDED:
@@ -126,13 +200,13 @@ SUPERSEDED:
 - Alters structural ACTIVE  
 - Terminal  
 
-States must remain distinct.
-
 ---
 
-# 6. Blocking Matrix
+# 7. Blocking Matrix
 
-## 6.1 Resolution UNDER_REVIEW
+Blocking behavior is enforced during session evaluation per ENG-DECISION.
+
+## 7.1 Resolution UNDER_REVIEW
 
 Referencing sessions:
 
@@ -140,11 +214,11 @@ Referencing sessions:
 - Votes cleared  
 - Phase → PRE_STANCE  
 - Resume required  
-- Acceptance prohibited while UNDER_REVIEW  
+- Acceptance prohibited  
 
 ---
 
-## 6.2 Resolution RETIRED
+## 7.2 Resolution RETIRED
 
 Referencing sessions:
 
@@ -152,29 +226,27 @@ Referencing sessions:
 - Votes cleared  
 - Phase → PRE_STANCE  
 - Resume required  
-- Acceptance prohibited while RETIRED  
+- Acceptance prohibited  
 
 Forward progress requires:
 
-- Session reactivating Resolution  
-  OR  
-- Session superseding Resolution  
+- Reactivating the Resolution (administrative)  
+or  
+- Superseding via governance session  
 
 ---
 
-## 6.3 Scope UNDER_REVIEW
+## 7.3 Scope UNDER_REVIEW
 
-All sessions in Area:
+All sessions in the Area:
 
 - Transition → BLOCK_TEMPORARY  
 - Votes cleared  
-- Acceptance prohibited until ACTIVE  
-
-Resume permitted once Scope returns to ACTIVE.
+- Acceptance prohibited until Scope returns to ACTIVE  
 
 ---
 
-## 6.4 Resolution SUPERSEDED
+## 7.4 Resolution SUPERSEDED
 
 Referencing sessions:
 
@@ -182,27 +254,19 @@ Referencing sessions:
 - Resume prohibited  
 - Acceptance permanently impossible  
 
-User must explicitly close session or restart-from.
-
-Area-level acceptance blocking enforced by ENG-INTEGRITY.
-
 ---
 
-## 6.5 Scope SUPERSEDED
+## 7.5 Scope SUPERSEDED
 
-All sessions in Area:
+All sessions in the Area:
 
 - Transition → BLOCK_PERMANENT  
 - Resume prohibited  
 - Acceptance permanently impossible  
 
-User must explicitly close sessions.
-
-Area-level acceptance blocking enforced by ENG-INTEGRITY.
-
 ---
 
-# 7. Resume Confirmation Rules
+# 8. Resume Confirmation Rules
 
 For any BLOCK_TEMPORARY:
 
@@ -210,33 +274,41 @@ For any BLOCK_TEMPORARY:
 - Phase → PRE_STANCE  
 - Participants re-specified  
 - Governance re-established before voting resumes  
-- Resume event recorded in session history  
 
 Resuming:
 
 - Never restores prior votes  
-- Never overrides UNDER_REVIEW or RETIRED state  
+- Never overrides UNDER_REVIEW or RETIRED  
 - Never bypasses usability constraints  
 
 ---
 
-# 8. Acceptance Guard
+# 9. Acceptance Guard
 
-Acceptance must fail deterministically if any referenced object is not usable:
+Acceptance fails deterministically if any referenced object is not usable.
 
-- Authority  
-- Scope  
-- Referenced Resolution  
+Usable means:
 
-Usable = structurally ACTIVE and not UNDER_REVIEW or RETIRED.
+Resolution:
 
-No partial validation allowed.
+- Structurally ACTIVE  
+- Not UNDER_REVIEW  
+- Not RETIRED  
+
+Scope:
+
+- Structurally ACTIVE  
+- Not UNDER_REVIEW  
+
+Authority:
+
+- Must be ACTIVE  
 
 Atomicity governed by ENG-DECISION.
 
 ---
 
-# 9. Concurrency Requirements
+# 10. Concurrency Requirements
 
 Transitions to UNDER_REVIEW or RETIRED must:
 
@@ -253,22 +325,35 @@ Supersession concurrency governed by ENG-SUPERSESSION.
 
 ---
 
-# 10. Engine Invariants
+# 11. Receipt Interaction
+
+Receipts freeze governance context at acceptance time.
+
+Later transitions to UNDER_REVIEW or RETIRED:
+
+- Do not alter historical receipts  
+- Do not invalidate past legitimacy  
+
+Receipts remain authoritative records of acceptance events.
+
+---
+
+# 12. Engine Invariants
 
 - UNDER_REVIEW never alters supersession edges  
 - RETIRED never alters supersession edges  
 - SUPERSEDED alters structural ACTIVE permanently  
 - Temporary suspension never creates legitimacy  
 - Temporary suspension never destroys historical legitimacy  
-- SUPERSEDED causes BLOCK_PERMANENT (not auto-closure)  
+- SUPERSEDED causes BLOCK_PERMANENT  
 - Closure always requires explicit user action  
 - Acceptance requires all referenced objects usable  
 
-Structural inconsistency detected during restore must halt engine (ENG-INTEGRITY).
+Structural inconsistency during restore must halt the engine (ENG-INTEGRITY).
 
 ---
 
-# 11. Relationship to Other Specifications
+# 13. Relationship to Other Specifications
 
 ENG-DECISION governs:
 
@@ -286,7 +371,6 @@ ENG-INTEGRITY governs:
 
 - Engine halt conditions  
 - Area-level acceptance guards  
-- Structural failure handling  
 
 ENG-REVIEW-RETIRED governs:
 
@@ -294,4 +378,4 @@ ENG-REVIEW-RETIRED governs:
 - Deprecation semantics  
 - Temporary legitimacy interruption  
 
-Together, these define legitimacy creation, suspension, deprecation, and structural evolution.
+Together these define legitimacy creation, suspension, deprecation, and structural evolution.
