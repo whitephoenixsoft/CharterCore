@@ -648,3 +648,4 @@ This ensures Charter remains:
 - politically neutral
 - temporally accurate
 - defensible under audit
+
