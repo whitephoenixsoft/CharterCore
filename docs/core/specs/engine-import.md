@@ -26,6 +26,14 @@ Receipts are first-class structural artifacts and are validated during restore.
 
 Governance slots are structural invariants and must be validated during restore and rehydration.
 
+Import operations must not create legitimacy.
+
+Legitimacy artifacts (Resolution + LEGITIMACY receipt) must already exist and must be historically complete when imported.
+
+Import mechanisms may only insert previously finalized legitimacy artifacts into the domain graph.
+
+Any attempt to import incomplete legitimacy artifacts must fail.
+
 ---
 
 # 2. Engine vs Host Responsibilities
@@ -39,6 +47,18 @@ The host/CLI is responsible for:
 - Validating file integrity (hash, signature, envelope)  
 - Providing canonical domain objects to the engine  
 - Handling user review in baseline mode  
+- Rule provenance verification (engine_version, spec_set_hash)
+- Canonical receipt structure validation
+- Deterministic round snapshot validation
+- Lifecycle state validation for imported Resolutions
+- Enforcement that imported legitimacy artifacts are historically complete
+
+The Engine must not:
+
+- evaluate acceptance rules during import
+- simulate session acceptance
+- generate new Resolutions
+- generate new receipts
 
 The host must provide a complete and canonical graph.
 
@@ -151,21 +171,19 @@ A corresponding receipt must exist.
 
 The Engine must validate:
 
-1. receipt_id is valid UUIDv7  
-2. receipt_type matches session closure type  
-3. participant_snapshot matches frozen session participants  
-4. candidate_snapshot matches frozen candidates  
-5. stance_snapshot matches recorded votes (including implicit solo vote)  
-6. participant_reconfirmation history aligns with session resume events  
-7. content_hash matches deterministic serialization  
-8. acceptance_result aligns with session state  
+1. receipt_id is valid UUIDv7
+2. receipt_type matches session_state
+3. round snapshots are contiguous
+4. participant_set matches receipt round structure
+5. candidate_set matches receipt round structure
+6. vote_set matches receipt round structure
+7. canonical serialization is valid
+8. content_hash recomputation matches stored value
+9. spec_set_hash exists and is valid
+10. engine_version exists
+11. rule provenance fields match the originating Resolution
 
-Fail if:
-
-- Receipt missing  
-- Snapshot mismatch detected  
-- Hash mismatch detected  
-- Receipt references nonexistent session  
+Fail if any verification fails.
 
 ---
 
@@ -191,41 +209,38 @@ Partial restore is rejected.
 
 ---
 
-## 4.2 Baseline Consolidation (Incremental / Review Mode)
+## 4.2 Incremental Compilation
 
-Engine receives partial graph including:
+The Engine receives a partial domain graph containing historical legitimacy artifacts.
 
-- Resolutions  
-- Sessions (optional)  
-- Candidates  
-- Optional receipts  
+The graph may include:
 
-Receipts are optional in Baseline mode.
+- Resolutions
+- Sessions
+- Receipts
 
-If receipts are provided, they must pass integrity validation.
+Receipts are required to prove legitimacy for all terminal sessions.
 
-Governance presence may be deferred in Baseline mode.
+The imported graph must pass structural integrity validation as defined in ENG-INTEGRITY.
 
-However:
+Governance completeness may be temporarily absent during incremental compilation.
 
-- Any attempt to rehydrate into an active evaluation context must enforce governance slot requirements.
-- simulate_restore must fail if governance slots are missing or exclusive constraints violated.
+However, any attempt to rehydrate the graph into an active evaluation context must enforce governance slot requirements.
 
 The Engine must not:
 
-- Generate new receipts  
-- Modify existing receipts  
-- Create legitimacy automatically  
-- Reconstruct governance implicitly  
+- Modify existing receipts
+- Create legitimacy automatically
+- Reconstruct governance implicitly
 
 Imported resolutions may be marked UNDER_REVIEW per ENG-REVIEW.
 
-Fail if:
+Validation must fail if:
 
-- Supersession cycles detected  
-- References unresolved  
-- Receipt integrity fails (if provided)  
-- Governance slot exclusivity violated  
+- Supersession cycles are detected
+- Structural references are unresolved
+- Receipt integrity validation fails
+- Governance slot exclusivity is violated
 
 ---
 
@@ -238,6 +253,17 @@ Every imported object must have:
 - Valid UUIDv7 identifier  
 - Deterministic schema version  
 - All references resolved within provided graph (or allowed local graph in baseline mode)
+
+Imported Resolutions must satisfy lifecycle constraints defined in ENG-REVIEW-RETIRED:
+
+Allowed lifecycle states during import:
+
+- ACTIVE
+- UNDER_REVIEW
+- RETIRED
+- SUPERSEDED
+
+State transitions must not be inferred by the Engine during import.
 
 Fail if:
 
@@ -259,6 +285,10 @@ Engine enforces during restore and rehydration:
 - BLOCK_PERMANENT acceptance blocking  
 
 Receipts do not override governance slot invariants.
+
+Lifecycle state usability must not be altered during import.
+
+Import may insert Resolutions in UNDER_REVIEW or RETIRED state, but must not transition states during validation.
 
 Fail loudly on violation.
 
@@ -284,6 +314,16 @@ Import must not depend on:
 - File order  
 - External timestamps  
 - Runtime environment  
+
+Specification verification must occur during import validation.
+
+If an imported artifact references a spec_set_hash different from the executing Engine:
+
+- MATCH → full verification allowed
+- LEGACY_MATCH → verification allowed in historical compatibility mode
+- SPEC_SET_UNKNOWN → artifact may be stored but legitimacy must not be reinterpreted
+
+This rule aligns with ENG-SPECVERIFY.
 
 Two identical imports must yield identical EvaluationReports.
 
@@ -319,7 +359,17 @@ Restore activation requires:
 - FULLY_GOVERNED state  
 - session receipts
 
-Baseline mode may defer governance completeness until activation.
+Incremental compilation operations correspond to the following Engine API calls:
+
+- begin_incremental_compilation
+- stage_historical_session
+- stage_historical_resolution
+- stage_historical_receipt
+- finalize_incremental_compilation
+
+Rehydration remains the only mechanism that activates an Area for runtime evaluation.
+
+Import operations must not bypass rehydration validation.
  
 ---
 
@@ -345,6 +395,14 @@ Engine validates structure.
 Governance must be structurally sound.  
 Receipts anchor closure.  
 Nothing is reconstructed implicitly.
+
+Import does not create legitimacy.
+
+Import only introduces historical legitimacy artifacts into the domain graph.
+
+Incremental compilation allows historical DAG construction before runtime rehydration.
+
+Rehydration remains the only mechanism that activates legitimacy evaluation.
 
 ---
 

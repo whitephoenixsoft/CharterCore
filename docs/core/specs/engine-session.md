@@ -198,6 +198,18 @@ TERMINAL
 
 Fail if phase contradicts state or vote presence.
 
+Phase and state must remain logically consistent.
+
+Additional invariants:
+
+- phase = TERMINAL only if session_state ∈ {ACCEPTED, CLOSED}
+- phase ≠ TERMINAL if session_state ∈ {ACTIVE, PAUSED, BLOCK_TEMPORARY, BLOCK_PERMANENT}
+- phase = VOTING requires vote_set size ≥ 1
+- phase = PRE_STANCE requires vote_set size = 0
+
+Fail if phase and state combinations violate these invariants.
+
+
 ---
 
 # 5. Round Model
@@ -261,6 +273,22 @@ At session creation:
 These references remain immutable for the lifetime of the session.
 
 Fail if governance context changes mid-session.
+
+The governance snapshot records the Authority Resolution and Scope Resolution that were ACTIVE at the time of session creation.
+
+These references are immutable and must remain unchanged for the lifetime of the session.
+
+However, acceptance evaluation must verify that the referenced governance artifacts remain usable according to the rules defined in ENG-DECISION and ENG-REVIEW-RETIRED.
+
+Acceptance must fail deterministically if either referenced Resolution becomes:
+
+- UNDER_REVIEW
+- RETIRED
+- SUPERSEDED
+
+after session creation.
+
+This rule ensures that governance legitimacy is evaluated against the current usability state of the referenced governance artifacts while preserving the immutable snapshot recorded at session creation.
 
 ---
 
@@ -346,6 +374,13 @@ Fail if:
 - participant_id reused
 - votes persist across rounds
 
+The structural reset behavior defined in this section must remain consistent with the Round Creation Rule defined in ENG-SESSION-05A.
+
+Both sections describe the same deterministic reset behavior required during RESUME transitions.
+
+Implementations must ensure that both rules are applied consistently to prevent divergence in round segmentation behavior.
+
+
 ---
 
 # 10. Deterministic Acceptance
@@ -368,6 +403,19 @@ Acceptance must not depend on:
 - host behavior
 
 Identical inputs must produce identical outcomes.
+Acceptance validation must also verify the usability of all referenced governance artifacts.
+
+Specifically, the Authority Resolution and Scope Resolution referenced in the session snapshot must be usable according to the rules defined in ENG-DECISION and ENG-REVIEW-RETIRED.
+
+Acceptance must fail deterministically if any referenced Resolution is:
+
+- UNDER_REVIEW
+- RETIRED
+- SUPERSEDED
+
+unless explicitly permitted by the evaluation rules defined in ENG-DECISION.
+
+This validation occurs during the deterministic acceptance pass and must not mutate session state if violations are detected.
 
 ---
 
@@ -404,6 +452,20 @@ Acceptance occurs atomically with:
 - Receipt emission
 
 Acceptance never creates a new round.
+
+Resolution creation occurs atomically with acceptance.
+
+The Resolution created during acceptance must enter the lifecycle state:
+
+ACTIVE
+
+Resolution creation must reference:
+
+- originating_session_id = session_id
+- authority_snapshot_id
+- scope_snapshot_id
+
+Resolution creation must follow the structural rules defined in ENG-DOMAIN and the supersession rules defined in ENG-SUPERSESSION.
 
 ---
 
@@ -452,6 +514,26 @@ The receipt hash therefore binds:
 
 Fail if receipt diverges from session state.
 
+Receipt validity must remain stable across future governance lifecycle transitions.
+
+If a Resolution referenced in a receipt later transitions to:
+
+- UNDER_REVIEW
+- RETIRED
+- SUPERSEDED
+
+the receipt remains a valid historical artifact.
+
+Receipt verification must confirm only:
+
+- canonical serialization validity
+- deterministic round structure
+- content_hash integrity
+- rule identity fields
+
+Receipt legitimacy must never be re-evaluated based on governance lifecycle transitions that occur after the receipt was emitted.
+
+
 ---
 
 # 12. Governance Hygiene
@@ -463,6 +545,10 @@ If any session in an Area is BLOCK_PERMANENT:
 - No session may transition to ACCEPTED
 
 Acceptance must fail after deterministic validation.
+
+If the Area blocking invariant prevents acceptance, any attempt to transition a session to ACCEPTED must fail deterministically during the validation pass.
+
+The session state must remain unchanged and the failure must be reported through the structured EvaluationReport defined in ENG-ERROR.
 
 ---
 
@@ -533,6 +619,11 @@ The engine must never:
 - Terminal states emit exactly one receipt
 - Governance hygiene enforced
 - No implicit transitions
+- Phase and state consistency strictly enforced
+- Acceptance verifies governance artifact usability
+- Resolution creation occurs only during atomic acceptance
+- Receipts remain historically valid even if referenced Resolutions later change lifecycle state
+- Deterministic validation must fail explicitly rather than mutate session state
 
 ---
 

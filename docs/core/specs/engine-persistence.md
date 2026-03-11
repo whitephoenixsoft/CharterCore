@@ -54,6 +54,15 @@ These four elements form the Legitimacy Atomic Boundary.
 
 All must commit or none must commit.
 
+The Resolution created during the atomic acceptance commit must enter lifecycle state ACTIVE and must include the rule provenance fields defined in ENG-DOMAIN and ENG-SPECVERIFY:
+
+- engine_version
+- spec_set_hash
+
+These fields bind the legitimacy artifact to the exact rule system that evaluated the session.
+
+Resolution creation, supersession mutation, session state transition, and receipt creation must all occur within the same atomic durability boundary.
+
 Fail if:
 
 - Resolution exists without ACCEPTED session  
@@ -131,6 +140,19 @@ If crash occurs after atomic commit:
 
 System must not require replay or repair to reconstruct legitimacy.
 
+Post-commit crash recovery must not require reconstruction of legitimacy artifacts.
+
+Specifically:
+
+- Resolution content must be fully persisted
+- Receipt content must be fully persisted
+- Supersession edges must already be durable
+- Session state must already be ACCEPTED
+
+The Engine must never reconstruct Resolution or Receipt objects during recovery.
+
+Legitimacy artifacts must exist in durable storage exactly as committed during the acceptance transaction.
+
 ---
 
 # 7. Rehydration Integrity Verification
@@ -150,12 +172,26 @@ Engine must verify:
 5. Receipt stance snapshot matches recorded votes  
 6. Receipt content_hash verifies deterministically  
 7. Supersession graph integrity holds  
+8. Receipt rule provenance must be consistent
+
+The following fields must exist and must match between the Resolution and its LEGITIMACY receipt:
+
+- engine_version
+- spec_set_hash
+
+These fields must match the rule identity embedded in the Engine binary according to ENG-SPECVERIFY.
+
+If the spec_set_hash differs from the Engine's current rule identity:
+
+- verification may proceed only if the specification set is recognized as a supported historical rule set
+- the Engine must not reinterpret legitimacy under different rules
 
 Fail if any condition fails.
 
 Engine must refuse initialization.
 
 No auto-repair permitted.
+
 
 ---
 
@@ -170,9 +206,25 @@ Fail on mismatch.
 
 ---
 
+## ENG-PERSISTENCE-09 — Rehydration Integrity Verification (Historical Stability)
+
+Rehydration verification must not fail solely because a referenced Resolution has transitioned to a different lifecycle state after receipt emission.
+
+Specifically, a Resolution that later transitions to:
+
+- UNDER_REVIEW
+- RETIRED
+- SUPERSEDED
+
+does not invalidate the historical receipt that was emitted during the acceptance transaction.
+
+Receipt integrity verification concerns only structural correctness and canonical hashing.
+
+---
+
 # 8. Storage Adapter Requirements
 
-## ENG-PERSISTENCE-09 — Atomic Storage Capability
+## ENG-PERSISTENCE-10 — Atomic Storage Capability
 
 The storage layer must support:
 
@@ -220,6 +272,23 @@ State transitions that do not create legitimacy:
 Do not require atomic grouping beyond their own state mutation.
 
 Only ACCEPTED and CLOSED transitions require atomic multi-object commit.
+
+Administrative lifecycle transitions that modify Resolution usability, including:
+
+- ACTIVE → UNDER_REVIEW
+- UNDER_REVIEW → ACTIVE
+- ACTIVE → RETIRED
+
+are not part of the legitimacy atomic boundary.
+
+These transitions must not modify:
+
+- Resolution content
+- Session history
+- Receipts
+- Supersession graph structure
+
+They are independent administrative state transitions and must not affect previously committed legitimacy artifacts.
 
 ---
 
@@ -269,17 +338,21 @@ Receipt + Resolution form the admissible legitimacy pair.
 # 13. Summary Guarantees
 
 - Acceptance is a single durable event  
-- Resolution + Session + Supersession + Receipt commit together  
+- Resolution + Session + Supersession + Receipt commit together 
 - Audit is outside atomic boundary  
 - Crash before commit → no legitimacy  
 - Crash after commit → full legitimacy preserved  
 - Rehydration must validate structural consistency  
 - No auto-repair allowed  
 - Storage adapter must guarantee atomic durability  
+- Resolution rule provenance fields (engine_version, spec_set_hash) are committed atomically with acceptance
+- Crash recovery must never reconstruct legitimacy artifacts
+- Receipt verification must confirm rule provenance consistency
+- Administrative lifecycle transitions (UNDER_REVIEW, RETIRED) do not alter historical legitimacy artifacts
 
 ---
 
-# Mental Model
+# 14. Mental Model
 
 Legitimacy is a commit.
 

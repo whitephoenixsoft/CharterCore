@@ -1,32 +1,42 @@
-# ENG-INITIALIZATION — Engine Initialization & Readiness Specification (v6)  
-Status: FROZEN (v6 – Deterministic Multi-Error Structural Validation)  
+# ENG-INITIALIZATION — Engine Rehydration & Structural Readiness Specification
+
+Status: FROZEN (v7 – Rehydration, Receipt Verification & Degraded Mode Alignment)  
 Applies to: Engine Core (V1/V2+)  
-Scope: Structural Engine Initialization, Area Activation, and Deterministic Readiness  
+Scope: Engine rehydration, structural validation, integrity verification, and deterministic runtime readiness
+
+Authority: Subordinate to ENG-DOMAIN, ENG-INTEGRITY, ENG-SESSION, ENG-RECEIPT, ENG-SPECVERIFY, ENG-API
 
 ---
 
 # 1. Purpose
 
-This document defines how the Engine Core:
+This document defines how the Engine Core initializes its runtime by rehydrating a provided domain graph.
 
-- Receives domain objects  
-- Validates structural readiness  
-- Enforces governance slot completeness  
-- Ensures deterministic eligibility for legitimacy evaluation  
-- Validates participant epoch integrity  
-- Accumulates structural violations deterministically  
-- Supports Area Activation (restore) and minimal evaluation contexts  
+Rehydration performs:
 
-Initialization is **structural verification only**, not state evolution.
+- Structural validation of domain objects
+- Governance slot validation
+- Supersession graph verification
+- Receipt integrity verification
+- Specification identity verification
+- Deterministic readiness evaluation
+- Degraded mode determination
+
+Rehydration verifies history.
+
+It does not evolve history.
 
 The Engine:
 
-- Does not attach to storage  
-- Does not traverse persistence  
-- Does not compute hashes  
-- Does not load external references  
-- Does not perform migration  
-- Does not repair governance or session state  
+- Does not attach to storage
+- Does not traverse persistence
+- Does not discover external objects
+- Does not repair corrupted structures
+- Does not mutate domain objects
+- Does not create legitimacy events
+
+The host provides domain objects.  
+The Engine validates them.
 
 ---
 
@@ -34,50 +44,51 @@ The Engine:
 
 ## ENG-INIT-01 — Host-Provided Domain Graph
 
-The host must provide:
+The host must provide a complete domain graph for exactly one Area.
 
-- Complete domain objects for evaluation (Minimal Evaluation Mode)  
-- Or complete Area object graph (Area Activation Mode)  
-- All referenced objects including sessions, candidates, Authority, and Scope  
-- Explicit evaluation context  
+The graph may include:
 
-The Engine:
+- Sessions
+- Resolutions
+- Receipts
+- Annotations
 
-- Must not discover missing objects  
-- Must not traverse storage  
-- Must not infer references  
-- Must not reconstruct missing governance  
+All structural references must resolve within the provided graph.
+
+The Engine must not:
+
+- Discover missing objects
+- Traverse storage
+- Infer missing references
+- Reconstruct governance state
 
 Fail if:
 
-- Evaluation depends on objects not explicitly provided  
-- Engine attempts to resolve storage paths  
+- Required references are missing
+- Objects reference entities not present in the graph
 
 ---
 
-# 3. Initialization Contract
+# 3. Rehydration Contract
 
-## ENG-INIT-02 — Deterministic, Side-Effect Free Construction
+## ENG-INIT-02 — Deterministic, Side-Effect-Free Construction
 
-Engine initialization must be:
+Engine rehydration must be:
 
-- Deterministic  
-- Side-effect free  
-- Non-mutating  
+- Deterministic
+- Side-effect free
+- Non-mutating
 
-Initialization must not:
+Rehydration must not:
 
-- Change session states or phases  
-- Alter resolution states  
-- Create or delete objects  
-- Emit legitimacy events  
-- Promote or demote governance state  
+- Change session states or phases
+- Alter resolution states
+- Create or delete objects
+- Emit legitimacy events
+- Modify supersession edges
+- Promote or demote governance state
 
-Fail if:
-
-- Object state changes during initialization  
-- Supersession edges are modified  
-- Governance is implicitly repaired  
+Fail if any domain object is mutated during rehydration.
 
 ---
 
@@ -85,22 +96,21 @@ Fail if:
 
 ## ENG-INIT-03 — Full Structural Validation Pass
 
-Initialization must execute a full structural validation pass.
+Rehydration must execute a full structural validation pass.
 
 The Engine must:
 
-- Evaluate all structural invariants in deterministic order  
-- Accumulate all detected structural violations  
-- Never short-circuit on first failure  
-- Report all violations in deterministic order  
+- Evaluate all structural invariants
+- Accumulate all violations
+- Never short-circuit on first failure
+- Produce deterministic ordering of violations
 
-If any structural violations are detected:
+If fatal structural violations exist:
 
-- Initialization fails  
-- Readiness is denied  
-- No evaluation may proceed  
+- Rehydration fails
+- Engine must not start
 
-Structural failures may contain multiple error entries.
+Structural violations may include multiple error entries.
 
 ---
 
@@ -108,299 +118,354 @@ Structural failures may contain multiple error entries.
 
 Structural validation must occur in the following order:
 
-1. Identity validity  
-2. Reference resolution  
-3. Lifecycle consistency  
-4. Governance slot enforcement  
-5. Participant epoch integrity  
-6. BLOCK_TEMPORARY reconfirmation validation  
-7. Solo mode invariants  
-8. Supersession graph integrity  
-9. UNDER_REVIEW / RETIRED validation  
+1. Identity validity
+2. Reference resolution
+3. Lifecycle consistency
+4. Governance slot enforcement
+5. Supersession graph integrity
+6. Receipt structural validation
+7. Receipt integrity verification
+8. Specification identity verification
+9. Resolution state validation
 
 Within each category:
 
-- Violations must be ordered lexicographically by error_code  
-- Then lexicographically by related object identifiers  
+- Errors must be ordered lexicographically by `error_code`
+- Then lexicographically by related object identifiers
 
 No reordering permitted.
 
 ---
 
-# 5. Modes of Initialization
+# 5. Structural Validation Categories
 
-## ENG-INIT-05 — Two Modes
+## ENG-INIT-05 — Identity Validity
 
-### 1. Minimal Evaluation Mode  
+The Engine must verify:
 
-- Graph includes only objects relevant to a specific evaluation  
-- Must satisfy invariants within provided subset  
-- Governance completeness enforced only if acceptance evaluation is possible  
-
-### 2. Area Activation Mode (Restore)  
-
-- Graph includes complete Area object graph  
-- All sessions, resolutions, Authority, Scope, and candidates present  
-- Full invariant enforcement applied  
+- All identifiers are valid UUIDv7
+- Identifiers are unique within their namespace
+- Object references resolve to provided objects
 
 Fail if:
 
-- Partial graph provided in Area Activation Mode  
-- Structural invariants violated  
-- Governance completeness violated in Area Activation Mode  
-
-Restore failures may return multiple structural error entries.
+- UUID format invalid
+- Duplicate identifiers detected
+- Cross-object references unresolved
 
 ---
 
-# 6. Structural Validation Categories
+## ENG-INIT-06 — Lifecycle Consistency
 
-## ENG-INIT-06 — Identity Validity
+The Engine must verify lifecycle correctness for:
 
-- All object identifiers must be valid UUIDv7  
-- No duplicate identifiers exist within the same type namespace  
-- All cross-object references resolve to provided objects  
+- Session states
+- Session phases
+- Resolution states
+- Supersession relationships
+
+Examples of structural violations:
+
+- SUPERSEDED resolution missing `superseded_by`
+- Non-SUPERSEDED resolution containing `superseded_by`
+- ACCEPTED session missing corresponding Resolution
+- Terminal session missing corresponding receipt
+- Session phase inconsistent with session state
+
+---
+
+## ENG-INIT-07 — Governance Slot Enforcement
+
+Each Area contains two governance slots:
+
+- Authority slot
+- Scope slot
+
+The Engine must verify:
+
+- At most one ACTIVE Authority Resolution
+- At most one ACTIVE Scope Resolution
+
+UNDER_REVIEW and RETIRED resolutions must not occupy governance slots.
 
 Fail if:
 
-- Missing references  
-- Invalid UUID format  
-- Duplicate IDs exist  
+- Multiple ACTIVE Authorities exist
+- Multiple ACTIVE Scopes exist
+- Slot exclusivity violated
+
+The Engine must not:
+
+- Infer missing governance
+- Promote UNDER_REVIEW objects
+- Repair slot violations
 
 ---
 
-## ENG-INIT-07 — Lifecycle Consistency
+## ENG-INIT-08 — Supersession Graph Integrity
 
-- Session state vs phase consistency  
-- Resolution state consistency  
-- Supersession invariants  
-- Snapshot completeness for ACCEPTED sessions  
-- BLOCK_PERMANENT invariants (structural only)  
+The supersession graph must be structurally valid.
+
+The Engine must verify:
+
+- Graph is acyclic
+- Supersession edges reference valid resolutions
+- SUPERSEDED resolutions are not ACTIVE
+- Supersession edges remain immutable
 
 Fail if:
 
-- SUPERSEDED resolution missing `superseded_by`  
-- Non-SUPERSEDED resolution has `superseded_by`  
-- ACCEPTED session lacks corresponding Resolution  
-- TERMINAL phase conflicts with session state  
+- Cycles detected
+- Supersession state conflicts with resolution state
 
 ---
 
-## ENG-INIT-08 — Governance Slot Enforcement
+## ENG-INIT-09 — Receipt Structural Validation
 
-Per Area:
+For sessions with terminal states:
 
-- Area Activation Mode requires exactly one ACTIVE Authority and one ACTIVE Scope  
-- Minimal Evaluation Mode requires governance completeness if acceptance evaluation is possible  
+ACCEPTED sessions must have:
+
+- Exactly one LEGITIMACY receipt
+
+CLOSED sessions must have:
+
+- Exactly one EXPLORATION receipt
+
+Receipt structure must match session closure semantics.
 
 Fail if:
 
-- No ACTIVE Authority or Scope present  
-- Multiple ACTIVE Authorities or Scopes detected  
-
-Initialization must not:
-
-- Infer missing Scope or Authority  
-- Promote UNDER_REVIEW objects  
-- Repair slot violations  
-
-Slot violations constitute StructuralIntegrityFailure.
+- Terminal session lacks receipt
+- Receipt references nonexistent session
+- Receipt type mismatches session terminal state
 
 ---
 
-## ENG-INIT-09 — Participant Epoch Integrity
+## ENG-INIT-10 — Receipt Integrity Verification
 
-- Every session must have ≥1 participant  
-- ACCEPTED sessions must have at least one vote recorded  
-- Resolution `participant_snapshot` must equal session participant set at acceptance  
-- Participant IDs represent participation epochs  
-- IDs in snapshot must correspond to final participant epoch set  
-- Resolution `candidate_snapshot` must match accepted candidate set  
+Receipt integrity must be verified deterministically.
+
+The Engine must:
+
+- Recompute `content_hash`
+- Verify canonical serialization
+- Verify round ordering
+- Verify snapshot consistency
 
 Fail if:
 
-- Empty participant sets  
-- ACCEPTED session missing votes  
-- Resolution snapshot incomplete  
-- Participant IDs reused across participation epochs  
+- Receipt hash mismatch detected
+- Round sequence invalid
+- Snapshot structure invalid
+
+Integrity failures do not automatically cause initialization failure.  
+They may trigger degraded mode.
 
 ---
 
-## ENG-INIT-10 — BLOCK_TEMPORARY Reconfirmation
+## ENG-INIT-11 — Specification Identity Verification
 
-- Sessions in BLOCK_TEMPORARY must terminate prior participant epochs on resume  
-- New participant set must be explicitly added  
-- New participant IDs must be generated  
-- Votes must be cleared  
-- Initialization validates that reconfirmation rules are enforceable  
+Receipts contain rule identity fields:
 
-Fail if:
+- `engine_version`
+- `spec_set_hash`
 
-- Participant set persisted without reconfirmation  
-- Votes remain from prior epoch  
+The Engine must verify:
 
----
+- spec_set_hash matches the Engine manifest
+- OR spec_set_hash exists within supported legacy specification sets
 
-## ENG-INIT-11 — Solo Mode Invariants
+Possible outcomes:
 
-- If only one participant exists, an implicit ACCEPT vote must be deterministically enforceable  
-- Phase and participant structure must conform to SOLO mode invariants  
+MATCH  
+LEGACY_MATCH  
+SPEC_SET_UNKNOWN
 
-Fail if:
-
-- Solo mode session lacks participant  
-- Implicit vote rules cannot be deterministically enforced  
+SPEC_SET_UNKNOWN must not cause structural failure but must prevent reinterpretation.
 
 ---
 
-## ENG-INIT-12 — Supersession Graph Integrity
+## ENG-INIT-12 — Resolution State Validation
 
-- Graph must be acyclic  
-- Superseded objects must not be ACTIVE  
-- Supersession edges immutable  
-- Governance objects obey supersession rules  
+Resolution lifecycle states must follow the allowed state model:
 
-Fail if:
+- ACTIVE
+- SUPERSEDED
+- UNDER_REVIEW
+- RETIRED
 
-- Cycle detected  
-- Supersession conflicts with state  
+The Engine must verify:
 
----
+- SUPERSEDED resolutions reference `superseded_by`
+- RETIRED resolutions are not superseded
+- UNDER_REVIEW resolutions do not occupy governance slots
 
-## ENG-INIT-13 — UNDER_REVIEW / RETIRED Validation
-
-- UNDER_REVIEW and RETIRED objects must remain structurally valid  
-- Must not break slot exclusivity  
-- Must not alter ACTIVE slot count  
-
-Fail if:
-
-- Governance slot count ambiguous  
-- Resolution state mutates during initialization  
+Fail if lifecycle transitions violate state invariants.
 
 ---
 
-# 7. Governance Hygiene Enforcement
+# 6. Degraded Mode Determination
 
-## ENG-INIT-14 — BLOCK_PERMANENT Enforcement
+## ENG-INIT-13 — Integrity Damage Containment
 
-- Acceptance attempts must fail if any session = BLOCK_PERMANENT  
-- No automatic closure or resume permitted  
+If receipt integrity verification detects non-fatal integrity defects:
 
-Initialization must not:
+The Engine must enter degraded mode.
 
-- Change BLOCK_PERMANENT state  
-- Clear blocked sessions  
+Examples include:
 
----
+- Receipt hash mismatch
+- Snapshot inconsistency
+- Historical artifact divergence
 
-# 8. Deterministic Readiness Guarantee
+In degraded mode:
 
-## ENG-INIT-15 — Pure Deterministic Initialization
+- Engine becomes read-only
+- Legitimacy creation is prohibited
+- Session mutation is prohibited
+- Incremental compilation is prohibited
 
-Given identical:
+Allowed operations include:
 
-- Domain objects  
-- Authority resolution  
-- Scope resolution  
-- Session set  
+- Read-only queries
+- DAG export
+- Integrity diagnostics
 
-Initialization must produce identical:
-
-- Structural error set (including ordering)  
-- Governance slot evaluation  
-- Evaluation eligibility  
-- Participant epoch validation  
-- Snapshot checks  
-
-Fail if:
-
-- Readiness depends on storage order  
-- Timestamp ordering influences validation  
-- Runtime environment influences result  
+Degraded mode enables investigation without extending corrupted history.
 
 ---
 
-# 9. Failure Semantics
+# 7. Deterministic Rehydration Guarantee
 
-## ENG-INIT-16 — Fail Loud, Fail Pure
+## ENG-INIT-14 — Pure Deterministic Initialization
 
-If any structural violations are detected:
+Given identical domain objects, rehydration must produce identical:
 
-- Initialization fails  
-- Engine is not ready  
-- Evaluation APIs must not execute  
+- Structural validation results
+- Integrity verification results
+- Governance slot evaluation
+- Runtime mode determination
 
-Failure must be:
+Validation must not depend on:
 
-- Explicit  
-- Deterministic  
-- Non-mutating  
-
-No partial readiness allowed.  
-No degraded mode allowed during initialization.  
-No implicit repair allowed.
+- Storage ordering
+- Timestamp ordering
+- Host environment
+- Runtime conditions
 
 ---
 
-# 10. No Migration Rule
+# 8. Failure Semantics
 
-## ENG-INIT-17 — No Implicit Migration
+## ENG-INIT-15 — Fatal Structural Failure
 
-During initialization, the Engine must not:
+If fatal structural violations are detected:
 
-- Rewrite objects  
-- Upgrade schema versions  
-- Modify identifiers  
-- Rebind supersession edges  
-- Normalize structure  
-- Promote governance state  
+- Rehydration fails
+- Engine must not start
+- No runtime APIs may execute
 
-Fail if:
+Failures must be:
 
-- Engine mutates domain objects  
+- Explicit
+- Deterministic
+- Non-mutating
+
+The Engine must never repair corrupted history.
+
+---
+
+# 9. No Migration Rule
+
+## ENG-INIT-16 — No Implicit Migration
+
+During rehydration the Engine must not:
+
+- Rewrite objects
+- Upgrade schema versions
+- Modify identifiers
+- Rebind supersession edges
+- Normalize structure
+- Alter governance state
+
+Domain objects are treated as immutable historical artifacts.
+
+---
+
+# 10. Runtime Readiness
+
+## ENG-INIT-17 — Runtime Modes
+
+After rehydration the Engine enters exactly one runtime mode.
+
+NORMAL_RUNTIME
+
+- All structural and integrity checks passed
+
+DEGRADED_READ_ONLY
+
+- Structural graph valid
+- Integrity defects detected
+- Mutations disabled
+
+Initialization failure
+
+- Fatal structural violations detected
+- Engine must not start
 
 ---
 
 # 11. Readiness Definition
 
-The Engine is ready when:
+The Engine is ready for runtime when:
 
-- No structural violations detected  
-- Supersession graph integrity holds  
-- Governance slots valid and exclusive  
-- Governance completeness satisfied (if required)  
-- Participant epoch and snapshot invariants satisfied  
-- No implicit mutation occurred  
+- Structural validation succeeds
+- Supersession graph integrity holds
+- Governance slots are valid
+- Receipts structurally valid
 
-Readiness does **not** imply:
+Runtime readiness does not imply:
 
-- Legitimacy success  
-- Session acceptability  
-- Political validity  
+- Session acceptance success
+- Political legitimacy
+- Governance approval
+
+The Engine validates structure.  
+It does not decide outcomes.
 
 ---
 
 # 12. Mental Model
 
-- Host supplies facts  
-- Engine validates structure  
-- All structural violations are accumulated deterministically  
-- Governance must be structurally complete  
-- Participant epochs must be unique and deterministic  
-- Initialization evaluates readiness, not acceptance  
-- Nothing is repaired implicitly  
+Rehydration reconstructs the historical legitimacy graph.
+
+The host supplies facts.
+
+The Engine verifies:
+
+- structural consistency
+- historical integrity
+- rule identity
+
+If history is valid, the Engine runs.
+
+If history is damaged, the Engine permits inspection only.
+
+If history is structurally invalid, the Engine refuses to start.
+
+Nothing is repaired implicitly.
 
 ---
 
 # 13. Constitutional Alignment
 
-- ENG-INTEGRITY  
-- ENG-DOMAIN  
-- ENG-DECISION  
-- ENG-REVIEW-RETIRED  
-- ENG-SUPERSESSION  
-- ENG-API  
-- ENG-IMPORT  
+- ENG-DOMAIN
+- ENG-INTEGRITY
+- ENG-SESSION
+- ENG-RECEIPT
+- ENG-SPECVERIFY
+- ENG-API
+- ENG-IMPORT
 
-Violation constitutes structural engine failure. 
+Violation constitutes structural engine failure.
