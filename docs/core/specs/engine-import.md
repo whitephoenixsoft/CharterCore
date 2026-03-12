@@ -1,4 +1,4 @@
-# ENG-IMPORT — Engine Import & Area Activation Specification (v3)  
+# ENG-IMPORT — Engine Import & Area Activation Specification 
 Status: FROZEN (v3 – Governance Slot Validation Integrated)  
 Applies to: Engine Core (V1/V2+)  
 Scope: Deterministic Area Restore & Baseline Consolidation  
