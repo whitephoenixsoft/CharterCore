@@ -29,6 +29,9 @@ A signal may indicate:
 
 **Key Principle:** Signals are **descriptive**, not prescriptive.
 
+Consideration:
+- Adding optional confidence levels: low, medium, high
+
 ---
 
 ## What a Signal Is Not

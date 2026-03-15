@@ -198,6 +198,42 @@ All escalation is **informational and descriptive**, not coercive.
 
 ---
 
+### 11. Architectural Layers
+
+The Value Lineage System (VDS) is the first layer in tracking decision alignment. The system that tracks intent alignment is called the Value Lineage System (VLS).
+
+Put together Charter with VDS and VLS looks like:
+```
+Layer 1
+Legitimacy engine
+(Charter)
+
+Layer 2
+Operational signals
+(VDS)
+
+Layer 3
+Alignment analytics
+(VLS)
+```
+
+Which creates a full loop:
+```
+Goals
+↓
+Decisions
+↓
+Operations
+↓
+Signals
+↓
+Alignment insight
+↓
+New decisions
+```
+
+---
+
 ### Closing Principle
 
 Federation of Charter areas enables:
