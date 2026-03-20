@@ -320,6 +320,8 @@ time_window
 
 Algorithm
 
+pressure = capacity_signals / time_window
+
 capacity_rate =
 capacity_signals / total_signals
 
