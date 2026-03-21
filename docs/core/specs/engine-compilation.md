@@ -1,292 +1,328 @@
 # ENG-COMPILATION  
-Historical Replay & Incremental DAG Compilation  
-Status: DRAFT (Pre-Freeze)  
+Historical DAG Reconstruction & Incremental Compilation Model  
+
+Status: REFACTORED (v2 – Receipt-Driven Deterministic Reconstruction)  
 Applies to: Engine Core (V1/V2+)  
+
+Authority: Subordinate to ENG-INTEGRITY, ENG-SUPERSESSION, ENG-RECEIPT, ENG-SPECVERIFY  
 
 ---
 
 # 1. Purpose
 
-ENG-COMPILATION defines the deterministic mechanism for:
+ENG-COMPILATION defines how the Engine reconstructs a valid legitimacy DAG from historical artifacts.
 
-- Historical session replay  
-- Incremental compilation  
-- Conflict detection during replay  
-- Resolution index construction  
-- Canonical replay ordering  
-- Replay rejection semantics  
+It is the authoritative specification for:
 
-Compilation reconstructs a valid legitimacy DAG from historical artifacts.
+- deterministic reconstruction of accepted history  
+- resolution index construction  
+- incremental ingestion of historical artifacts  
+- conflict detection during ingestion  
+- canonical ordering independent of timestamps  
 
-Compilation must produce identical results across compliant implementations when provided identical inputs.
+Compilation does not:
 
-Compilation must never create or alter legitimacy beyond what historical sessions legitimately produced.
+- create legitimacy  
+- re-evaluate legitimacy  
+- replay acceptance logic  
+- modify historical outcomes  
 
----
+Legitimacy is defined exclusively by:
 
-# 2. Compiler Execution Model
+- ACCEPTED sessions  
+- emitted receipts  
 
-The engine operates in two execution modes.
-
-Runtime Mode performs:
-
-- Session evaluation  
-- Session acceptance  
-- Resolution creation  
-- Receipt emission  
-
-Compilation Mode performs:
-
-- Historical session import  
-- Receipt verification  
-- Deterministic replay  
-- Resolution index construction  
-
-Runtime Mode must never rewrite legitimacy history.
-
-Compilation Mode must never invalidate legitimacy already accepted by the runtime.
+Compilation reconstructs what already happened.
 
 ---
 
-# 3. Resolution Index
+# 2. Compilation vs Runtime
 
-During compilation the engine constructs a deterministic resolution index.
+## ENG-COMP-01 — Separation of Concerns
 
-The index contains **all accepted resolutions in the Area**, including historical resolutions.
+Runtime Mode:
 
-The index exists only in memory and must be fully derivable from domain objects.
+- evaluates sessions  
+- performs acceptance  
+- creates resolutions  
+- emits receipts  
 
-Each entry must include:
+Compilation Mode:
+
+- ingests historical artifacts  
+- verifies receipts  
+- reconstructs supersession graph  
+- derives ACTIVE sets  
+
+Compilation must not:
+
+- call acceptance logic  
+- generate new receipts  
+- alter session outcomes  
+
+---
+
+# 3. Source of Truth
+
+## ENG-COMP-02 — Receipt-Driven Reconstruction
+
+The canonical source of historical legitimacy is:
+
+- LEGITIMACY receipts  
+- associated Resolutions  
+
+Sessions are informational during compilation.
+
+Receipts define:
+
+- which sessions were accepted  
+- the final round state  
+- governance context  
+- rule identity (`spec_set_hash`)  
+
+If a receipt and session disagree:
+
+- receipt prevails  
+
+---
+
+# 4. Resolution Index
+
+## ENG-COMP-03 — Deterministic Index Construction
+
+The Engine must construct a resolution index from:
+
+- all Resolutions in the Area  
+- all LEGITIMACY receipts  
+
+The index must include:
 
 - resolution_id  
-- accepted_at  
-- session_id  
+- originating_session_id  
 - state  
-- supersedes_resolution_id (nullable)  
-- receipt_hash  
+- superseded_by (if present)  
+- spec_set_hash  
 
-The state field may contain:
+The index must:
 
-- ACTIVE  
+- include all resolutions regardless of state  
+- be fully derivable from domain objects  
+- be deterministic across implementations  
+
+---
+
+# 5. Ordering Model
+
+## ENG-COMP-04 — No Timestamp Authority
+
+Compilation must not depend on:
+
+- timestamps (`accepted_at`, `created_at`, etc.)
+- audit ordering  
+- storage ordering  
+
+Canonical ordering is derived from:
+
+- supersession relationships  
+- deterministic structural ordering  
+- resolution index consistency  
+
+If additional ordering is required for deterministic processing:
+
+- it must be derived from canonical identifiers (e.g., lexicographic ordering)  
+- it must not imply legitimacy precedence  
+
+---
+
+# 6. Supersession Reconstruction
+
+## ENG-COMP-05 — Graph Reconstruction
+
+Compilation must:
+
+- reconstruct supersession edges from Resolution objects  
+- validate graph acyclicity  
+- enforce Area-local constraints  
+
+Supersession semantics are defined in ENG-SUPERSESSION.
+
+Compilation must not redefine:
+
+- conflict rules  
+- acceptance race semantics  
+
+---
+
+# 7. Conflict Handling
+
+## ENG-COMP-06 — Structural Conflict Detection Only
+
+Compilation detects structural inconsistencies such as:
+
+- multiple resolutions superseding the same target inconsistently  
+- missing supersession targets  
+- cycles  
+- invalid state transitions  
+
+On conflict:
+
+- compilation must fail (StructuralIntegrityFailure)  
+- no heuristic resolution permitted  
+
+Compilation must not:
+
+- choose a “winner”  
+- reject previously accepted sessions  
+- reinterpret legitimacy  
+
+---
+
+# 8. Incremental Compilation
+
+## ENG-COMP-07 — Incremental Ingestion
+
+Incremental compilation allows partial ingestion of historical artifacts.
+
+Requirements:
+
+- all referenced objects must be present or staged  
+- receipts must validate (ENG-RECEIPT + ENG-CANON)  
+- spec_set_hash must pass verification (ENG-SPECVERIFY)  
+
+The Engine must:
+
+- merge new artifacts into the existing graph  
+- rebuild the resolution index deterministically  
+- re-run structural validation (ENG-INTEGRITY)  
+
+If dependencies are missing:
+
+- fail with deterministic error  
+- do not partially apply  
+
+---
+
+# 9. Administrative State Handling
+
+## ENG-COMP-08 — Administrative States Are Non-Structural
+
+Resolution states:
+
 - UNDER_REVIEW  
 - RETIRED  
-- SUPERSEDED  
 
-The index must contain all resolutions regardless of state.
+affect:
 
-The resolution index is used for:
+- runtime usability  
 
-- dependency validation  
-- conflict detection  
-- supersession validation  
-- canonical replay ordering  
+They do not affect:
 
-The index must be deterministic.
+- historical legitimacy  
+- supersession reconstruction  
+- DAG structure  
 
-Identical DAG inputs must produce identical resolution indexes.
+Compilation must treat them as:
 
----
-
-# 4. Canonical Replay Ordering
-
-Historical sessions must be replayed in deterministic order.
-
-Canonical ordering key:
-
-1. accepted_at timestamp  
-2. receipt_hash  
-
-The receipt hash serves as a deterministic tie-breaker.
-
-All compliant implementations must produce identical replay order.
+- metadata on top of structural graph  
 
 ---
 
-# 5. Compilation Procedure
+# 10. Receipt Verification
 
-Compilation executes the following deterministic procedure:
+## ENG-COMP-09 — Mandatory Receipt Validation
 
-1. Rehydrate the engine using the provided domain graph.  
-2. Build the resolution index from accepted sessions.  
-3. Collect historical sessions to be compiled.  
-4. Verify receipts for each session.  
-5. Sort sessions using canonical replay ordering.  
-6. Replay sessions sequentially.
+For each LEGITIMACY receipt:
 
-For each session:
+- canonical serialization must validate (ENG-CANON)  
+- content_hash must match  
+- spec_set_hash must be verified (ENG-SPECVERIFY)  
 
-- Attempt acceptance using the standard engine acceptance rules.  
-- If acceptance succeeds, create the resolution and update the resolution index.  
-- If acceptance fails, mark the session as REPLAY_REJECTED.
+Failure → StructuralIntegrityFailure
 
-Replay must obey the same legitimacy validation rules as runtime acceptance.
-
-Compilation must never bypass governance rules.
+Compilation must not proceed with invalid receipts.
 
 ---
 
-# 6. Runtime Precedence Rule
+# 11. Determinism Guarantee
 
-If the runtime DAG already contains an accepted session that conflicts with a replayed session:
-
-The replayed session must be marked REPLAY_REJECTED.
-
-Runtime legitimacy always takes precedence over compilation replay.
-
-Compilation must never invalidate previously accepted sessions.
-
----
-
-# 7. Dual Replay Conflict Rule
-
-If two replayed sessions conflict during compilation:
-
-The session appearing earlier in canonical replay order must be accepted.
-
-The later session must be marked REPLAY_REJECTED.
-
-This ensures deterministic DAG construction across implementations.
-
----
-
-# 8. Supersession Validation During Replay
-
-Supersession targets must be structurally valid.
-
-A session attempting to supersede a resolution must reference a resolution whose state is:
-
-- ACTIVE  
-or  
-- UNDER_REVIEW  
-
-Supersession must not target a resolution whose state is:
-
-- RETIRED  
-- SUPERSEDED  
-
-If a session attempts to supersede an invalid target resolution, the session must be marked REPLAY_REJECTED.
-
----
-
-# 9. Replay Rejection Conditions
-
-A session must be marked REPLAY_REJECTED when any of the following conditions occur:
-
-- Supersession conflict with an already accepted resolution  
-- Invalid governance context  
-- Missing resolution dependency  
-- Receipt verification failure  
-- Runtime precedence violation  
-- Invalid supersession target  
-- Structural integrity violation  
-
-Replay rejected sessions must not produce:
-
-- new resolutions  
-- supersession edges  
-- legitimacy receipts  
-
-Replay rejection exists only during compilation.
-
-Runtime sessions must never enter REPLAY_REJECTED state.
-
----
-
-# 10. Incremental Compilation
-
-Incremental compilation allows historical sessions to be applied without reconstructing the entire DAG.
-
-During incremental compilation the engine must:
-
-- verify session receipts  
-- validate resolution dependencies  
-- update the resolution index  
-- enforce deterministic replay rules  
-
-If required dependencies are missing, compilation must fail with:
-
-RESOLUTION_MISSING
-
-Compilation must not proceed until required domain objects are supplied.
-
----
-
-# 11. Administrative State Handling
-
-Administrative review states must not affect canonical replay behavior.
-
-During compilation:
-
-- UNDER_REVIEW must not affect replay ordering  
-- UNDER_REVIEW must not alter structural legitimacy  
-- UNDER_REVIEW must not affect supersession graph reconstruction  
-
-Administrative states affect runtime evaluation only.
-
-They must not change legitimacy history during compilation.
-
----
-
-# 12. Determinism Requirement
-
-Compilation must be fully deterministic.
+## ENG-COMP-10 — Fully Deterministic Reconstruction
 
 Given identical inputs:
 
 - domain objects  
-- sessions  
 - receipts  
-- timestamps  
+- resolutions  
 
-All compliant engines must produce identical results for:
+All implementations must produce identical:
 
 - resolution index  
 - supersession graph  
-- ACTIVE resolution set  
-- replay rejection outcomes  
+- ACTIVE set  
 
-Heuristics, non-deterministic ordering, or environment-dependent behavior are prohibited.
+Compilation must not depend on:
+
+- timestamps  
+- environment  
+- execution order  
 
 ---
 
-# 13. Audit Requirements
+# 12. Audit Interaction
 
-Compilation must emit audit events documenting compilation activity.
+## ENG-COMP-11 — Audit Is Ignored
 
-Required events include:
+Compilation must not:
 
-- COMPILATION_STARTED  
-- SESSION_IMPORTED  
-- SESSION_REPLAY_ACCEPTED  
-- SESSION_REPLAY_REJECTED  
-- COMPILATION_COMPLETED  
+- read audit logs  
+- derive ordering from audit  
+- depend on audit presence  
 
-Audit records must include:
+Audit may record compilation activity, but:
 
-- session_id  
-- resolution_id  
-- receipt_hash  
-- rejection_reason  
+- must not influence outcomes  
 
-Audit events must not influence legitimacy evaluation.
+---
 
-Audit is observational only.
+# 13. Failure Semantics
+
+## ENG-COMP-12 — Fail-Closed Behavior
+
+Compilation must fail if:
+
+- structural inconsistencies exist  
+- receipts fail validation  
+- supersession graph invalid  
+- references missing  
+
+Failure must be:
+
+- deterministic  
+- non-mutating  
+- complete (no partial graph acceptance)  
 
 ---
 
 # 14. Engine Invariants
 
-Compilation must never:
+- Compilation never creates legitimacy  
+- Compilation never replays acceptance  
+- Compilation never overrides receipts  
+- Compilation never uses timestamps for authority  
+- Compilation never resolves conflicts heuristically  
+- Compilation always derives from canonical artifacts  
+- Compilation always deterministic  
 
-- rewrite accepted sessions  
-- fabricate supersession edges  
-- modify receipts  
-- invalidate historical legitimacy  
+---
 
-Compilation may only:
+# 15. Mental Model
 
-- replay legitimate sessions  
-- reconstruct the resolution index  
-- reject invalid sessions deterministically  
+Compilation reconstructs the past.
 
-The engine remains a deterministic legitimacy compiler.
+- Receipts define what happened  
+- Resolutions define structure  
+- Supersession defines evolution  
+- Integrity defines validity  
+
+Compilation does not decide history.
+
+It proves history is internally consistent.

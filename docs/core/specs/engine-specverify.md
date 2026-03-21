@@ -1,19 +1,25 @@
 # ENG-SPECVERIFY — Specification Identity & Verification
-Status: FROZEN (v1 – Engine Rule Identity & Deterministic Specification Verification)
-Applies to: Engine Core (V1/V2+)
-Scope: Engine rule identity, specification manifest embedding, spec-set hashing, verification of exported artifacts, and long-term rule provenance
 
-Authority: Foundational to all Engine behavior specifications
+Status: REFACTORED (v2 – Reference-Driven Rule Identity Model)  
+Applies to: Engine Core (V1/V2+)  
+Scope: Engine rule identity, manifest embedding, spec-set hashing, and deterministic provenance verification
+
+Authority: Foundational authority for Engine rule identity and specification provenance.
 
 Subordinate to: None
 
 Referenced by:
-ENG-DOMAIN
-ENG-SESSION
-ENG-DECISION
-ENG-RECEIPT
-ENG-INTEGRITY
-ENG-API
+
+- ENG-DOMAIN
+- ENG-SESSION
+- ENG-DECISION
+- ENG-RECEIPT
+- ENG-INTEGRITY
+- ENG-API
+- ENG-CANON
+- ENG-INITIALIZATION
+- ENG-IMPORT
+- ENG-COMPILATION
 
 ---
 
@@ -21,464 +27,450 @@ ENG-API
 
 ENG-SPECVERIFY defines how an Engine binary identifies and proves the exact rule set it enforces.
 
-The purpose of specification verification is to:
+It is the authoritative specification for:
 
-- Bind an Engine binary to a deterministic set of specifications
-- Prevent silent reinterpretation of historical legitimacy events
-- Allow deterministic cross-version verification
-- Support long-term institutional auditability
-- Enable transparent fork differentiation
-- Provide rule provenance for exported artifacts
+- specification manifest structure
+- deterministic specification hashing
+- spec_set_hash construction
+- rule provenance fields carried by Engine artifacts
+- verification outcomes for historical artifacts
+- prohibition of silent rule reinterpretation
+
+ENG-SPECVERIFY does not define:
+
+- legitimacy
+- session mechanics
+- receipt structure
+- canonical byte encoding for domain artifacts
+- binary authenticity or supply-chain trust
+- governance semantics
+
+Those are defined elsewhere.
 
 Specification verification does not create legitimacy.
 
-Legitimacy is created only through:
-
-- Sessions
-- Authority evaluation
-- Deterministic acceptance
-- Immutable receipts
-
-Specification verification provides evidence of the rules under which legitimacy was evaluated.
+It provides deterministic evidence of the rule system under which legitimacy was evaluated.
 
 ---
 
 # 2. Core Principle
 
-An Engine instance must be able to answer the following deterministically:
+## ENG-SPECVERIFY-01 — The Engine Must Be Self-Describing
+
+An Engine instance must be able to answer deterministically:
 
 “What exact rule set does this binary enforce?”
 
-The answer must be:
+That answer must be:
 
-- Machine-verifiable
-- Immutable for the lifetime of the binary
-- Independent of external repositories
-- Deterministic across identical builds
-- Explicitly represented in exported artifacts
+- machine-verifiable
+- immutable for the lifetime of the binary
+- independent of external repositories
+- deterministic across identical builds
+- explicitly representable in emitted artifacts
 
-The Engine must be self-describing with respect to its rule system.
+The Engine must be self-describing with respect to rule identity.
 
 ---
 
 # 3. Specification Manifest
 
-Every Engine binary must embed a read-only Specification Manifest.
+## ENG-SPECVERIFY-02 — Immutable Embedded Manifest
 
-The manifest defines the full specification set enforced by the binary.
+Every Engine binary must embed a read-only Specification Manifest.
 
 The manifest must include:
 
-engine_version  
-spec_manifest  
-spec_set_hash
+- engine_version
+- spec_manifest
+- spec_set_hash
+- hash_algorithm
 
-Where:
+spec_manifest is a deterministic mapping of specification identifiers to specification hashes.
 
-spec_manifest is a deterministic mapping of specification identifiers to their canonical hashes.
+Each manifest entry must include:
 
-Example conceptual structure:
-
-spec_manifest:
-- ENG-DOMAIN
-- ENG-SESSION
-- ENG-DECISION
-- ENG-RECEIPT
-- ENG-INTEGRITY
-- ENG-ERROR
-- ENG-API
-- ENG-SPECVERIFY
-
-Each entry must include:
-
-spec_name  
-spec_hash
-
-Specification hashes must be deterministic cryptographic hashes of the canonical specification content.
+- spec_name
+- spec_hash
 
 The manifest must be:
 
-- Embedded in the binary
-- Immutable at runtime
-- Deterministic across identical builds
-- Independent of network access
-- Sufficient to uniquely identify the rule set
+- embedded in the binary
+- immutable at runtime
+- deterministic across identical builds
+- independent of network access
+- sufficient to uniquely identify the rule set
+
+ENG-SPECVERIFY is the authority for the manifest concept itself.
 
 ---
 
-# 4. Specification Hash Requirements
+# 4. Specification Hash Rules
 
-Each specification hash must be computed using the Engine's declared hash_algorithm.
+## ENG-SPECVERIFY-03 — Deterministic Specification Hashing
+
+Each specification hash must be computed using the declared hash_algorithm.
 
 Requirements:
 
-- Hash computed over canonical specification text
-- Canonical UTF-8 encoding
-- Deterministic whitespace normalization
-- No environment-dependent transformation
+- hash computed over canonical specification text
+- canonical UTF-8 encoding
+- deterministic normalization rules applied consistently
+- no environment-dependent transformation
 
-If a specification changes in any way that affects rule semantics, the specification hash must change.
+If specification text changes in a rule-relevant way, the resulting spec_hash must change.
 
 Specification hashes must never be mutated retroactively.
+
+ENG-SPECVERIFY defines specification hash meaning.  
+It does not define general canonical serialization of domain artifacts.
 
 ---
 
 # 5. Specification Set Hash
 
-The Engine must compute an aggregate hash representing the full rule set.
+## ENG-SPECVERIFY-04 — spec_set_hash Construction
 
-This value is called:
+spec_set_hash is the canonical identifier of the full rule set enforced by the Engine binary.
 
-spec_set_hash
+It must be computed deterministically from spec_manifest as follows:
 
-The spec_set_hash must be computed deterministically from the spec_manifest.
-
-Algorithm:
-
-1. Sort spec_manifest entries lexicographically by spec_name.
-2. For each entry produce a canonical string:
+1. Sort manifest entries lexicographically by spec_name.
+2. For each entry produce the canonical string:
 
    spec_name + ":" + spec_hash
 
-3. Concatenate the ordered strings with newline separators.
-4. Hash the resulting string using the declared hash_algorithm.
+3. Concatenate entries using newline separators.
+4. Hash the resulting byte sequence with the declared hash_algorithm.
 
 The resulting value is spec_set_hash.
 
 Properties:
 
-- Deterministic
-- Stable across identical implementations
-- Unique to the rule set
-- Independent of build environment
-
-spec_set_hash is the canonical identifier of the Engine's rule system.
+- deterministic
+- stable across identical implementations
+- unique to the manifest-defined rule set
+- independent of runtime environment
 
 ---
 
 # 6. Manifest Immutability
 
+## ENG-SPECVERIFY-05 — No Runtime Rule Substitution
+
 The specification manifest must be immutable.
 
 The Engine must not allow:
 
-- Runtime modification of the manifest
-- Dynamic specification loading
-- Specification replacement
-- Hidden rule extensions
+- runtime modification of the manifest
+- dynamic rule loading
+- hidden rule extensions
+- specification replacement without manifest change
+- undocumented rule enforcement
 
-Any binary that claims to enforce specifications not present in its manifest is inconsistent.
+If a binary enforces rules not represented in its manifest, it is inconsistent.
 
-Such behavior constitutes an Engine defect.
+That constitutes an Engine defect.
 
 ---
 
-# 7. Export Artifact Requirements
+# 7. Provenance-Carrying Artifacts
 
-All exported artifacts must explicitly record rule provenance.
+## ENG-SPECVERIFY-06 — Rule Provenance Must Be Explicit
 
-Exported artifacts include:
+Artifacts that preserve or export Engine-evaluated structural truth must carry explicit rule provenance.
 
-- Receipts
-- DAG exports
-- Snapshots
-- External verification packages
+Such artifacts include, where applicable:
 
-Each exported artifact must include:
+- receipts
+- exported DAGs
+- snapshots
+- external verification bundles
+- other explicitly declared provenance-bearing structural exports
 
-engine_version  
-spec_set_hash  
-export_schema_version  
-hash_algorithm
+At minimum, provenance fields must include:
 
-These fields must be explicit.
+- engine_version
+- spec_set_hash
+- hash_algorithm
+- export_schema_version where export-specific schema applies
 
 No consumer may infer rule identity implicitly.
 
-This ensures that any artifact can later answer:
-
-- Which Engine version produced it
-- Which exact rule set enforced it
-
 ---
 
-# 8. Receipt Integration
+## ENG-SPECVERIFY-07 — Receipts Must Carry Rule Identity
 
 Receipts must include:
 
-engine_version  
-spec_set_hash
+- engine_version
+- spec_set_hash
 
-These fields must participate in canonical serialization and hashing.
+These fields must participate in receipt integrity binding as required by ENG-RECEIPT and ENG-CANON.
 
-Therefore:
-
-content_hash = hash(canonical_receipt_content)
-
-Where canonical_receipt_content includes spec_set_hash.
-
-This guarantees that the receipt hash binds:
-
-- session outcome
-- rule set identity
-
-Receipt integrity therefore proves both:
+This ensures that receipt integrity proves both:
 
 - what happened
 - under which rules it happened
 
 ---
 
-# 9. Resolution Provenance (Recommended Integration)
+## ENG-SPECVERIFY-08 — Resolutions May Carry Rule Identity as Structural Provenance
 
-Resolutions should also record:
+Where Resolutions carry:
 
-engine_version  
-spec_set_hash
+- engine_version
+- spec_set_hash
 
-This ensures that governance artifacts remain traceable even if receipts are separated from exported graphs.
+those fields are structural provenance fields.
 
-Resolutions remain immutable once created.
+ENG-DOMAIN governs whether those fields exist structurally.  
+ENG-SPECVERIFY governs what they mean.
 
 ---
 
-# 10. Verification Semantics
+# 8. Verification Semantics
 
-When an Engine loads a receipt or exported artifact it must perform specification verification.
+## ENG-SPECVERIFY-09 — Verification Inputs
 
-Verification compares:
+When the Engine loads or examines a provenance-bearing artifact, specification verification compares:
 
-artifact.spec_set_hash  
-engine.spec_set_hash
+- artifact.spec_set_hash
+- engine.spec_set_hash
 
-Possible outcomes:
+Possible results:
 
-MATCH
+- MATCH
+- LEGACY_MATCH
+- SPEC_SET_UNKNOWN
 
-The Engine enforces the same specification set that created the artifact.
+ENG-SPECVERIFY is the authority for these verification outcomes.
 
-Full verification may proceed.
+---
 
-LEGACY_MATCH
+## ENG-SPECVERIFY-10 — MATCH
 
-The artifact references a spec_set_hash recognized by the Engine as a supported historical specification set.
+MATCH means:
 
-Verification may proceed in legacy verification mode.
+- the artifact references the same specification set enforced by the current Engine
 
-SPEC_SET_UNKNOWN
+Full rule-identity verification may proceed.
 
-The artifact references a specification set unknown to the Engine.
+---
 
-The Engine may:
+## ENG-SPECVERIFY-11 — LEGACY_MATCH
+
+LEGACY_MATCH means:
+
+- the artifact references a historical spec_set_hash explicitly recognized by the Engine as supported for legacy verification
+
+Verification may proceed in historical compatibility mode.
+
+Legacy support must be explicit and deterministic.
+
+---
+
+## ENG-SPECVERIFY-12 — SPEC_SET_UNKNOWN
+
+SPEC_SET_UNKNOWN means:
+
+- the artifact references a specification set unknown to the Engine
+
+In this case the Engine may:
 
 - store the artifact
 - export the artifact
 - report provenance
+- preserve the artifact as historical data
 
 The Engine must not:
 
 - reinterpret the artifact under different rules
 - silently assume compatibility
-- recompute legitimacy
+- recompute legitimacy as though rules matched
+- claim full equivalence
+
+This is the core anti-reinterpretation guarantee.
 
 ---
 
-# 11. Legacy Verification Support
+# 9. Legacy Verification Support
 
-An Engine may optionally support verification of historical rule sets.
+## ENG-SPECVERIFY-13 — Optional Historical Support
 
-If implemented:
+An Engine may optionally support historical specification sets.
 
-supported_spec_sets must be defined as a deterministic mapping:
+If implemented, supported legacy rule sets must be declared as a deterministic mapping:
 
-spec_set_hash → manifest definition
+- spec_set_hash → manifest definition
 
-Legacy verification allows:
+Legacy verification may support:
 
 - historical receipt validation
-- audit reconstruction
-- cross-version legitimacy verification
+- historical export provenance verification
+- cross-version legitimacy analysis
 
 Legacy support must never mutate historical artifacts.
 
 ---
 
-# 12. Relationship to Legitimacy
+# 10. Relationship to Legitimacy
+
+## ENG-SPECVERIFY-14 — Rule Identity Is Not Legitimacy
 
 Specification verification does not determine legitimacy.
 
-Legitimacy is determined exclusively by:
+Legitimacy is determined only by the governing behavioral specifications, including:
 
-- Session mechanics
-- Authority evaluation
-- Deterministic acceptance
-- Receipt emission
+- session mechanics
+- authority evaluation
+- deterministic acceptance
+- receipt emission
 
-Specification verification provides rule provenance.
+Specification verification provides rule provenance only.
 
-In institutional analysis, legitimacy evaluation may consider:
+It answers:
 
-- audit history
-- receipt artifacts
-- specification identity
-- engine version
+- under which rule system the artifact was produced
 
-Together these reconstruct:
+It does not answer:
 
-what occurred  
-under which rules it occurred
+- whether that artifact is legitimate on its own
 
 ---
 
-# 13. Fork Transparency
+# 11. Fork Transparency
 
-Forking is legitimate and expected.
+## ENG-SPECVERIFY-15 — Rule Divergence Must Be Visible
 
-Specification verification does not prohibit:
-
-- alternative implementations
-- specification modification
-- rule divergence
+Forking and alternate implementations are permitted.
 
 However:
 
-A modified binary must not represent itself as enforcing a specification set that differs from its manifest.
+- a modified binary must not claim the identity of a different rule set
+- changed rule text must produce changed spec_hash values
+- changed manifest composition must produce changed spec_set_hash
 
-If specifications change, spec_hash values must change.
+This ensures transparent fork detection.
 
-This produces a different spec_set_hash.
-
-This mechanism enables transparent fork detection.
-
----
-
-# 14. Binary Authenticity Considerations
-
-Specification identity verifies the rule set enforced by a binary.
-
-It does not verify the authenticity or integrity of the binary itself.
-
-Operators are expected to verify the integrity of distributed Engine binaries using checksums or cryptographic signatures provided through the software distribution channel.
-
-Binary packaging, signing, and supply-chain verification are intentionally outside the scope of the Engine specifications.
-
-This separation preserves the distinction between:
-
-Rule Identity — defined by the embedded specification manifest  
-Binary Authenticity — defined by external distribution and packaging processes
-
-Users may combine binary checksum verification with specification identity to create a complete trust chain for operational environments.
+ENG-SPECVERIFY does not prohibit divergence.  
+It prohibits hidden divergence.
 
 ---
 
-# 15. Non-Goals
+# 12. Binary Authenticity Is Out of Scope
 
-Specification verification does not:
+## ENG-SPECVERIFY-16 — Rule Identity Is Not Binary Authenticity
 
-- enforce trust
-- prohibit forks
-- guarantee binary authenticity
-- replace governance
-- modify legitimacy rules
-- alter session mechanics
+Specification identity proves the declared rule set of a binary.
 
-Optional layers such as signatures or build attestations may provide authenticity guarantees.
+It does not prove:
 
-Specification verification concerns only rule identity.
+- binary authenticity
+- distribution integrity
+- supply-chain safety
+- publisher trustworthiness
+
+Those concerns belong outside the Engine specifications.
+
+This separation must remain explicit.
 
 ---
 
-# 16. Stability Guarantees
+# 13. Stability Guarantees
+
+## ENG-SPECVERIFY-17 — Rule Identity Must Remain Stable Per Binary
 
 The specification verification mechanism must remain:
 
 - deterministic
+- immutable for a given binary
 - backward-auditable
-- immutable for each binary
 - independent of runtime configuration
 
 Future versions may:
 
-- add specifications
-- deprecate specifications
+- add specifications to the manifest
 - expand manifest detail
+- support more historical rule sets
 
 Future versions must not:
 
-- allow mutable rule identity
-- allow runtime rule substitution
-- permit undocumented rule enforcement
+- make rule identity mutable
+- allow hidden runtime rule substitution
+- weaken provenance guarantees
+- permit silent reinterpretation
 
 ---
 
-# 17. Long-Term Institutional Durability
+# 14. Long-Term Durability
 
-Receipts and exported artifacts include spec_set_hash and engine_version.
+## ENG-SPECVERIFY-18 — Historical Artifacts Must Remain Interpretable
 
-These fields allow artifacts to remain interpretable independently of the original Engine implementation or repository.
+Artifacts carrying engine_version and spec_set_hash must remain interpretable independently of the original runtime context.
 
-If the specifications referenced by spec_set_hash remain available, future systems can reconstruct:
+If the referenced specification manifest remains available, future systems must be able to determine:
 
-- which rules governed the decision
-- how the session was evaluated
-- which governance structures were applied
+- which rule set governed the decision
+- which Engine version produced the artifact
+- whether the artifact matches, legacy-matches, or diverges from the current rule set
 
-This property enables long-term institutional auditability and prevents silent reinterpretation of historical decisions.
+This supports long-term institutional auditability.
 
 ---
 
-# 18. Engine Invariants
+# 15. Engine Invariants
 
-Every Engine binary must:
-
-Embed a deterministic specification manifest.
-
-Compute spec_set_hash deterministically.
-
-Expose rule identity through the Engine API.
-
-Record spec_set_hash in exported artifacts.
-
-Record spec_set_hash in receipts.
-
-Reject silent rule reinterpretation.
-
-Remain deterministic across implementations.
+- every Engine binary embeds a deterministic specification manifest
+- every Engine binary computes spec_set_hash deterministically
+- rule identity is immutable for the lifetime of the binary
+- provenance-bearing artifacts must record rule identity explicitly
+- the Engine must expose rule identity through the public interface
+- silent rule reinterpretation is forbidden
+- forked rule systems must remain distinguishable
+- historical compatibility, if supported, must be explicit and deterministic
 
 Violation of these invariants constitutes an Engine integrity defect.
 
 ---
 
-# 19. Possible Future Extensions
+# 16. Possible Future Extensions
 
-Future versions of the Engine specifications may define mechanisms that allow receipts or exported artifacts to be evaluated independently of the Engine runtime.
+Future versions may define additional mechanisms for:
 
-Such mechanisms could allow artifacts to act as self-contained verification objects capable of re-evaluating legitimacy decisions using the referenced specification set.
+- standalone artifact verification
+- self-contained receipt verification bundles
+- portable rule-manifest packaging
+- richer historical rule-compatibility models
 
-This document does not define such mechanisms but preserves compatibility for future expansion.
+Any such extension must preserve:
+
+- explicit rule identity
+- deterministic verification
+- prohibition of silent reinterpretation
 
 ---
 
-# 20. Mental Model
-
-Audit answers:
-
-“What happened?”
+# 17. Mental Model
 
 Receipts answer:
 
-“What decision was finalized?”
+“What was finalized?”
 
 Specification verification answers:
 
-“Under which rules did it happen?”
+“Under which rules was it finalized?”
 
-Binary verification answers:
+Audit may answer:
+
+“What actions were observed?”
+
+Binary authenticity answers:
 
 “Is this the binary I intended to run?”
 
-Together these layers provide long-term institutional integrity.
+ENG-SPECVERIFY governs only rule identity.
 
-Nothing in this mechanism grants authority.
-
-It only reveals the rule system under which authority operated.
+It grants no authority.  
+It creates no legitimacy.  
+It prevents silent rule drift.

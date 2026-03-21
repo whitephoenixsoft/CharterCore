@@ -1,267 +1,1318 @@
-# Charter Core — Updated Acceptance Tests (Engine Only, Invariant-Driven)
+# Charter Core — Acceptance Tests (Engine Core, Spec-Aligned)
 
-**Status:** FROZEN (V4 – Deterministic, Invariant-Complete, Extended)  
-**Applies to:** Charter Core Engine  
-**Test Type:** Black-box legitimacy validation  
-**Purpose:** Verify core invariants, session mechanics, governance, and API correctness. CLI/UX excluded.
+Status: REFACTORED (V5 – Authority-Aligned, Deterministic, Runtime-Bound)  
+Applies to: Charter Core Engine  
+Test Type: Black-box library acceptance testing  
+Purpose: Verify constitutional invariants, runtime behavior, structural safety, and interface correctness. CLI and UX concerns excluded.
+
+---
+
+## 1. Purpose
+
+These acceptance tests validate the Engine as a deterministic legitimacy compiler.
+
+They verify:
+
+- legitimacy is created only through explicit session acceptance
+- runtime behavior is deterministic
+- structural integrity is enforced
+- receipts and supersession remain consistent
+- API commands respect mutation and reporting boundaries
+- import, rehydration, and degraded mode behave correctly
+
+These tests do not validate:
+
+- CLI workflow
+- user review workflow
+- file envelope handling
+- operator ergonomics
+- external audit pipelines
+
+---
+
+## 2. Test Model
+
+The tests are black-box from the library boundary.
+
+They exercise:
+
+- public Engine APIs
+- runtime rehydration
+- evaluation commands
+- mutation commands
+- export behavior
+- degraded mode behavior
+
+Tests must assert:
+
+- deterministic outcomes
+- deterministic EvaluationReports
+- absence of hidden mutation
+- structural and legitimacy consistency
+
+Where a test expects failure, it must also assert:
+
+- no unauthorized state mutation occurred
+- no unauthorized artifact was created
+- reporting remained deterministic
 
 ---
 
 ## A. Core Legitimacy & Determinism
 
 ### AT-01 — Explicit Decisions Only
-**Given:** Initialized Area with one ACTIVE Authority and Scope, session with candidates and stances  
-**When:** No explicit acceptance occurs  
-**Then:**  
-- No resolution becomes ACTIVE  
-- Session remains ACTIVE or BLOCKED  
-- Audit captures stances only  
-**Fail if:** Any resolution is inferred  
-**Invariant Alignment:** ENG-LEG-01, ENG-API-15
 
-### AT-02 — Sessions Are the Sole Unit of Legitimacy
-**Given:** Candidates outside any session  
-**When:** Attempted acceptance occurs  
-**Then:** Operation is rejected  
-**Fail if:** Resolution created outside session  
-**Invariant Alignment:** ENG-LEG-02, ENG-INITIALIZATION
+Given:
 
-### AT-03 — Immutable Resolution History
-**Given:** Resolution R1 accepted  
-**When:** Attempted mutation, edit, or deletion  
-**Then:** Operation rejected, R1 queryable  
-**Fail if:** Historical resolution altered without supersession  
-**Invariant Alignment:** ENG-ID-02, ENG-HIST-01
+- a successfully rehydrated Area runtime
+- exactly one structurally valid active Authority
+- exactly one structurally valid active Scope
+- a session containing candidates and votes
 
-### AT-04 — Deterministic Evaluation
-**Given:** Identical session state (participants, stances, Authority, Constraints)  
-**When:** Evaluation runs multiple times  
-**Then:** Outcome identical, no stochastic behavior  
-**Invariant Alignment:** ENG-LEG-04, ENG-INTEGRITY
+When:
 
-### AT-05 — No Semantic Interpretation
-**Given:** Candidates with arbitrary content/rationale  
-**When:** Engine evaluates acceptance  
-**Then:** Only mechanical rules applied  
-**Invariant Alignment:** ENG-LEG-01, ENG-API-15
+- no explicit acceptance command is executed
+
+Then:
+
+- no Resolution is created
+- no LEGITIMACY receipt is emitted
+- the session remains non-terminal unless separately closed
+- legitimacy is not inferred from votes alone
+
+Fail if:
+
+- any legitimacy artifact appears without acceptance
+
+Alignment:
+
+- ENG-LEG-01
+- ENG-LEG-02
+- ENG-ACCEPT-01
+- ENG-API
 
 ---
 
-## B. Areas, Authority, and Scope
+### AT-02 — Sessions Are the Sole Legitimacy Mechanism
+
+Given:
+
+- proposal-like content exists outside any session
+
+When:
+
+- legitimacy is attempted without a valid session acceptance path
+
+Then:
+
+- the operation is rejected
+- no Resolution is created
+- no receipt is emitted
+
+Fail if:
+
+- legitimacy is created outside a session
+
+Alignment:
+
+- ENG-LEG-02
+- ENG-SESSION
+- ENG-DECISION
+- ENG-API
+
+---
+
+### AT-03 — Immutable Resolution History
+
+Given:
+
+- an accepted Resolution exists
+
+When:
+
+- direct mutation, deletion, or overwrite is attempted
+
+Then:
+
+- the operation is rejected
+- the historical Resolution remains queryable
+- accepted context remains unchanged
+
+Fail if:
+
+- accepted history is rewritten in place
+
+Alignment:
+
+- ENG-ID-02
+- ENG-HIST-01
+- ENG-DOMAIN
+- ENG-API
+
+---
+
+### AT-04 — Deterministic Evaluation
+
+Given:
+
+- identical runtime state
+- identical session state
+- identical command input
+
+When:
+
+- evaluation is executed repeatedly
+
+Then:
+
+- EvaluationReports are identical in outcome
+- errors appear in identical order
+- no stochastic variation occurs
+
+Alignment:
+
+- ENG-LEG-04
+- ENG-ERROR
+- ENG-API
+- ENG-CORE-PURITY
+
+---
+
+### AT-05 — No Semantic Interpretation
+
+Given:
+
+- candidates contain arbitrary wording, rationale, or content
+
+When:
+
+- the Engine evaluates or attempts acceptance
+
+Then:
+
+- only mechanical rules affect the result
+- wording does not affect legitimacy outcome
+
+Fail if:
+
+- semantic interpretation changes evaluation outcome
+
+Alignment:
+
+- ENG-CORE-01
+- ENG-LEG-01
+- ENG-DECISION
+
+---
+
+## B. Runtime Entry, Area Boundaries & Governance
 
 ### AT-06 — Areas Are Hard Governance Boundaries
-**Given:** Areas A and B with independent Authority/Scope  
-**When:** Session runs in Area A  
-**Then:** Only Area A Authority/Scope govern session  
-**Invariant Alignment:** ENG-AREA-01, ENG-INTEGRITY
 
-### AT-07 — Authority Is First-Class and Mechanical
-**Given:** ACTIVE Authority AUTH1  
-**When:** New Authority AUTH2 accepted via session  
-**Then:** AUTH2 ACTIVE, AUTH1 SUPERSEDED  
-**Invariant Alignment:** ENG-AUTH-01, ENG-SUP-02
+Given:
 
-### AT-08 — Scope Is First-Class
-**Given:** ACTIVE Scope SCOPE1  
-**When:** New Scope SCOPE2 accepted via session  
-**Then:** SCOPE2 ACTIVE, SCOPE1 SUPERSEDED  
-**Invariant Alignment:** ENG-SCOPE-01
+- two Area graphs with separate governance artifacts
 
-### AT-09 — Context Preservation
-**Given:** Resolution R1 accepted under AUTH1/SCOPE1  
-**When:** Authority/SCOPE later changes  
-**Then:** R1 permanently references AUTH1/SCOPE1  
-**Invariant Alignment:** ENG-CONTEXT-01, ENG-INTEGRITY
+When:
 
-### AT-10 — Area Initialization / SOLE_ACTOR Bootstrapping
-**Given:** New Area with no Authority  
-**When:** First session created  
-**Then:** Session assumes temporary SOLE_ACTOR Authority  
-**Then:** Authority recorded in DAG for audit  
-**Fail if:** First session fails to establish temporary Authority  
-**Invariant Alignment:** ENG-AREA-02, ENG-INTEGRITY
+- one Area is rehydrated into runtime
+
+Then:
+
+- only that Area participates in legitimacy evaluation
+- external Area objects have no governing effect
+
+Fail if:
+
+- legitimacy depends on a foreign Area
+
+Alignment:
+
+- ENG-AREA-01
+- ENG-CORE-03
+- ENG-INTEGRITY
+- ENG-INITIALIZATION
+
+---
+
+### AT-07 — Rehydration Requires a Complete Single-Area Structural Graph
+
+Given:
+
+- a host submits a graph with missing structural references or mixed Area objects
+
+When:
+
+- rehydrate_engine is called
+
+Then:
+
+- initialization fails deterministically
+- runtime is not entered
+- no partial Area runtime is created
+
+Alignment:
+
+- ENG-INITIALIZATION
+- ENG-INTEGRITY
+- ENG-DOMAIN
+- ENG-API
+
+---
+
+### AT-08 — Authority Is First-Class and Mechanical
+
+Given:
+
+- an Area runtime with an active Authority Resolution AUTH1
+
+When:
+
+- a valid Authority supersession is accepted producing AUTH2
+
+Then:
+
+- AUTH2 becomes structurally active
+- AUTH1 becomes superseded
+- historical legitimacy under AUTH1 remains unchanged
+
+Alignment:
+
+- ENG-AUTH-01
+- ENG-SUPERSESSION
+- ENG-DECISION
+- ENG-RECEIPT
+
+---
+
+### AT-09 — Scope Is First-Class
+
+Given:
+
+- an Area runtime with an active Scope Resolution SCOPE1
+
+When:
+
+- a valid Scope supersession is accepted producing SCOPE2
+
+Then:
+
+- SCOPE2 becomes structurally active
+- SCOPE1 becomes superseded
+- historical legitimacy under SCOPE1 remains unchanged
+
+Alignment:
+
+- ENG-SCOPE-01
+- ENG-SUPERSESSION
+- ENG-DECISION
+- ENG-RECEIPT
+
+---
+
+### AT-10 — Context Preservation
+
+Given:
+
+- Resolution R1 was accepted under Authority AUTH1 and Scope SCOPE1
+
+When:
+
+- governance later changes
+
+Then:
+
+- R1 permanently retains AUTH1 and SCOPE1 as historical context
+- later governance changes do not rewrite R1
+
+Alignment:
+
+- ENG-CONTEXT-01
+- ENG-ACCEPT-04
+- ENG-RECEIPT
+- ENG-DOMAIN
+
+---
+
+### AT-11 — Governed Runtime Is Required for Ordinary Legitimacy Evaluation
+
+Given:
+
+- a runtime graph lacking required governance completeness for ordinary evaluation
+
+When:
+
+- a governance-dependent session acceptance is attempted
+
+Then:
+
+- acceptance is rejected or runtime entry fails according to the governing specs
+- no legitimacy is created
+
+Alignment:
+
+- ENG-AREA-02
+- ENG-INTEGRITY
+- ENG-INITIALIZATION
+- ENG-DECISION
 
 ---
 
 ## C. Session Mechanics & Concurrency
 
-### AT-11 — Authority Fixed Per Session
-**Given:** Session started  
-**Then:** Exactly one Authority governs session, cannot change mid-session  
-**Invariant Alignment:** ENG-CONCUR-01, ENG-AUTH-01
+### AT-12 — Governance Context Is Bound to the Session
 
-### AT-12 — Participant Standing Is Action-Based
-**Given:** Authority UNANIMOUS_PRESENT, Participants Alice/Bob/Charlie  
-**When:** Alice/Bob record stances, Charlie none  
-**Then:** Only Alice/Bob counted for evaluation  
-**Invariant Alignment:** ENG-LEG-05
+Given:
 
-### AT-13 — Explicit Dissent Blocks Acceptance
-**Given:** UNANIMOUS_PRESENT Authority, Alice/Bob ACCEPT, Charlie REJECT  
-**Then:** Session blocked, resolution not accepted  
-**Invariant Alignment:** ENG-ACCEPT-01, ENG-SUP-04
+- a session was created under a specific governance context
 
-### AT-14 — Blocking & Revalidation
-**Given:** Session PAUSED/BLOCKED  
-**When:** Authority/Scope changes  
-**Then:** Session cannot resume without revalidation  
-**Invariant Alignment:** ENG-SUP-04, ENG-SUP-05
+When:
 
-### AT-15 — Concurrent Sessions Are Isolated
-**Given:** Two concurrent sessions in same Area, no context changes  
-**Then:** Sessions execute independently  
-**Invariant Alignment:** ENG-CONCUR-01
+- evaluation or acceptance is later attempted
 
-### AT-16 — Supersession Triggers Revalidation
-**Given:** Session S1 references resolution R1, R1 superseded in S2  
-**Then:** S1 cannot accept until revalidated  
-**Invariant Alignment:** ENG-SUP-04, ENG-SUP-05
+Then:
+
+- the session uses its recorded governance references
+- later governance usability changes are handled explicitly by rule
+- governance is not silently swapped mid-session
+
+Alignment:
+
+- ENG-CONTEXT-01
+- ENG-SESSION
+- ENG-DECISION
+- ENG-REVIEW-RETIRED
 
 ---
 
-## D. Resolution Lifecycle
+### AT-13 — Concurrent Sessions Are Isolated Until Explicit Structural Conflict
 
-### AT-17 — Explicit Lifecycle Transitions
-**Given:** Resolution R ACTIVE  
-**When:** Superseded/Retired via session  
-**Then:** State changes explicit, R remains queryable  
-**Invariant Alignment:** ENG-HIST-02, ENG-SUP-01
+Given:
 
-### AT-18 — Lifecycle Changes Require Sessions
-**Given:** Resolution R ACTIVE  
-**When:** Attempted direct mutation to SUPERSEDED/RETIRED  
-**Then:** Operation rejected  
-**Invariant Alignment:** ENG-HIST-02, ENG-API rules
+- two concurrent sessions in the same Area
+- no shared governance invalidation
+- no supersession conflict
 
----
+When:
 
-## E. Import / Export & Integrity
+- both are evaluated independently
 
-### AT-19 — Valid Export Imports Cleanly
-**Given:** Engine export  
-**When:** Imported unchanged  
-**Then:** Import succeeds, references preserved  
-**Invariant Alignment:** ENG-IMP-01, ENG-API-22
+Then:
 
-### AT-20 — Tampering Detection
-**Given:** Modified export  
-**When:** Attempted import  
-**Then:** Import fails or affected resolutions enter UNDER_REVIEW  
-**Invariant Alignment:** ENG-INTEGRITY degraded mode, ENG-API-26
+- they do not interfere with one another
 
-### AT-21 — Structural Integrity Enforced
-**Given:** Export with missing references  
-**When:** Attempted import  
-**Then:** Operation rejected, no partial state created  
-**Invariant Alignment:** ENG-INITIALIZATION, ENG-INTEGRITY
+Alignment:
 
-### AT-22 — Failed Import Side-Effect Free
-**Given:** Existing history  
-**When:** Import fails  
-**Then:** Existing state unchanged  
-**Invariant Alignment:** ENG-INTEGRITY
-
-### AT-23 — Flat Import Creates No Legitimacy
-**Given:** Resolutions without sessions  
-**When:** Imported in CONSOLIDATE mode  
-**Then:** All resolutions UNDER_REVIEW  
-**Invariant Alignment:** ENG-IMP-01, ENG-API rules
+- ENG-CONCUR-01
+- ENG-SUPERSESSION
+- ENG-DECISION
 
 ---
 
-## F. References (Informational Only)
+### AT-14 — Supersession Triggers Explicit Forward Consequence
 
-### AT-REF-01 — References Are Informational
-**Given:** Resolutions with references  
-**When:** Engine evaluates acceptance  
-**Then:** References do not confer authority or precedence  
-**Invariant Alignment:** ENG-INTEGRITY, ENG-INITIALIZATION
+Given:
 
----
+- session S1 depends on Resolution R1
+- another accepted outcome supersedes R1
 
-## G. Constraints & Resume Invariants
+When:
 
-### AT-24 — Constraints Are Authority-Equivalent
-**Given:** Session start  
-**Then:** Constraints affect agreement evaluation, cannot change mid-session  
-**Invariant Alignment:** ENG-CON-01, ENG-SES-03
+- S1 later attempts forward progress
 
-### AT-25 — Candidate Set Freezes on First Stance
-**Given:** Session with candidates  
-**When:** First stance recorded  
-**Then:** Candidates frozen, no add/remove/edit  
-**Invariant Alignment:** ENG-SES-02, ENG-API PRE_STANCE
+Then:
 
-### AT-26 — Resume Cannot Introduce New Legitimacy Rules
-**Given:** Paused or blocked session  
-**When:** Resume attempted  
-**Then:** Authority/constraints unchanged, session cannot create legitimacy until revalidated  
-**Invariant Alignment:** ENG-SES-03, ENG-API-08
+- S1 does not proceed as though R1 were still fully forward-usable
+- the consequence is explicit and deterministic
+
+Alignment:
+
+- ENG-SUP-01
+- ENG-SUP-04
+- ENG-SUPERSESSION
+- ENG-DECISION
 
 ---
 
-## H. Identity
+### AT-15 — Pause and Resume Create a New Deterministic Round
 
-### AT-27 — Stable Object Identity
-**Given:** Created objects  
-**Then:** IDs survive restart, export/import, relocation  
-**Invariant Alignment:** ENG-ID-01, ENG-INTEGRITY
+Given:
 
----
+- a session is paused or temporarily blocked
 
-## I. Audit Supremacy
+When:
 
-### AT-AUD-01 — Complete Audit Context
-**Given:** Session/resolution/candidate lifecycle events  
-**Then:** External system can reconstruct audit  
-**Invariant Alignment:** ENG-API audit rules
+- resume is executed
 
-### AT-AUD-02 — Audit Facts Only
-**Fail if:** Engine interprets meaning  
-**Invariant Alignment:** ENG-LEG-05, ENG-API-05
+Then:
 
-### AT-AUD-03 — Export Deterministically Rehydratable
-**Given:** Export snapshot  
-**Then:** Reimported engine state identical  
-**Invariant Alignment:** ENG-INTEGRITY, ENG-API-22
+- a new round begins
+- participant epochs are reset
+- prior round votes do not carry forward
+- prior round candidates do not carry forward
+- prior round constraints do not carry forward
 
----
+Alignment:
 
-## J. Voting & Acceptance Semantics
-
-### AT-VA-01 — Votes Without Acceptance Create No Legitimacy
-**Given:** Participants vote  
-**When:** No acceptance executed  
-**Then:** No ACTIVE resolution created  
-**Invariant Alignment:** ENG-VOTE-01, ENG-API-15
-
-### AT-VA-02 — Acceptance Freezes Votes
-**Given:** Session accepted  
-**Then:** Votes immutable, mutations rejected  
-**Invariant Alignment:** ENG-INTEGRITY, ENG-API-15
-
-### AT-VA-03 — Acceptance Uses Frozen Participant Set
-**Given:** Participants frozen at stance start  
-**Then:** Late joiners ignored, deterministic outcome  
-**Invariant Alignment:** ENG-INTEGRITY
-
-### AT-VA-04 — Acceptance Cannot Be Replayed
-**Given:** Session accepted  
-**Then:** Re-attempt rejected, no duplicate ACTIVE resolutions  
-**Invariant Alignment:** ENG-ID-02, ENG-INTEGRITY
-
-### AT-VA-05 — Legitimacy Non-Retroactivity
-**Given:** Votes, Authority, Scope changed post-acceptance  
-**Then:** Past resolution legitimacy unchanged  
-**Invariant Alignment:** ENG-ACCEPT-04, ENG-INTEGRITY
+- ENG-SES-03
+- ENG-SESSION
+- ENG-DECISION
 
 ---
 
-## K. Degraded Mode
+### AT-16 — Resume Does Not Override Forward Usability Rules
 
-### AT-DM-01 — Degraded Read-Only Mode Enforcement
-**Given:** Missing optional artifacts or audit unavailability  
-**When:** Mutating command executed  
-**Then:** Engine rejects with DEGRADED_MODE_ACTIVE  
-**Then:** Read-only queries, evaluation, and DAG export still permitted  
-**Invariant Alignment:** ENG-INTEGRITY 10, ENG-API-08
+Given:
+
+- a session is blocked because a referenced artifact is unusable
+
+When:
+
+- resume is attempted
+
+Then:
+
+- resume does not silently restore legitimacy eligibility
+- forward progress still depends on explicit revalidation under current rules
+
+Alignment:
+
+- ENG-SUP-05
+- ENG-REVIEW-RETIRED
+- ENG-SESSION
+- ENG-DECISION
+
+---
+
+## D. Candidates, Constraints & Voting
+
+### AT-17 — Candidates Are Neutral Until Accepted Outcome Exists
+
+Given:
+
+- candidates exist inside a session
+
+When:
+
+- a candidate is rejected, abandoned, removed, or never accepted
+
+Then:
+
+- no legitimacy artifact is created from that candidate alone
+
+Alignment:
+
+- ENG-SES-01
+- ENG-LEG-02
+- ENG-DECISION
+
+---
+
+### AT-18 — Candidate Set Freezes at the Vote Boundary
+
+Given:
+
+- a session is in mutable pre-vote state
+
+When:
+
+- the session enters voting
+
+Then:
+
+- candidate structure becomes frozen for that round
+- add/remove/edit candidate operations fail thereafter for that round
+
+Alignment:
+
+- ENG-SES-02
+- ENG-SESSION
+- ENG-API
+
+---
+
+### AT-19 — Constraints Are Engine-Enforced
+
+Given:
+
+- explicit constraints exist in a session
+
+When:
+
+- evaluation or acceptance is executed
+
+Then:
+
+- constraints are mechanically enforced
+- unsatisfied constraints prevent acceptance
+- constraints do not silently alter Authority or Scope
+
+Alignment:
+
+- ENG-CON-01
+- ENG-DECISION
+- ENG-SESSION
+
+---
+
+### AT-20 — Votes Are Evaluative Only
+
+Given:
+
+- votes have been recorded in a session
+
+When:
+
+- acceptance has not yet occurred
+
+Then:
+
+- no legitimacy exists yet
+- no Resolution exists yet
+
+Alignment:
+
+- ENG-VOTE-01
+- ENG-ACCEPT-01
+- ENG-DECISION
+
+---
+
+### AT-21 — Explicit Dissent Has Mechanical Effect
+
+Given:
+
+- a decision rule where dissent prevents acceptance
+- explicit rejecting vote(s) are recorded
+
+When:
+
+- acceptance is attempted
+
+Then:
+
+- acceptance fails deterministically
+- no legitimacy artifact is created
+
+Alignment:
+
+- ENG-LEG-05
+- ENG-DECISION
+- ENG-ERROR
+
+---
+
+### AT-22 — Acceptance Uses Frozen Structural Inputs
+
+Given:
+
+- a session has crossed into voting
+- participant and candidate sets are frozen for the round
+
+When:
+
+- acceptance is attempted
+
+Then:
+
+- outcome depends only on the frozen round structures and vote state
+- late structural modifications do not participate
+
+Alignment:
+
+- ENG-SESSION
+- ENG-DECISION
+- ENG-ACCEPT-03
+
+---
+
+## E. Acceptance, Receipts & Non-Retroactivity
+
+### AT-23 — Explicit Acceptance Creates Legitimacy
+
+Given:
+
+- a valid session in an acceptable runtime state
+- all applicable acceptance conditions are satisfied
+
+When:
+
+- explicit acceptance is attempted
+
+Then:
+
+- a Resolution is created
+- the session becomes ACCEPTED
+- a LEGITIMACY receipt is emitted
+- required supersession effects are applied
+- all occur atomically
+
+Alignment:
+
+- ENG-ACCEPT-01
+- ENG-ACCEPT-02
+- ENG-PERSISTENCE
+- ENG-RECEIPT
+- ENG-DECISION
+
+---
+
+### AT-24 — Acceptance Cannot Be Replayed
+
+Given:
+
+- a session has already been accepted
+
+When:
+
+- acceptance is attempted again
+
+Then:
+
+- no duplicate legitimacy artifact is created
+- the operation is rejected or no-op according to the governing command semantics
+- historical legitimacy remains singular
+
+Alignment:
+
+- ENG-ID-02
+- ENG-SESSION
+- ENG-API
+- ENG-ERROR
+
+---
+
+### AT-25 — Acceptance Freezes Historical Truth
+
+Given:
+
+- a session has been accepted
+
+When:
+
+- post-acceptance mutation of vote history or accepted context is attempted
+
+Then:
+
+- mutation is rejected
+- historical accepted truth remains unchanged
+
+Alignment:
+
+- ENG-ACCEPT-03
+- ENG-ACCEPT-04
+- ENG-RECEIPT
+- ENG-DOMAIN
+
+---
+
+### AT-26 — Later Governance Changes Do Not Rewrite Historical Receipts
+
+Given:
+
+- a LEGITIMACY receipt exists for an accepted session
+
+When:
+
+- referenced artifacts later become UNDER_REVIEW, RETIRED, or SUPERSEDED
+
+Then:
+
+- the receipt remains historically valid
+- past legitimacy is not revoked or rewritten
+
+Alignment:
+
+- ENG-HIST-03
+- ENG-REVIEW-RETIRED
+- ENG-RECEIPT
+
+---
+
+### AT-27 — Closed Sessions Emit EXPLORATION Receipts Only
+
+Given:
+
+- a session closes without accepted legitimacy
+
+When:
+
+- close_session succeeds
+
+Then:
+
+- an EXPLORATION receipt is emitted
+- no Resolution is created
+
+Alignment:
+
+- ENG-RECEIPT
+- ENG-PERSISTENCE
+- ENG-SESSION
+- ENG-API
+
+---
+
+## F. Review, Retirement & Supersession
+
+### AT-28 — UNDER_REVIEW Suspends Forward Usability Only
+
+Given:
+
+- a Resolution later enters UNDER_REVIEW
+
+When:
+
+- historical receipts or past accepted legitimacy are examined
+
+Then:
+
+- past legitimacy remains intact
+- only forward usability is affected
+
+Alignment:
+
+- ENG-HIST-03
+- ENG-REVIEW-RETIRED
+
+---
+
+### AT-29 — RETIRED Suspends Forward Usability Only
+
+Given:
+
+- a Resolution later enters RETIRED
+
+When:
+
+- historical receipts or past accepted legitimacy are examined
+
+Then:
+
+- past legitimacy remains intact
+- only forward usability is affected
+
+Alignment:
+
+- ENG-HIST-03
+- ENG-REVIEW-RETIRED
+
+---
+
+### AT-30 — Supersession Is One-Way
+
+Given:
+
+- Resolution R1 has been superseded
+
+When:
+
+- an operation attempts to restore R1 as structurally active
+
+Then:
+
+- the operation is rejected
+- structural ACTIVE does not revert
+
+Alignment:
+
+- ENG-HIST-04
+- ENG-SUP-01
+- ENG-SUPERSESSION
+
+---
+
+### AT-31 — Administrative State Does Not Alter Structural ACTIVE Derivation
+
+Given:
+
+- a structurally active Resolution enters UNDER_REVIEW or RETIRED
+
+When:
+
+- structural graph properties are reconstructed
+
+Then:
+
+- graph-derived structural relationships remain unchanged
+- only forward usability semantics differ
+
+Alignment:
+
+- ENG-HIST-03
+- ENG-SUPERSESSION
+- ENG-REVIEW-RETIRED
+
+---
+
+## G. Import, Rehydration & Compilation
+
+### AT-32 — Import Does Not Create Legitimacy
+
+Given:
+
+- historical artifacts are submitted through import or rehydration paths
+
+When:
+
+- no already-valid legitimacy artifacts exist for the claimed historical legitimacy
+
+Then:
+
+- import fails or remains non-activating according to the governing spec
+- legitimacy is not manufactured by import
+
+Alignment:
+
+- ENG-IMP-01
+- ENG-IMPORT
+- ENG-INITIALIZATION
+
+---
+
+### AT-33 — Valid Export Rehydrates Cleanly
+
+Given:
+
+- an Engine export generated from a valid runtime
+
+When:
+
+- that export is rehydrated unchanged
+
+Then:
+
+- runtime entry succeeds
+- structural state is preserved
+- legitimacy history is preserved deterministically
+
+Alignment:
+
+- ENG-API
+- ENG-INITIALIZATION
+- ENG-INTEGRITY
+
+---
+
+### AT-34 — Tampering Is Detected
+
+Given:
+
+- an exported structural artifact set is modified
+
+When:
+
+- rehydration or validation is attempted
+
+Then:
+
+- receipt, structure, or provenance validation fails deterministically
+- runtime does not silently accept tampered legitimacy
+
+Alignment:
+
+- ENG-INTEGRITY
+- ENG-RECEIPT
+- ENG-CANON
+- ENG-SPECVERIFY
+
+---
+
+### AT-35 — Failed Rehydration Is Side-Effect Free
+
+Given:
+
+- an existing valid runtime or persisted exported state
+- a new invalid graph is submitted for rehydration
+
+When:
+
+- initialization fails
+
+Then:
+
+- no partial runtime entry occurs
+- no legitimacy artifacts are created
+- no hidden repair occurs
+
+Alignment:
+
+- ENG-INITIALIZATION
+- ENG-INTEGRITY
+- ENG-ERROR
+
+---
+
+### AT-36 — Compilation Reconstructs, It Does Not Re-Decide
+
+Given:
+
+- a historical graph with valid receipts and Resolutions
+
+When:
+
+- compilation or historical reconstruction is executed
+
+Then:
+
+- the graph is reconstructed deterministically
+- legitimacy is not re-evaluated from scratch
+- receipts are treated as historical source artifacts
+
+Alignment:
+
+- ENG-COMP-01
+- ENG-COMPILATION
+- ENG-RECEIPT
+
+---
+
+### AT-37 — Compilation Does Not Use Timestamp Authority
+
+Given:
+
+- historical artifacts with timestamps
+
+When:
+
+- compilation reconstructs the graph
+
+Then:
+
+- legitimacy precedence is not derived from timestamps alone
+- deterministic reconstruction uses canonical structural rules only
+
+Alignment:
+
+- ENG-COMPILATION
+- ENG-CORE-PURITY
+- ENG-INTEGRITY
+
+---
+
+## H. Identity, References & Locality
+
+### AT-38 — Stable Object Identity
+
+Given:
+
+- Engine-created structural objects
+
+When:
+
+- the graph is exported, re-imported, or rehydrated
+
+Then:
+
+- structural identifiers remain stable
+- identity is preserved across transport
+
+Alignment:
+
+- ENG-ID-01
+- ENG-DOMAIN
+- ENG-CORE-PURITY
+
+---
+
+### AT-39 — Cross-Area References Are Informational Only
+
+Given:
+
+- structural artifacts contain cross-area informational references
+
+When:
+
+- local legitimacy is evaluated
+
+Then:
+
+- those references do not affect legitimacy outcome
+- those references are not treated as structural dependencies
+
+Alignment:
+
+- ENG-AREA-01
+- ENG-CORE-03
+- ENG-CORE-07
+- ENG-DOMAIN
+
+---
+
+### AT-40 — Missing Structural References Fail, Missing Informational References Do Not
+
+Given:
+
+- one graph with missing required structural references
+- one graph with missing only informational external references
+
+When:
+
+- initialization is attempted
+
+Then:
+
+- the first graph fails deterministically
+- the second graph is not invalidated solely for missing informational references
+
+Alignment:
+
+- ENG-DOMAIN
+- ENG-INTEGRITY
+- ENG-INITIALIZATION
+
+---
+
+## I. Audit & Observability
+
+### AT-41 — Audit Never Creates Legitimacy
+
+Given:
+
+- audit records exist describing accepted or attempted actions
+
+When:
+
+- corresponding structural legitimacy artifacts are absent
+
+Then:
+
+- legitimacy is not inferred from audit
+- audit does not substitute for receipts or Resolutions
+
+Alignment:
+
+- ENG-AUD-01
+- ENG-AUD
+- ENG-RECEIPT
+
+---
+
+### AT-42 — Audit Is Observational Only
+
+Given:
+
+- audit events are present, absent, reordered in storage, or externally exported
+
+When:
+
+- Engine evaluation and rehydration occur
+
+Then:
+
+- legitimacy outcomes remain unchanged
+- structural validity does not depend on audit
+
+Alignment:
+
+- ENG-AUD
+- ENG-INITIALIZATION
+- ENG-INTEGRITY
+
+---
+
+### AT-43 — Successful Mutations Produce Audit Events
+
+Given:
+
+- a successful state-changing Engine command
+
+When:
+
+- the command completes
+
+Then:
+
+- corresponding audit events are emitted according to the audit specification
+- audit emission does not define legitimacy, only observability
+
+Alignment:
+
+- ENG-AUD
+- ENG-API
+- ENG-PERSISTENCE
+
+---
+
+## J. Degraded Mode & Runtime Safety
+
+### AT-44 — Degraded Mode Rejects Mutation
+
+Given:
+
+- runtime has entered DEGRADED_READ_ONLY
+
+When:
+
+- a mutating command is executed
+
+Then:
+
+- the command fails deterministically with DEGRADED_MODE_ACTIVE
+- no mutation occurs
+
+Alignment:
+
+- ENG-INTEGRITY
+- ENG-INITIALIZATION
+- ENG-API
+- ENG-ERROR
+
+---
+
+### AT-45 — Degraded Mode Still Permits Safe Read-Only Operations
+
+Given:
+
+- runtime has entered DEGRADED_READ_ONLY
+
+When:
+
+- read-only queries, evaluation, or DAG export are requested
+
+Then:
+
+- those operations remain available if allowed by the governing runtime mode rules
+- no new legitimacy is created
+
+Alignment:
+
+- ENG-INTEGRITY
+- ENG-API
+- ENG-ERROR
+
+---
+
+## K. Atomicity & Crash Safety
+
+### AT-46 — Acceptance Is Atomic
+
+Given:
+
+- acceptance succeeds
+
+When:
+
+- the final accepted legitimacy artifacts are observed
+
+Then:
+
+- session terminal state
+- Resolution creation
+- supersession mutation
+- LEGITIMACY receipt creation
+
+must either all exist together or not exist at all
+
+Alignment:
+
+- ENG-ACCEPT-02
+- ENG-PERSISTENCE
+- ENG-DECISION
+
+---
+
+### AT-47 — Closure Is Atomically Recorded
+
+Given:
+
+- close_session succeeds without acceptance
+
+When:
+
+- terminal closure artifacts are observed
+
+Then:
+
+- CLOSED state and EXPLORATION receipt exist together
+- no Resolution exists for that closure
+
+Alignment:
+
+- ENG-PERSISTENCE
+- ENG-RECEIPT
+- ENG-SESSION
+
+---
+
+### AT-48 — Crash Before Commit Creates No Legitimacy
+
+Given:
+
+- acceptance is interrupted before atomic commit completes
+
+When:
+
+- state is later inspected
+
+Then:
+
+- no accepted legitimacy artifact set exists from that attempt
+
+Alignment:
+
+- ENG-PERSISTENCE
+- ENG-INTEGRITY
+
+---
+
+## L. Reporting & Determinism
+
+### AT-49 — EvaluationReport Is Deterministic
+
+Given:
+
+- identical runtime state
+- identical command input
+
+When:
+
+- the same command is executed repeatedly
+
+Then:
+
+- EvaluationReport outcome is identical
+- errors appear in identical order
+- primary_error_code is identical
+
+Alignment:
+
+- ENG-ERROR
+- ENG-API
+- ENG-CORE-PURITY
+
+---
+
+### AT-50 — Failed Commands Do Not Mutate State
+
+Given:
+
+- a command violates one or more applicable rules
+
+When:
+
+- the command returns REJECTED or BLOCKED
+
+Then:
+
+- no unauthorized state mutation occurs
+- no unauthorized receipt or Resolution is created
+
+Alignment:
+
+- ENG-ERROR
+- ENG-API
+- ENG-SESSION
+- ENG-DECISION
+
+---
+
+## Final Note
+
+These tests verify the Engine as a deterministic legitimacy compiler.
+
+They are library-facing tests only.
+
+They do not define workflow, operator procedure, or CLI ergonomics.
+
+If these tests pass, the Engine satisfies the externally visible behavioral guarantees expected from the current constitutional and detailed specifications.

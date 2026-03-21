@@ -1,347 +1,408 @@
 # ENG-AUD — Audit Event Specification
-Status: DRAFT (Adjusted for V3.1 – Governance & Incremental Compilation)
-Applies to: Engine Core (V1/V2+)
 
-Authority: Subordinate to ENG-DOMAIN, ENG-SESSION, ENG-RECEIPT, ENG-ERROR, ENG-INTEGRITY, ENG-API
+Status: REFACTORED (v4 – Pure Observability Model)  
+Applies to: Engine Core (V1/V2+)  
+Scope: Audit event structure, emission rules, and observability guarantees
 
-If conflict exists, structural and legitimacy rules defined elsewhere take precedence.
+Authority: Observability specification subordinate to ENG-API and ENG-INTEGRITY.
 
-Audit is observational only.
+Subordinate references consumed from:
+
+- ENG-DOMAIN
+- ENG-SESSION
+- ENG-DECISION
+- ENG-SUPERSESSION
+- ENG-RECEIPT
+- ENG-ERROR
+- ENG-CANON
+- ENG-INITIALIZATION
+- ENG-SPECVERIFY
 
 ---
 
 # 1. Purpose
 
-## ENG-AUD-01 — Audit Preserves Accountability
+ENG-AUD defines the Engine’s audit event model.
 
-Audit records exist to answer:
+It is the authoritative specification for:
 
-- What explicit engine action occurred?  
-- When did it occur?  
-- Under which Authority and Scope snapshot context?  
-- Which structural object was affected?  
+- audit event structure
+- audit emission rules
+- audit identity and ordering
+- audit scope classification
+- guarantees of audit non-interference
 
-Audit records:
+Audit answers:
 
-- Do not create legitimacy  
-- Do not alter structural state  
-- Do not confer authority  
-- Do not participate in ACTIVE derivation or evaluation  
-- Do not participate in restore or acceptance validation  
+- what explicit Engine action occurred
+- which structural objects were affected
+- under which governance context it occurred
 
-Fail if:
+Audit does not:
 
-- Audit data influences acceptance  
-- Audit data influences restore behavior  
-- Removing audit changes legitimacy outcomes  
-- Audit ordering alters deterministic engine behavior  
-
-Audit is memory, not law.  
-
-Incremental compilation and session replays must **ignore audit events**; only the resolution index and canonical ordering matter.
+- define legitimacy
+- participate in evaluation
+- affect structural state
+- influence runtime behavior
 
 ---
 
-# 2. Core Principles
+# 2. Non-Authority Principle
 
-## ENG-AUD-02 — Append-Only
+## ENG-AUD-01 — Audit Is Observational Only
 
-- Audit events are immutable, never edited or deleted implicitly  
-- Corrections require new audit events  
+Audit events:
 
-Fail if:
+- do not create legitimacy
+- do not modify structural state
+- do not influence evaluation or acceptance
+- do not participate in restore or rehydration
+- do not affect supersession or ACTIVE derivation
 
-- Audit records modified in place  
-- Audit history rewritten  
-- Events silently dropped  
+The Engine must not:
 
-## ENG-AUD-03 — Engine Is Audit Producer Only
+- consult audit data for decision-making
+- depend on audit presence for correctness
+- derive ordering or precedence from audit
 
-- Engine emits audit events as side effects of successful commands  
-- Must not consult audit events for:
-  - Rehydration  
-  - Evaluation  
-  - Acceptance  
-  - Blocking decisions  
-  - Supersession derivation  
-- Must not reconstruct or repair state using audit  
+Removal or corruption of audit must not change:
 
-Fail if:
+- legitimacy outcomes
+- structural validity
+- runtime behavior
 
-- Engine logic depends on audit queries  
-- Restore requires audit records  
-- Acceptance behavior differs based on audit presence  
+Audit is memory, not law.
 
 ---
 
-# 3. Deterministic Emission Rules
+# 3. Emission Model
 
-## ENG-AUD-04 — Emission After Commit
+## ENG-AUD-02 — Emission After Successful Mutation
 
-- Audit emission occurs only after successful state mutation and terminal commit  
-- Not emitted for failed commands or evaluation-only operations  
-- Does not affect transaction atomicity  
+Audit events are emitted only after successful Engine operations that mutate state.
 
----
+Audit must not be emitted for:
 
-# 4. Audit Scope Model
+- failed commands
+- evaluation-only operations
+- rejected acceptance attempts
 
-## ENG-AUD-05 — Exactly One Scope Per Event
+Audit emission:
 
-- Each audit event belongs to exactly one scope: GLOBAL or AREA:<area_id>  
-- Scope defines organizational boundary only  
+- occurs after the underlying operation succeeds
+- must not be part of the atomic legitimacy boundary
+- must not affect success or failure of the operation
 
-Fail if:
-
-- Auditable action exists without scope  
-- Scope influences legitimacy, restore, or evaluation  
-
-## ENG-AUD-06 — GLOBAL Scope Is Immutable
-
-- GLOBAL scope must always exist  
-- Cannot be deleted, superseded, or renamed  
-- Used for area lifecycle, import/export, hash migrations, cross-area structural events, engine initialization/halt  
-
-Fail if:
-
-- GLOBAL scope missing  
-- GLOBAL scope mutable  
+Atomicity rules are defined in ENG-PERSISTENCE.  
+Audit is outside that boundary.
 
 ---
 
-# 5. Auditable Actions
+## ENG-AUD-03 — Engine as Sole Producer
 
-## ENG-AUD-07 — Required Audit Emissions
+The Engine is the only producer of audit events.
 
-Successful engine actions that must emit audit events include:
+The Engine must not:
 
-Lifecycle:
+- ingest audit as input
+- reconstruct state from audit
+- repair state using audit
+- require audit for initialization
 
-- Session creation, pause, resume, close, terminal transition (ACCEPTED/CLOSED)
-
-Participation:
-
-- Participant added/removed  
-- Resume-triggered participant reset  
-
-Structure:
-
-- Candidate added/removed (PRE_STANCE only)  
-- First/subsequent vote recorded  
-- Resolution created (ACCEPTED)  
-- Resolution superseded  
-- Resolution retired  
-- Resolution state change to UNDER_REVIEW  
-
-Governance:
-
-- Authority slot filled  
-- Scope slot filled  
-- BLOCK_TEMPORARY / BLOCK_PERMANENT entered  
-
-Integrity & Maintenance:
-
-- Engine rehydration success  
-- Rehydration structural failure  
-- Degraded mode activation  
-- fsck execution (diagnostic only)  
-- Hash migration  
-
-Import/Export:
-
-- Import start, validation result, completion  
-- Export operation  
-
-Fail if:
-
-- Any state mutation above occurs without emitting audit  
-- Audit emission changes engine outcome  
+Audit is write-only from the Engine’s perspective.
 
 ---
 
-# 6. Identity Rules
+# 4. Append-Only Guarantee
 
-## ENG-AUD-08 — Audit Event Identity
+## ENG-AUD-04 — Immutable Event Log
 
-Each audit event includes:
+Audit events are append-only.
 
-- `event_id` — UUIDv7  
-- `occurred_at` — UTC ISO 8601 timestamp with timezone  
+The Engine must not:
 
-Rules:
+- modify existing audit events
+- delete audit events implicitly
+- reorder historical audit entries
 
-- event_id must be UUIDv7 and globally unique  
-- Timestamp is **informational only**  
-- Event ordering for legitimacy is **never derived from timestamp**  
-
-Incremental compilation sessions and replay use canonical index, not audit timestamps, for deterministic ordering.
-
-Fail if:
-
-- Non-UUIDv7 identifiers used  
-- Timestamp influences structural derivation or acceptance  
+Corrections must be expressed as new events.
 
 ---
 
-# 7. Canonical Audit Event Structure
+# 5. Scope Model
 
-## ENG-AUD-09 — Stable Event Shape
+## ENG-AUD-05 — Event Scope Classification
 
-Every audit event includes:
+Each audit event must belong to exactly one scope:
 
-- `event_id`  
-- `event_type`  
-- `occurred_at`  
-- `actor`  
-- `scope`  
-- `subject`  
-- `context`  
-- `details`  
+- GLOBAL  
+- AREA:<area_id>  
 
-### subject
+Scope defines organizational grouping only.
 
-- `object_type`  
-- `object_id`  
+Scope must not:
 
-### context
-
-- explicit nulls where not applicable:  
-  - `area_id`  
-  - `session_id`  
-  - `authority_resolution_id`  
-  - `scope_resolution_id`  
-
-### details
-
-- Non-semantic only  
-- Must not contain canonical domain objects  
-- Must not be required for restore or legitimacy derivation  
-
-Fail if:
-
-- Event structure varies  
-- Context or subject omitted  
-- Audit payload used to reconstruct state  
+- affect legitimacy
+- affect evaluation
+- affect restore behavior
 
 ---
 
-# 8. Actor Semantics
+## ENG-AUD-06 — GLOBAL Scope Invariant
 
-## ENG-AUD-10 — Actor Is Informational
+GLOBAL scope:
 
-- `actor` opaque identifier, may be null  
-- Does not confer authority  
-- Does not imply permissions  
+- must always exist
+- must be immutable
+- must not be superseded or removed
 
-Fail if:
+Used for:
 
-- Actor alters legitimacy or deterministic behavior  
-
----
-
-# 9. Relationship to Legitimacy
-
-## ENG-AUD-11 — Audit Never Creates Legitimacy
-
-- Audit may reference acceptance  
-- Must not imply acceptance  
-- Resolution must exist in domain storage to be legitimate  
-- Cannot substitute for session acceptance or imply quorum  
-
-Fail if:
-
-- Resolution exists only in audit  
-- ACTIVE derivation consults audit  
-- Acceptance inferred from audit alone  
+- engine lifecycle events
+- rehydration outcomes
+- import/export operations
+- system-level transitions
 
 ---
 
-# 10. Ordering & Export
+# 6. Audit Event Structure
 
-## ENG-AUD-12 — Deterministic Ordering
+## ENG-AUD-07 — Canonical Event Shape
 
-- Audit logs preserve deterministic ordering  
-- Lexicographic by `event_id` for export  
-- Must not depend on storage iteration or timestamp for legitimacy  
+Each audit event must include:
 
-Export must:
-
-- Preserve scope and event identity  
-- Not filter implicitly  
-- Not mutate event shape  
-
----
-
-# 11. Rehydration & Degraded Mode
-
-## ENG-AUD-13 — Rehydration Independence
-
-- Engine does not require audit presence or ordering  
-- Corrupted audit does not affect structural or legitimacy derivation  
-
-## ENG-AUD-14 — Degraded Mode Constraints
-
-- Audit remains append-only  
-- Mutating commands prohibited  
-- Audit does not enable partial legitimacy reconstruction  
+- event_id (UUIDv7)
+- event_type
+- occurred_at (UTC ISO-8601, informational)
+- actor (nullable)
+- scope
+- subject
+- context
+- details
 
 ---
 
-# 12. fsck Interaction
+### Subject
 
-## ENG-AUD-15 — fsck Is Observational
-
-- fsck may emit audit events  
-- Must not mutate domain objects or repair state using audit  
-
-Fail if:
-
-- fsck modifies objects or rewrites audit  
+- object_type  
+- object_id  
 
 ---
 
-# 13. Storage Guarantees
+### Context
 
-## ENG-AUD-16 — Audit Outlives Subjects
+Must include explicit nulls where not applicable:
 
-- Audit must remain accessible even if objects deleted, sessions closed, resolutions superseded  
-- Deleting domain objects must not delete audit  
-
-Fail if:
-
-- Audit absence alters legitimacy  
-- Restore requires audit presence  
+- area_id  
+- session_id  
+- authority_resolution_id  
+- scope_resolution_id  
 
 ---
 
-# 14. Design Guarantees
+### Details
 
-Audit guarantees:
+- informational only  
+- must not contain canonical domain objects  
+- must not be required for structural reconstruction  
 
-- No silent legitimacy transitions  
-- No invisible supersession  
-- No invisible Authority or Scope slot changes  
-- No invisible import/migration  
-- No invisible participant epoch reset  
+Event structure must be stable across implementations.
 
-Audit does **not** guarantee:
+---
 
-- Legitimacy correctness  
-- Structural integrity  
-- Deterministic evaluation  
-- Consensus validity  
+# 7. Identity & Ordering
 
-Those governed elsewhere.
+## ENG-AUD-08 — Event Identity
+
+Each event must have:
+
+- globally unique UUIDv7 `event_id`
+
+The Engine must not:
+
+- reuse event IDs
+- derive meaning from ID ordering beyond deterministic export
+
+---
+
+## ENG-AUD-09 — Timestamp Semantics
+
+`occurred_at`:
+
+- must be UTC ISO-8601
+- is informational only
+
+Timestamps must not:
+
+- influence legitimacy
+- influence ordering for evaluation
+- influence supersession or acceptance
+
+---
+
+## ENG-AUD-10 — Deterministic Export Ordering
+
+Audit export must be deterministic.
+
+Ordering must be:
+
+- lexicographic by `event_id`
+
+Ordering must not depend on:
+
+- timestamps
+- storage order
+- insertion order
+
+---
+
+# 8. Auditable Actions
+
+## ENG-AUD-11 — Emission Coverage
+
+Audit must be emitted for successful Engine operations including:
+
+- session lifecycle transitions
+- participant changes
+- candidate changes
+- vote recording
+- acceptance and closure
+- resolution creation and supersession
+- administrative state transitions (UNDER_REVIEW / ACTIVE)
+- governance slot changes
+- rehydration outcomes
+- degraded mode entry
+- import/export operations
+
+The exact semantics of these actions are defined elsewhere.
+
+ENG-AUD defines only that:
+
+- successful state-changing operations must produce audit events
+- audit must reflect the action that occurred
+
+---
+
+# 9. Actor Semantics
+
+## ENG-AUD-12 — Actor Is Informational
+
+`actor`:
+
+- is optional
+- is opaque
+- does not confer authority
+
+The Engine must not:
+
+- derive permissions from actor
+- use actor in evaluation logic
+
+---
+
+# 10. Relationship to Receipts
+
+## ENG-AUD-13 — Audit vs Receipt
+
+Receipts:
+
+- are structural artifacts
+- define legitimacy outcomes
+
+Audit:
+
+- records that an action occurred
+
+Audit must not:
+
+- substitute for receipts
+- imply legitimacy without corresponding domain objects
+
+If audit and domain objects disagree, domain objects prevail.
+
+---
+
+# 11. Runtime Independence
+
+## ENG-AUD-14 — Rehydration Independence
+
+Initialization must not:
+
+- require audit presence
+- validate audit structure
+- depend on audit ordering
+
+Rehydration rules are defined in ENG-INITIALIZATION and ENG-INTEGRITY.
+
+---
+
+## ENG-AUD-15 — Degraded Mode Behavior
+
+In degraded mode:
+
+- audit may continue to append events (implementation-dependent)
+- audit must not enable mutation or legitimacy creation
+- audit must not compensate for integrity failures
+
+Degraded mode rules are defined in ENG-INTEGRITY.
+
+---
+
+# 12. Storage Independence
+
+## ENG-AUD-16 — Audit Persistence Independence
+
+Audit storage:
+
+- is independent of domain object storage
+- must not affect legitimacy or restore
+
+The Engine must not:
+
+- fail initialization due to missing audit
+- reconstruct audit from domain objects
+- reconstruct domain objects from audit
+
+---
+
+# 13. Determinism Guarantees
+
+## ENG-AUD-17 — Deterministic Emission
+
+Given identical Engine operations:
+
+- identical audit events must be emitted
+- event structure must be identical
+- ordering must be identical for export
+
+Audit must not introduce nondeterminism.
+
+---
+
+# 14. Engine Invariants (Audit Layer)
+
+- Audit never creates legitimacy
+- Audit never influences evaluation
+- Audit never alters structural state
+- Audit never participates in restore
+- Audit never substitutes for receipts
+- Audit never encodes hidden rules
+- Audit ordering never affects outcomes
+
+Violation constitutes an observability defect, not a legitimacy rule.
 
 ---
 
 # 15. Mental Model
 
-- Legitimacy lives in sessions  
-- Structure lives in domain objects and supersession edges  
-- Integrity lives in rehydration and halt rules  
-- Determinism lives in evaluation and canonicalization  
-- Receipts freeze terminal state  
-- Audit records explicit action  
+Audit is the Engine’s observable trace.
 
-Audit observes only.  
+- Sessions create legitimacy
+- Resolutions define structure
+- Receipts freeze outcomes
+- Integrity governs safety
+- API exposes behavior
+
+Audit records what happened.
+
+It does not decide what is valid.
