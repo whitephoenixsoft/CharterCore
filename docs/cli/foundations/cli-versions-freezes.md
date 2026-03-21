@@ -238,93 +238,191 @@ V4 stabilizes cross-language exposure.
 
 ---
 
-### V5 — Guidance, Canon, and Clarification (Read-Only)  
+  ### V5 — Commit Store, VDS/VLS Substrate & Alignment Engine
+
 Status: LOCKED DIRECTION  
 
-V5 introduces read-only guidance layered above factual state.
+V5 introduces the structural and observational substrate required to make alignment mechanically computable.
 
-Guidance may consume:
+This version integrates:
 
-- Engine state  
-- CLI runtime artifacts  
-- Receipts  
-- Commits  
+- Commit storage (truth artifacts)
+- VDS (observational signals)
+- VLS (identity and lineage structure)
+- Alignment Engine (derived computation)
 
-But must never mutate legitimacy.
+V5 is the first version where **intent, identity, and observed reality become computationally related**.
 
 #### Characteristics
 
-- Canon-based descriptive analysis  
-- Drift detection  
-- Summaries  
-- Inconsistency highlighting  
-- Ephemeral output  
-- Stateless operation  
+- Append-only commit model  
+- Signals as first-class, non-legitimate artifacts  
+- Identity-aware lineage and scope modeling  
+- Reconstructed DAG across Areas and identities  
+- Deterministic alignment computation  
+- Derived, queryable alignment state  
+- Cross-area visibility without authority  
 
-#### V5 Explicitly Does NOT
-
-- Create or modify Resolutions  
-- Infer consent  
-- Override authority  
-- Mutate engine state  
-- Produce legitimacy  
-
-**Mental model:**  
-“Help me understand what happened, not what I should do.”
-
----
-
-### V6 — Commit Store & Reflective Federation  
-
-V6 introduces the commit abstraction and local append-only commit stores.
-
-This version absorbs lessons from Value Driven Systems (VDS/VLS) into Charter infrastructure.
-
-Commits become:
-
-- Append-only truth artifacts  
-- Independent units  
-- Auditable  
-- Supersedable, never deleted  
-
-Resolution becomes a subset of Commit.  
-Resolution remains the smallest legitimacy unit.
-
-#### V6 Adds
+#### V5 Adds
 
 - Local commit store (per Context)  
 - Commit identity (UUID)  
-- Commit lineage  
-- Reflective roll-ups  
-- Signals and check-ins (non-legitimate)  
-- Identity-aware aggregation  
+- Commit lineage (append-only, supersedable)  
+- Signal and check-in commits (VDS artifacts)  
+- Identity-aware aggregation (VLS substrate)  
+- Reconstructed distributed DAG (multi-area, multi-identity)  
+- Alignment Engine (deterministic, observational computation layer)  
+- Alignment State Store (derived, rebuildable, query-oriented)  
 - Cross-area visibility without authority  
 
-#### Audit Model
+#### Alignment Engine Role
 
-Commits:
+The Alignment Engine:
 
-- Are immutable  
-- Are append-only  
-- Do not synthesize legitimacy  
-- May reference Areas  
-- May be baseline reviewed into legitimacy  
+- Consumes:
+  - reconstructed VLS DAG  
+  - signal and check-in commits  
+  - identity and area context  
+  - deployment and experiment posture  
 
-Federation roll-ups:
+- Computes:
+  - drift, variance, and signal density  
+  - semantic lattice states  
+  - propagation across lineage  
+  - alignment cones and horizons  
+  - tension, cascades, and shock behavior  
+  - predictive indicators (velocity, acceleration, instability risk)  
 
-- Aggregate artifacts  
-- Must not derive authority  
-- Must not convert signals into obligations  
+- Produces:
+  - derived alignment state (per resolution, area, identity, global)  
 
-#### Explicit Non-Goals
+The Alignment Engine:
 
-- No enforcement  
-- No automated performance metrics  
-- No authority synthesis  
-- No legitimacy outside sessions  
+- Is deterministic  
+- Is rebuildable  
+- Is non-authoritative  
+- Never creates or modifies legitimacy  
 
-**Mental model:**  
-“Truth artifacts accumulate; legitimacy remains local.”
+#### Alignment State Model
+
+Alignment state includes:
+
+- Present state (current observed condition)  
+- Predictive state (directional trends and risks)  
+- Structural state (graph influence and propagation effects)  
+
+All alignment state is:
+
+- Derived from commits and signals  
+- Rebuildable from source artifacts  
+- Never a source of truth  
+
+#### V5 Guarantees
+
+- Resolution remains the smallest legitimacy unit  
+- Legitimacy remains local and session-bound  
+- Signals do not create obligation  
+- Alignment does not create authority  
+- Identity remains governed by VLS invariants  
+- All computed state is derived and reproducible  
+
+#### V5 Explicitly Does NOT
+
+- Enforce behavior  
+- Execute changes  
+- Infer authority  
+- Convert signals into obligations  
+- Create legitimacy outside sessions  
+- Diagnose root cause  
+- Replace human judgment  
+
+
+**V5 mental model:**  
+“Truth accumulates, structure becomes visible, and alignment becomes computable.”
+
+---
+
+### V6 — Guidance, Canon, and Exegesis (Read-Only Interpretation Layer)
+
+Status: LOCKED DIRECTION  
+
+V6 introduces a read-only interpretation layer over all stored and derived artifacts.
+
+Guidance in V6 is **exegesis** — an honest, descriptive interpretation of:
+
+- what was committed  
+- how identity has evolved  
+- what has been observed  
+- how alignment is behaving  
+
+V6 does not compute alignment.  
+It interprets alignment and related artifacts.
+
+#### Characteristics
+
+- Read-only interpretation layer  
+- Canon-based descriptive analysis  
+- Alignment-aware explanation  
+- Narrative and structural summaries  
+- Stateless or ephemeral output  
+- No mutation of any underlying system  
+
+#### V6 Consumes
+
+- Commit store (all commit types)  
+- Receipts (exploration, review, legitimacy)  
+- Signal and check-in artifacts  
+- Identity lineage (VLS)  
+- Alignment state (Alignment Engine output)  
+- Deployment and experiment context  
+
+#### V6 Produces
+
+- Summaries of decisions and evolution  
+- Alignment interpretations  
+- Drift and instability explanations  
+- Tension and conflict descriptions  
+- Identity transition narratives  
+- Inconsistency and ambiguity highlighting  
+- Canon-based descriptive insights  
+
+#### Nature of Exegesis
+
+Guidance may express observations such as:
+
+- persistent misalignment within stable systems  
+- tension between competing goals  
+- instability during identity transitions  
+- alignment recovery after supersession  
+- capacity pressure within areas  
+- deprecated regions that remain structurally relevant  
+
+All outputs are:
+
+- descriptive  
+- non-prescriptive  
+- non-authoritative  
+- explainable  
+
+#### V6 Guarantees
+
+- Guidance is read-only  
+- Guidance does not mutate any state  
+- Guidance does not create legitimacy  
+- Guidance does not infer consent or authority  
+- Guidance does not convert interpretation into obligation  
+
+#### V6 Explicitly Does NOT
+
+- Modify Resolutions  
+- Override authority  
+- Enforce decisions  
+- Execute workflows  
+- Create alignment state (delegated to V5)  
+- Replace human judgment  
+
+**V6 mental model:**  
+“Help me understand what happened, what is happening, and what it appears to mean.”
 
 ---
 
