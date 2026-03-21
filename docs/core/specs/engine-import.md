@@ -1,419 +1,454 @@
-# ENG-IMPORT — Engine Import & Area Activation Specification 
-Status: FROZEN (v3 – Governance Slot Validation Integrated)  
+# ENG-IMPORT — Import Submission, Restore Entry & Historical Graph Intake
+
+Status: REFACTORED (v4 – Reference-Driven Model)  
 Applies to: Engine Core (V1/V2+)  
-Scope: Deterministic Area Restore & Baseline Consolidation  
-Purpose: Define import semantics, governance slot enforcement, receipt validation, and evaluation readiness.
+Scope: Import boundary, restore submission, and historical graph intake
+
+Authority: Import boundary specification subordinate to ENG-API, ENG-INITIALIZATION, and ENG-INTEGRITY.
+
+Subordinate references consumed from:
+
+- ENG-DOMAIN
+- ENG-API
+- ENG-INITIALIZATION
+- ENG-INTEGRITY
+- ENG-RECEIPT
+- ENG-CANON
+- ENG-SPECVERIFY
+- ENG-SUPERSESSION
+- ENG-REVIEW-RETIRED
+- ENG-COMPILATION
 
 ---
 
 # 1. Purpose
 
-This document specifies how the Engine handles import of domain objects for:
+ENG-IMPORT defines how external domain graphs are presented to the Engine for:
 
-1. Area Restore (Full Overwrite)  
-2. Baseline Consolidation (Incremental / Review Mode)
+1. Area Restore
+2. Historical Incremental Intake
 
-Goals:
+It is the authoritative specification for:
 
-- Preserve structural determinism  
-- Enforce invariant compliance  
-- Validate session receipt integrity  
-- Enforce governance slot constraints  
-- Maintain audit and legitimacy traceability  
-- Keep the engine isolated from storage or CLI logic  
+- the import boundary between host and Engine
+- import mode distinctions
+- host vs Engine responsibility separation for import
+- requirements for imported historical legitimacy artifacts
+- the rule that import itself does not create legitimacy
+- the rule that runtime activation occurs only through rehydration / initialization
 
-Receipts are first-class structural artifacts and are validated during restore.
+ENG-IMPORT does not redefine:
 
-Governance slots are structural invariants and must be validated during restore and rehydration.
+- object schemas
+- structural validation doctrine
+- runtime halt conditions
+- receipt schema
+- canonical serialization rules
+- specification identity semantics
+- supersession graph semantics
+- session acceptance rules
+- incremental compilation replay algorithm
+
+Those are defined respectively in:
+
+- ENG-DOMAIN
+- ENG-INTEGRITY
+- ENG-RECEIPT
+- ENG-CANON
+- ENG-SPECVERIFY
+- ENG-SUPERSESSION
+- ENG-DECISION
+- ENG-COMPILATION
+
+ENG-IMPORT defines how historical facts are submitted.  
+Other specifications decide whether those facts are structurally admissible and operationally usable.
+
+---
+
+# 2. Core Principle
+
+## ENG-IMPORT-01 — Import Does Not Create Legitimacy
 
 Import operations must not create legitimacy.
 
-Legitimacy artifacts (Resolution + LEGITIMACY receipt) must already exist and must be historically complete when imported.
+Imported legitimacy artifacts must already exist as finalized historical artifacts.
 
-Import mechanisms may only insert previously finalized legitimacy artifacts into the domain graph.
+Import may only introduce previously created historical objects into an Engine context.
 
-Any attempt to import incomplete legitimacy artifacts must fail.
+The Engine must not during import:
 
----
-
-# 2. Engine vs Host Responsibilities
-
-## ENG-IMPORT-01 — Host / CLI Responsibilities
-
-The host/CLI is responsible for:
-
-- Reading and writing files  
-- Selecting import mode (Restore / Consolidate)  
-- Validating file integrity (hash, signature, envelope)  
-- Providing canonical domain objects to the engine  
-- Handling user review in baseline mode  
-- Rule provenance verification (engine_version, spec_set_hash)
-- Canonical receipt structure validation
-- Deterministic round snapshot validation
-- Lifecycle state validation for imported Resolutions
-- Enforcement that imported legitimacy artifacts are historically complete
-
-The Engine must not:
-
-- evaluate acceptance rules during import
-- simulate session acceptance
+- simulate acceptance
 - generate new Resolutions
 - generate new receipts
+- infer missing governance
+- reconstruct missing legitimacy artifacts
 
-The host must provide a complete and canonical graph.
-
-The engine never reconstructs missing governance.
+If imported legitimacy cannot already be proven from the submitted historical graph, import must fail or remain non-activating according to the authoritative validation outcomes consumed elsewhere.
 
 ---
 
-## ENG-IMPORT-02 — Engine Responsibilities
+# 3. Engine vs Host Responsibilities
+
+## ENG-IMPORT-02 — Host Responsibilities
+
+The host is responsible for:
+
+- reading and writing import media
+- selecting import mode
+- validating transport envelopes, signatures, or file-level integrity if used
+- assembling the submitted graph
+- providing canonical domain objects to the Engine
+- handling review workflows outside the Engine
+- deciding when to request runtime activation
+- deciding whether to submit a full restore graph or historical partial graph
+
+The host may perform pre-validation, but such validation does not replace Engine validation.
+
+---
+
+## ENG-IMPORT-03 — Engine Responsibilities
+
+The Engine is responsible for consuming imported graphs only through the APIs and initialization procedures defined elsewhere.
 
 The Engine is responsible for:
 
-- Structural validation of imported objects  
-- Governance slot exclusivity validation  
-- Governance slot presence validation (Restore mode)  
-- Supersession graph acyclicity  
-- Participant and candidate snapshot integrity  
-- BLOCK_PERMANENT hygiene enforcement  
-- Session receipt validation  
-- Deterministic readiness evaluation  
+- structural validation through ENG-INTEGRITY
+- runtime entry through ENG-INITIALIZATION
+- graph reconstruction through ENG-SUPERSESSION
+- receipt artifact validation through ENG-RECEIPT + ENG-CANON + ENG-SPECVERIFY
+- deterministic outcome reporting through ENG-ERROR and ENG-API
 
-The Engine must not:
-
-- Discover missing objects outside provided graph  
-- Modify object content  
-- Generate new receipts during validation  
-- Perform storage operations  
-- Reconstruct missing Authority or Scope  
-
-Fail if:
-
-- Structural validation fails  
-- Receipt integrity fails  
-- Governance slot invariants fail  
-- Snapshot alignment fails  
-
----
-
-# 3. Governance Slot Model
-
-Per Area, the following slots exist:
-
-- Authority slot  
-- Scope slot  
-
-Slots are exclusive.
-
-Derived Area Governance State (not stored):
-
-- UNINITIALIZED — no ACTIVE Authority  
-- AUTHORITY_DEFINED — exactly one ACTIVE Authority, no ACTIVE Scope  
-- FULLY_GOVERNED — exactly one ACTIVE Authority and one ACTIVE Scope  
-
-Restore validation depends on mode.
+ENG-IMPORT does not create a separate validation doctrine.  
+It defines which imported graph shapes are being submitted for those authorities to evaluate.
 
 ---
 
 # 4. Import Modes
 
-## 4.1 Area Restore (Full Overwrite)
+## ENG-IMPORT-04 — Two Import Modes
 
-Engine receives a complete Area graph including:
+The Engine recognizes two import-intent modes:
 
-- Sessions  
-- Resolutions  
-- Session Receipts  
+1. Area Restore
+2. Historical Incremental Intake
 
-Receipts are mandatory in Restore mode.
+These modes describe submission intent only.
 
-A Restore operation without required receipts is invalid.
+Structural validity, readiness, halt, and runtime mode are determined by:
 
----
-
-### 4.1.1 Governance Slot Requirements (Restore Mode)
-
-For a successful full restore:
-
-The Area must contain:
-
-- Exactly one ACTIVE Authority Resolution  
-- Exactly one ACTIVE Scope  
-
-Fail if:
-
-- No ACTIVE Authority present  
-- More than one ACTIVE Authority present  
-- No ACTIVE Scope present  
-- More than one ACTIVE Scope present  
-- Orphaned Authority or Scope references exist  
-- Governance slots structurally inconsistent  
-
-The Engine must not:
-
-- Infer missing Scope  
-- Infer missing Authority  
-- Promote UNDER_REVIEW objects  
-- Auto-repair slot violations  
-
-Restore is all-or-nothing.
+- ENG-INITIALIZATION
+- ENG-INTEGRITY
+- ENG-SUPERSESSION
+- ENG-SPECVERIFY
 
 ---
 
-### 4.1.2 Receipt Requirements (Restore Mode)
+# 5. Area Restore
 
-For every session in state:
+## ENG-IMPORT-05 — Area Restore Submits a Complete Runtime Graph
 
-- ACCEPTED  
-- CLOSED  
+Area Restore submits a complete Area graph intended for runtime activation.
 
-A corresponding receipt must exist.
+A restore graph must provide all structural artifacts necessary for runtime rehydration of that Area, including as applicable:
 
-The Engine must validate:
+- Sessions
+- Resolutions
+- Receipts
+- supporting structural references
 
-1. receipt_id is valid UUIDv7
-2. receipt_type matches session_state
-3. round snapshots are contiguous
-4. participant_set matches receipt round structure
-5. candidate_set matches receipt round structure
-6. vote_set matches receipt round structure
-7. canonical serialization is valid
-8. content_hash recomputation matches stored value
-9. spec_set_hash exists and is valid
-10. engine_version exists
-11. rule provenance fields match the originating Resolution
+Receipts are mandatory wherever terminal sessions require them under ENG-RECEIPT and ENG-INTEGRITY.
 
-Fail if any verification fails.
+ENG-IMPORT does not independently define completeness validation.  
+It defines the import intent that the submitted graph is complete enough to attempt runtime activation.
 
 ---
 
-### 4.1.3 Structural Enforcement (Restore)
+## ENG-IMPORT-06 — Restore Requires Runtime Rehydration
 
-Engine enforces:
+Area Restore does not activate runtime by itself.
 
-- Supersession graph acyclicity  
-- Exclusive governance slots  
-- Participant set completeness  
-- Candidate and vote snapshot completeness  
-- BLOCK_PERMANENT hygiene  
+Runtime activation occurs only through:
 
-The Engine does not:
+- rehydrate_engine
+- initialization procedures defined in ENG-API and ENG-INITIALIZATION
 
-- Alter domain objects  
-- Recompute or regenerate receipts  
-- Implicitly accept candidates  
+Therefore:
 
-Imported Area becomes active only if validation passes.
-
-Partial restore is rejected.
+- import submission is not runtime entry
+- restore validity is not assumed until rehydration succeeds
+- no partial activation is permitted
 
 ---
 
-## 4.2 Incremental Compilation
+## ENG-IMPORT-07 — Governance Completeness for Restore
 
-The Engine receives a partial domain graph containing historical legitimacy artifacts.
+A restore submission is intended to activate a full Area runtime.
 
-The graph may include:
+Therefore the submitted graph must be capable of satisfying governance structural requirements for runtime activation.
+
+ENG-IMPORT does not define slot validity rules.  
+Those belong to:
+
+- ENG-DOMAIN
+- ENG-SUPERSESSION
+- ENG-INTEGRITY
+
+ENG-IMPORT defines only that a restore submission is expected to provide a graph capable of full runtime entry, not merely historical storage.
+
+---
+
+# 6. Historical Incremental Intake
+
+## ENG-IMPORT-08 — Historical Incremental Intake Submits Historical Legitimacy Artifacts
+
+Historical incremental intake submits a partial historical graph.
+
+It may include:
 
 - Resolutions
 - Sessions
 - Receipts
+- supporting structural references
 
-Receipts are required to prove legitimacy for all terminal sessions.
+Its purpose is historical intake, not immediate legitimacy creation.
 
-The imported graph must pass structural integrity validation as defined in ENG-INTEGRITY.
-
-Governance completeness may be temporarily absent during incremental compilation.
-
-However, any attempt to rehydrate the graph into an active evaluation context must enforce governance slot requirements.
-
-The Engine must not:
-
-- Modify existing receipts
-- Create legitimacy automatically
-- Reconstruct governance implicitly
-
-Imported resolutions may be marked UNDER_REVIEW per ENG-REVIEW.
-
-Validation must fail if:
-
-- Supersession cycles are detected
-- Structural references are unresolved
-- Receipt integrity validation fails
-- Governance slot exclusivity is violated
+Such a graph may be suitable for later replay, historical verification, storage, or incremental compilation workflows depending on the consuming system.
 
 ---
 
-# 5. Object Graph Requirements
+## ENG-IMPORT-09 — Historical Intake May Be Structurally Partial for Runtime, But Not Structurally Fabricated
 
-## ENG-IMPORT-03 — Required Object Properties
+A historical intake graph may be incomplete for live runtime governance activation.
 
-Every imported object must have:
+However, it must not fabricate historical legitimacy.
 
-- Valid UUIDv7 identifier  
-- Deterministic schema version  
-- All references resolved within provided graph (or allowed local graph in baseline mode)
+For any submitted terminal session, required receipts must already exist according to the governing artifact rules.
 
-Imported Resolutions must satisfy lifecycle constraints defined in ENG-REVIEW-RETIRED:
+The Engine must not invent missing legitimacy artifacts to complete the historical graph.
 
-Allowed lifecycle states during import:
-
-- ACTIVE
-- UNDER_REVIEW
-- RETIRED
-- SUPERSEDED
-
-State transitions must not be inferred by the Engine during import.
-
-Fail if:
-
-- References missing  
-- Duplicate ACTIVE Authority detected  
-- Duplicate ACTIVE Scope detected  
-- Structural invariants violated  
+Runtime activation of a historically partial graph still requires the full runtime validations defined elsewhere.
 
 ---
 
-# 6. Governance Hygiene Enforcement
+## ENG-IMPORT-10 — Historical Intake Does Not Bypass Compilation Rules
 
-Engine enforces during restore and rehydration:
+If historical intake is later used for replay or incremental compilation, the authoritative replay and conflict rules belong to ENG-COMPILATION and ENG-SUPERSESSION.
 
-- Exactly one ACTIVE Authority (full restore)  
-- Exactly one ACTIVE Scope (full restore)  
-- No slot multiplicity  
-- No orphaned supersession references  
-- BLOCK_PERMANENT acceptance blocking  
+ENG-IMPORT does not define:
 
-Receipts do not override governance slot invariants.
+- replay ordering
+- resolution index rules
+- historical precedence algorithm
+- replay acceptance policy
 
-Lifecycle state usability must not be altered during import.
-
-Import may insert Resolutions in UNDER_REVIEW or RETIRED state, but must not transition states during validation.
-
-Fail loudly on violation.
+It only defines that imported historical graphs are inputs to those processes, not substitutes for them.
 
 ---
 
-# 7. Deterministic Import Guarantees
+# 7. Imported Artifact Requirements
 
-Given identical:
+## ENG-IMPORT-11 — Imported Objects Must Already Be Domain-Conformant
 
-- Input graph  
-- Import mode  
+Imported objects must conform to ENG-DOMAIN.
 
-Engine must produce identical:
+ENG-IMPORT does not define a second schema.
 
-- Validation outcome  
-- Governance slot evaluation  
-- Receipt integrity result  
-- Readiness state  
+All imported objects must therefore already satisfy, as applicable:
+
+- correct object type structure
+- valid identifier form
+- required schema_version presence
+- valid enum values
+- structural reference form
+- rule provenance field presence where required
+- receipt artifact structure where required
+
+Any failure of those requirements is handled by the consuming validation authorities.
+
+---
+
+## ENG-IMPORT-12 — Imported Legitimacy Artifacts Must Be Historically Complete
+
+Where legitimacy is claimed historically, the imported artifact set must be historically complete enough to support that claim.
+
+For accepted legitimacy this means, at minimum, the relevant structural legitimacy artifacts required by the authoritative specifications must already exist.
+
+ENG-IMPORT intentionally does not restate those artifact rules.  
+They belong to:
+
+- ENG-RECEIPT
+- ENG-PERSISTENCE
+- ENG-INTEGRITY
+- ENG-DOMAIN
+
+ENG-IMPORT defines only that incomplete legitimacy claims must not be accepted as valid imported legitimacy.
+
+---
+
+# 8. Receipt Relationship
+
+## ENG-IMPORT-13 — Import Consumes Receipt Validity, It Does Not Define It
+
+Import may include receipts as first-class submitted structural artifacts.
+
+ENG-IMPORT does not define:
+
+- receipt schema
+- receipt canonical hashing
+- round snapshot structure
+- provenance semantics
+
+Those belong to:
+
+- ENG-RECEIPT
+- ENG-CANON
+- ENG-SPECVERIFY
+
+ENG-IMPORT defines only that submitted receipts are part of the imported graph and must be consumed as immutable historical artifacts rather than regenerated.
+
+---
+
+# 9. Specification Identity Relationship
+
+## ENG-IMPORT-14 — Imported Rule Provenance Must Be Preserved
+
+Imported artifacts that carry rule provenance fields must preserve them exactly.
+
+ENG-IMPORT does not define whether a spec_set_hash is current, legacy-compatible, or unknown.  
+That belongs to ENG-SPECVERIFY.
+
+ENG-IMPORT requires only that import must not strip, rewrite, or reinterpret rule provenance during submission.
+
+---
+
+# 10. Relationship to UNDER_REVIEW / RETIRED
+
+## ENG-IMPORT-15 — Import Preserves Lifecycle State, It Does Not Reclassify It
+
+Imported artifacts may arrive with lifecycle states supported by ENG-DOMAIN.
+
+ENG-IMPORT does not define the behavioral meaning of those states.
+
+It must not:
+
+- promote UNDER_REVIEW to ACTIVE
+- demote ACTIVE to UNDER_REVIEW
+- reinterpret RETIRED
+- rewrite graph structure to fit usability expectations
+
+Usability semantics belong to ENG-REVIEW-RETIRED.  
+Structural graph semantics belong to ENG-SUPERSESSION.
+
+ENG-IMPORT preserves the submitted state for authoritative validation elsewhere.
+
+---
+
+# 11. Deterministic Import Outcome
+
+## ENG-IMPORT-16 — Identical Submission, Identical Import Result
+
+Given identical imported graph content and identical declared import mode, import submission must yield identical Engine outcomes when processed through the same runtime validation authorities.
 
 Import must not depend on:
 
-- Storage ordering  
-- File order  
-- External timestamps  
-- Runtime environment  
+- file order
+- storage order
+- external timestamps
+- host environment differences
+- audit presence
 
-Specification verification must occur during import validation.
-
-If an imported artifact references a spec_set_hash different from the executing Engine:
-
-- MATCH → full verification allowed
-- LEGACY_MATCH → verification allowed in historical compatibility mode
-- SPEC_SET_UNKNOWN → artifact may be stored but legitimacy must not be reinterpreted
-
-This rule aligns with ENG-SPECVERIFY.
-
-Two identical imports must yield identical EvaluationReports.
+Deterministic outcome reporting is consumed from ENG-ERROR and ENG-API.
 
 ---
 
-# 8. Failure Semantics
+# 12. Failure Semantics
 
-Any structural, receipt, or governance violation results in:
+## ENG-IMPORT-17 — Import Failure Is Side-Effect Free for Engine Runtime State
 
-- Explicit failure  
-- Deterministic EvaluationReport  
-- No mutation of existing engine state  
-- Full rejection of imported graph  
+If import submission fails to produce an admissible runtime or historical validation outcome:
 
-No partial activation allowed.
+- failure must be explicit
+- failure must be deterministic
+- no partial runtime activation may occur
+- no implicit repair may occur
 
-No implicit repair permitted.
+Any runtime state mutation semantics are governed by the called APIs and runtime authorities.
 
----
-
-# 9. Engine API Interaction
-
-Import validation uses:
-
-- rehydrate_engine(domain_objects)  
-
-Governance slot validation occurs during:
-
-- rehydrate_engine  
-
-Restore activation requires:
-
-- FULLY_GOVERNED state  
-- session receipts
-
-Incremental compilation operations correspond to the following Engine API calls:
-
-- begin_incremental_compilation
-- stage_historical_session
-- stage_historical_resolution
-- stage_historical_receipt
-- finalize_incremental_compilation
-
-Rehydration remains the only mechanism that activates an Area for runtime evaluation.
-
-Import operations must not bypass rehydration validation.
- 
----
-
-# 10. Mental Model
-
-Restore:
-
-- Full graph required  
-- Governance slots required  
-- Receipts mandatory  
-- Structural validation strict  
-- Area activates only if FULLY_GOVERNED  
-
-Baseline:
-
-- Partial graph allowed  
-- Governance may be incomplete  
-- No automatic legitimacy  
-- Activation requires governance completeness  
-
-Host provides facts.  
-Engine validates structure.  
-Governance must be structurally sound.  
-Receipts anchor closure.  
-Nothing is reconstructed implicitly.
-
-Import does not create legitimacy.
-
-Import only introduces historical legitimacy artifacts into the domain graph.
-
-Incremental compilation allows historical DAG construction before runtime rehydration.
-
-Rehydration remains the only mechanism that activates legitimacy evaluation.
+ENG-IMPORT requires that import itself never acts as a partial legitimacy mutation path.
 
 ---
 
-# 11. Alignment
+# 13. Relationship to API
 
-- ENG-DOMAIN  
-- ENG-SESSION  
-- ENG-DECISION  
-- ENG-SUPERSESSION  
-- ENG-RECEIPT  
-- ENG-API  
-- ENG-INTEGRITY  
+## ENG-IMPORT-18 — Import Uses Existing Engine APIs
 
-Violation constitutes structural engine import failure.
+ENG-IMPORT does not define a separate hidden execution path.
+
+Import is realized through the existing Engine interfaces, including as applicable:
+
+- rehydrate_engine
+- read-only validation or export operations
+- incremental compilation APIs defined in ENG-API and governed behaviorally by ENG-COMPILATION
+
+Therefore:
+
+- import does not bypass API validation
+- import does not bypass initialization
+- import does not bypass integrity checks
+
+Runtime activation still occurs only through successful rehydration / initialization.
+
+---
+
+# 14. Relationship to Initialization
+
+## ENG-IMPORT-19 — Initialization Is the Runtime Activation Gate
+
+A submitted import graph becomes a runtime Area only if ENG-INITIALIZATION and ENG-INTEGRITY allow it.
+
+ENG-IMPORT is therefore upstream of runtime activation.
+
+It prepares facts for validation.  
+It does not itself validate runtime readiness in an independent doctrinal sense.
+
+---
+
+# 15. Engine Invariants
+
+- import never creates legitimacy
+- imported legitimacy artifacts must already exist
+- import never reconstructs missing governance
+- import never reconstructs missing receipts or Resolutions
+- import preserves submitted structural lifecycle state
+- import preserves rule provenance fields
+- import consumes existing Engine APIs rather than bypassing them
+- restore intent expects a graph capable of runtime activation
+- historical intake intent may be non-activating but must not fabricate legitimacy
+- dependent specifications must consume ENG-IMPORT as an intake boundary, not as an alternate validation doctrine
+
+---
+
+# 16. Mental Model
+
+ENG-IMPORT defines the intake boundary.
+
+It answers:
+
+- what it means to submit a graph for restore
+- what it means to submit a graph for historical intake
+- what the host is responsible for
+- what the Engine is responsible for at the intake boundary
+- why import itself never creates legitimacy
+
+It does not answer:
+
+- whether the graph is structurally valid
+- whether runtime may start
+- how receipts are verified canonically
+- how supersession graph truth is derived
+- how historical replay order is determined
+
+Those belong elsewhere.
+
+ENG-IMPORT is the submission layer.  
+Other specifications must consume it rather than duplicate import-boundary rules.
