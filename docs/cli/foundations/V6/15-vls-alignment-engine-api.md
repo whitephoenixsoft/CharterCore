@@ -1,619 +1,414 @@
 # Charter Alignment Engine — API Surface (V1)
 
-Status: DRAFT (FOUNDATIONAL)  
-Applies to: charter_alignment library and runtime-facing consumers  
-Depends On: Charter Alignment Engine — End State & Runtime Shape, Signal & Local Metrics Specification  
-Does NOT define: storage backend implementation, language bindings, UI behavior, or final wire protocols  
+Status: FOUNDATIONAL (Implementation-Ready)  
+Applies to: charter_alignment library  
+Depends On:  
+- Alignment Engine — Signal & Local Metrics Specification  
+- VLS Reconstructed DAG  
+- VDS Signal Model  
+
+Does NOT define: storage backends, UI, dashboards, language bindings  
 
 ---
 
 # 1. Purpose
 
-This specification defines the intended API surface of the Charter Alignment Engine.
+This specification defines the minimal, stable API surface required to:
 
-The API exists to support:
+- compute alignment deterministically
+- maintain derived alignment state
+- expose read-only alignment queries
+- support incremental updates
 
-- deterministic alignment rebuilds
-- incremental alignment updates
-- typed read-only alignment queries
-- clean integration with VLS and VDS
-- runtime facades used by CLI and later bindings
-
-The API is designed to remain:
+This API is:
 
 - library-first
-- backend-agnostic
 - deterministic
-- observational
+- stateless at compute layer
+- observational only
 - non-authoritative
 
 ---
 
-# 2. API Design Principles
+# 2. Core Model
 
-## AE-API-01 — Structure In, Signals In, Derived State Out
-The Alignment Engine consumes:
+The Alignment Engine is composed of four distinct components:
 
-- reconstructed VLS graph
-- VDS signal records
-- optional contextual posture metadata
+1. AlignmentEngine (computation only)
+2. AlignmentStateStore (derived state + queries)
+3. AlignmentExplainer (human-readable reasoning)
+4. AlignmentValidator (correctness + consistency checks)
 
-It produces:
-
-- alignment state
-- typed derived query results
+These components must remain logically separate.
 
 ---
 
-## AE-API-02 — Read-Only Query Surface
-The Alignment Engine does not mutate legitimacy, identity, or signal history.
+# 3. Design Principles
 
-Its public query surface is read-only.
+## AE-API-01 — Structure + Signals → Derived State
 
----
-
-## AE-API-03 — Rebuild and Incremental Modes
-The engine must support both:
-
-- full rebuild from graph + signals
-- incremental update from change events
-
----
-
-## AE-API-04 — Typed Inputs and Outputs
-All public APIs should use typed request and response structures.
-
-Avoid loosely typed maps in core interfaces.
-
----
-
-## AE-API-05 — Small Composable Queries
-The API should prefer small, focused query methods over monolithic summary calls.
-
----
-
-# 3. Primary Public Components
-
-The public API surface is centered around three concepts:
-
-- AlignmentEngine
-- AlignmentStateStore
-- typed query result objects
-
----
-
-# 4. AlignmentEngine
-
-The AlignmentEngine is the computation entry point.
-
-It performs:
-
-- full rebuilds
-- incremental updates
-- typed state lookups
-- higher-order alignment queries
-
-It does not own storage.
-
----
-
-# 5. Core API Categories
-
-The API surface is divided into four categories:
-
-## 5.1 Build APIs
-Used to create or refresh derived alignment state.
-
-## 5.2 Incremental Update APIs
-Used when new signals or structural changes occur.
-
-## 5.3 Query APIs
-Used to retrieve present and predictive alignment state.
-
-## 5.4 Diagnostic APIs
-Used for rebuild validation and explainability support.
-
----
-
-# 6. Build APIs
-
-## 6.1 Full Rebuild
-Purpose:
-
-Recompute all alignment state from:
-
-- reconstructed VLS graph
-- signal history
+Inputs:
+- VLS reconstructed graph
+- VDS signals
 - optional context
 
-Conceptual shape:
+Output:
+- derived alignment state
+
+---
+
+## AE-API-02 — Read-Only Query Layer
+
+All queries operate on derived state.
+
+No API may:
+- modify legitimacy
+- modify identity
+- modify signal history
+
+---
+
+## AE-API-03 — Deterministic Rebuild
+
+Given identical inputs:
+
+- graph
+- signals
+- context
+
+Outputs MUST be identical.
+
+---
+
+## AE-API-04 — Incremental Consistency
+
+Incremental updates must produce the same result as full rebuild.
+
+---
+
+## AE-API-05 — Context Is Interpretive Only
+
+Context MAY affect:
+- window sizing
+- sensitivity
+- tolerance
+
+Context MUST NOT:
+- alter signal values
+- alter graph structure
+- create or modify truth
+
+---
+
+# 4. AlignmentEngine (Compute Layer)
+
+The AlignmentEngine performs computation only.
+
+It does NOT:
+- store authoritative data
+- expose queries
+- interpret meaning
+
+---
+
+## 4.1 Full Rebuild
+
+Recompute all alignment state.
 
 rebuild(graph, signals, context) -> AlignmentStateStore
 
-Behavior:
-
-- deterministic
-- complete
-- rebuildable from scratch
-
 Used for:
-
 - startup
-- validation
 - replay
-- graph topology changes
+- validation
 
 ---
 
-## 6.2 Partial Rebuild
-Purpose:
+## 4.2 Apply Signal Event
 
-Recompute a scoped subset of alignment state for:
-
-- one area
-- one identity
-- one subgraph
-
-Conceptual shape:
-
-rebuild_scope(graph, signals, scope, context) -> PartialAlignmentState
-
-Used for:
-
-- large systems
-- targeted recalculation
-- subsystem analysis
-
----
-
-# 7. Incremental Update APIs
-
-## 7.1 Apply Signal Event
-Purpose:
-
-Update derived alignment state when a new signal/check-in is recorded.
-
-Conceptual shape:
+Update state when a new signal is recorded.
 
 apply_signal(state_store, graph, signal_event, context) -> UpdateSummary
 
 Effects:
-
-- update local metrics
-- update semantic state
-- update propagated state
-- update cached predictive state if enabled
+- updates local metrics
+- updates propagated metrics
 
 ---
 
-## 7.2 Apply Structural Change
-Purpose:
+## 4.3 Apply Structural Change
 
-Update derived alignment state after topology-relevant changes such as:
+Update state when graph topology changes.
 
+Examples:
 - supersession
-- new cross-area references
-- identity version transitions
-- sunset or coexistence changes
-
-Conceptual shape:
+- new references
+- identity transitions
 
 apply_structure_change(state_store, graph, structural_event, context) -> UpdateSummary
 
 ---
 
-## 7.3 Apply Posture Change
-Purpose:
+## 4.4 Apply Posture Change
 
-Update interpretive posture when contextual states change, such as:
+Update interpretive posture.
 
-- deployment window opens
-- deployment window closes
-- experiment begins
-- experiment ends
-
-Conceptual shape:
+Examples:
+- deployment window
+- experiment
 
 apply_posture_change(state_store, graph, posture_event, context) -> UpdateSummary
 
-These changes do not alter legitimacy or identity truth.
-
 ---
 
-# 8. AlignmentStateStore
+# 5. AlignmentStateStore (Derived State + Queries)
 
-The AlignmentStateStore is the derived state produced by the engine.
+The AlignmentStateStore contains all derived alignment data.
 
 It is:
 
 - rebuildable
-- query-oriented
 - non-authoritative
-- optionally cacheable
+- query-oriented
 
-It may contain materialized views for:
-
-- resolution state
-- area state
-- identity state
-- predictive metrics
-- tension and influence summaries
-
-Loss of this store must not cause truth loss.
+Loss of this store must not lose truth.
 
 ---
 
-# 9. Query APIs
+## 5.1 Resolution Queries
 
-The public query surface should support four structural levels.
-
-## 9.1 Resolution Queries
-Used for local honesty and local condition measurement.
-
-Examples:
-
-resolution_state(resolution_id) -> ResolutionAlignmentState  
-resolution_history(resolution_id) -> ResolutionAlignmentHistory  
-resolution_semantic_path(resolution_id) -> SemanticTransitionPath
+resolution_state(resolution_id) -> ResolutionAlignmentState
 
 ---
 
-## 9.2 Area Queries
-Used for team/system-level boundaries aligned with Charter Areas.
+## 5.2 Area Queries
 
-Examples:
-
-area_state(area_id) -> AreaAlignmentState  
-area_pressure(area_id) -> CapacityPressureState  
-area_tension(area_id) -> AreaTensionState
+area_state(area_id) -> AreaAlignmentState
 
 ---
 
-## 9.3 Identity Queries
-Used for department/system-domain/mission-scope analysis from VLS.
+## 5.3 Identity Queries
 
-Examples:
-
-identity_state(identity_id) -> IdentityAlignmentState  
-identity_transition_state(identity_id) -> IdentityTransitionState  
-identity_deprecated_regions(identity_id) -> DeprecatedRegionSet
+identity_state(identity_id) -> IdentityAlignmentState
 
 ---
 
-## 9.4 Global Queries
-Used on the rebuilt federated DAG.
+## 5.4 Global Queries
 
-Examples:
+global_alignment_state() -> GlobalAlignmentState
 
-global_alignment_state() -> GlobalAlignmentState  
-global_tension_regions() -> TensionRegionSet  
-global_cascade_candidates() -> CascadeCandidateSet
+Important:
 
----
-
-# 10. Present-State Query Results
-
-Present-state objects answer:
-
-“What appears true now?”
-
-These results should expose values such as:
-
-- mean_drift
-- variance
-- signal_density
-- semantic_state
-- supportability_state
-- confidence
-- current_window_size
+Global results are scoped to the currently reconstructed graph.  
+They do NOT imply complete system truth unless the graph is complete.
 
 ---
 
-## 10.1 ResolutionAlignmentState
-Purpose:
+## 5.5 Structural Queries
 
-Expose current local alignment condition for one resolution.
+### Upstream Influence
 
-Typical fields:
+upstream_influence(resolution_id) -> InfluenceSet
+
+### Downstream Impact
+
+downstream_impact(resolution_id) -> ImpactSet
+
+### Alignment Cone
+
+alignment_cone(resolution_id) -> AlignmentCone
+
+### Alignment Horizon
+
+alignment_horizon(resolution_id) -> AlignmentHorizonState
+
+---
+
+# 6. Present-State Models
+
+## 6.1 ResolutionAlignmentState
 
 - resolution_id
 - mean_drift
 - variance
 - signal_density
 - semantic_state
-- supportability_state
 - confidence
 - last_signal_time
-- current_window_size
+- window_size
 
 ---
 
-## 10.2 AreaAlignmentState
-Purpose:
-
-Expose current alignment condition aggregated at the area level.
-
-Typical fields:
+## 6.2 AreaAlignmentState
 
 - area_id
 - aggregated_drift
 - aggregated_variance
 - capacity_pressure
-- active_tension_count
 - semantic_state
 - confidence
-- last_update_time
 
 ---
 
-## 10.3 IdentityAlignmentState
-Purpose:
-
-Expose current alignment condition aggregated by VLS identity scope.
-
-Typical fields:
+## 6.3 IdentityAlignmentState
 
 - identity_id
 - identity_version
 - aggregated_drift
 - transition_volatility
 - semantic_state
-- deprecated_region_count
-- coexistence_state
 - confidence
 
 ---
 
-# 11. Predictive Query Results
+## 6.4 GlobalAlignmentState
 
-Predictive objects answer:
-
-“Where is this moving?”
-
-These results should expose values such as:
-
-- drift_velocity
-- drift_acceleration
-- cascade_score
-- shock_score
-- potential
-- equilibrium classification
-- transition risk
+- aggregated_drift
+- aggregated_variance
+- active_tension_count
+- confidence
 
 ---
 
-## 11.1 ResolutionPredictiveState
-Purpose:
+# 7. UpdateSummary
 
-Expose predictive local risk or directional change.
-
-Typical fields:
-
-- resolution_id
-- drift_velocity
-- drift_acceleration
-- local_shock_score
-- local_cascade_score
-- phase_transition_risk
-
----
-
-## 11.2 AreaPredictiveState
-Purpose:
-
-Expose area-level risk and instability patterns.
-
-Typical fields:
-
-- area_id
-- pressure_trend
-- instability_growth
-- cascade_density
-- active_shock_count
-- equilibrium_classification
-
----
-
-## 11.3 IdentityPredictiveState
-Purpose:
-
-Expose identity-level structural and transition instability.
-
-Typical fields:
-
-- identity_id
-- transition_risk
-- attractor_shift_score
-- deprecation_growth
-- coexistence_pressure
-- equilibrium_classification
-
----
-
-# 12. Structural Query Results
-
-Structural results describe how alignment is organized across the DAG.
-
-Examples:
-
-- upstream influence
-- downstream impact
-- alignment cones
-- horizons
-- impacted identities
-- affected areas
-
----
-
-## 12.1 Influence Queries
-Examples:
-
-upstream_influence(resolution_id) -> InfluenceSet  
-downstream_impact(resolution_id) -> ImpactSet
-
-These queries help explain shock and cascade behavior.
-
----
-
-## 12.2 Cone and Horizon Queries
-Examples:
-
-alignment_cone(resolution_id) -> AlignmentCone  
-alignment_horizon(resolution_id) -> AlignmentHorizonState
-
-These queries make propagation visible without mutating truth.
-
----
-
-# 13. Diagnostic APIs
-
-Diagnostic APIs are used for verification and explainability.
-
-Examples:
-
-validate_rebuild(state_store, graph, signals) -> ValidationReport  
-explain_resolution_state(resolution_id) -> AlignmentExplanation  
-explain_area_state(area_id) -> AlignmentExplanation
-
-These are especially useful for:
-
-- tests
-- auditability
-- debugging
-- AI exegesis layers
-
----
-
-# 14. UpdateSummary
-
-Incremental APIs should return a typed update summary.
-
-Purpose:
-
-Describe what changed without requiring the caller to diff the full store.
-
-Typical fields:
+Returned by incremental updates.
 
 - affected_resolutions
 - affected_areas
 - affected_identities
-- local_metrics_updated
-- propagated_metrics_updated
-- predictive_metrics_updated
-- semantic_state_changes
-
-This allows runtimes to refresh only what changed.
+- local_updates
+- propagated_updates
 
 ---
 
-# 15. Context Object
+# 8. AlignmentExplainer (Explanation Layer)
 
-The engine may consume an AlignmentContext object.
+Provides human-readable reasoning.
 
-Purpose:
-
-Provide non-authoritative interpretive context for computation.
-
-Examples of context:
-
-- active deployment windows
-- active experiments
-- posture overrides
-- current clock/time source
-- threshold interpretation mode
-
-The context object may affect:
-
-- window sizing
-- sensitivity
-- tolerance posture
-- aggregation cadence
-
-It may never alter legitimacy or identity truth.
+Does not affect computation.
 
 ---
 
-# 16. Expected Input Contracts
+## 8.1 Resolution Explanation
 
-## 16.1 Graph Input
-The engine expects a reconstructed VLS graph that includes:
+explain_resolution(resolution_id) -> Explanation
 
-- node identifiers
-- typed edges
+---
+
+## 8.2 Area Explanation
+
+explain_area(area_id) -> Explanation
+
+---
+
+## 8.3 Identity Explanation
+
+explain_identity(identity_id) -> Explanation
+
+---
+
+# 9. AlignmentValidator (Verification Layer)
+
+Ensures correctness of derived state.
+
+---
+
+## 9.1 Rebuild Validation
+
+validate_rebuild(state_store, graph, signals) -> ValidationReport
+
+---
+
+# 10. Input Contracts
+
+## 10.1 Graph Input
+
+Must include:
+
+- resolution IDs
+- parent/child relationships
+- supersession edges
 - area membership
-- identity scope metadata
-- supersession relationships
-- cross-area references where available
+- identity scope
 
-## 16.2 Signal Input
-The engine expects normalized signal artifacts or source inputs convertible into normalized signals.
+---
 
-Each signal must include at minimum:
+## 10.2 Signal Input
 
-- target resolution
-- semantic state
-- confidence level
+Each signal must include:
+
+- resolution_id
+- semantic_state
+- confidence
 - timestamp
 
 ---
 
-# 17. Runtime Facade Expectations
+# 11. Mental Model
 
-Although the Alignment Engine is library-first, a runtime/facade layer may expose simpler orchestration methods.
+Engine computes  
+State store holds derived truth  
+Queries read state  
+Explainer explains  
+Validator verifies  
 
-Examples:
-
-- rebuild_alignment()
-- update_alignment_from_signal()
-- query_resolution_alignment()
-- query_area_alignment()
-- query_identity_alignment()
-
-The runtime layer coordinates stores and loading.
-The engine remains computation-only.
+Nothing modifies legitimacy.
 
 ---
 
-# 18. Boundaries
+# 12. Phased Roadmap (Planned Extensions)
 
-The Alignment Engine API may:
+## Phase 2 — Predictive Metrics
 
-- compute
-- aggregate
-- classify
-- explain derived state
-
-The Alignment Engine API may never:
-
-- create legitimacy
-- mutate decisions
-- mutate identity
-- record authoritative truth by itself
-- infer authority
-- enforce action
+- drift_velocity
+- drift_acceleration
+- phase_transition_risk
+- cascade_score
 
 ---
 
-# 19. Mental Model
+## Phase 3 — Advanced Structural Analysis
 
-Build APIs create derived state.  
-Incremental APIs keep derived state current.  
-Query APIs expose present, predictive, and structural views.  
-Diagnostic APIs explain why the engine reached its conclusions.
-
-The API is shaped around visibility, not control.
+- tension regions
+- attractor detection
+- cascade detection
 
 ---
 
-# 20. Why This Matters
+## Phase 4 — View Models
 
-A stable API surface allows:
+- focus view
+- trend view
+- lineage view
+- area health view
 
-- CLI integration
-- Python and .NET bindings later
-- deterministic tests
-- replay and simulation
-- software observability use cases
-- team-level and organization-level introspection
+---
 
-This API is the contract that turns the Alignment Engine from a theory into a reusable platform component.
+## Phase 5 — Historical Layer
+
+- resolution_history
+- drift timelines
+- variance timelines
+
+---
+
+## Phase 6 — Adaptive Windowing
+
+- dynamic window sizing
+- variance/density-driven windows
+
+---
+
+## Phase 7 — Federation Awareness
+
+- partial graph confidence
+- cross-area completeness awareness
+
+---
+
+# 13. Final Constraint
+
+This API is intentionally minimal.
+
+All complexity must emerge in layers above — never inside this core.
