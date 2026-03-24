@@ -1,6 +1,6 @@
 # ENG-IMPORT — Import Submission, Restore Entry & Historical Graph Intake
 
-Status: REFACTORED (v4 – Reference-Driven Model)  
+Status: REFACTORED (v5 – Informational Reference Intake Alignment)  
 Applies to: Engine Core (V1/V2+)  
 Scope: Import boundary, restore submission, and historical graph intake
 
@@ -156,6 +156,11 @@ A restore graph must provide all structural artifacts necessary for runtime rehy
 - Receipts
 - supporting structural references
 
+Informational references may also be present according to ENG-DOMAIN, including:
+
+- cross-area informational references
+- intra-Area informational Resolution references
+
 Receipts are mandatory wherever terminal sessions require them under ENG-RECEIPT and ENG-INTEGRITY.
 
 ENG-IMPORT does not independently define completeness validation.  
@@ -209,6 +214,7 @@ It may include:
 - Sessions
 - Receipts
 - supporting structural references
+- informational references permitted by ENG-DOMAIN
 
 Its purpose is historical intake, not immediate legitimacy creation.
 
@@ -260,6 +266,7 @@ All imported objects must therefore already satisfy, as applicable:
 - required schema_version presence
 - valid enum values
 - structural reference form
+- informational reference form
 - rule provenance field presence where required
 - receipt artifact structure where required
 
@@ -343,9 +350,38 @@ ENG-IMPORT preserves the submitted state for authoritative validation elsewhere.
 
 ---
 
-# 11. Deterministic Import Outcome
+# 11. Relationship to Informational References
 
-## ENG-IMPORT-16 — Identical Submission, Identical Import Result
+## ENG-IMPORT-16 — Import Preserves Informational References Without Reinterpreting Them
+
+Imported graphs may include informational references permitted by ENG-DOMAIN.
+
+This includes:
+
+- cross-area informational references
+- intra-Area informational Resolution references
+
+ENG-IMPORT must not:
+
+- reinterpret informational references as supersession edges
+- infer legitimacy from informational references
+- infer ordering or precedence from informational references
+- discard informational references solely because they are non-semantic
+
+Validation and runtime consequences of informational references belong to:
+
+- ENG-DOMAIN
+- ENG-INTEGRITY
+- ENG-SUPERSESSION
+- ENG-CANON
+
+ENG-IMPORT preserves them as submitted historical content.
+
+---
+
+# 12. Deterministic Import Outcome
+
+## ENG-IMPORT-17 — Identical Submission, Identical Import Result
 
 Given identical imported graph content and identical declared import mode, import submission must yield identical Engine outcomes when processed through the same runtime validation authorities.
 
@@ -361,9 +397,9 @@ Deterministic outcome reporting is consumed from ENG-ERROR and ENG-API.
 
 ---
 
-# 12. Failure Semantics
+# 13. Failure Semantics
 
-## ENG-IMPORT-17 — Import Failure Is Side-Effect Free for Engine Runtime State
+## ENG-IMPORT-18 — Import Failure Is Side-Effect Free for Engine Runtime State
 
 If import submission fails to produce an admissible runtime or historical validation outcome:
 
@@ -378,9 +414,9 @@ ENG-IMPORT requires that import itself never acts as a partial legitimacy mutati
 
 ---
 
-# 13. Relationship to API
+# 14. Relationship to API
 
-## ENG-IMPORT-18 — Import Uses Existing Engine APIs
+## ENG-IMPORT-19 — Import Uses Existing Engine APIs
 
 ENG-IMPORT does not define a separate hidden execution path.
 
@@ -400,9 +436,9 @@ Runtime activation still occurs only through successful rehydration / initializa
 
 ---
 
-# 14. Relationship to Initialization
+# 15. Relationship to Initialization
 
-## ENG-IMPORT-19 — Initialization Is the Runtime Activation Gate
+## ENG-IMPORT-20 — Initialization Is the Runtime Activation Gate
 
 A submitted import graph becomes a runtime Area only if ENG-INITIALIZATION and ENG-INTEGRITY allow it.
 
@@ -413,13 +449,14 @@ It does not itself validate runtime readiness in an independent doctrinal sense.
 
 ---
 
-# 15. Engine Invariants
+# 16. Engine Invariants
 
 - import never creates legitimacy
 - imported legitimacy artifacts must already exist
 - import never reconstructs missing governance
 - import never reconstructs missing receipts or Resolutions
 - import preserves submitted structural lifecycle state
+- import preserves informational references as submitted
 - import preserves rule provenance fields
 - import consumes existing Engine APIs rather than bypassing them
 - restore intent expects a graph capable of runtime activation
@@ -428,7 +465,7 @@ It does not itself validate runtime readiness in an independent doctrinal sense.
 
 ---
 
-# 16. Mental Model
+# 17. Mental Model
 
 ENG-IMPORT defines the intake boundary.
 
@@ -446,6 +483,7 @@ It does not answer:
 - whether runtime may start
 - how receipts are verified canonically
 - how supersession graph truth is derived
+- whether informational references imply graph semantics
 - how historical replay order is determined
 
 Those belong elsewhere.

@@ -1,6 +1,6 @@
 # ENG-CANON — Canonical Serialization & Hashing Specification
 
-Status: REFACTORED (v3 – Reference-Driven Model)  
+Status: REFACTORED (v4 – Reference Model Alignment & Informational Reference Clarification)  
 Applies to: Engine Core (V1/V2+)  
 Scope: Canonical serialization and hashing rules for structural artifacts
 
@@ -134,6 +134,7 @@ Examples of ordering authority defined elsewhere include:
 - constraint_set ordering
 - vote_set ordering
 - round ordering
+- informational reference lists (e.g., resolution_references)
 
 Implementations must not reorder arrays during canonicalization.
 
@@ -157,10 +158,35 @@ That classification is supplied by the authoritative schema or artifact specific
 ENG-CANON requires:
 
 - recognized structural fields included
+- informational fields included only if explicitly classified as structural by their governing specification
 - unknown informational fields excluded
 - unknown structural fields cause canonicalization failure
 
 Canonicalization must not silently reinterpret unrecognized structural content.
+
+---
+
+# 6a. Informational Reference Handling
+
+## ENG-CANON-05A — Informational References Are Canonical but Non-Semantic
+
+Informational references (including intra-Area Resolution references and cross-Area references):
+
+- must be serialized canonically if present
+- must follow standard object and array ordering rules
+- must not influence structural meaning, legitimacy, or graph semantics
+
+If a governing schema classifies informational references as structural fields (for artifact completeness and auditability):
+
+- they must be included in canonical serialization
+- they must be included in hash input
+
+However:
+
+- their presence must not be interpreted as structural edges
+- their content must not affect supersession, ACTIVE derivation, or conflict detection
+
+ENG-CANON enforces representation, not interpretation.
 
 ---
 
@@ -425,12 +451,14 @@ It defines only whether canonical serialization and canonical hash input constru
 
 - canonical object field ordering is deterministic
 - canonicalization preserves authoritative array ordering
+- informational reference arrays must preserve declared order
 - only recognized structural content participates in canonical hashing
 - unknown structural fields cause canonicalization failure
 - explicit structural nulls are preserved
 - floating-point structural content is prohibited
 - canonical output is UTF-8 JSON without formatting whitespace
 - identical structural input yields identical canonical bytes
+- informational references do not imply structural meaning
 - rule identity fields participate only where required by governing artifact specifications
 - dependent specifications must consume ENG-CANON rather than redefine byte-level canonicalization
 
@@ -452,6 +480,7 @@ It does not answer:
 - whether an artifact is valid
 - whether a runtime must halt
 - what a spec_set_hash means
+- whether references imply graph structure
 - when a receipt is emitted
 
 Those belong elsewhere.

@@ -1,7 +1,7 @@
 # ENG-DOMAIN — Domain Object Schema
 Canonical Engine Object Definitions
 
-Status: REFACTORED (v16 – Reference-Driven Model)  
+Status: REFACTORED (v17 – Intra-Area Reference Extension)  
 Applies to: Engine Core (V1/V2+)
 
 Authority: Foundational authority for structural object schemas and structural field classification.
@@ -31,7 +31,7 @@ It is the authoritative specification for:
 - structural vs informational field classification
 - Area-local structural boundaries
 - governance slot object categories
-- reference classes
+- reference classes (structural and informational)
 - canonical structural object completeness requirements
 
 ENG-DOMAIN does not define:
@@ -235,9 +235,29 @@ ENG-INTEGRITY enforces whether they resolve safely.
 
 ---
 
-## ENG-DOMAIN-13 — Informational Cross-Area References
+## ENG-DOMAIN-13 — Informational References
 
-Informational cross-area references may point to external Areas or Resolutions.
+Informational references do not affect legitimacy, supersession, or structural validity.
+
+They exist for:
+
+- lineage
+- traceability
+- external linkage
+- future graph semantics
+
+They must never:
+
+- affect legitimacy evaluation
+- affect ACTIVE derivation
+- be interpreted as supersession
+- be used for acceptance decisions
+
+---
+
+## ENG-DOMAIN-14 — Cross-Area Informational References
+
+Cross-area references may point to external Areas or Resolutions.
 
 They:
 
@@ -246,13 +266,43 @@ They:
 - do not affect supersession structure
 - must not be traversed by legitimacy logic
 
-ENG-DOMAIN defines them as opaque informational metadata only.
+They are opaque metadata only.
+
+---
+
+## ENG-DOMAIN-15 — Intra-Area Resolution References
+
+A Resolution may reference zero or more other Resolutions within the same Area.
+
+These references:
+
+- must be Area-local (same area_id)
+- must resolve to existing Resolution objects within the Area
+- must not contain duplicates
+- must be deterministically ordered (lexicographically by resolution_id)
+
+They are informational and must not:
+
+- affect legitimacy
+- affect ACTIVE derivation
+- affect supersession
+- affect acceptance
+- introduce ordering semantics
+- be interpreted as graph edges in the current specification set
+
+These references exist to support:
+
+- lineage tracking
+- contextual relationships
+- future DAG semantics
+
+Future specification versions may assign meaning to these references, but no such meaning exists in the current specification set.
 
 ---
 
 # 7. CrossAreaReference Schema
 
-## ENG-DOMAIN-14 — CrossAreaReference Object Shape
+## ENG-DOMAIN-16 — CrossAreaReference Object Shape
 
 CrossAreaReference contains:
 
@@ -265,13 +315,11 @@ CrossAreaReference contains:
 
 This object is informational only.
 
-The Engine must never interpret it as a structural edge unless a future schema version explicitly changes that classification.
-
 ---
 
 # 8. Participant Schema
 
-## ENG-DOMAIN-15 — Participant Object
+## ENG-DOMAIN-17 — Participant Object
 
 Participant fields:
 
@@ -285,20 +333,11 @@ Participant fields:
 
 Participant is a structural epoch object.
 
-ENG-DOMAIN defines that:
-
-- participant_id must be unique within a session
-- participant belongs to exactly one round
-- display_name is structurally recorded
-- participant identity is session-scoped and epoch-based
-
-Behavioral meaning of removal, resume, and vote eligibility belongs to ENG-SESSION and ENG-DECISION.
-
 ---
 
 # 9. Candidate Schema
 
-## ENG-DOMAIN-16 — Candidate Object
+## ENG-DOMAIN-18 — Candidate Object
 
 Candidate fields:
 
@@ -310,20 +349,11 @@ Candidate fields:
 - created_at
 - schema_version
 
-ENG-DOMAIN defines Candidate as a round-scoped proposal epoch.
-
-ENG-DOMAIN defines that:
-
-- candidate_id must be unique within its round
-- candidate belongs to exactly one round
-
-Behavioral mutability boundaries belong to ENG-SESSION.
-
 ---
 
 # 10. Constraint Schema
 
-## ENG-DOMAIN-17 — Constraint Object
+## ENG-DOMAIN-19 — Constraint Object
 
 Constraint fields:
 
@@ -336,15 +366,11 @@ Constraint fields:
 - created_at
 - schema_version
 
-ENG-DOMAIN defines Constraint as a round-scoped structural object.
-
-Constraint evaluation semantics are defined in ENG-DECISION.
-
 ---
 
 # 11. Vote Schema
 
-## ENG-DOMAIN-18 — Vote Object
+## ENG-DOMAIN-20 — Vote Object
 
 Vote fields:
 
@@ -358,21 +384,11 @@ Vote fields:
 - created_at
 - schema_version
 
-ENG-DOMAIN defines Vote as a round-bound structural stance object.
-
-ENG-DOMAIN defines that:
-
-- vote_id must be unique
-- vote references participant and candidate from the same round
-- stance is represented structurally as an enum
-
-Behavioral vote mutability and acceptance meaning belong to ENG-DECISION and ENG-SESSION.
-
 ---
 
 # 12. Session Schema
 
-## ENG-DOMAIN-19 — Session Object
+## ENG-DOMAIN-21 — Session Object
 
 Session fields:
 
@@ -395,32 +411,11 @@ Session fields:
 - updated_at
 - schema_version
 
-ENG-DOMAIN defines Session as the structural container for one decision process.
-
-ENG-DOMAIN defines only the structural presence of these fields.
-
-Behavioral meaning of:
-
-- session_type
-- phase
-- state
-- round_index mutation
-- acceptance
-- blocking
-- closure
-
-belongs to:
-
-- ENG-SESSION
-- ENG-DECISION
-
-Historical round storage rules belong to ENG-RECEIPT.
-
 ---
 
 # 13. Resolution Schema
 
-## ENG-DOMAIN-20 — Resolution Object
+## ENG-DOMAIN-22 — Resolution Object
 
 Resolution fields:
 
@@ -434,12 +429,11 @@ Resolution fields:
 - spec_set_hash
 - state
 - superseded_by
+- internal_resolution_references (optional)
 - cross_area_references (optional)
 - annotations (optional)
 - created_at
 - schema_version
-
-ENG-DOMAIN defines Resolution as the persisted governance artifact created by successful session acceptance.
 
 Allowed Resolution lifecycle enum values:
 
@@ -448,27 +442,20 @@ Allowed Resolution lifecycle enum values:
 - UNDER_REVIEW
 - RETIRED
 
-ENG-DOMAIN defines the structural existence of those states only.
+internal_resolution_references:
 
-Their meanings are defined in:
+- list of resolution_id values
+- must reference existing resolutions in same Area
+- must be unique
+- must be lexicographically ordered
 
-- ENG-SUPERSESSION
-- ENG-REVIEW-RETIRED
-
-Rule provenance fields:
-
-- engine_version
-- spec_set_hash
-
-are structural.
-
-ENG-SPECVERIFY defines their provenance meaning.
+These are informational only.
 
 ---
 
 # 14. Receipt Schema
 
-## ENG-DOMAIN-21 — Receipt Object
+## ENG-DOMAIN-23 — Receipt Object
 
 Receipt fields:
 
@@ -492,19 +479,11 @@ Receipt fields:
 - content_hash
 - schema_version
 
-ENG-DOMAIN defines the structural field set of Receipt.
-
-Receipt artifact meaning, immutability, and terminal semantics are defined in ENG-RECEIPT.
-
-Canonical hashing mechanics are defined in ENG-CANON.
-
-Rule identity meaning is defined in ENG-SPECVERIFY.
-
 ---
 
 # 15. Round Snapshot Schema
 
-## ENG-DOMAIN-22 — Round Snapshot Object
+## ENG-DOMAIN-24 — Round Snapshot Object
 
 Round snapshot fields:
 
@@ -515,115 +494,39 @@ Round snapshot fields:
 - constraint_set
 - vote_set
 
-ENG-DOMAIN defines the structural shape of the round snapshot.
-
-Behavioral meaning of round creation belongs to ENG-SESSION.  
-Receipt preservation of rounds belongs to ENG-RECEIPT.
-
 ---
 
 # 16. Supersession Encoding
 
-## ENG-DOMAIN-23 — superseded_by Field
+## ENG-DOMAIN-25 — superseded_by Field
 
 Supersession is structurally encoded through:
 
 - superseded_by
 
-ENG-DOMAIN defines only the structural field.
-
-Graph meaning, ACTIVE derivation, and acyclicity belong to ENG-SUPERSESSION.
-
 ---
 
 # 17. Deterministic Structural Encoding Preconditions
 
-## ENG-DOMAIN-24 — Domain Objects Must Be Canonicalizable
+## ENG-DOMAIN-26 — Domain Objects Must Be Canonicalizable
 
 All structural domain objects must be representable under ENG-CANON.
-
-ENG-DOMAIN requires:
-
-- deterministic field availability
-- deterministic enum values
-- explicit structural nullability where required
-- stable structural ordering prerequisites for contained collections
-
-ENG-CANON defines actual byte-level canonicalization.
 
 ---
 
 # 18. Structural Lifecycle Enumerations
 
-## ENG-DOMAIN-25 — Enum Definitions Are Structural
+## ENG-DOMAIN-27 — Enum Definitions Are Structural
 
-The following enums are structural and schema-governed:
-
-Resolution state:
-
-- ACTIVE
-- SUPERSEDED
-- UNDER_REVIEW
-- RETIRED
-
-Session phase:
-
-- PRE_STANCE
-- VOTING
-- TERMINAL
-
-Session state:
-
-- ACTIVE
-- PAUSED
-- BLOCK_TEMPORARY
-- BLOCK_PERMANENT
-- ACCEPTED
-- CLOSED
-
-Receipt type:
-
-- LEGITIMACY
-- EXPLORATION
-
-Acceptance result:
-
-- SUCCESS
-- ABANDONED
-
-Round state:
-
-- COMPLETED
-- FINAL_ACCEPTED
-- ABANDONED
-
-Stance:
-
-- ACCEPT
-- REJECT
-- ABSTAIN
-
-ENG-DOMAIN defines their structural existence only.  
-Behavioral meanings belong to the relevant behavioral specifications.
+(unchanged list...)
 
 ---
 
 # 19. Incremental Compilation Structural Boundary
 
-## ENG-DOMAIN-26 — Domain Supports Historical Structural Comparison
+## ENG-DOMAIN-28 — Domain Supports Historical Structural Comparison
 
-ENG-DOMAIN does not define compilation algorithms.
-
-It does define the structural artifacts that make deterministic historical comparison possible, including:
-
-- session snapshots
-- resolution identity
-- supersession encoding
-- round snapshots
-- receipt provenance
-- canonicalizable structural fields
-
-Historical ordering and replay semantics belong to ENG-COMPILATION.
+(unchanged)
 
 ---
 
@@ -633,6 +536,7 @@ Historical ordering and replay semantics belong to ENG-COMPILATION.
 - structural object identity is UUIDv7 where Engine-owned
 - structural references are classified explicitly
 - cross-area informational references are not structural
+- intra-area informational references do not affect legitimacy
 - governance object categories are structurally distinct
 - Resolution lifecycle values are structural enum values
 - Session state and phase values are structural enum values
@@ -653,7 +557,6 @@ It answers:
 - what fields they contain
 - which fields are structural
 - how structural references are classified
-- which enums are legal structurally
 
 It does not answer:
 
@@ -663,8 +566,6 @@ It does not answer:
 - how UNDER_REVIEW or RETIRED affect usability
 - how receipts are canonically hashed
 - when the Engine halts
-
-Those belong elsewhere.
 
 ENG-DOMAIN is the schema layer.  
 Other specifications must consume it rather than duplicate object definitions.

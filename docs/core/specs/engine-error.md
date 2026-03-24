@@ -1,6 +1,6 @@
 # ENG-ERROR — Engine Error & EvaluationReport Model
 
-Status: REFACTORED (v11 – Reference-Driven Reporting Contract)  
+Status: REFACTORED (v11.1 – Reference-Driven Reporting Contract, Determinism Clarified)  
 Applies to: Engine Core (V1/V2+)  
 Scope: Deterministic reporting, EvaluationReport structure, error classification, and canonical output
 
@@ -15,6 +15,7 @@ Subordinate references consumed from:
 - ENG-SUPERSESSION
 - ENG-RECEIPT
 - ENG-CANON
+- ENG-SPECVERIFY
 - ENG-API
 
 ---
@@ -60,7 +61,9 @@ ENG-ERROR defines how those outcomes are reported, not how they are decided.
 
 ## ENG-ERROR-01 — Deterministic Structured Reporting
 
-The Engine must produce a structured, deterministic EvaluationReport for every API command that returns command-level reporting.
+The Engine must produce a structured, deterministic EvaluationReport for every API command that is defined to return command-level reporting.
+
+Read-only query APIs may instead return deterministic snapshots as defined by ENG-API.
 
 Requirements:
 
@@ -438,7 +441,11 @@ the Engine must produce identical:
 
 ## ENG-ERROR-12 — Canonical Report Determinism
 
-EvaluationReport must be canonicalizable.
+EvaluationReport must be canonically representable with deterministic field ordering and deterministic error ordering.
+
+ENG-ERROR guarantees canonical report structure, not necessarily byte-identical full-report equality across separate executions when informational fields such as `occurred_at` differ.
+
+Byte-identical equivalence is guaranteed only for report content excluding execution-variant informational fields, or where such fields are themselves externally fixed.
 
 Canonical report rules:
 

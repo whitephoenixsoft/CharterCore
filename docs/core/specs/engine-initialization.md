@@ -1,6 +1,6 @@
 # ENG-INITIALIZATION — Engine Rehydration & Runtime Entry Specification
 
-Status: REFACTORED (v9 – Reference-Driven Runtime Entry Alignment)  
+Status: REFACTORED (v10 – Informational Reference Alignment)  
 Applies to: Engine Core (V1/V2+)  
 Scope: Engine rehydration, structural runtime entry, and runtime mode establishment
 
@@ -69,6 +69,9 @@ The graph may include:
 - Annotations
 
 All structural references required by the loaded graph must already be present in the provided graph.
+
+Informational references may also be present according to ENG-DOMAIN.  
+If present, they are consumed according to their declared class and must not be reinterpreted during initialization.
 
 During initialization, the Engine must not:
 
@@ -257,6 +260,7 @@ Structural validation, including but not limited to:
 - mixed-area graph detection
 - schema incompatibility
 - unresolved structural references
+- invalid informational references where their governing specification requires local resolution
 - governance slot invalidity
 - participant epoch violations
 - receipt trust failures

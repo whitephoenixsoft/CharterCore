@@ -1,68 +1,79 @@
-# ENG-DECISION — Decision Evaluation, Governance Validation & Acceptance Orchestration
+# ENG-DECISION — Decision Evaluation & Acceptance Orchestration
 
-Status: REFACTORED (v11 – Reference-Driven Model)  
+Status: REFACTORED (v12 – Fully Reference-Aligned Orchestration Model)  
 Applies to: Engine Core (V1/V2+)  
 
-Authority: Subordinate to ENG-DOMAIN, ENG-SESSION, ENG-SUPERSESSION, ENG-REVIEW-RETIRED, ENG-RECEIPT, ENG-INTEGRITY, ENG-PERSISTENCE, ENG-ERROR, ENG-CANON, ENG-SPECVERIFY, ENG-COMPILATION
+Authority: Behavioral orchestration layer for decision evaluation and acceptance eligibility.
+
+Subordinate to:
+
+- ENG-DOMAIN
+- ENG-SESSION
+- ENG-SUPERSESSION
+- ENG-REVIEW-RETIRED
+- ENG-RECEIPT
+- ENG-INTEGRITY
+- ENG-PERSISTENCE
+- ENG-ERROR
+- ENG-CANON
+- ENG-SPECVERIFY
+- ENG-COMPILATION
 
 ---
 
 # 1. Purpose
 
-ENG-DECISION defines the orchestration rules for deterministic decision evaluation and acceptance.
+ENG-DECISION defines how the Engine determines whether a session is eligible for acceptance.
 
-It governs:
+It is the authoritative specification for:
 
-- Governance precondition evaluation
-- Authority rule evaluation
-- Constraint evaluation
-- Blocking and closure semantics
-- Acceptance orchestration
-- Deterministic evaluation reporting
-- Incremental compilation participation at the decision layer
+- governance precondition evaluation ordering
+- authority rule evaluation
+- constraint evaluation
+- blocking determination at the decision layer
+- acceptance eligibility determination
+- orchestration of validation prior to atomic commit
 
-ENG-DECISION does not redefine:
+ENG-DECISION does not define:
 
-- Structural schemas
-- Supersession graph derivation
-- UNDER_REVIEW / RETIRED state semantics
-- Receipt structure
-- Atomic persistence guarantees
-- Canonical serialization rules
-- Rule identity verification semantics
+- domain object schemas
+- session lifecycle mechanics
+- supersession graph rules or ACTIVE derivation
+- UNDER_REVIEW / RETIRED semantics
+- receipt structure or hashing
+- atomic commit implementation
+- structural halt or degraded-mode policy
+- EvaluationReport schema or ordering
 
-Those are defined respectively in:
+Those belong to their respective specifications.
 
-- ENG-DOMAIN
-- ENG-SUPERSESSION
-- ENG-REVIEW-RETIRED
-- ENG-RECEIPT
-- ENG-PERSISTENCE
-- ENG-CANON
-- ENG-SPECVERIFY
-
-Legitimacy must be created, recorded, and verifiable deterministically.
+ENG-DECISION coordinates them.
 
 ---
 
-# 2. Foundational Principles
+# 2. Core Principle
 
-1. Legitimacy is created only through explicit ACCEPTED session transition.
-2. Voting remains mutable until acceptance occurs.
-3. Acceptance orchestration must be deterministic.
-4. Governance mutability ends at the first stance within a round.
-5. Structural legitimacy-context changes may permanently invalidate a session.
-6. BLOCK_PERMANENT requires explicit closure.
-7. Interruptions terminate participation epochs and create a new round.
-8. Structural integrity is governed by ENG-INTEGRITY.
-9. Receipts formalize closure but do not create legitimacy.
-10. Governance must be structurally valid before authority rule evaluation executes.
-11. Historical round state exists only in receipts.
-12. Incremental compilation must not alter runtime legitimacy unless fully validated.
+## ENG-DECISION-01 — Acceptance Is Eligibility + Atomic Commit
+
+Acceptance is a two-stage process:
+
+1. **Eligibility determination (this specification)**
+2. **Atomic commit (ENG-PERSISTENCE)**
+
+ENG-DECISION is responsible only for determining eligibility.
+
+If eligibility fails:
+
+- no mutation occurs
+- no legitimacy is created
+
+If eligibility succeeds:
+
+- control transfers to ENG-PERSISTENCE for atomic commit
 
 ---
 
-# 3. Scope of This Specification
+# 3. Scope of Responsibility
 
 ENG-DECISION is the behavioral decision layer.
 
@@ -71,455 +82,406 @@ It is responsible for:
 - determining whether a session can accept
 - evaluating authority rule satisfaction
 - evaluating constraints
-- applying blocking semantics
-- orchestrating the acceptance decision path
+- determining blocking conditions
+- enforcing evaluation ordering
 
-ENG-DECISION is not the authority for:
+It is not responsible for:
 
-- session lifecycle structure → ENG-SESSION
-- object structure → ENG-DOMAIN
-- ACTIVE derivation and graph conflict → ENG-SUPERSESSION
-- usability suspension and deprecation → ENG-REVIEW-RETIRED
-- receipt content and canonical form → ENG-RECEIPT
-- atomic commit boundaries → ENG-PERSISTENCE
-- structural halt conditions → ENG-INTEGRITY
-- EvaluationReport schema and error ordering → ENG-ERROR
+- mutating session state → ENG-SESSION
+- computing ACTIVE sets → ENG-SUPERSESSION
+- determining usability → ENG-REVIEW-RETIRED
+- validating structural integrity → ENG-INTEGRITY
+- producing EvaluationReports → ENG-ERROR
+- committing state → ENG-PERSISTENCE
 
 ---
 
-# 4. Governance Preconditions
-
-## ENG-DECISION-01 — Preconditions Before Authority Evaluation
-
-Governance preconditions must be validated before authority rule evaluation.
-
-Failure prevents acceptance evaluation.
-
-Governance slot validity and ACTIVE derivation are not defined here. They are determined through:
-
-- ENG-INTEGRITY
-- ENG-SUPERSESSION
-- ENG-REVIEW-RETIRED
-
----
-
-## 4.1 Session Type
-
-Session type is defined by ENG-DOMAIN and governed operationally by ENG-SESSION.
-
-Recognized session categories for decision evaluation are:
-
-- AUTHORITY
-- SCOPE
-- REGULAR
-
-Incremental compilation behavior is defined in ENG-COMPILATION and may reuse decision validation rules when replaying historical sessions.
-
----
-
-## 4.2 Session Type Preconditions
-
-### AUTHORITY
-
-Allowed if:
-
-- No ACTIVE Authority exists
-- OR valid supersession of the current ACTIVE Authority is being attempted
-
-ACTIVE derivation and slot exclusivity are defined in:
-
-- ENG-SUPERSESSION
-- ENG-INTEGRITY
-
-### SCOPE
-
-Requires exactly one usable Authority.
-
-### REGULAR
-
-Requires exactly one usable Authority and exactly one usable Scope.
-
-Usability is not defined here. It is determined through:
-
-- ENG-REVIEW-RETIRED
-- ENG-SUPERSESSION
-- ENG-INTEGRITY
-
----
-
-## 4.3 Deterministic Rejection
-
-If governance preconditions fail:
-
-- can_accept = false
-- blocking_reasons must include the applicable governance failure
-
-Authority rule evaluation must not execute.
-
-Error classification and reporting are defined in ENG-ERROR.
-
----
-
-# 5. Decision Evaluation Inputs
+# 4. Decision Evaluation Inputs
 
 Decision evaluation operates over the current session round defined in ENG-SESSION.
 
-The decision layer consumes:
+Inputs include:
 
 - participant set
 - candidate set
 - constraint set
 - vote set
-- governance snapshot references
-- current session state
-- current session phase
+- authority_snapshot_id
+- scope_snapshot_id
+- session state and phase
 
-Round structure, epoch rules, and mutability boundaries are defined in ENG-SESSION and ENG-DOMAIN.
+All structure and mutability rules are defined externally.
 
----
-
-# 6. Governance Mutability Boundary
-
-## ENG-DECISION-02 — Freeze Boundary Enforcement
-
-Before first stance:
-
-- participants may mutate
-- candidates may mutate
-- constraints may mutate
-
-After first stance:
-
-- participants frozen
-- candidates frozen
-- constraints frozen
-
-Mutation after the freeze boundary must fail deterministically.
-
-Freeze boundary mechanics are structurally defined in ENG-SESSION.  
-Error semantics are defined in ENG-ERROR.
+ENG-DECISION consumes them without redefining them.
 
 ---
 
-# 7. Authority Rule Evaluation
+# 5. Evaluation Ordering
 
-## ENG-DECISION-03 — Authority Rule Execution
+## ENG-DECISION-02 — Deterministic Validation Sequence
 
-Authority evaluation executes only after:
+Decision evaluation must execute in a deterministic sequence.
 
-- governance preconditions succeed
-- structural validation succeeds
-- referenced governance artifacts are usable
-- blocking conditions are absent
+At minimum:
 
-Authority mechanics consume the active Authority rule referenced by the session governance snapshot.
+1. governance preconditions
+2. session state eligibility
+3. governance immutability (freeze boundary)
+4. referenced artifact usability
+5. constraint evaluation
+6. authority rule evaluation
+7. blocking determination
+8. acceptance eligibility result
 
-Authority artifact usability is determined externally through:
+Error accumulation and ordering are governed by ENG-ERROR.
+
+ENG-DECISION defines only the logical ordering.
+
+---
+
+# 6. Governance Preconditions
+
+## ENG-DECISION-03 — Preconditions Before Rule Evaluation
+
+Governance preconditions must be satisfied before authority rule evaluation executes.
+
+These include:
+
+- required governance slots exist
+- referenced Authority is usable
+- referenced Scope is usable (when required)
+
+Definitions of:
+
+- slot validity
+- ACTIVE derivation
+- usability
+
+are external and provided by:
 
 - ENG-SUPERSESSION
 - ENG-REVIEW-RETIRED
 - ENG-INTEGRITY
 
+If governance preconditions fail:
+
+- authority rule evaluation must not execute
+- acceptance eligibility fails deterministically
+
 ---
 
-## 7.1 Mechanical Rules
+## 6.1 Session-Type Preconditions
 
-Supported authority rule forms include:
+Session-type requirements are defined structurally in ENG-DOMAIN and behaviorally in ENG-SESSION.
+
+ENG-DECISION enforces:
+
+- AUTHORITY sessions require valid authority slot conditions
+- SCOPE sessions require usable Authority
+- REGULAR sessions require usable Authority and Scope
+
+---
+
+# 7. Governance Mutability Boundary
+
+## ENG-DECISION-04 — Freeze Boundary Enforcement
+
+After the first stance within a round:
+
+- participant set must be treated as frozen
+- candidate set must be treated as frozen
+- constraint set must be treated as frozen
+
+Mutation rules are defined in ENG-SESSION.
+
+ENG-DECISION requires that:
+
+- violations of the freeze boundary invalidate acceptance eligibility
+
+Error classification is defined in ENG-ERROR.
+
+---
+
+# 8. Referenced Artifact Usability
+
+## ENG-DECISION-05 — Usability Is Consumed, Not Defined
+
+Decision evaluation must respect usability constraints of referenced objects.
+
+These include:
+
+- UNDER_REVIEW
+- RETIRED
+- SUPERSEDED
+
+Semantics are defined in:
+
+- ENG-REVIEW-RETIRED
+- ENG-SUPERSESSION
+
+ENG-DECISION must:
+
+- treat unusable references as blocking conditions
+- not reinterpret lifecycle states
+
+---
+
+# 9. Constraint Evaluation
+
+## ENG-DECISION-06 — Constraints Gate Acceptance
+
+Constraints are evaluated as mechanical acceptance conditions.
+
+ENG-DECISION must:
+
+- evaluate all declared constraints
+- treat any failing constraint as acceptance failure
+
+Constraint structure and lifecycle are defined in:
+
+- ENG-DOMAIN
+- ENG-SESSION
+
+Constraint failure:
+
+- prevents acceptance
+- does not mutate state
+
+---
+
+# 10. Authority Rule Evaluation
+
+## ENG-DECISION-07 — Authority Determines Agreement
+
+Authority evaluation executes only if prior stages succeed.
+
+Authority rules are defined by the Authority Resolution referenced in the session.
+
+ENG-DECISION must:
+
+- apply the authority rule deterministically to the vote set
+- respect participant eligibility and round boundaries
+
+Examples include:
 
 - SOLE_ACTOR
 - UNANIMOUS_PRESENT
 - MAJORITY_PRESENT
 
-Behavior:
-
-SOLE_ACTOR  
-- exactly one participant must be present
-- exactly one ACCEPT stance required
-
-UNANIMOUS_PRESENT  
-- all present participants must vote
-- all counted votes must be ACCEPT
-
-MAJORITY_PRESENT  
-- accept_count > floor(present / 2)
-
-Constraint semantics may further restrict eligibility.
-
-The Authority artifact itself is governed by:
-
-- ENG-DOMAIN
-- ENG-SUPERSESSION
-- ENG-REVIEW-RETIRED
+Exact authority definitions belong to governance artifacts, not this specification.
 
 ---
 
-## 7.2 Solo Mode
+## 10.1 Solo Mode
 
-If session conditions permit solo evaluation, the deterministic implicit ACCEPT vote rule is applied as defined in ENG-SESSION.
+If session conditions allow implicit voting:
 
-ENG-DECISION consumes that behavior for rule evaluation.  
-It does not define vote object structure.
+- ENG-DECISION consumes solo behavior defined in ENG-SESSION
 
----
-
-# 8. Constraint Evaluation
-
-## ENG-DECISION-04 — Constraints Are Mechanical Acceptance Gates
-
-Constraint objects and their schema are defined in ENG-DOMAIN.
-
-Constraint lifecycle and mutability are defined in ENG-SESSION.
-
-ENG-DECISION is responsible for evaluating whether declared constraints permit acceptance.
-
-Rules:
-
-- constraints may tighten authority rules
-- constraint failure prevents acceptance
-- constraint failure must not mutate session state
-
-If constraints fail, the session remains non-accepted and may only proceed according to lifecycle rules defined elsewhere.
-
-Error reporting is defined in ENG-ERROR.
+It does not define vote creation semantics.
 
 ---
 
-# 9. Blocking Semantics
+# 11. Blocking Determination
 
-## ENG-DECISION-05 — Decision Layer Blocking
+## ENG-DECISION-08 — Decision Layer Blocking
 
-The decision layer applies blocking outcomes to the session based on current usability and conflict conditions.
+Decision evaluation must determine whether acceptance is:
 
-Decision-layer blocking does not define the underlying state semantics of referenced objects.  
-It consumes them from:
+- allowed
+- temporarily blocked
+- permanently blocked
 
-- ENG-REVIEW-RETIRED
-- ENG-SUPERSESSION
-- ENG-INTEGRITY
+Blocking causes are derived from:
 
----
-
-## 9.1 BLOCK_TEMPORARY
-
-Triggered by reversible decision conditions such as:
-
-- referenced Resolution unusable due to UNDER_REVIEW
-- referenced Resolution unusable due to RETIRED
-- referenced Scope unusable due to UNDER_REVIEW
-- other reversible governance usability failures
-
-BLOCK_TEMPORARY semantics, vote clearing, and resume behavior are defined in:
-
-- ENG-SESSION
-- ENG-REVIEW-RETIRED
-
-ENG-DECISION only determines that acceptance cannot proceed while the blocking condition exists.
+- usability constraints
+- supersession outcomes
+- governance invalidation
+- session state
 
 ---
 
-## 9.2 BLOCK_PERMANENT
+## 11.1 BLOCK_TEMPORARY
 
-Triggered by irreversible decision conditions such as:
+Triggered by reversible conditions such as:
 
-- referenced Authority or Scope structurally invalid for continued acceptance
-- referenced Resolution SUPERSEDED
+- UNDER_REVIEW references
+- RETIRED references
+- Scope under review
+
+ENG-DECISION determines the block.
+
+State transitions and resume behavior are defined in ENG-SESSION.
+
+---
+
+## 11.2 BLOCK_PERMANENT
+
+Triggered by irreversible conditions such as:
+
+- SUPERSEDED references
 - supersession race loss
-- governance mutation after freeze boundary
-- structural legitimacy-context invalidation
-- irreversible supersession conflict
+- structural invalidation of session context
 
-BLOCK_PERMANENT lifecycle semantics are defined in ENG-SESSION.  
-Graph conflict authority belongs to ENG-SUPERSESSION.
+ENG-DECISION determines that acceptance is impossible.
 
-ENG-DECISION applies the result to acceptance eligibility.
+Lifecycle handling is external.
 
 ---
 
-## 9.3 Area Blocking Invariant
+# 12. Supersession & Conflict Integration
 
-If Area-level blocking conditions prohibit acceptance, no session may ACCEPT.
+## ENG-DECISION-09 — Graph Outcomes Are Consumed
 
-Area-wide structural safety and halt semantics are defined in ENG-INTEGRITY.  
-Session-level closure rules are defined in ENG-SESSION.
+ENG-DECISION must consume supersession outcomes from ENG-SUPERSESSION.
 
----
+This includes:
 
-# 10. Supersession & Conflict Participation
+- whether referenced resolutions are structurally ACTIVE
+- whether conflicts exist
+- whether a supersession race has been lost
 
-## ENG-DECISION-06 — Decision Layer Consumes Graph Outcomes
+ENG-DECISION must not:
 
-ENG-DECISION does not define supersession graph rules.
-
-It consumes graph validity and conflict outcomes from ENG-SUPERSESSION, including:
-
-- whether referenced Resolutions are structurally ACTIVE
-- whether a supersession target is valid
-- whether a conflict exists
-- whether first-successful acceptance has already occurred
-- whether replay or compilation conflicts invalidate acceptance
-
-For incremental compilation, canonical historical ordering and replay behavior are defined in ENG-COMPILATION.
+- compute graph structure
+- resolve conflicts independently
 
 ---
 
-# 11. Acceptance Orchestration
+# 13. Acceptance Eligibility Result
 
-## ENG-DECISION-07 — Acceptance Is a Coordinated Validation Procedure
+## ENG-DECISION-10 — Eligibility Is Binary
 
-Acceptance is not defined here as a persistence operation.
+After evaluation:
 
-ENG-DECISION defines the ordered behavioral validation that must succeed before atomic commit can occur.
+- session is either eligible for acceptance
+- or not eligible
 
-Acceptance orchestration must:
+If not eligible:
 
-1. validate governance preconditions
-2. validate current session state
-3. validate governance immutability
-4. validate referenced artifact usability
-5. validate constraints
-6. evaluate authority rule
-7. determine blocking outcome or acceptance eligibility
+- no mutation occurs
 
-If validation fails:
+If eligible:
 
-- no legitimacy is created
-- no receipt is emitted
-- no structural mutation may occur
-
-If validation succeeds:
-
-- control passes to the atomic persistence boundary defined in ENG-PERSISTENCE
+- control transfers to ENG-PERSISTENCE
 
 ---
 
-## 11.1 Acceptance Dependencies
+# 14. Receipt Dependency
 
-Successful acceptance requires coordinated success from:
+## ENG-DECISION-11 — Acceptance Requires Receipt Emission
 
-- ENG-SESSION → lifecycle and round state
-- ENG-INTEGRITY → structural validity
-- ENG-SUPERSESSION → ACTIVE derivation and graph conflict checks
-- ENG-REVIEW-RETIRED → usability suspension checks
-- ENG-PERSISTENCE → atomic commit
-- ENG-RECEIPT → terminal receipt structure
-- ENG-SPECVERIFY → rule provenance binding
+Acceptance requires that:
 
-ENG-DECISION does not duplicate those rules.
+- a LEGITIMACY receipt will be emitted during atomic commit
 
----
+Closure requires:
 
-# 12. Receipt Relationship
+- an EXPLORATION receipt
 
-## ENG-DECISION-08 — Decision Layer Requires, But Does Not Define, Receipt Emission
+ENG-DECISION does not define receipt structure.
 
-Receipts are emitted only on terminal transition.
-
-Decision success at ACCEPTED requires:
-
-- LEGITIMACY receipt emission during atomic commit
-
-Decision success at explicit closure requires:
-
-- EXPLORATION receipt emission during atomic commit
-
-Receipt structure, canonical serialization, and integrity rules are defined in:
-
-- ENG-RECEIPT
-- ENG-CANON
-- ENG-SPECVERIFY
-
-ENG-DECISION only depends on their existence and deterministic availability.
+It requires their existence.
 
 ---
 
-# 13. Evaluation API Semantics
+# 15. Evaluation API Semantics
 
-## ENG-DECISION-09 — Evaluation Is Pure
+## ENG-DECISION-12 — Evaluation Is Pure
 
-evaluate(session_id) must return a deterministic, side-effect-free decision result.
+Evaluation must be:
 
-Evaluation:
+- deterministic
+- side-effect free
+- non-mutating
 
-- must not mutate session state
-- must not emit receipts
-- must not emit audit
-- must not alter votes
-- must not alter session lifecycle
+It must not:
 
-EvaluationReport schema, ordering, and error classification are defined in ENG-ERROR.
+- emit receipts
+- emit audit
+- alter session state
 
-Acceptance must not depend on prior evaluation.
-
----
-
-# 14. Atomicity Boundary
-
-## ENG-DECISION-10 — Atomicity Is Required but Defined Elsewhere
-
-Acceptance must be atomic, but ENG-DECISION is not the authority for atomic durability rules.
-
-Atomic commit semantics are defined in ENG-PERSISTENCE.
-
-ENG-DECISION requires that:
-
-- validation failure produces no mutation
-- success hands off to atomic commit
-- crash before commit results in no legitimacy creation
+EvaluationReport behavior is defined in ENG-ERROR.
 
 ---
 
-# 15. Determinism Guarantee
+# 16. Atomicity Boundary
 
-## ENG-DECISION-11 — Deterministic Behavioral Execution
+## ENG-DECISION-13 — No Partial Mutation
+
+ENG-DECISION requires:
+
+- failure → no mutation
+- success → atomic commit delegated to ENG-PERSISTENCE
+
+ENG-DECISION does not define durability mechanics.
+
+---
+
+# 17. Determinism Guarantee
+
+## ENG-DECISION-14 — Deterministic Behavior
 
 Given identical:
 
-- session runtime structures
+- session state
 - governance references
-- vote state
-- constraint state
+- votes
+- constraints
 - supersession outcomes
 - usability outcomes
 
-ENG-DECISION must produce identical behavioral results.
+ENG-DECISION must produce identical results.
 
-Behavior must not depend on:
+It must not depend on:
 
+- timestamps
+- UUID ordering
 - storage order
-- runtime timing
-- external host behavior
-- timestamp ordering
-- UUID timestamp ordering
-
-Canonical output formatting belongs to ENG-ERROR and ENG-CANON.
+- environment
 
 ---
 
-# 16. Engine Invariants at the Decision Layer
+# 18. Engine Invariants (Decision Layer)
 
-- Governance preconditions enforced before authority rule evaluation
-- Only ACCEPTED sessions may create Resolutions
-- Governance immutable after first stance
-- Votes never cross round boundaries
-- BLOCK_TEMPORARY requires external resolution plus resume semantics defined elsewhere
-- BLOCK_PERMANENT requires explicit closure semantics defined elsewhere
-- RETIRED / UNDER_REVIEW usability must be respected
-- Supersession conflict outcomes must be respected
-- Incremental compilation may reuse decision validation but does not bypass runtime legitimacy rules
+- governance preconditions evaluated before authority rules
+- freeze boundary enforced before acceptance
+- unusable references block acceptance
+- constraints must pass before authority evaluation succeeds
+- supersession outcomes must be respected
+- eligibility determination is deterministic
+- acceptance requires atomic commit (external)
 
 ---
 
-# 17. Heavy Engine Doctrine
+# 19. Prohibited Behaviors
 
-The decision layer must never:
+ENG-DECISION must never:
 
-- auto-accept
-- infer consensus
-- repair structural violations
+- create legitimacy directly
+- bypass atomic commit
 - override supersession outcomes
-- reinterpret historical legitimacy under different rules
-- alter emitted receipts
-- bypass atomic persistence requirements
-- bypass usability suspension rules
+- reinterpret lifecycle states
+- infer consensus
+- repair invalid structures
+- mutate state during evaluation
 
-Legitimacy is created only through explicit, mechanically validated acceptance coordinated across the authoritative specifications.
+---
+
+# 20. Mental Model
+
+ENG-DECISION answers:
+
+“Can this session be accepted right now?”
+
+It does not:
+
+- mutate the world
+- define the graph
+- define structure
+- define receipts
+
+It evaluates.
+
+If the answer is “yes,”  
+another layer commits that truth.

@@ -1,6 +1,6 @@
 # ENG-API — Engine Interface & Execution Boundary Specification
 
-Status: REFACTORED (v15 – Authority-Aligned Interface Model)  
+Status: REFACTORED (v15.1 – Authority-Aligned Interface Model, Persistence-Aligned)  
 Applies to: Engine Core (V1/V2+)  
 Scope: Deterministic Engine interface, command surface, and runtime interaction boundary
 
@@ -19,6 +19,7 @@ Subordinate references consumed from:
 - ENG-INITIALIZATION
 - ENG-IMPORT
 - ENG-COMPILATION
+- ENG-PERSISTENCE
 
 ---
 
@@ -139,7 +140,7 @@ The API must not provide any operation that:
 - bypasses governance validation
 - reconstructs legitimacy artifacts
 
-Legitimacy creation is governed exclusively by ENG-DECISION.
+Legitimacy creation is governed exclusively by ENG-DECISION and committed via ENG-PERSISTENCE.
 
 ---
 
@@ -156,7 +157,7 @@ Inputs:
 Behavior:
 
 - Delegates to ENG-INITIALIZATION
-- Executes full structural validation via ENG-INTEGRITY
+- Executes structural validation via ENG-INTEGRITY
 - Verifies receipts via ENG-RECEIPT + ENG-CANON + ENG-SPECVERIFY
 - Reconstructs supersession graph via ENG-SUPERSESSION
 - Establishes runtime mode
@@ -167,8 +168,8 @@ Possible outcomes:
 - DEGRADED_READ_ONLY
 - INITIALIZATION_FAILURE
 
-ENG-API does not define validation rules.  
-It invokes runtime entry.
+ENG-API invokes runtime entry.  
+It does not define validation rules.
 
 ---
 
@@ -199,7 +200,7 @@ Must not:
 - insert implicit votes
 
 Evaluation is simulation.  
-Acceptance is execution.
+Acceptance is execution coordinated with ENG-PERSISTENCE.
 
 ---
 
@@ -213,36 +214,21 @@ All session lifecycle operations:
 - delegate to ENG-DECISION (validation and acceptance logic)
 - rely on ENG-INTEGRITY for safety guarantees
 
-The API does not define lifecycle rules.  
-It exposes them.
-
----
-
-### Core Lifecycle Operations
-
-- create_session  
-- pause_session  
-- resume_session  
-- close_session  
-- add_participant  
-- remove_participant  
-- add_candidate  
-- remove_candidate  
-- record_vote  
-- attempt_acceptance  
-
 Each operation:
 
 - executes a full validation pass
 - produces an EvaluationReport
 - mutates state only on successful validation
 
-Acceptance behavior (including resolution creation and receipt emission) is defined in:
+No partial mutation is permitted.
+
+Acceptance behavior (including resolution creation, supersession, and receipt emission) is defined in:
 
 - ENG-DECISION
 - ENG-SESSION
 - ENG-RECEIPT
 - ENG-SUPERSESSION
+- ENG-PERSISTENCE
 
 ---
 
@@ -262,12 +248,12 @@ These operations:
 - rely on ENG-INTEGRITY for structural validation
 - rely on ENG-SUPERSESSION for graph integration
 
-ENG-API does not define:
+During incremental compilation:
 
-- replay ordering
-- conflict resolution
-- resolution index semantics
+- runtime mutation operations must not proceed
+- legitimacy creation via standard session acceptance is suspended
 
+ENG-API does not define replay or conflict rules.  
 It exposes compilation entry points only.
 
 ---
@@ -287,11 +273,13 @@ Their semantics are defined in:
 
 - ENG-REVIEW-RETIRED
 
-The API must:
+These operations:
 
-- not redefine lifecycle semantics
-- not bypass structural validation
-- emit EvaluationReports deterministically
+- do not create legitimacy
+- do not alter historical legitimacy
+- do not bypass structural validation
+
+The API must emit deterministic EvaluationReports.
 
 ---
 

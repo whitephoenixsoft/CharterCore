@@ -1,6 +1,6 @@
 # ENG-SUPERSESSION — Supersession Graph, Structural ACTIVE Derivation & Conflict Authority
 
-Status: REFACTORED (v7 – Reference-Driven Model)  
+Status: REFACTORED (v8 – Intra-Area Informational Reference Clarification)  
 Applies to: Engine Core (V1/V2+)  
 
 Authority: Foundational authority for supersession graph semantics, structural ACTIVE derivation, and graph-level conflict detection.
@@ -71,6 +71,7 @@ Rules:
 - structural supersession edges must not cross Area boundaries
 - ACTIVE derivation must be computed strictly from Area-local structural objects
 - cross-area references may exist only as informational metadata
+- intra-Area informational Resolution references may exist, but they are not supersession edges
 
 Mixed-area structural supersession is invalid.
 
@@ -225,6 +226,11 @@ Cross-area or informational references:
 - must not affect ACTIVE derivation
 - must not affect governance slot graph participation
 - must not affect graph conflict detection
+
+This includes:
+
+- cross-area informational references
+- intra-Area informational Resolution references
 
 Graph semantics apply only to structural supersession references.
 
@@ -416,7 +422,9 @@ ENG-SUPERSESSION must not redefine session lifecycle state transitions.
 - graph must remain acyclic
 - structural ACTIVE derivation deterministic
 - governance objects participate in graph structure
-- cross-area references informational only unless structural and local
+- cross-area informational references are never graph edges
+- intra-Area informational Resolution references are never graph edges
+- informational references must not affect ACTIVE derivation or conflict detection
 - first successful accepted graph mutation wins for conflicting live supersession attempts
 - UNDER_REVIEW / RETIRED do not alter structural ACTIVE
 - compilation may affect historical replay precedence but not graph semantics
@@ -440,6 +448,7 @@ It does not answer:
 - whether a session may resume
 - whether a Resolution is usable for legitimacy despite being structurally ACTIVE
 - whether the Engine must halt or degrade
+- whether informational references imply graph semantics
 - how receipts are serialized
 - how acceptance is persisted atomically
 

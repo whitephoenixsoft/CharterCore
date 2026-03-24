@@ -1,6 +1,6 @@
 # ENG-INTEGRITY — Engine Integrity, Runtime Safety & Structural Halt Guarantees
 
-Status: REFACTORED (v15 – Reference-Driven Model)  
+Status: REFACTORED (v17 – Intra-Area Reference Validation Alignment)  
 Applies to: Engine Core (V1/V2+)  
 
 Authority: Foundational runtime authority for structural validity, halt conditions, degraded mode, and single-Area enforcement.
@@ -26,7 +26,7 @@ It is the authoritative specification for:
 
 - Structural halt conditions
 - Single-Area runtime enforcement
-- Rehydration safety
+- Rehydration safety validation
 - Schema compatibility enforcement
 - Structural reference validity
 - Governance slot exclusivity enforcement
@@ -56,7 +56,34 @@ Those are defined respectively in:
 - ENG-PERSISTENCE
 - ENG-SPECVERIFY
 
-ENG-INTEGRITY is the authority for deciding whether the Engine may run, must degrade, or must halt.
+ENG-INTEGRITY is the authority for determining whether the Engine may run, must degrade, or must halt.
+
+---
+
+# 1a. Relationship to Initialization
+
+## ENG-INTEGRITY-00 — Initialization Consumes Integrity Outcomes
+
+ENG-INTEGRITY does not establish runtime entry.
+
+It produces authoritative validation outcomes consumed by:
+
+- ENG-INITIALIZATION → runtime entry decision
+- ENG-API → rehydration invocation surface
+
+ENG-INTEGRITY determines:
+
+- whether structural integrity holds
+- whether runtime trust is sufficient
+- whether degraded mode is required
+- whether fatal halt conditions exist
+
+ENG-INITIALIZATION determines:
+
+- whether runtime entry occurs
+- which runtime mode is entered
+
+ENG-INTEGRITY is therefore a validation authority, not a runtime entry coordinator.
 
 ---
 
@@ -86,7 +113,7 @@ Legitimacy must remain:
 - strictly Area-local
 
 If structural integrity cannot be proven, the Engine must halt.  
-If structural integrity is intact but non-fatal runtime trust conditions fail, the Engine may enter degraded read-only mode.
+If structural integrity is intact but runtime trust conditions fail, the Engine may enter degraded read-only mode.
 
 ---
 
@@ -189,6 +216,27 @@ It determines whether the runtime can safely proceed with them.
 
 ---
 
+# 6a. No Repair or Mutation
+
+## ENG-INTEGRITY-06A — Integrity Is Validation Only
+
+ENG-INTEGRITY must not:
+
+- mutate domain objects
+- repair structural inconsistencies
+- reconstruct missing artifacts
+- regenerate receipts
+- alter governance structure
+- resolve conflicts automatically
+
+ENG-INTEGRITY is purely evaluative.
+
+All failures are descriptive and must be surfaced through ENG-ERROR.
+
+Any repair must occur outside the Engine or through explicit Engine operations governed by other specifications.
+
+---
+
 # 7. Structural vs Informational References
 
 ## ENG-INTEGRITY-07 — Structural References Must Resolve
@@ -206,14 +254,32 @@ Missing structural references must cause deterministic failure.
 
 Cross-area structural references are prohibited.
 
-Informational cross-area references:
+Reference classification is defined structurally in ENG-DOMAIN.
+
+---
+
+## ENG-INTEGRITY-07A — Informational References Must Respect Their Declared Class
+
+Informational references must not be reinterpreted as structural edges.
+
+Cross-area informational references:
 
 - are metadata only
 - must not affect legitimacy
 - must not affect ACTIVE derivation
-- must not be traversed for restore or runtime validation
+- must not be traversed for restore or runtime validation beyond their own field validity
 
-Reference classification is defined structurally in ENG-DOMAIN.
+Intra-Area informational Resolution references:
+
+- must resolve to existing Resolution objects within the same Area
+- must not affect legitimacy
+- must not affect ACTIVE derivation
+- must not be interpreted as supersession
+- must not introduce graph precedence or acceptance semantics
+
+If an intra-Area informational Resolution reference is present but unresolved, runtime structural validation must fail.
+
+ENG-INTEGRITY validates local referential consistency for such references while preserving their informational-only semantics.
 
 ---
 
@@ -264,10 +330,16 @@ ENG-INTEGRITY is the runtime authority that determines whether those structures 
 
 # 10. Receipt Integrity Rules
 
-## ENG-INTEGRITY-10 — Receipt Integrity Is Runtime-Critical
+## ENG-INTEGRITY-10 — Receipt Integrity Is Runtime Trust-Critical
 
-Receipts are integrity artifacts.  
-They do not create legitimacy, but runtime must verify them where required.
+Receipts are integrity artifacts.
+
+They do not create legitimacy, but are required to prove legitimacy history and to establish runtime trust classification.
+
+Receipt validation occurs in multiple contexts:
+
+- ENG-IMPORT → validation at ingestion time
+- ENG-INTEGRITY → validation at runtime safety boundary
 
 ENG-INTEGRITY must validate, for runtime safety:
 
@@ -279,11 +351,15 @@ ENG-INTEGRITY must validate, for runtime safety:
 - receipt snapshots are structurally consistent
 - rule identity fields are acceptable for runtime interpretation under ENG-SPECVERIFY
 
+ENG-INTEGRITY determines whether receipt validation results in:
+
+- normal runtime
+- degraded read-only mode
+- initialization failure (halt)
+
 Receipt structure is defined in ENG-RECEIPT.  
 Canonical encoding is defined in ENG-CANON.  
 Rule identity semantics are defined in ENG-SPECVERIFY.
-
-ENG-INTEGRITY is responsible for deciding whether receipt validation success, degraded mode, or halt follows.
 
 Historical receipts remain authoritative even if later Resolution usability changes under ENG-REVIEW-RETIRED.
 
@@ -321,11 +397,13 @@ Degraded mode may activate only if:
 - governance slots can be derived
 - runtime trust or completeness is insufficient for safe mutation or acceptance
 
-Examples may include:
+Examples include:
 
-- non-fatal receipt trust issues as permitted by runtime policy
+- non-fatal receipt trust issues as determined by ENG-INTEGRITY runtime policy
 - missing optional non-structural artifacts
 - host-configured artifacts unavailable where not structurally required
+
+Degraded mode activation criteria must be deterministic and must not depend on host configuration or caller interpretation.
 
 In degraded mode:
 
@@ -390,6 +468,7 @@ Fatal structural failures include, at minimum:
 - mixed-area structural graph detected
 - cross-area structural supersession detected
 - unresolved structural references
+- unresolved intra-Area informational Resolution references where present
 - unsupported schema version
 - unknown structural enum or field
 - governance slot multiplicity or structurally invalid emptiness
@@ -452,6 +531,8 @@ ENG-INTEGRITY does not redefine the persistence transaction model.
 - no partial restore mode for legitimacy
 - schema compatibility enforced before runtime legitimacy compilation
 - structural references must resolve
+- intra-Area informational Resolution references, if present, must resolve locally
+- informational references must not be reinterpreted as supersession
 - governance slots structurally valid
 - participant epochs structurally enforced
 - runtime determinism mandatory
