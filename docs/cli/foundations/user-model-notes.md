@@ -62,17 +62,20 @@ Three archetypes guide this design:
 
 **Three Non-Negotiable Questions**
 
-1. **Reproducibility** — Can someone reconstruct the decision path?  
+1. **Reproducibility** — Can someone reconstruct the decision path? 
 2. **Defensibility** — Can someone fairly challenge it?  
 3. **Continuity** — Can it survive authors leaving or institutional change?  
 
-Failing any of these indicates a **CLI invariant violation** or a **design flaw**.
+Failing any of these indicates a **Human acceptance-test violation** or a **conceptual design flaw**.
 
 ---
 
 ## 4. Contributor Guidance
 
 - Always assume **extreme scrutiny**.  
-- CLI conservatism is intentional; never shortcut authority or legitimacy.  
-- Audit is the system of record; everything else prepares, never decides.  
+- CLI conservatism is intentional; never shortcut authority or legitimacy.    
+- Legitimacy history is the system of record for decisions.
+- Audit is descriptive record.
+- Everything else prepares, observes, computes, or interprets.
+- Only sessions decide.
 - Treat these mental models as **living guidelines**, not hard UX requirements.

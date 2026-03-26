@@ -211,7 +211,7 @@ Without embedded specs, Charter is a database.
 With them, Charter is institutional memory with rules.
 
 ----
-Conversation notes
+Conversation notes: THIS IS REVIEW ONLY
 
 This is a very good pause point. You’re noticing exactly the pressure point where spec-as-law meets spec-as-tests, and you’re right that it affects how you code today, not just future CLI ideas.
 I’ll answer both questions directly, then give you a practical recommendation so you don’t paint yourself into a corner.
