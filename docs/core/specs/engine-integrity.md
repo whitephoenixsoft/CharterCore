@@ -277,7 +277,20 @@ Intra-Area informational Resolution references:
 - must not be interpreted as supersession
 - must not introduce graph precedence or acceptance semantics
 
-If an intra-Area informational Resolution reference is present but unresolved, runtime structural validation must fail.
+If an intra-Area informational Resolution reference is present but unresolved:
+
+- it must not affect legitimacy
+- it must not affect ACTIVE derivation
+- it must not be treated as a structural reference failure
+
+The Engine may:
+
+- reject the artifact as invalid input, OR
+- enter degraded mode if configured to tolerate incomplete informational metadata
+
+The Engine must not treat such references as structural graph edges or supersession inputs.
+
+Validation of informational references is limited to referential consistency and must not introduce new structural constraints beyond those defined in ENG-DOMAIN.
 
 ENG-INTEGRITY validates local referential consistency for such references while preserving their informational-only semantics.
 

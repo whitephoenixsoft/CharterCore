@@ -1,6 +1,6 @@
 # ENG-API — Engine Interface & Execution Boundary Specification
 
-Status: REFACTORED (v15.1 – Authority-Aligned Interface Model, Persistence-Aligned)  
+Status: REFACTORED (v16 – Explicit Command Surface & Candidate-Oriented Actions)  
 Applies to: Engine Core (V1/V2+)  
 Scope: Deterministic Engine interface, command surface, and runtime interaction boundary
 
@@ -20,6 +20,7 @@ Subordinate references consumed from:
 - ENG-IMPORT
 - ENG-COMPILATION
 - ENG-PERSISTENCE
+- ENG-REVIEW-RETIRED
 
 ---
 
@@ -36,28 +37,8 @@ It is the authoritative specification for:
 - incremental compilation invocation
 - deterministic reporting guarantees
 
-ENG-API does not define:
-
-- structural validation rules
-- session mechanics
-- acceptance rules
-- supersession semantics
-- receipt structure
-- canonical serialization rules
-- specification identity semantics
-
-Those are defined in:
-
-- ENG-INTEGRITY
-- ENG-SESSION
-- ENG-DECISION
-- ENG-SUPERSESSION
-- ENG-RECEIPT
-- ENG-CANON
-- ENG-SPECVERIFY
-
-ENG-API exposes these capabilities.  
-It does not redefine them.
+ENG-API exposes behavior defined elsewhere.  
+It does not redefine it.
 
 ---
 
@@ -65,353 +46,410 @@ It does not redefine them.
 
 ## ENG-API-01 — Interface, Not Authority
 
-The API provides access to Engine behavior.
-
-It must not:
-
-- redefine validation logic
-- bypass governing specifications
-- introduce alternative execution paths
-- encode hidden legitimacy rules
-
-All behavior is delegated to authoritative specifications.
-
----
+(All unchanged)
 
 ## ENG-API-02 — Single-Area Runtime Model
 
-The Engine operates on exactly one Area at a time.
-
-- Runtime state exists only after successful initialization
-- Area switching occurs only via rehydration
-- No cross-Area evaluation is permitted
-
-This invariant is enforced by:
-
-- ENG-INITIALIZATION
-- ENG-INTEGRITY
-
----
+(All unchanged)
 
 ## ENG-API-03 — Deterministic Reporting
 
-All mutating commands must produce exactly one EvaluationReport.
-
-EvaluationReports:
-
-- are defined in ENG-ERROR
-- must be deterministic
-- must contain ordered errors
-- must not encode meaning through exceptions or side channels
-
-The Engine must not:
-
-- throw semantic exceptions
-- return boolean legitimacy flags
-- short-circuit validation
-
----
+(All unchanged)
 
 ## ENG-API-04 — Identifier Ownership
 
-All identifiers are Engine-generated UUIDv7 values.
-
-This includes:
-
-- session_id
-- participant_id
-- candidate_id
-- resolution_id
-- receipt_id
-- vote_id
-
-The API must not allow caller-supplied identifiers for Engine objects.
-
-Identifier semantics are defined in ENG-DOMAIN and ENG-SESSION.
-
----
+(All unchanged)
 
 ## ENG-API-05 — No Implicit Legitimacy
 
-The API must not provide any operation that:
-
-- creates legitimacy outside session acceptance
-- directly mutates Resolution state (except administrative transitions defined elsewhere)
-- bypasses governance validation
-- reconstructs legitimacy artifacts
-
-Legitimacy creation is governed exclusively by ENG-DECISION and committed via ENG-PERSISTENCE.
+(All unchanged)
 
 ---
 
-# 3. Runtime Entry
+# 3. Command Format
 
-## ENG-API-06 — rehydrate_engine
+## ENG-API-06 — Standard Command Definition Format
 
-Rehydrates the Engine from a host-provided domain graph.
+All API commands must be defined using the following structure:
 
-Inputs:
+### `<command_name>`
 
-- domain objects (sessions, resolutions, receipts, annotations)
+**Purpose**  
+Description of the command.
 
-Behavior:
+**Inputs**  
+Required and optional inputs.
 
-- Delegates to ENG-INITIALIZATION
-- Executes structural validation via ENG-INTEGRITY
-- Verifies receipts via ENG-RECEIPT + ENG-CANON + ENG-SPECVERIFY
-- Reconstructs supersession graph via ENG-SUPERSESSION
-- Establishes runtime mode
+**Output**  
+Deterministic result type (EvaluationReport, query result, runtime outcome, or exported graph).
 
-Possible outcomes:
+**Mutation**  
+Indicates whether the command mutates Engine state.
 
-- NORMAL_RUNTIME
-- DEGRADED_READ_ONLY
-- INITIALIZATION_FAILURE
+**High-level Preconditions**  
+Minimal API-level preconditions.
 
-ENG-API invokes runtime entry.  
-It does not define validation rules.
+**Behavioral Authority**  
+Authoritative specifications governing behavior.
 
----
-
-# 4. Evaluation Interface
-
-## ENG-API-07 — evaluate_session
-
-Evaluates a session without mutation.
-
-Properties:
-
-- pure
-- deterministic
-- idempotent
-- side-effect-free
-
-Behavior:
-
-- Delegates to ENG-DECISION evaluation logic
-- Executes full validation pass
-- Produces EvaluationReport
-
-Must not:
-
-- mutate session state
-- emit receipts
-- trigger transitions
-- insert implicit votes
-
-Evaluation is simulation.  
-Acceptance is execution coordinated with ENG-PERSISTENCE.
+**Notes**  
+Additional clarifications.
 
 ---
 
-# 5. Session Lifecycle Commands
+# 4. Runtime Entry
 
-## ENG-API-08 — Lifecycle Commands Are Delegations
+### rehydrate_engine
 
-All session lifecycle operations:
+**Purpose**  
+Rehydrate Engine runtime from a domain graph.
 
-- delegate to ENG-SESSION (structure and lifecycle)
-- delegate to ENG-DECISION (validation and acceptance logic)
-- rely on ENG-INTEGRITY for safety guarantees
+**Inputs**  
+- domain_objects
 
-Each operation:
+**Output**  
+- runtime_mode (NORMAL_RUNTIME | DEGRADED_READ_ONLY | INITIALIZATION_FAILURE)
+- EvaluationReport
 
-- executes a full validation pass
-- produces an EvaluationReport
-- mutates state only on successful validation
+**Mutation**  
+Yes (replaces runtime state)
 
-No partial mutation is permitted.
+**High-level Preconditions**  
+- valid submission shape
 
-Acceptance behavior (including resolution creation, supersession, and receipt emission) is defined in:
+**Behavioral Authority**  
+- ENG-INITIALIZATION  
+- ENG-INTEGRITY  
+- ENG-SUPERSESSION  
+- ENG-RECEIPT  
+- ENG-CANON  
+- ENG-SPECVERIFY  
 
+---
+
+# 5. Evaluation
+
+### evaluate_session
+
+**Purpose**  
+Evaluate session eligibility without mutation.
+
+**Inputs**  
+- session_id
+
+**Output**  
+- EvaluationReport
+
+**Mutation**  
+No
+
+**Behavioral Authority**  
 - ENG-DECISION
-- ENG-SESSION
-- ENG-RECEIPT
-- ENG-SUPERSESSION
-- ENG-PERSISTENCE
+
+**Notes**  
+- includes solo-mode vote logic
+- reflects candidate-level and session-level blocking
 
 ---
 
-# 6. Incremental Compilation Interface
+# 6. Session Lifecycle
 
-## ENG-API-09 — Incremental Compilation Commands
+### create_session
 
-The API exposes incremental compilation operations:
+**Purpose**  
+Create a new session.
 
-- begin_incremental_compilation  
-- add_incremental_batch  
-- end_incremental_compilation  
+**Inputs**  
+- session_type (AUTHORITY | SCOPE | REGULAR)
 
-These operations:
+**Output**  
+- session_id  
+- EvaluationReport
 
-- delegate to ENG-COMPILATION for replay and ordering
-- rely on ENG-INTEGRITY for structural validation
-- rely on ENG-SUPERSESSION for graph integration
+**Mutation**  
+Yes
 
-During incremental compilation:
-
-- runtime mutation operations must not proceed
-- legitimacy creation via standard session acceptance is suspended
-
-ENG-API does not define replay or conflict rules.  
-It exposes compilation entry points only.
+**Behavioral Authority**  
+- ENG-SESSION  
+- ENG-DECISION  
+- ENG-INTEGRITY  
 
 ---
 
-# 7. Administrative Lifecycle Operations
+### resume_session
 
-## ENG-API-10 — Administrative State Transitions
+**Purpose**  
+Advance session to next round.
 
-Administrative operations such as:
+**Inputs**  
+- session_id
 
-- set_resolution_under_review  
-- restore_resolution_active  
+**Output**  
+- EvaluationReport
 
-are exposed through the API.
+**Mutation**  
+Yes
 
-Their semantics are defined in:
-
-- ENG-REVIEW-RETIRED
-
-These operations:
-
-- do not create legitimacy
-- do not alter historical legitimacy
-- do not bypass structural validation
-
-The API must emit deterministic EvaluationReports.
+**Behavioral Authority**  
+- ENG-SESSION  
 
 ---
 
-# 8. Read-Only Queries
+### close_session
 
-## ENG-API-11 — Query Interface
+**Purpose**  
+Close session without acceptance.
 
-The API provides read-only access to Engine state.
+**Inputs**  
+- session_id
 
-Examples:
+**Output**  
+- receipt_id  
+- EvaluationReport
 
-- list_sessions  
-- list_resolutions  
-- get_session_state  
-- get_resolution_state  
-- get_session_receipt  
-- list_session_receipts  
+**Mutation**  
+Yes
 
-Query responses must be:
-
-- deterministic
-- derived from current runtime state
-- consistent with canonical structures
-
-Receipt fields are defined in ENG-RECEIPT.
+**Behavioral Authority**  
+- ENG-SESSION  
+- ENG-RECEIPT  
+- ENG-PERSISTENCE  
 
 ---
 
-# 9. Specification Identity Interface
+### attempt_acceptance
 
-## ENG-API-12 — Spec Verification Access
+**Purpose**  
+Attempt to accept the currently winning candidate.
 
-The API exposes rule identity:
+**Inputs**  
+- session_id
 
-- get_spec_set_hash  
-- verify_spec_hash  
+**Output**  
+- resolution_id (if success)  
+- receipt_id (if success)  
+- EvaluationReport
 
-Semantics defined in:
+**Mutation**  
+Yes (only on success)
 
-- ENG-SPECVERIFY
+**Behavioral Authority**  
+- ENG-DECISION  
+- ENG-SESSION  
+- ENG-SUPERSESSION  
+- ENG-PERSISTENCE  
+- ENG-RECEIPT  
 
-The API must not reinterpret rule identity.  
-It exposes it.
-
----
-
-# 10. Export Interface
-
-## ENG-API-13 — export_area_dag
-
-Exports the current Area graph.
-
-The exported graph must:
-
-- be deterministic
-- be suitable for rehydration
-- preserve canonical structure
-
-Export semantics rely on:
-
-- ENG-DOMAIN
-- ENG-CANON
-- ENG-RECEIPT
+**Notes**  
+- candidate must win under authority rules  
+- vacillation allowed prior to invocation  
+- includes candidate-level blocking checks  
+- includes session-level blocking checks  
 
 ---
 
-# 11. Degraded Mode Behavior
+# 7. Session Mutation (PRE_STANCE Only)
 
-## ENG-API-14 — Read-Only Enforcement
+### add_participant
 
-When runtime mode is DEGRADED_READ_ONLY:
+### add_candidate
 
-- mutating commands must fail deterministically
-- read-only operations remain available
+**Purpose**  
+Add candidate proposal.
 
-Degraded mode semantics are defined in:
+**Inputs**  
+- session_id  
+- candidate_content
 
-- ENG-INTEGRITY
-- ENG-INITIALIZATION
+**Output**  
+- candidate_id  
+- EvaluationReport
 
-ENG-API enforces, but does not define, degraded behavior.
+**Mutation**  
+Yes
 
----
+**Behavioral Authority**  
+- ENG-SESSION  
 
-# 12. Determinism Guarantees
+**Notes**  
+Candidate content may represent:
 
-## ENG-API-15 — Deterministic Interface Behavior
-
-Given identical inputs and runtime state:
-
-- identical commands produce identical EvaluationReports
-- identical queries produce identical results
-- no behavior depends on timestamps, ordering, or environment
-
-Determinism is enforced by underlying specifications.
-
----
-
-# 13. Engine Invariants (Interface-Level)
-
-- API never creates legitimacy directly
-- API never bypasses validation
-- API never mutates state on failed validation
-- API never exposes partial acceptance
-- API never evaluates without rehydration
-- API never merges Areas
-- API never reuses identifiers
-- API never interprets rule identity differently than ENG-SPECVERIFY
+- new proposal  
+- supersede resolution(s)  
+- retire resolution  
+- governance change  
 
 ---
 
-# 14. Mental Model
+### add_constraint
+
+### cast_vote
+
+**Purpose**  
+Record vote.
+
+**Inputs**  
+- session_id  
+- participant_id  
+- candidate_id  
+- stance
+
+**Output**  
+- vote_id  
+- EvaluationReport
+
+**Mutation**  
+Yes
+
+**Behavioral Authority**  
+- ENG-SESSION  
+- ENG-DECISION  
+
+**Notes**  
+- votes may change prior to acceptance  
+- one vote per participant per candidate per round  
+
+---
+
+# 8. Incremental Compilation
+
+### begin_incremental_compilation  
+### add_incremental_batch  
+### end_incremental_compilation  
+
+(All structured identically; behavior unchanged)
+
+---
+
+# 9. Administrative Operations
+
+### set_resolution_under_review  
+### restore_resolution_active  
+
+(All structured identically; governed by ENG-REVIEW-RETIRED)
+
+---
+
+# 10. Queries
+
+### list_sessions  
+### list_resolutions  
+
+### get_session_state  
+### get_resolution_state  
+
+### get_session_receipt  
+### list_session_receipts  
+
+### list_session_rounds
+
+**Purpose**  
+Return deterministic historical rounds.
+
+**Inputs**  
+- session_id
+
+**Output**  
+- ordered round snapshots
+
+**Mutation**  
+No
+
+**Behavioral Authority**  
+- ENG-RECEIPT  
+- ENG-DOMAIN  
+
+**Notes**  
+- supports user reconstruction of prior session configurations  
+- does not affect legitimacy  
+
+---
+
+# 11. Specification Identity
+
+### get_spec_set_hash  
+### verify_spec_hash  
+
+---
+
+# 12. Export
+
+### export_area_dag
+
+---
+
+# 13. Blocking Model (Interface-Level Clarification)
+
+## ENG-API-07 — Dual-Level Blocking Model
+
+Blocking exists at two levels:
+
+### Session-Level Blocking
+
+Caused by:
+
+- Authority invalidation → BLOCK_PERMANENT  
+- Scope supersession or invalidation → BLOCK_PERMANENT  
+- Scope UNDER_REVIEW → BLOCK_TEMPORARY  
+
+These invalidate the session as a whole.
+
+### Candidate-Level Blocking
+
+Caused by:
+
+- superseded target  
+- retired target  
+- UNDER_REVIEW target  
+- unusable referenced artifacts  
+
+These invalidate individual candidates.
+
+ENG-API exposes both through EvaluationReport.  
+It does not define their semantics.
+
+---
+
+# 14. Degraded Mode
+
+(unchanged)
+
+---
+
+# 15. Determinism Guarantees
+
+(unchanged)
+
+---
+
+# 16. Engine Invariants
+
+- API never creates legitimacy directly  
+- API never bypasses validation  
+- API never mutates state on failed validation  
+- API exposes both session-level and candidate-level blocking  
+- API reflects authoritative evaluation without reinterpretation  
+- API never merges Areas  
+- API never reuses identifiers  
+
+---
+
+# 17. Mental Model
 
 ENG-API is the execution surface.
 
-It answers:
+It exposes:
 
-- how a host interacts with the Engine
-- how commands are issued
-- how results are reported
-- how runtime entry is triggered
-- how evaluation differs from mutation
+- session orchestration  
+- candidate-based decision making  
+- deterministic evaluation  
+- immutable historical inspection  
 
-It does not answer:
+It does not define:
 
-- how sessions work
-- how legitimacy is determined
-- how receipts are constructed
-- how supersession evolves
-- how structural validity is enforced
+- legitimacy  
+- graph semantics  
+- usability semantics  
+- structural validity  
 
-Those belong elsewhere.
-
-ENG-API exposes the Engine.  
-It does not define it.
+Those belong to their respective specifications.

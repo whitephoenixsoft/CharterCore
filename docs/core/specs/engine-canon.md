@@ -1,6 +1,6 @@
 # ENG-CANON — Canonical Serialization & Hashing Specification
 
-Status: REFACTORED (v4 – Reference Model Alignment & Informational Reference Clarification)  
+Status: REFACTORED (v5 – Structural Inclusion Clarification & Determinism Tightening)  
 Applies to: Engine Core (V1/V2+)  
 Scope: Canonical serialization and hashing rules for structural artifacts
 
@@ -136,6 +136,8 @@ Examples of ordering authority defined elsewhere include:
 - round ordering
 - informational reference lists (e.g., resolution_references)
 
+The ordering requirements for informational reference arrays are defined in ENG-DOMAIN and must be satisfied prior to canonicalization.
+
 Implementations must not reorder arrays during canonicalization.
 
 If an array is not already in the deterministic order required by its governing specification, canonicalization must fail or the artifact must be treated as invalid by the consuming layer.
@@ -144,7 +146,7 @@ If an array is not already in the deterministic order required by its governing 
 
 # 6. Structural vs Informational Inclusion
 
-## ENG-CANON-05 — Only Recognized Structural Fields Participate in Canonical Hashing
+## ENG-CANON-05 — Structural Classification Governs Canonical Inclusion
 
 Canonical hashing includes only recognized structural fields.
 
@@ -157,34 +159,32 @@ That classification is supplied by the authoritative schema or artifact specific
 
 ENG-CANON requires:
 
-- recognized structural fields included
-- informational fields included only if explicitly classified as structural by their governing specification
-- unknown informational fields excluded
-- unknown structural fields cause canonicalization failure
+- all recognized structural fields must be included
+- informational fields are included only if the governing schema classifies them as structural fields despite their informational semantics
+- unknown informational fields must be excluded
+- unknown structural fields must cause canonicalization failure
 
 Canonicalization must not silently reinterpret unrecognized structural content.
 
 ---
 
-# 6a. Informational Reference Handling
-
 ## ENG-CANON-05A — Informational References Are Canonical but Non-Semantic
 
-Informational references (including intra-Area Resolution references and cross-Area references):
+Informational references (including intra-Area Resolution references and cross-Area references) may be represented as structural fields whose semantics are informational.
 
-- must be serialized canonically if present
-- must follow standard object and array ordering rules
-- must not influence structural meaning, legitimacy, or graph semantics
-
-If a governing schema classifies informational references as structural fields (for artifact completeness and auditability):
+When classified as structural by the governing schema:
 
 - they must be included in canonical serialization
-- they must be included in hash input
+- they must be included in canonical hash input
+- they must follow all canonical ordering rules
 
 However:
 
 - their presence must not be interpreted as structural edges
-- their content must not affect supersession, ACTIVE derivation, or conflict detection
+- their content must not affect supersession
+- their content must not affect ACTIVE derivation
+- their content must not affect conflict detection
+- their content must not introduce ordering semantics
 
 ENG-CANON enforces representation, not interpretation.
 
@@ -303,11 +303,17 @@ Canonical timestamp requirements:
 - UTC required where the governing spec requires UTC
 - Z suffix required where UTC normalization is required
 - millisecond precision must be stable for identical objects when present
+- timestamp precision must not vary for semantically identical artifacts
 
 ENG-CANON does not decide whether a timestamp is structural or informational.  
 That decision belongs to the governing schema or artifact specification.
 
-Timestamps must never influence canonical field ordering or legitimacy evaluation merely by existing.
+Timestamps must never influence:
+
+- canonical field ordering
+- legitimacy evaluation
+- supersession precedence
+- structural interpretation
 
 ---
 

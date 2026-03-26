@@ -1,7 +1,7 @@
 # ENG-DOMAIN — Domain Object Schema
 Canonical Engine Object Definitions
 
-Status: REFACTORED (v17 – Intra-Area Reference Extension)  
+Status: REFACTORED (v18 – Session/Resolution Informational Reference Completion)  
 Applies to: Engine Core (V1/V2+)
 
 Authority: Foundational authority for structural object schemas and structural field classification.
@@ -70,6 +70,8 @@ Once written, they are immutable except as replaced or evolved through lifecycle
 
 ENG-DOMAIN defines object shape, not mutation procedures.
 
+No consuming specification may reinterpret a persisted object by silently adding omitted structure, deleting recognized structure, or reclassifying a structural field as informational.
+
 ---
 
 ## ENG-DOMAIN-02 — Canonical Serialization Is Consumed, Not Defined Here
@@ -82,7 +84,15 @@ ENG-CANON defines:
 - canonical encoding
 - hash input rules
 
-ENG-DOMAIN defines which fields exist and whether they are structural or informational.
+ENG-DOMAIN defines:
+
+- which fields exist
+- which fields are required
+- which fields are structural
+- which fields are informational
+- which contained collections require deterministic ordering preconditions
+
+Canonical byte production is therefore downstream of domain schema truth.
 
 ---
 
@@ -104,6 +114,9 @@ A field is informational if it does not affect those concerns.
 ENG-DOMAIN is the authority for that classification at the schema level.  
 ENG-CANON consumes that classification when building canonical hash inputs.
 
+A field may be informational even when it is preserved canonically for completeness or audit portability.  
+Informational preservation does not give the field legitimacy semantics.
+
 ---
 
 ## ENG-DOMAIN-04 — Lifecycle State Is a Single Enum Field
@@ -112,6 +125,8 @@ Where lifecycle state exists, it must be represented as a single enum field.
 
 ENG-DOMAIN defines the allowed enum values per object category.  
 ENG-SUPERSESSION and ENG-REVIEW-RETIRED define the behavioral meaning of those values.
+
+Unknown lifecycle values are structurally invalid.
 
 ---
 
@@ -125,6 +140,9 @@ Schema version determines structural interpretation only.
 
 Runtime acceptance of schema versions is enforced by ENG-INTEGRITY.
 
+Schema version must be explicit.  
+It must not be inferred from file format, transport envelope, API version, or storage layout.
+
 ---
 
 ## ENG-DOMAIN-06 — Engine-Owned Identity
@@ -137,6 +155,13 @@ ENG-DOMAIN defines identifier form.
 ENG-INTEGRITY enforces restore validity.  
 UUID timestamp components must not carry legitimacy meaning.
 
+UUID timestamp components must not determine:
+
+- supersession precedence
+- replay ordering unless explicitly defined elsewhere for a different artifact
+- restore precedence
+- acceptance validity
+
 ---
 
 ## ENG-DOMAIN-07 — Area Identity Is Opaque
@@ -145,6 +170,9 @@ area_id is externally provided and opaque.
 
 ENG-DOMAIN defines that it scopes structural objects.  
 It does not define Area lifecycle or operational ownership.
+
+Area identity has no semantic decomposition within the Engine.  
+No rule may depend on parsing area_id structure.
 
 ---
 
@@ -162,6 +190,8 @@ Schema compatibility rules:
 ENG-DOMAIN defines these compatibility rules.  
 ENG-INTEGRITY enforces them during runtime rehydration and restore.
 
+No implementation may silently coerce an incompatible object into compatibility.
+
 ---
 
 ## ENG-DOMAIN-09 — Unknown Field Handling
@@ -171,6 +201,8 @@ Unknown structural fields are not permitted.
 Unknown informational fields may be ignored only if the consuming specification allows them to remain informational.
 
 ENG-CANON must not include unknown structural fields in canonical hashing and must fail if they are encountered as structural content.
+
+A field that is unknown to the implementation must not be guessed to be informational merely because it appears optional.
 
 ---
 
@@ -185,6 +217,8 @@ ENG-DOMAIN defines this as a schema boundary.
 ENG-INTEGRITY enforces whether a runtime graph violating this boundary may proceed.
 
 Cross-area references may exist only as informational metadata unless explicitly declared structural by schema.
+
+Structural multi-Area graphs are not supported.
 
 ---
 
@@ -211,6 +245,8 @@ Those belong to:
 - ENG-REVIEW-RETIRED
 - ENG-INTEGRITY
 
+Governance slot participation is structural even when slot usability is temporarily suspended by another specification.
+
 ---
 
 # 6. Structural vs Informational References
@@ -233,17 +269,21 @@ Structural references must remain Area-local unless a schema explicitly states o
 ENG-DOMAIN defines the reference classes.  
 ENG-INTEGRITY enforces whether they resolve safely.
 
+Structural references are not optional in effect merely because a field may be nullable in particular object classes.  
+If present as structural content, they carry structural resolution requirements.
+
 ---
 
 ## ENG-DOMAIN-13 — Informational References
 
-Informational references do not affect legitimacy, supersession, or structural validity.
+Informational references do not affect legitimacy, supersession, or structural ACTIVE derivation.
 
 They exist for:
 
 - lineage
 - traceability
 - external linkage
+- contextual association
 - future graph semantics
 
 They must never:
@@ -252,6 +292,11 @@ They must never:
 - affect ACTIVE derivation
 - be interpreted as supersession
 - be used for acceptance decisions
+- create ordering semantics
+- create graph precedence
+
+Informational references may still be preserved canonically if the containing artifact treats them as part of structural completeness for export or audit portability.  
+That does not make them graph edges.
 
 ---
 
@@ -264,15 +309,18 @@ They:
 - do not affect legitimacy
 - do not affect ACTIVE derivation
 - do not affect supersession structure
+- do not affect governance slot occupancy
 - must not be traversed by legitimacy logic
 
 They are opaque metadata only.
+
+Cross-area informational references may be retained on Sessions or Resolutions for context, but their external targets are not part of the local structural graph.
 
 ---
 
 ## ENG-DOMAIN-15 — Intra-Area Resolution References
 
-A Resolution may reference zero or more other Resolutions within the same Area.
+A Session or Resolution may reference zero or more other Resolutions within the same Area through explicitly informational reference fields.
 
 These references:
 
@@ -298,6 +346,9 @@ These references exist to support:
 
 Future specification versions may assign meaning to these references, but no such meaning exists in the current specification set.
 
+Where present on Session objects, these references represent current-round pending informational references that may be frozen into an accepted Resolution according to ENG-SESSION and ENG-DECISION.  
+Where present on Resolution objects, they represent the informational references carried by the accepted artifact itself.
+
 ---
 
 # 7. CrossAreaReference Schema
@@ -310,10 +361,15 @@ CrossAreaReference contains:
 - external_area_label
 - external_resolution_id (nullable)
 - external_resolution_label (nullable)
-- created_at
-- schema_version
 
 This object is informational only.
+
+The Engine must not reinterpret this object as:
+
+- a supersession edge
+- a structural dependency
+- an acceptance prerequisite
+- a local governance reference
 
 ---
 
@@ -333,6 +389,27 @@ Participant fields:
 
 Participant is a structural epoch object.
 
+ENG-DOMAIN defines that:
+
+- participant_id must be unique within a session
+- participant belongs to exactly one round
+- display_name is structurally recorded
+- participant identity is session-scoped and epoch-based
+
+Behavioral meaning of:
+
+- removal
+- resume
+- vote eligibility
+- freeze timing
+
+belongs to:
+
+- ENG-SESSION
+- ENG-DECISION
+
+ENG-INTEGRITY validates epoch safety across restore and receipt alignment.
+
 ---
 
 # 9. Candidate Schema
@@ -348,6 +425,25 @@ Candidate fields:
 - candidate_content
 - created_at
 - schema_version
+
+Candidate is a structural round-scoped proposal object.
+
+ENG-DOMAIN defines that:
+
+- candidate_id must be unique within its round
+- candidate belongs to exactly one round
+- candidate_content is structurally preserved exactly as provided
+
+Behavioral meaning of:
+
+- candidate mutability during PRE_STANCE
+- candidate freeze at first stance
+- candidate eligibility for acceptance
+
+belongs to:
+
+- ENG-SESSION
+- ENG-DECISION
 
 ---
 
@@ -366,6 +462,17 @@ Constraint fields:
 - created_at
 - schema_version
 
+Constraint is a structural round-scoped object.
+
+ENG-DOMAIN defines that:
+
+- constraint_id must be unique within the applicable session context
+- constraint belongs to exactly one round
+- constraint structure must be preserved exactly as recorded
+
+Constraint meaning and evaluation are defined in ENG-DECISION.  
+Constraint mutability boundaries are defined in ENG-SESSION.
+
 ---
 
 # 11. Vote Schema
@@ -383,6 +490,20 @@ Vote fields:
 - stance
 - created_at
 - schema_version
+
+Vote is a structural round-bound stance object.
+
+ENG-DOMAIN defines that:
+
+- vote_id must be unique
+- vote references participant and candidate from the same round
+- stance is represented structurally as an enum
+- vote is bound to exactly one session and one round
+
+Behavioral vote mutability and vote counting semantics belong to:
+
+- ENG-SESSION
+- ENG-DECISION
 
 ---
 
@@ -404,12 +525,45 @@ Session fields:
 - candidates
 - constraints
 - votes
-- terminal_receipt_id
+- internal_resolution_references (optional)
 - cross_area_references (optional)
+- terminal_receipt_id
 - annotations (optional)
 - created_at
 - updated_at
 - schema_version
+
+ENG-DOMAIN defines Session as the structural container for one decision process.
+
+ENG-DOMAIN defines only the structural presence and classification of these fields.
+
+Session object rules include:
+
+- authority_id and scope_id are structural governance snapshot references
+- phase is a structural enum
+- state is a structural enum
+- round_index is structural and must be explicit
+- participants, candidates, constraints, and votes represent the active runtime round only
+- internal_resolution_references, if present, represent the current round’s informational same-Area Resolution reference set
+- cross_area_references, if present, represent the current round’s informational cross-Area reference set
+- terminal_receipt_id is required when the session is terminal according to governing lifecycle specifications
+
+ENG-DOMAIN does not define:
+
+- whether session creation is allowed
+- when phase changes
+- when state changes
+- when round_index increments
+- when references freeze
+- whether a session may accept
+
+Those belong to:
+
+- ENG-SESSION
+- ENG-DECISION
+- ENG-INTEGRITY
+
+Historical round storage rules belong to ENG-RECEIPT.
 
 ---
 
@@ -435,6 +589,8 @@ Resolution fields:
 - created_at
 - schema_version
 
+ENG-DOMAIN defines Resolution as the persisted governance artifact created by successful session acceptance.
+
 Allowed Resolution lifecycle enum values:
 
 - ACTIVE
@@ -442,14 +598,37 @@ Allowed Resolution lifecycle enum values:
 - UNDER_REVIEW
 - RETIRED
 
+Resolution rules include:
+
+- originating_session_id is structural and must resolve locally
+- authority_snapshot_id and scope_snapshot_id are structural governance snapshot references
+- accepted_candidate_id is structural and records which candidate was accepted
+- superseded_by is structural when present
+- engine_version is structural rule provenance
+- spec_set_hash is structural rule provenance
+- internal_resolution_references, if present, are informational same-Area Resolution references
+- cross_area_references, if present, are informational cross-Area references
+
 internal_resolution_references:
 
 - list of resolution_id values
-- must reference existing resolutions in same Area
+- must reference existing Resolution objects in the same Area
 - must be unique
 - must be lexicographically ordered
+- are informational only
 
-These are informational only.
+cross_area_references:
+
+- contain CrossAreaReference objects
+- are informational only
+- must never be interpreted as structural edges
+
+State semantics are defined behaviorally in:
+
+- ENG-SUPERSESSION
+- ENG-REVIEW-RETIRED
+
+Rule provenance meaning is defined in ENG-SPECVERIFY.
 
 ---
 
@@ -479,6 +658,24 @@ Receipt fields:
 - content_hash
 - schema_version
 
+ENG-DOMAIN defines the structural field set of Receipt.
+
+Receipt rules include:
+
+- receipt_id is structural identity
+- session_id is a structural local reference
+- resolution_id is required for LEGITIMACY receipts and null for EXPLORATION receipts
+- engine_version and spec_set_hash are structural provenance fields
+- rounds is a structural ordered snapshot sequence
+- final_round_index is structural
+- session_state_at_close is structural
+- acceptance_result is structural
+- hash_algorithm and content_hash are structural integrity fields
+
+Receipt artifact meaning, immutability, and terminal semantics are defined in ENG-RECEIPT.  
+Canonical hashing mechanics are defined in ENG-CANON.  
+Rule identity meaning is defined in ENG-SPECVERIFY.
+
 ---
 
 # 15. Round Snapshot Schema
@@ -494,6 +691,22 @@ Round snapshot fields:
 - constraint_set
 - vote_set
 
+ENG-DOMAIN defines the structural shape of the round snapshot.
+
+Round snapshot rules include:
+
+- round_index is explicit and structural
+- round_state is a structural enum
+- participant_set is a full structural snapshot, not a diff
+- candidate_set is a full structural snapshot, not a diff
+- constraint_set is a full structural snapshot, not a diff
+- vote_set is a full structural snapshot, not a diff
+
+Behavioral meaning of round creation belongs to ENG-SESSION.  
+Receipt preservation of rounds belongs to ENG-RECEIPT.
+
+If future specifications require explicit snapshotting of informational reference sets, they must extend this schema explicitly rather than relying on inference.
+
 ---
 
 # 16. Supersession Encoding
@@ -504,6 +717,17 @@ Supersession is structurally encoded through:
 
 - superseded_by
 
+ENG-DOMAIN defines only the field and its structural role.
+
+Graph meaning, ACTIVE derivation, conflict handling, and acyclicity belong to ENG-SUPERSESSION.
+
+Rules:
+
+- superseded_by is structural when present
+- superseded_by must reference a local Resolution
+- superseded_by must never be inferred from informational references
+- superseded_by must not be overloaded to encode lineage or context
+
 ---
 
 # 17. Deterministic Structural Encoding Preconditions
@@ -512,13 +736,79 @@ Supersession is structurally encoded through:
 
 All structural domain objects must be representable under ENG-CANON.
 
+ENG-DOMAIN requires:
+
+- deterministic field availability
+- deterministic enum values
+- explicit structural nullability where required
+- deterministic ordering prerequisites for contained collections
+- lexicographic ordering for declared ordered reference lists
+- no ambiguous structural omission
+
+ENG-CANON defines actual byte-level canonicalization.
+
 ---
 
 # 18. Structural Lifecycle Enumerations
 
 ## ENG-DOMAIN-27 — Enum Definitions Are Structural
 
-(unchanged list...)
+The following enums are structural and schema-governed.
+
+### Resolution state
+
+- ACTIVE
+- SUPERSEDED
+- UNDER_REVIEW
+- RETIRED
+
+### Session phase
+
+- PRE_STANCE
+- VOTING
+- TERMINAL
+
+### Session state
+
+- ACTIVE
+- PAUSED
+- BLOCK_TEMPORARY
+- BLOCK_PERMANENT
+- ACCEPTED
+- CLOSED
+
+### Session type
+
+- AUTHORITY
+- SCOPE
+- REGULAR
+
+### Receipt type
+
+- LEGITIMACY
+- EXPLORATION
+
+### Acceptance result
+
+- SUCCESS
+- ABANDONED
+
+### Round state
+
+- COMPLETED
+- FINAL_ACCEPTED
+- ABANDONED
+
+### Stance
+
+- ACCEPT
+- REJECT
+- ABSTAIN
+
+ENG-DOMAIN defines the structural existence of these enums only.  
+Behavioral meanings belong to the relevant behavioral specifications.
+
+Unknown enum values are structurally invalid.
 
 ---
 
@@ -526,7 +816,22 @@ All structural domain objects must be representable under ENG-CANON.
 
 ## ENG-DOMAIN-28 — Domain Supports Historical Structural Comparison
 
-(unchanged)
+ENG-DOMAIN does not define compilation algorithms.
+
+It does define the structural artifacts that make deterministic historical comparison possible, including:
+
+- session identity
+- resolution identity
+- supersession encoding
+- round snapshots
+- receipt provenance
+- canonicalizable structural fields
+- explicit lifecycle state recording
+- explicit governance snapshot references
+
+Historical ordering and replay semantics belong to ENG-COMPILATION.
+
+Informational references may be preserved in historical artifacts, but they do not alter structural replay meaning in the current specification set unless another authority explicitly states otherwise.
 
 ---
 
@@ -536,10 +841,13 @@ All structural domain objects must be representable under ENG-CANON.
 - structural object identity is UUIDv7 where Engine-owned
 - structural references are classified explicitly
 - cross-area informational references are not structural
-- intra-area informational references do not affect legitimacy
+- intra-Area informational Resolution references are not structural
+- informational references do not affect legitimacy
+- informational references do not affect ACTIVE derivation
 - governance object categories are structurally distinct
 - Resolution lifecycle values are structural enum values
 - Session state and phase values are structural enum values
+- Session type values are structural enum values
 - Receipt and round snapshot structures are first-class structural artifacts
 - rule provenance fields are structural
 - domain objects must be canonicalizable under ENG-CANON
@@ -556,7 +864,10 @@ It answers:
 - what objects exist
 - what fields they contain
 - which fields are structural
+- which fields are informational
 - how structural references are classified
+- how informational references are classified
+- which enums are structurally legal
 
 It does not answer:
 

@@ -1,6 +1,6 @@
 # ENG-SESSION — Session Lifecycle, Governance Orchestration & Receipt Emission
 
-Status: REFACTORED (v13 – Reference-Driven, Responsibility-Aligned)  
+Status: REFACTORED (v14 – Reference-Driven, Round History & Reference Alignment)  
 Applies to: Engine Core (V1/V2+)  
 
 Authority: Subordinate to ENG-DOMAIN, ENG-DECISION, ENG-RECEIPT, ENG-INTEGRITY, ENG-SUPERSESSION, ENG-REVIEW-RETIRED, ENG-CANON, ENG-SPECVERIFY
@@ -196,7 +196,33 @@ Usability and validity of referenced artifacts are determined externally by:
 
 ---
 
-# 7. Freeze Boundary
+# 7. Reference Sets (Round-Scoped)
+
+## ENG-SESSION-06A — Informational Reference Sets
+
+Sessions may include informational reference sets:
+
+- internal_resolution_references (intra-Area)  
+- cross_area_references  
+
+These:
+
+- are round-scoped  
+- are mutable only during PRE_STANCE  
+- must follow ordering and validation rules defined in ENG-DOMAIN  
+- must not affect legitimacy evaluation  
+
+They exist for:
+
+- lineage  
+- traceability  
+- contextual relationships  
+
+They are passed through acceptance and become part of the resulting Resolution artifact.
+
+---
+
+# 8. Freeze Boundary
 
 ## ENG-SESSION-07 — PRE_STANCE Mutability Boundary
 
@@ -207,6 +233,7 @@ Mutable:
 - Participants  
 - Candidates  
 - Constraints  
+- Informational reference sets  
 
 Transition to VOTING freezes all sets.
 
@@ -215,46 +242,65 @@ Triggered by:
 - First vote  
 - Solo mode implicit vote  
 
-Mutation boundaries are structurally defined in ENG-SESSION.
+After freeze:
+
+- no mutation allowed to round-scoped collections  
 
 Violations are evaluated and enforced during decision evaluation (ENG-DECISION) and reported via ENG-ERROR.
 
 ---
 
-# 8. Vote Rules
+# 9. Vote Rules
 
-## ENG-SESSION-08 — Mechanical Voting
+## ENG-SESSION-08 — Mechanical Voting with Vacillation
 
 Rules:
 
 - One vote per participant per candidate per round  
-- Votes are immutable once recorded  
+- Votes are mutable (replaceable) during VOTING until acceptance is invoked  
 - Votes are bound to a single round  
+
+Vacillation is allowed:
+
+- participants may change their vote any number of times before acceptance  
+- only the final vote state at evaluation time is authoritative  
 
 Vote structure defined in ENG-DOMAIN.  
 Evaluation semantics defined in ENG-DECISION.
 
 ---
 
-## ENG-SESSION-08A — Solo Mode
+## ENG-SESSION-08A — Solo Mode Vote Materialization
 
 If exactly one participant exists:
 
-- An implicit ACCEPT vote is applied during evaluation  
+- upon acceptance attempt, the Engine must materialize a valid ACCEPT vote for the sole participant  
 
-Behavior is defined in ENG-DECISION.  
-ENG-SESSION does not create vote artifacts implicitly.
+This vote:
+
+- is a standard vote artifact  
+- is included in evaluation  
+- is included in the final receipt snapshot  
+- becomes immutable once recorded  
+
+ENG-SESSION defines vote materialization.  
+ENG-DECISION consumes it.
 
 ---
 
-# 9. Resume & Epoch Reset
+# 10. Resume & Epoch Reset
 
 ## ENG-SESSION-09 — Deterministic Reset
 
 On RESUME:
 
 - All participant epochs terminate  
-- All round-scoped data is cleared  
+- All round-scoped data is cleared:
+  - participants  
+  - candidates  
+  - constraints  
+  - votes  
+  - informational reference sets  
 - A new round is created  
 - round_index increments  
 - phase resets to PRE_STANCE  
@@ -266,7 +312,32 @@ Epoch integrity is enforced by:
 
 ---
 
-# 10. Acceptance Invocation
+# 11. Round History Visibility
+
+## ENG-SESSION-09A — Round History Is Read-Only and Informational
+
+The Engine may expose prior round snapshots for a session.
+
+This enables APIs such as:
+
+- list_session_rounds  
+
+Round history:
+
+- is read-only  
+- is informational only  
+- must not affect legitimacy or evaluation  
+- must not substitute for receipts  
+
+Historical round data must reflect:
+
+- the exact state of each round at the time it concluded  
+
+Terminal authority remains the receipt defined in ENG-RECEIPT.
+
+---
+
+# 12. Acceptance Invocation
 
 ## ENG-SESSION-10 — Acceptance Is Invoked, Not Defined, by Session
 
@@ -312,6 +383,12 @@ If acceptance eligibility succeeds:
 - Supersession updates are applied  
 - Receipt is emitted  
 
+The accepted Resolution must include:
+
+- final candidate  
+- governance snapshots  
+- informational reference sets  
+
 ENG-SESSION must not:
 
 - perform partial mutation  
@@ -320,7 +397,7 @@ ENG-SESSION must not:
 
 ---
 
-# 11. Receipt Emission
+# 13. Receipt Emission
 
 ## ENG-SESSION-11 — Terminal Receipt Requirement
 
@@ -344,7 +421,7 @@ Receipt emission occurs within the atomic commit boundary defined in ENG-PERSIST
 
 ---
 
-# 12. Area Blocking Awareness
+# 14. Area Blocking Awareness
 
 ## ENG-SESSION-12 — Acceptance Must Respect Blocking Conditions
 
@@ -360,7 +437,7 @@ ENG-SESSION must not allow acceptance if blocking conditions apply.
 
 ---
 
-# 13. Immutability
+# 15. Immutability
 
 ## ENG-SESSION-13 — Terminal Immutability
 
@@ -375,7 +452,7 @@ Enforced via:
 
 ---
 
-# 14. Audit
+# 16. Audit
 
 ## ENG-SESSION-14 — Audit Emission
 
@@ -389,7 +466,7 @@ Audit is observational only and must not affect legitimacy or evaluation.
 
 ---
 
-# 15. Failure Semantics
+# 17. Failure Semantics
 
 ## ENG-SESSION-15 — Deterministic Failure
 
@@ -405,13 +482,17 @@ Defined in:
 
 ---
 
-# 16. Summary Guarantees
+# 18. Summary Guarantees
 
 - Sessions are the sole mechanism for legitimacy creation  
 - Session type is explicit and immutable  
 - Governance snapshots are immutable  
 - PRE_STANCE is the only mutation phase  
 - Rounds are deterministic and isolated  
+- Informational references are round-scoped and frozen after first stance  
+- Informational references are included in accepted artifacts but are non-semantic  
+- Vote vacillation is allowed until acceptance  
+- Solo mode produces a real vote artifact  
 - Acceptance eligibility is externally defined and consumed  
 - Atomic commit is enforced via ENG-PERSISTENCE  
 - Receipts are canonical via ENG-RECEIPT and ENG-CANON  
@@ -421,7 +502,7 @@ Defined in:
 
 ---
 
-# 17. Mental Model
+# 19. Mental Model
 
 Sessions orchestrate legitimacy.
 
@@ -431,6 +512,7 @@ They define:
 - participation structure  
 - round structure  
 - governance snapshot capture  
+- informational reference capture  
 
 They do not define:
 

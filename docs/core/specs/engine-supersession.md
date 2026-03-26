@@ -234,6 +234,8 @@ This includes:
 
 Graph semantics apply only to structural supersession references.
 
+Informational references must not be used as inputs to graph traversal, ordering, or reachability analysis.
+
 ---
 
 # 7. Acceptance Race Semantics
