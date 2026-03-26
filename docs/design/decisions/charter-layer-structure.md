@@ -1,413 +1,477 @@
-# Charter Multi-Layer Structural Design (Revised)
+# Charter Stack — Unified Architecture (v2, Alignment-Aware)
 
-**Purpose:** Document the layered architecture of Charter, including engines, libraries, storage layers, and observational layers. This document preserves structural intent, system relationships, boundary enforcement, and auditable flows. It defines architecture only — not implementation details.
-
----
-
-## 1. Introduction
-
-### 1.1 Purpose
-Explain the structural organization and relationships of Charter layers across V1–V7, including legitimacy, storage, orchestration, archival, and transport boundaries.
-
-### 1.2 Scope
-Structural overview of:
-
-- Engine (V1/V2)
-- Persistence (V1 foundational layer)
-- Runtime / Orchestration (V1–V4)
-- Guidance (V5)
-- Federation (V6)
-- Commit Store (V6)
-- Commit Relay (V7)
-
-This document does not define engine internals beyond frozen legitimacy semantics.
-
-### 1.3 Audience
-Future maintainers, developers, architects, and integrators embedding Charter.
-
-### 1.4 Intended Use
-Reference for:
-
-- Dependency management
-- Codebase structure validation
-- Cross-layer invariant enforcement
-- Long-term evolution without legitimacy mutation
+Status: FOUNDATIONAL  
+Replaces: Prior Stack & Multi-Layer Structural Documents  
+Scope: Full Charter system architecture including legitimacy, storage, orchestration, alignment, and transport  
+Does NOT define: implementation details, UI, or infrastructure policy  
 
 ---
 
-## 2. Charter Architecture Overview
+# I. Purpose
 
-### 2.1 Layered Model
+This document defines the complete structural architecture of Charter after the introduction of:
 
-Charter consists of the following structural layers:
+- Commit-based storage (V6)
+- Alignment Engine (new)
+- VDS / VLS separation
+- Relay (V7)
 
-1. Engine Layer (Legitimacy Kernel)
-2. Persistence Layer (Truth Ledger)
-3. Runtime Layer (Boundary Orchestrator)
-4. Observational & Transport Layers:
-   - Guidance
-   - Federation
-   - Commit Store
-   - Commit Relay
+It establishes:
 
-### 2.2 Authoritative Dependency Direction
+- Correct dependency direction
+- Clear separation of concerns
+- Canonical vs derived boundaries
+- Transport vs computation separation
 
-Correct dependency direction is:
+---
+
+# II. Architectural Model
+
+Charter is a layered epistemic system composed of three independent axes:
+
+---
+
+## 1. Canonical Truth Axis
+
+Defines what is legitimate and durable
 
 Engine  
 ↑  
 Persistence  
 ↑  
 Runtime  
+
+---
+
+## 2. Epistemic (Understanding) Axis
+
+Defines how the system is observed, computed, and interpreted
+
+Federation (structure)  
 ↑  
-Guidance / Federation / Commit Relay  
-
-Lower layers must never depend on higher layers.
-
-### 2.3 Core Architectural Principles
-
-- Legitimacy is computed only by the Engine.
-- Storage is append-only and enforced by Persistence.
-- Runtime orchestrates boundaries but does not compute legitimacy rules.
-- Audit is descriptive and human-facing.
-- Commit Store is archival, not authoritative state.
-- Relay transports artifacts but does not interpret them.
-- No upstream mutation of legitimacy is permitted.
-
-### 2.4 System Mental Model
-
-- Engine: Legitimacy kernel.
-- Persistence: Truth ledger.
-- Runtime: Boundary orchestrator.
-- Commit Store: Artifact archive.
-- Relay: Transport layer.
-- Guidance/Federation: Read-only observers.
+VDS (signals)  
+↑  
+Alignment Engine (computation)  
+↑  
+Guidance (interpretation)  
 
 ---
 
-## 3. Engine Layer (V1/V2)
+## 3. Transport Axis (Parallel)
 
-### 3.1 Core Responsibilities
+Defines how artifacts move across systems
 
-- Deterministic legitimacy creation.
-- Session lifecycle management.
-- Resolution lifecycle management.
-- Authority and scope enforcement.
-- Mechanical voting evaluation.
-- Domain event emission.
-
-### 3.2 Explicit Non-Responsibilities
-
-Engine does not:
-
-- Know about Context.
-- Store data.
-- Perform hashing.
-- Manage audit storage.
-- Interpret commits.
-- Perform baseline review.
-- Communicate with relay.
-
-### 3.3 Legitimacy Boundary
-
-- Resolution is the smallest legitimacy unit.
-- Sessions produce resolutions.
-- Authority is explicit and mechanical.
-- Scope enforces semantic legitimacy boundaries.
-- Legitimacy is never inferred from history or audit.
+Relay (append-only, external, non-interpreting)
 
 ---
 
-## 4. Persistence Layer (V1 Foundational)
+## Core Principle
 
-### 4.1 Core Responsibilities
+Truth is created locally.  
+Understanding is computed locally.  
+Transport is external and neutral.
 
-Persistence owns:
+---
 
-- Object Store (hash-based, append-only)
+# III. Canonical Truth Layers
+
+## 1. Engine Layer (Legitimacy Kernel)
+
+### Responsibilities
+
+- Deterministic legitimacy computation
+- Session lifecycle
+- Resolution creation
+- Authority and scope enforcement
+
+### Guarantees
+
+- Resolution is the smallest legitimacy unit
+- Legitimacy is explicit and mechanical
+- No inference from history
+
+### Explicit Non-Responsibilities
+
+- No storage
+- No context awareness
+- No signal interpretation
+- No alignment computation
+
+---
+
+## 2. Persistence Layer (Truth Ledger)
+
+### Responsibilities
+
+- Append-only object storage
+- Hash-based integrity
+- Audit logging (descriptive only)
+- Commit storage (V6)
+
+### Stores
+
+- Object Store (immutable objects)
 - Ref Store (current pointers)
-- Audit Store (append-only event ledger)
-- Commit Store (UUID-based artifact archive)
-- Hashing and canonicalization
-- Envelope validation
-- Integrity verification
-- fsck validation
-
-### 4.2 Object Store
-
-- Hash-identified objects.
-- Immutable and append-only.
-- Stores domain objects and receipts.
-- Supersession is logical, not physical.
-
-### 4.3 Ref Store
-
-- Stores current pointers (Authority, Scope, etc.).
-- Minimal and bounded.
-- Does not encode history.
-
-### 4.4 Audit Store
-
-Audit is:
-
-- Append-only.
-- Descriptive.
-- Human-facing.
-- Emitted by Engine and Runtime.
-- Not used for legitimacy computation.
-
-Engine must never read audit to determine legitimacy.
-
-### 4.5 Commit Store (V6)
-
-Commit Store is:
-
-- UUID-identified.
-- Immutable.
-- Append-only.
-- Categorized by commit type.
-- Independent artifacts.
-- Not a state reconstruction mechanism.
-- Not legitimacy-computing.
-
-Engine must not read Commit Store to compute legitimacy.
-
-### 4.6 Explicit Non-Responsibilities
-
-Persistence does not:
-
-- Compute authority.
-- Compute legitimacy.
-- Run baseline review.
-- Interpret workflow semantics.
-- Derive state from commits.
+- Audit Store (append-only events)
+- Commit Store (UUID artifacts)
 
 ---
 
-## 5. Runtime Layer (Orchestration & Boundary Control)
+## 3. Commit Store (Canonical Input Layer)
 
-### 5.1 Core Responsibilities
+### Properties
 
-Runtime owns:
+- Append-only
+- Immutable
+- UUID-identified
+- Multi-type (resolutions, signals, receipts, artifacts)
 
-- Context isolation (hard storage boundary).
-- Session orchestration.
-- Baseline review (integration gateway).
-- Restore operations.
-- Engine invocation.
-- Applying mutation plans atomically.
-- Emitting workflow-level audit events.
-- Enforcing spec verification at legitimacy boundaries.
+### Role
 
-### 5.2 Context
+Primary input source for:
 
-- Context is a storage isolation boundary.
-- Engine is unaware of Context.
-- Commit stores are scoped per Context.
-- Cross-context movement is explicit and auditable.
+- signals (VDS)
+- artifacts
+- cross-context data
 
-### 5.3 Baseline Review (Integration Path)
+### Constraints
 
-Baseline Review is required for:
-
-- Artifact integration.
-- Deliberate outputs.
-- Synthesis artifacts.
-- External non-CCE commits.
-- Cross-boundary workflow artifacts.
-
-Flow:
-
-Artifact → Baseline Review → Session → Resolution
-
-Baseline review does not create legitimacy.
-Sessions do.
-
-### 5.4 Restore (Authoritative Rehydration Path)
-
-Restore is used for:
-
-- CCE JSON payloads.
-- Snapshot restoration.
-- Relay commits containing CCE exports.
-
-Flow:
-
-CCE Payload → Spec Verify → Restore → Persistence Load
-
-Restore:
-
-- Does not use baseline review.
-- Must not merge with existing legitimacy state.
-- Must enforce strict spec compatibility.
-
-### 5.5 Explicit Non-Responsibilities
-
-Runtime does not:
-
-- Compute legitimacy rules.
-- Infer authority.
-- Interpret commit archive as state.
-- Bypass engine.
+- Not authoritative state
+- Not used to compute legitimacy directly
+- Not a state machine
 
 ---
 
-## 6. Guidance Layer (V5)
+## 4. Runtime Layer (Boundary Orchestrator)
 
-### 6.1 Responsibilities
+### Responsibilities
 
-- Observes engine and runtime state.
-- Consumes audit.
-- Generates summaries and drift detection.
-- Produces read-only outputs.
-- May support AI-assisted reflection.
-
-### 6.2 Explicit Constraints
-
-Guidance:
-
-- Does not mutate engine state.
-- Does not create legitimacy.
-- Does not infer authority.
+- Context isolation
+- Session orchestration
+- Baseline review (integration path)
+- Restore (authoritative rehydration)
+- Engine invocation
 
 ---
 
-## 7. Federation Layer (V6)
+### Integration Paths
 
-### 7.1 Responsibilities
+#### Baseline Review (Artifact Path)
 
-- Observes multiple contexts or areas.
-- Aggregates signals and check-ins.
-- Provides reflective summaries.
-- Fully auditable.
+Artifact → Baseline Review → Session → Resolution  
 
-### 7.2 Explicit Constraints
-
-Federation:
-
-- Does not compute authority.
-- Does not synthesize legitimacy.
-- Does not override sessions.
+- Required for foreign or exploratory inputs
+- Does not create legitimacy
 
 ---
 
-## 8. Commit Relay Layer (V7)
+#### Restore (Authoritative Path)
 
-### 8.1 Responsibilities
+CCE → Spec Verify → Restore → Persistence  
 
-Relay:
-
-- Stores commits immutably.
-- Applies structural filtering.
-- Preserves timestamps.
-- Supports manual push/fetch.
-- Does not interpret payloads.
-
-### 8.2 Restore and Integration from Relay
-
-Two cases exist:
-
-1. CCE Commit:
-   - Treated as restore input.
-   - No baseline review.
-   - Must pass spec verification.
-
-2. Non-CCE Commit:
-   - Treated as artifact.
-   - Requires baseline review before legitimacy impact.
-
-### 8.3 Explicit Non-Responsibilities
-
-Relay:
-
-- Does not compute authority.
-- Does not reconstruct canonical state.
-- Does not run baseline review.
-- Does not derive legitimacy.
+- No baseline review
+- No merging
+- Strict compatibility enforcement
 
 ---
 
-## 9. Spec Verification (Cross-Layer Contract)
+### Constraints
 
-### 9.1 Purpose
-
-Spec Verification ensures semantic compatibility across:
-
-- Engine implementations
-- Persistence implementations
-- Runtime implementations
-- Cross-system integrations
-
-### 9.2 Properties
-
-Each library exposes:
-
-- Spec identity
-- Invariant validation capability
-
-Spec verification:
-
-- Blocks legitimacy-affecting imports if incompatible.
-- Blocks restore if incompatible.
-- Is required for authoritative integration.
-- Is not required for read-only observation.
-
-### 9.3 Structural Rule
-
-Spec verification protects legitimacy semantics across forks and external integrations.
+- Cannot compute legitimacy
+- Cannot infer authority
+- Cannot bypass engine
 
 ---
 
-## 10. Cross-Layer Invariants
+# IV. Structure Layer
 
-- Resolution remains the smallest legitimacy unit.
-- Only Engine computes legitimacy.
-- Audit is descriptive, never generative.
-- Commit Store is archival, not authoritative.
-- Relay is transport-only.
-- Baseline Review is the only integration gateway for artifacts.
-- Restore is the only authoritative rehydration path.
-- No layer may collapse Context into legitimacy.
-- No layer may collapse transport into authority.
+## 5. Federation Layer (VLS-Aligned)
 
----
+### Responsibilities
 
-## 11. Deployment & Validation Considerations
+- Reconstruct multi-area DAG
+- Preserve identity boundaries
+- Enable cross-context visibility
 
-### 11.1 Library Independence
+### Properties
 
-Each layer may be versioned independently but must expose spec identity.
-
-### 11.2 Multi-Instance Environments
-
-Multiple runtimes may coexist.
-Federation and relay may aggregate artifacts.
-Legitimacy remains local.
-
-### 11.3 Code Structure Validation Rules
-
-The following must always hold:
-
-- Engine contains no persistence logic.
-- Persistence contains no legitimacy logic.
-- Runtime does not compute authority rules.
-- Engine does not read audit or commit store.
-- Relay does not depend on Engine.
-- Restore must enforce spec verification.
-- Baseline review must precede artifact-based legitimacy changes.
+- Graph-based, not hierarchical
+- No authority transfer
+- No enforcement
 
 ---
 
-## 12. Conclusion
+### Constraints
 
-Charter is a layered legitimacy platform built on strict separation of concerns:
+- Does not compute alignment
+- Does not interpret signals
+- Does not mutate identity
 
-- Engine as legitimacy kernel.
-- Persistence as truth ledger.
-- Runtime as boundary orchestrator.
-- Commit Store as artifact archive.
-- Relay as transport.
-- Guidance and Federation as read-only observers.
+---
 
-Charter evolves by layering visibility, transport, and orchestration —
-never by mutating legitimacy semantics.
+# V. Observation Layer
+
+## 6. VDS Layer (Signal Production)
+
+### Responsibilities
+
+- Generate alignment signals (check-ins)
+- Observe behavior relative to decisions
+- Produce care metrics
+
+### Properties
+
+- Observational only
+- Append-only signals
+- Non-coercive
+
+---
+
+### Constraints
+
+- Does not compute alignment dynamics
+- Does not mutate identity
+- Does not create legitimacy
+
+---
+
+# VI. Computation Layer
+
+## 7. Alignment Engine
+
+### Responsibilities
+
+- Compute drift, variance, density
+- Compute renewal (freshness vs stagnation)
+- Maintain derived alignment state
+- Perform deterministic analysis over DAG
+
+---
+
+### Inputs
+
+- VLS reconstructed DAG (via Federation)
+- VDS signals (from Commit Store)
+- Context (time, windows)
+
+---
+
+### Outputs
+
+- Alignment State Store
+- Queryable metrics
+
+---
+
+### Constraints
+
+- Deterministic and rebuildable
+- No authority
+- No legitimacy mutation
+- No direct relay access
+
+---
+
+## 8. Alignment State Store (Derived)
+
+### Properties
+
+- Rebuildable
+- Non-authoritative
+- Cacheable
+- Discardable
+
+### Contains
+
+- Drift metrics
+- Variance
+- Signal density
+- Renewal state
+- Aggregated area metrics
+
+---
+
+### Invariant
+
+If deleted, nothing is lost.
+
+---
+
+# VII. Interpretation Layer
+
+## 9. Guidance / Exegesis (V5 Repositioned)
+
+### Responsibilities
+
+- Interpret alignment state
+- Summarize patterns
+- Highlight drift, tension, renewal risk
+
+---
+
+### Inputs
+
+- Alignment Engine outputs
+- Audit
+- Commit history
+
+---
+
+### Constraints
+
+- Read-only
+- Stateless
+- Non-legitimizing
+- Non-coercive
+
+---
+
+### Principle
+
+Guidance explains.  
+It does not decide.
+
+---
+
+# VIII. Transport Layer
+
+## 10. Commit Relay (V7)
+
+### Nature
+
+- Parallel to the system
+- Not part of the computation stack
+
+---
+
+### Responsibilities
+
+- Append-only commit storage
+- Transport between systems
+- Archival preservation
+
+---
+
+### Properties
+
+- Opaque
+- Immutable
+- UUID-based
+- Idempotent
+
+---
+
+### Constraints
+
+Relay does NOT:
+
+- Interpret commits
+- Compute legitimacy
+- Reconstruct state
+- Enforce ordering
+- Validate references
+
+---
+
+## Foreignness Boundary
+
+All relay-fetched commits are:
+
+Foreign until locally integrated
+
+They cannot affect:
+
+- legitimacy
+- alignment
+- identity
+
+Until:
+
+- baseline review, or
+- restore
+
+---
+
+## Critical Rule
+
+Alignment Engine and VDS operate only on local commits.  
+Relay is never a direct computation source.
+
+---
+
+# IX. Dependency Direction
+
+## Canonical Flow
+
+Engine  
+↑  
+Persistence  
+↑  
+Runtime  
+
+---
+
+## Epistemic Flow
+
+Runtime  
+↑  
+Federation  
+↑  
+VDS  
+↑  
+Alignment Engine  
+↑  
+Guidance  
+
+---
+
+## Transport
+
+Relay operates independently and interfaces only with commit stores.
+
+---
+
+# X. Cross-Layer Invariants
+
+- Resolution is the smallest legitimacy unit
+- Only Engine computes legitimacy
+- Commit Store is canonical input, not state
+- Alignment State is derived, not authoritative
+- Guidance never mutates state
+- Relay never interprets data
+- Federation never creates authority
+- VDS never enforces action
+- Alignment Engine never creates legitimacy
+
+---
+
+# XI. System Mental Model
+
+| Layer | Question Answered |
+|------|------------------|
+| Engine | Was this legitimate? |
+| Persistence | What was recorded? |
+| Runtime | How is it integrated? |
+| Federation | How is it structured? |
+| VDS | What is happening? |
+| Alignment Engine | What patterns exist? |
+| Guidance | What does it mean? |
+| Relay | How is it transported? |
+
+---
+
+# XII. Final Principle
+
+Charter is not a tool.
+
+It is a structured system for:
+
+- preserving legitimacy
+- observing reality
+- computing alignment
+- interpreting patterns
+- transporting truth
+
+It evolves by adding layers of visibility and computation —
+
+never by mutating legitimacy.
