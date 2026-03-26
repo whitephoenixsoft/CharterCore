@@ -1,6 +1,6 @@
 # ENG-API — Engine Interface & Execution Boundary Specification
 
-Status: REFACTORED (v16 – Explicit Command Surface & Candidate-Oriented Actions)  
+Status: REFACTORED (v17 – Full Command Specification Format, Candidate Action Alignment)  
 Applies to: Engine Core (V1/V2+)  
 Scope: Deterministic Engine interface, command surface, and runtime interaction boundary
 
@@ -46,23 +46,82 @@ It does not redefine it.
 
 ## ENG-API-01 — Interface, Not Authority
 
-(All unchanged)
+The API provides access to Engine behavior.
+
+It must not:
+
+- redefine validation logic
+- bypass governing specifications
+- introduce alternative execution paths
+- encode hidden legitimacy rules
+
+All behavior is delegated to authoritative specifications.
+
+---
 
 ## ENG-API-02 — Single-Area Runtime Model
 
-(All unchanged)
+The Engine operates on exactly one Area at a time.
+
+- Runtime state exists only after successful initialization
+- Area switching occurs only via rehydration
+- No cross-Area evaluation is permitted
+
+This invariant is enforced by:
+
+- ENG-INITIALIZATION
+- ENG-INTEGRITY
+
+---
 
 ## ENG-API-03 — Deterministic Reporting
 
-(All unchanged)
+All mutating commands must produce exactly one EvaluationReport.
+
+EvaluationReports:
+
+- are defined in ENG-ERROR
+- must be deterministic
+- must contain ordered errors
+- must not encode meaning through exceptions or side channels
+
+The Engine must not:
+
+- throw semantic exceptions
+- return boolean legitimacy flags
+- short-circuit validation
+
+---
 
 ## ENG-API-04 — Identifier Ownership
 
-(All unchanged)
+All identifiers are Engine-generated UUIDv7 values.
+
+This includes:
+
+- session_id
+- participant_id
+- candidate_id
+- resolution_id
+- receipt_id
+- vote_id
+
+The API must not allow caller-supplied identifiers for Engine objects.
+
+Identifier semantics are defined in ENG-DOMAIN and ENG-SESSION.
+
+---
 
 ## ENG-API-05 — No Implicit Legitimacy
 
-(All unchanged)
+The API must not provide any operation that:
+
+- creates legitimacy outside session acceptance
+- directly mutates Resolution state (except administrative transitions defined elsewhere)
+- bypasses governance validation
+- reconstructs legitimacy artifacts
+
+Legitimacy creation is governed exclusively by ENG-DECISION and committed via ENG-PERSISTENCE.
 
 ---
 
@@ -108,7 +167,7 @@ Rehydrate Engine runtime from a domain graph.
 - domain_objects
 
 **Output**  
-- runtime_mode (NORMAL_RUNTIME | DEGRADED_READ_ONLY | INITIALIZATION_FAILURE)
+- runtime_mode (NORMAL_RUNTIME | DEGRADED_READ_ONLY | INITIALIZATION_FAILURE)  
 - EvaluationReport
 
 **Mutation**  
@@ -124,6 +183,10 @@ Yes (replaces runtime state)
 - ENG-RECEIPT  
 - ENG-CANON  
 - ENG-SPECVERIFY  
+
+**Notes**  
+- establishes single-Area runtime  
+- replaces all prior runtime state  
 
 ---
 
@@ -143,12 +206,17 @@ Evaluate session eligibility without mutation.
 **Mutation**  
 No
 
+**High-level Preconditions**  
+- session exists in active Area
+
 **Behavioral Authority**  
 - ENG-DECISION
 
 **Notes**  
-- includes solo-mode vote logic
-- reflects candidate-level and session-level blocking
+- includes solo-mode vote logic  
+- reflects candidate-level viability  
+- reflects session-level blocking  
+- does not mutate votes or session state  
 
 ---
 
@@ -160,7 +228,8 @@ No
 Create a new session.
 
 **Inputs**  
-- session_type (AUTHORITY | SCOPE | REGULAR)
+- session_type (AUTHORITY | SCOPE | REGULAR)  
+- annotation (optional)
 
 **Output**  
 - session_id  
@@ -169,10 +238,17 @@ Create a new session.
 **Mutation**  
 Yes
 
+**High-level Preconditions**  
+- governance preconditions satisfied
+
 **Behavioral Authority**  
 - ENG-SESSION  
 - ENG-DECISION  
 - ENG-INTEGRITY  
+
+**Notes**  
+- governance snapshot captured at creation  
+- annotation is informational only  
 
 ---
 
@@ -190,8 +266,15 @@ Advance session to next round.
 **Mutation**  
 Yes
 
+**High-level Preconditions**  
+- session is resumable
+
 **Behavioral Authority**  
 - ENG-SESSION  
+
+**Notes**  
+- clears round-scoped data  
+- increments round_index  
 
 ---
 
@@ -210,10 +293,16 @@ Close session without acceptance.
 **Mutation**  
 Yes
 
+**High-level Preconditions**  
+- session not already terminal
+
 **Behavioral Authority**  
 - ENG-SESSION  
 - ENG-RECEIPT  
 - ENG-PERSISTENCE  
+
+**Notes**  
+- emits EXPLORATION receipt  
 
 ---
 
@@ -233,6 +322,9 @@ Attempt to accept the currently winning candidate.
 **Mutation**  
 Yes (only on success)
 
+**High-level Preconditions**  
+- session is in VOTING phase
+
 **Behavioral Authority**  
 - ENG-DECISION  
 - ENG-SESSION  
@@ -241,8 +333,8 @@ Yes (only on success)
 - ENG-RECEIPT  
 
 **Notes**  
-- candidate must win under authority rules  
-- vacillation allowed prior to invocation  
+- winning candidate must satisfy authority rules  
+- participants may change votes prior to invocation  
 - includes candidate-level blocking checks  
 - includes session-level blocking checks  
 
@@ -252,6 +344,32 @@ Yes (only on success)
 
 ### add_participant
 
+**Purpose**  
+Add participant to session round.
+
+**Inputs**  
+- session_id  
+- display_name  
+- annotation (optional)
+
+**Output**  
+- participant_id  
+- EvaluationReport
+
+**Mutation**  
+Yes
+
+**High-level Preconditions**  
+- session in PRE_STANCE phase
+
+**Behavioral Authority**  
+- ENG-SESSION  
+
+**Notes**  
+- participant identity is epoch-based  
+
+---
+
 ### add_candidate
 
 **Purpose**  
@@ -259,7 +377,9 @@ Add candidate proposal.
 
 **Inputs**  
 - session_id  
-- candidate_content
+- candidate_action_type (ADOPT_RESOLUTION | SUPERSEDE_RESOLUTIONS | RETIRE_RESOLUTION)  
+- candidate_payload  
+- annotation (optional)
 
 **Output**  
 - candidate_id  
@@ -268,20 +388,46 @@ Add candidate proposal.
 **Mutation**  
 Yes
 
+**High-level Preconditions**  
+- session in PRE_STANCE phase
+
 **Behavioral Authority**  
 - ENG-SESSION  
+- ENG-DOMAIN  
 
 **Notes**  
-Candidate content may represent:
-
-- new proposal  
-- supersede resolution(s)  
-- retire resolution  
-- governance change  
+- candidate represents an action proposal  
+- payload structure enforced by ENG-DOMAIN  
+- annotation is informational only  
 
 ---
 
 ### add_constraint
+
+**Purpose**  
+Add constraint to session round.
+
+**Inputs**  
+- session_id  
+- constraint_type  
+- constraint_parameters  
+- annotation (optional)
+
+**Output**  
+- constraint_id  
+- EvaluationReport
+
+**Mutation**  
+Yes
+
+**High-level Preconditions**  
+- session in PRE_STANCE phase
+
+**Behavioral Authority**  
+- ENG-SESSION  
+- ENG-DECISION  
+
+---
 
 ### cast_vote
 
@@ -292,7 +438,8 @@ Record vote.
 - session_id  
 - participant_id  
 - candidate_id  
-- stance
+- stance  
+- annotation (optional)
 
 **Output**  
 - vote_id  
@@ -300,6 +447,9 @@ Record vote.
 
 **Mutation**  
 Yes
+
+**High-level Preconditions**  
+- participant and candidate exist in current round
 
 **Behavioral Authority**  
 - ENG-SESSION  
@@ -313,33 +463,239 @@ Yes
 
 # 8. Incremental Compilation
 
-### begin_incremental_compilation  
-### add_incremental_batch  
-### end_incremental_compilation  
+### begin_incremental_compilation
 
-(All structured identically; behavior unchanged)
+**Purpose**  
+Begin incremental compilation mode.
+
+**Inputs**  
+- none
+
+**Output**  
+- EvaluationReport
+
+**Mutation**  
+Yes
+
+**High-level Preconditions**  
+- runtime initialized
+
+**Behavioral Authority**  
+- ENG-COMPILATION  
+- ENG-INTEGRITY  
+
+---
+
+### add_incremental_batch
+
+**Purpose**  
+Add batch to incremental compilation.
+
+**Inputs**  
+- domain_objects
+
+**Output**  
+- EvaluationReport
+
+**Mutation**  
+Yes
+
+**High-level Preconditions**  
+- compilation mode active
+
+**Behavioral Authority**  
+- ENG-COMPILATION  
+- ENG-INTEGRITY  
+- ENG-SUPERSESSION  
+
+---
+
+### end_incremental_compilation
+
+**Purpose**  
+Finalize incremental compilation.
+
+**Inputs**  
+- none
+
+**Output**  
+- EvaluationReport
+
+**Mutation**  
+Yes
+
+**High-level Preconditions**  
+- compilation mode active
+
+**Behavioral Authority**  
+- ENG-COMPILATION  
+- ENG-INTEGRITY  
 
 ---
 
 # 9. Administrative Operations
 
-### set_resolution_under_review  
-### restore_resolution_active  
+### set_resolution_under_review
 
-(All structured identically; governed by ENG-REVIEW-RETIRED)
+**Purpose**  
+Place resolution under review.
+
+**Inputs**  
+- resolution_id
+
+**Output**  
+- EvaluationReport
+
+**Mutation**  
+Yes
+
+**High-level Preconditions**  
+- resolution exists
+
+**Behavioral Authority**  
+- ENG-REVIEW-RETIRED  
+- ENG-INTEGRITY  
+
+---
+
+### restore_resolution_active
+
+**Purpose**  
+Restore resolution from UNDER_REVIEW to ACTIVE.
+
+**Inputs**  
+- resolution_id
+
+**Output**  
+- EvaluationReport
+
+**Mutation**  
+Yes
+
+**High-level Preconditions**  
+- resolution is UNDER_REVIEW
+
+**Behavioral Authority**  
+- ENG-REVIEW-RETIRED  
+- ENG-INTEGRITY  
 
 ---
 
 # 10. Queries
 
-### list_sessions  
-### list_resolutions  
+### list_sessions
 
-### get_session_state  
-### get_resolution_state  
+**Purpose**  
+List sessions in current Area.
 
-### get_session_receipt  
-### list_session_receipts  
+**Inputs**  
+- none
+
+**Output**  
+- session summaries
+
+**Mutation**  
+No
+
+**Behavioral Authority**  
+- ENG-DOMAIN  
+
+---
+
+### list_resolutions
+
+**Purpose**  
+List resolutions in current Area.
+
+**Inputs**  
+- none
+
+**Output**  
+- resolution summaries
+
+**Mutation**  
+No
+
+**Behavioral Authority**  
+- ENG-DOMAIN  
+
+---
+
+### get_session_state
+
+**Purpose**  
+Retrieve full session state.
+
+**Inputs**  
+- session_id
+
+**Output**  
+- session object
+
+**Mutation**  
+No
+
+**Behavioral Authority**  
+- ENG-DOMAIN  
+
+---
+
+### get_resolution_state
+
+**Purpose**  
+Retrieve resolution state.
+
+**Inputs**  
+- resolution_id
+
+**Output**  
+- resolution object
+
+**Mutation**  
+No
+
+**Behavioral Authority**  
+- ENG-DOMAIN  
+
+---
+
+### get_session_receipt
+
+**Purpose**  
+Retrieve session receipt.
+
+**Inputs**  
+- session_id
+
+**Output**  
+- receipt
+
+**Mutation**  
+No
+
+**Behavioral Authority**  
+- ENG-RECEIPT  
+
+---
+
+### list_session_receipts
+
+**Purpose**  
+List receipts for a session.
+
+**Inputs**  
+- session_id
+
+**Output**  
+- receipt list
+
+**Mutation**  
+No
+
+**Behavioral Authority**  
+- ENG-RECEIPT  
+
+---
 
 ### list_session_rounds
 
@@ -355,26 +711,127 @@ Return deterministic historical rounds.
 **Mutation**  
 No
 
+**High-level Preconditions**  
+- session has receipt or historical data
+
 **Behavioral Authority**  
 - ENG-RECEIPT  
 - ENG-DOMAIN  
 
 **Notes**  
-- supports user reconstruction of prior session configurations  
-- does not affect legitimacy  
+- supports reconstruction of prior configurations  
+- informational only  
+
+---
+
+### list_session_candidates
+
+**Purpose**  
+List candidates with evaluated status.
+
+**Inputs**  
+- session_id
+
+**Output**  
+- candidate summaries with status
+
+**Mutation**  
+No
+
+**Behavioral Authority**  
+- ENG-DECISION  
+- ENG-API  
+
+**Notes**  
+- status is derived, not persisted  
+- includes ELIGIBLE / BLOCKED_TEMPORARY / BLOCKED_PERMANENT / INVALID  
+
+---
+
+### get_candidate_status
+
+**Purpose**  
+Retrieve evaluated status for a candidate.
+
+**Inputs**  
+- session_id  
+- candidate_id
+
+**Output**  
+- candidate status
+
+**Mutation**  
+No
+
+**Behavioral Authority**  
+- ENG-DECISION  
+
+**Notes**  
+- reflects current runtime state  
+- may change without candidate mutation  
 
 ---
 
 # 11. Specification Identity
 
-### get_spec_set_hash  
-### verify_spec_hash  
+### get_spec_set_hash
+
+**Purpose**  
+Retrieve current spec set hash.
+
+**Inputs**  
+- none
+
+**Output**  
+- spec_set_hash
+
+**Mutation**  
+No
+
+**Behavioral Authority**  
+- ENG-SPECVERIFY  
+
+---
+
+### verify_spec_hash
+
+**Purpose**  
+Verify spec hash.
+
+**Inputs**  
+- spec_set_hash
+
+**Output**  
+- verification result
+
+**Mutation**  
+No
+
+**Behavioral Authority**  
+- ENG-SPECVERIFY  
 
 ---
 
 # 12. Export
 
 ### export_area_dag
+
+**Purpose**  
+Export Area graph.
+
+**Inputs**  
+- none
+
+**Output**  
+- domain graph
+
+**Mutation**  
+No
+
+**Behavioral Authority**  
+- ENG-DOMAIN  
+- ENG-CANON  
+- ENG-RECEIPT  
 
 ---
 
@@ -392,8 +849,6 @@ Caused by:
 - Scope supersession or invalidation → BLOCK_PERMANENT  
 - Scope UNDER_REVIEW → BLOCK_TEMPORARY  
 
-These invalidate the session as a whole.
-
 ### Candidate-Level Blocking
 
 Caused by:
@@ -403,22 +858,36 @@ Caused by:
 - UNDER_REVIEW target  
 - unusable referenced artifacts  
 
-These invalidate individual candidates.
-
-ENG-API exposes both through EvaluationReport.  
+ENG-API exposes both through EvaluationReport and query interfaces.  
 It does not define their semantics.
 
 ---
 
 # 14. Degraded Mode
 
-(unchanged)
+## ENG-API-08 — Read-Only Enforcement
+
+When runtime mode is DEGRADED_READ_ONLY:
+
+- mutating commands must fail deterministically  
+- read-only operations remain available  
+
+Behavior defined in:
+
+- ENG-INTEGRITY  
+- ENG-INITIALIZATION  
 
 ---
 
 # 15. Determinism Guarantees
 
-(unchanged)
+## ENG-API-09 — Deterministic Interface Behavior
+
+Given identical inputs and runtime state:
+
+- identical commands produce identical EvaluationReports  
+- identical queries produce identical results  
+- no behavior depends on timestamps, ordering, or environment  
 
 ---
 

@@ -1,6 +1,6 @@
 # ENG-DECISION — Decision Evaluation & Acceptance Orchestration
 
-Status: REFACTORED (v13 – Voting Finality, Candidate Validity & Reference Alignment)  
+Status: REFACTORED (v14 – Candidate-Scoped Blocking & Winning-Candidate Eligibility Alignment)  
 Applies to: Engine Core (V1/V2+)  
 
 Authority: Behavioral orchestration layer for decision evaluation and acceptance eligibility.
@@ -31,7 +31,8 @@ It is the authoritative specification for:
 - authority rule evaluation
 - constraint evaluation
 - voting outcome determination
-- blocking determination at the decision layer
+- candidate validity and candidate-level blocking
+- session-level blocking determination
 - acceptance eligibility determination
 - orchestration of validation prior to atomic commit
 
@@ -84,14 +85,15 @@ It is responsible for:
 - evaluating authority rule satisfaction
 - evaluating constraints
 - determining voting outcome
-- determining blocking conditions
+- determining candidate validity and candidate-level blocking
+- determining session-level blocking conditions
 - enforcing evaluation ordering
 
 It is not responsible for:
 
 - mutating session state → ENG-SESSION
 - computing ACTIVE sets → ENG-SUPERSESSION
-- determining usability → ENG-REVIEW-RETIRED
+- determining usability semantics → ENG-REVIEW-RETIRED
 - validating structural integrity → ENG-INTEGRITY
 - producing EvaluationReports → ENG-ERROR
 - committing state → ENG-PERSISTENCE
@@ -111,6 +113,7 @@ Inputs include:
 - authority_snapshot_id
 - scope_snapshot_id
 - session state and phase
+- current usability and supersession outcomes supplied by authoritative specifications
 
 All structure and mutability rules are defined externally.
 
@@ -132,11 +135,12 @@ At minimum:
 4. candidate set validity
 5. vote set validity
 6. referenced artifact usability
-7. constraint evaluation
-8. authority rule evaluation
-9. voting outcome determination
-10. blocking determination
-11. acceptance eligibility result
+7. candidate action validity and candidate-level blocking
+8. constraint evaluation
+9. authority rule evaluation
+10. voting outcome determination over eligible candidates
+11. session-level blocking determination
+12. acceptance eligibility result
 
 Error accumulation and ordering are governed by ENG-ERROR.
 
@@ -154,7 +158,7 @@ These include:
 
 - required governance slots exist
 - referenced Authority is usable
-- referenced Scope is usable (when required)
+- referenced Scope is usable when required
 
 Definitions of:
 
@@ -241,6 +245,22 @@ Acceptance must fail if:
 
 ---
 
+## ENG-DECISION-05B — Candidate Action Structure Must Be Valid
+
+Each candidate must have a structurally valid action definition as defined by ENG-DOMAIN.
+
+This includes:
+
+- valid candidate_action_type
+- payload shape matching candidate_action_type
+- locally valid structural action targets where required
+- no inferred action targets
+- no action semantics derived from informational references
+
+Candidate action validity is required before a candidate may participate in winning determination.
+
+---
+
 # 9. Vote Validity
 
 ## ENG-DECISION-06 — Vote Set Must Be Valid
@@ -258,7 +278,9 @@ Vote validity is structural and must be enforced before authority evaluation.
 
 ## ENG-DECISION-06A — Final Vote State Is Authoritative
 
-Votes are mutable during VOTING (vacillation allowed).
+Votes are mutable during VOTING.
+
+Vacillation is allowed.
 
 At evaluation time:
 
@@ -301,7 +323,7 @@ Semantics are defined in:
 
 ENG-DECISION must:
 
-- treat unusable references as blocking conditions
+- treat unusable references as blocking or invalidating conditions according to their scope
 - not reinterpret lifecycle states
 
 ---
@@ -314,27 +336,98 @@ Informational references:
 - must not influence voting outcome
 - must not influence authority evaluation
 - must not influence constraint evaluation
+- must not be interpreted as structural action targets
 
-They are:
+They may be:
 
-- passed through to accepted artifacts
-- included in receipts
+- preserved on accepted artifacts according to governing schema
+- preserved in receipts according to governing artifact specifications
 - immutable once accepted
 
 They are not inputs to decision logic.
 
 ---
 
-# 11. Constraint Evaluation
+# 11. Candidate-Level Blocking and Viability
 
-## ENG-DECISION-08 — Constraints Gate Acceptance
+## ENG-DECISION-08 — Candidate-Level Blocking Is Distinct From Session-Level Blocking
+
+Decision evaluation must distinguish:
+
+- candidate-level blocking
+- session-level blocking
+
+Candidate-level blocking removes a candidate from current acceptance eligibility without necessarily invalidating the session as a whole.
+
+Candidate-level blocking or invalidity must be evaluated before voting outcome determination.
+
+---
+
+## ENG-DECISION-08A — Candidate-Level Temporary Blocking
+
+A candidate is temporarily blocked when its action depends on a reversibly unusable artifact.
+
+Examples include:
+
+- a candidate action target is UNDER_REVIEW
+- a candidate depends on a reversible governance usability suspension that applies to that candidate specifically
+
+A temporarily blocked candidate:
+
+- must not be eligible to win
+- remains part of the current session history
+- may become eligible again if the blocking condition is removed
+
+---
+
+## ENG-DECISION-08B — Candidate-Level Permanent Blocking
+
+A candidate is permanently blocked when its action depends on an irreversibly unusable or invalidated artifact.
+
+Examples include:
+
+- a supersession target is already SUPERSEDED
+- a retirement target is already RETIRED
+- a candidate has lost a supersession race
+- a candidate action target has become permanently unusable for the action proposed
+
+A permanently blocked candidate:
+
+- must not be eligible to win
+- remains part of the current session history
+- may not regain eligibility within the same session merely through reevaluation
+
+---
+
+## ENG-DECISION-08C — Invalid Candidates Do Not Participate in Winning Determination
+
+A candidate is invalid when its action definition is structurally or semantically unusable independent of reversible governance conditions.
+
+Examples include:
+
+- malformed payload
+- unresolved required local action target
+- wrong-area action target
+- illegal action-type/payload combination
+
+Invalid candidates:
+
+- must not be eligible to win
+- must not be treated as merely informational
+- do not create legitimacy paths
+
+---
+
+# 12. Constraint Evaluation
+
+## ENG-DECISION-09 — Constraints Gate Acceptance
 
 Constraints are evaluated as mechanical acceptance conditions.
 
 ENG-DECISION must:
 
 - evaluate all declared constraints
-- treat any failing constraint as acceptance failure
+- treat any failing constraint as acceptance failure for the affected acceptance path
 
 Constraint structure and lifecycle are defined in:
 
@@ -348,9 +441,9 @@ Constraint failure:
 
 ---
 
-# 12. Authority Rule Evaluation
+# 13. Authority Rule Evaluation
 
-## ENG-DECISION-09 — Authority Determines Agreement
+## ENG-DECISION-10 — Authority Determines Agreement
 
 Authority evaluation executes only if prior stages succeed.
 
@@ -371,66 +464,69 @@ Exact authority definitions belong to governance artifacts, not this specificati
 
 ---
 
-# 13. Voting Outcome Determination
+# 14. Voting Outcome Determination
 
-## ENG-DECISION-10 — Winning Candidate Must Satisfy Authority
+## ENG-DECISION-11 — Winning Candidate Must Be Eligible and Satisfy Authority
 
-A candidate is eligible for acceptance only if:
+A candidate is eligible for acceptance only if all of the following hold:
 
+- it is structurally valid
+- it is not blocked
 - it satisfies the authority rule under the final vote state
-- it complies with all constraints
+- it complies with all applicable constraints
 
 ENG-DECISION must determine:
 
-- whether a winning candidate exists under authority rules
+- the set of currently eligible candidates
+- whether a winning candidate exists among that eligible set
 
-If no candidate satisfies authority:
+If no eligible candidate satisfies authority:
 
 - acceptance eligibility fails
 
 ---
 
-## ENG-DECISION-10A — No Implicit Candidate Selection
+## ENG-DECISION-11A — No Implicit Candidate Selection
 
 ENG-DECISION must not:
 
 - infer a winner without authority rule satisfaction
-- select a candidate outside the defined candidate set
+- select a candidate outside the defined current-round candidate set
+- select a blocked or invalid candidate
 - break ties using non-deterministic methods
 
 Candidate selection must be fully determined by:
 
-- vote set
+- final vote set
 - authority rule
+- candidate validity
+- candidate blocking status
+- applicable constraints
 
 ---
 
-# 14. Blocking Determination
+# 15. Session-Level Blocking Determination
 
-## ENG-DECISION-11 — Decision Layer Blocking
+## ENG-DECISION-12 — Session-Level Blocking Is Reserved for Session-Global Conditions
 
-Decision evaluation must determine whether acceptance is:
+Decision evaluation must determine whether the session as a whole is:
 
 - allowed
 - temporarily blocked
 - permanently blocked
 
-Blocking causes are derived from:
+Session-level blocking applies only to conditions that invalidate the session’s acceptance context as a whole.
 
-- usability constraints
-- supersession outcomes
-- governance invalidation
-- session state
+These are distinct from candidate-level blocking conditions.
 
 ---
 
-## 14.1 BLOCK_TEMPORARY
+## 15.1 BLOCK_TEMPORARY
 
-Triggered by reversible conditions such as:
+Triggered by reversible session-global conditions such as:
 
-- UNDER_REVIEW references
-- RETIRED references
-- Scope under review
+- Scope UNDER_REVIEW
+- another reversible governance usability condition that affects the session’s governing context as a whole
 
 ENG-DECISION determines the block.
 
@@ -438,29 +534,29 @@ State transitions and resume behavior are defined in ENG-SESSION.
 
 ---
 
-## 14.2 BLOCK_PERMANENT
+## 15.2 BLOCK_PERMANENT
 
-Triggered by irreversible conditions such as:
+Triggered by irreversible session-global conditions such as:
 
-- SUPERSEDED references
-- supersession race loss
-- structural invalidation of session context
+- Authority invalidation
+- Scope supersession or other permanent governance context invalidation
+- structural invalidation of the session’s governing context
 
-ENG-DECISION determines that acceptance is impossible.
+ENG-DECISION determines that acceptance is impossible for the session in its current identity.
 
 Lifecycle handling is external.
 
 ---
 
-# 15. Supersession & Conflict Integration
+# 16. Supersession & Conflict Integration
 
-## ENG-DECISION-12 — Graph Outcomes Are Consumed
+## ENG-DECISION-13 — Graph Outcomes Are Consumed
 
 ENG-DECISION must consume supersession outcomes from ENG-SUPERSESSION.
 
 This includes:
 
-- whether referenced resolutions are structurally ACTIVE
+- whether referenced Resolutions are structurally ACTIVE where required
 - whether conflicts exist
 - whether a supersession race has been lost
 
@@ -471,9 +567,9 @@ ENG-DECISION must not:
 
 ---
 
-# 16. Acceptance Eligibility Result
+# 17. Acceptance Eligibility Result
 
-## ENG-DECISION-13 — Eligibility Is Binary
+## ENG-DECISION-14 — Eligibility Is Binary
 
 After evaluation:
 
@@ -490,9 +586,9 @@ If eligible:
 
 ---
 
-# 17. Receipt Dependency
+# 18. Receipt Dependency
 
-## ENG-DECISION-14 — Acceptance Requires Receipt Emission
+## ENG-DECISION-15 — Acceptance Requires Receipt Emission
 
 Acceptance requires that:
 
@@ -508,9 +604,9 @@ It requires their existence.
 
 ---
 
-# 18. Evaluation API Semantics
+# 19. Evaluation API Semantics
 
-## ENG-DECISION-15 — Evaluation Is Pure
+## ENG-DECISION-16 — Evaluation Is Pure
 
 Evaluation must be:
 
@@ -528,9 +624,9 @@ EvaluationReport behavior is defined in ENG-ERROR.
 
 ---
 
-# 19. Atomicity Boundary
+# 20. Atomicity Boundary
 
-## ENG-DECISION-16 — No Partial Mutation
+## ENG-DECISION-17 — No Partial Mutation
 
 ENG-DECISION requires:
 
@@ -541,9 +637,9 @@ ENG-DECISION does not define durability mechanics.
 
 ---
 
-# 20. Determinism Guarantee
+# 21. Determinism Guarantee
 
-## ENG-DECISION-17 — Deterministic Behavior
+## ENG-DECISION-18 — Deterministic Behavior
 
 Given identical:
 
@@ -553,6 +649,7 @@ Given identical:
 - constraints
 - supersession outcomes
 - usability outcomes
+- candidate action definitions
 
 ENG-DECISION must produce identical results.
 
@@ -565,25 +662,27 @@ It must not depend on:
 
 ---
 
-# 21. Engine Invariants (Decision Layer)
+# 22. Engine Invariants (Decision Layer)
 
-- governance preconditions evaluated before authority rules
-- freeze boundary enforced before acceptance
+- governance preconditions are evaluated before authority rules
+- freeze boundary is enforced before acceptance
 - candidate set must be valid and non-empty
+- candidate action structure must be valid before candidate participation in winning determination
 - votes must be valid and current-round scoped
 - final vote state determines outcome
-- vote vacillation allowed prior to evaluation
-- unusable references block acceptance
+- vote vacillation is allowed prior to evaluation
 - informational references are non-semantic
-- constraints must pass before authority evaluation succeeds
-- authority determines winning candidate
+- candidate-level blocking is distinct from session-level blocking
+- blocked or invalid candidates do not participate in winning determination
+- constraints must pass for a candidate to remain acceptance-eligible
+- authority rule applies only to eligible candidates
 - supersession outcomes must be respected
 - eligibility determination is deterministic
-- acceptance requires atomic commit (external)
+- acceptance requires atomic commit defined elsewhere
 
 ---
 
-# 22. Prohibited Behaviors
+# 23. Prohibited Behaviors
 
 ENG-DECISION must never:
 
@@ -595,10 +694,12 @@ ENG-DECISION must never:
 - repair invalid structures
 - mutate state during evaluation
 - treat informational references as structural inputs
+- infer structural action targets from informational references
+- allow blocked or invalid candidates to win
 
 ---
 
-# 23. Mental Model
+# 24. Mental Model
 
 ENG-DECISION answers:
 
@@ -616,7 +717,8 @@ It evaluates:
 - whether governance is valid
 - whether votes satisfy authority
 - whether constraints pass
+- whether candidates are valid and currently eligible
 - whether a valid candidate wins
 
 If the answer is “yes,”  
-another layer commits that truth. 
+another layer commits that truth.
