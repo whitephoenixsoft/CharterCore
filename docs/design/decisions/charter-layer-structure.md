@@ -1,33 +1,26 @@
-# Charter Stack — Unified Architecture (v2, Alignment-Aware)
+# Charter Stack — Unified Architecture (v3, VLS-Aligned)
 
 Status: FOUNDATIONAL  
 Replaces: Prior Stack & Multi-Layer Structural Documents  
-Scope: Full Charter system architecture including legitimacy, storage, orchestration, alignment, and transport  
+Scope: Full Charter system architecture including legitimacy, storage, structure, alignment, and transport  
 Does NOT define: implementation details, UI, or infrastructure policy  
 
 ---
 
 # I. Purpose
 
-This document defines the complete structural architecture of Charter after the introduction of:
+This document defines the complete structural architecture of Charter with:
 
-- Commit-based storage (V6)
-- Alignment Engine (new)
-- VDS / VLS separation
-- Relay (V7)
-
-It establishes:
-
-- Correct dependency direction
-- Clear separation of concerns
-- Canonical vs derived boundaries
-- Transport vs computation separation
+- Explicit VLS layer (structure + identity)
+- Alignment Engine as computation layer
+- Guidance as interpretation layer
+- Strict separation of truth, structure, computation, and meaning
 
 ---
 
 # II. Architectural Model
 
-Charter is a layered epistemic system composed of three independent axes:
+Charter operates across three independent axes:
 
 ---
 
@@ -43,13 +36,13 @@ Runtime
 
 ---
 
-## 2. Epistemic (Understanding) Axis
+## 2. Epistemic Axis (Understanding Pipeline)
 
-Defines how the system is observed, computed, and interpreted
+Defines how the system becomes understandable
 
-Federation (structure)  
+VLS (structure & identity)  
 ↑  
-VDS (signals)  
+VDS (signals / observations)  
 ↑  
 Alignment Engine (computation)  
 ↑  
@@ -59,8 +52,6 @@ Guidance (interpretation)
 
 ## 3. Transport Axis (Parallel)
 
-Defines how artifacts move across systems
-
 Relay (append-only, external, non-interpreting)
 
 ---
@@ -68,7 +59,9 @@ Relay (append-only, external, non-interpreting)
 ## Core Principle
 
 Truth is created locally.  
-Understanding is computed locally.  
+Structure is reconstructed explicitly.  
+Alignment is computed deterministically.  
+Meaning is interpreted separately.  
 Transport is external and neutral.
 
 ---
@@ -88,7 +81,6 @@ Transport is external and neutral.
 
 - Resolution is the smallest legitimacy unit
 - Legitimacy is explicit and mechanical
-- No inference from history
 
 ### Explicit Non-Responsibilities
 
@@ -103,17 +95,17 @@ Transport is external and neutral.
 
 ### Responsibilities
 
-- Append-only object storage
-- Hash-based integrity
-- Audit logging (descriptive only)
-- Commit storage (V6)
+- Append-only storage
+- Object integrity
+- Audit logging
+- Commit storage
 
 ### Stores
 
-- Object Store (immutable objects)
-- Ref Store (current pointers)
-- Audit Store (append-only events)
-- Commit Store (UUID artifacts)
+- Object Store
+- Ref Store
+- Audit Store
+- Commit Store
 
 ---
 
@@ -123,22 +115,20 @@ Transport is external and neutral.
 
 - Append-only
 - Immutable
-- UUID-identified
+- UUID-based
 - Multi-type (resolutions, signals, receipts, artifacts)
 
 ### Role
 
-Primary input source for:
+Primary source for:
 
 - signals (VDS)
 - artifacts
-- cross-context data
+- cross-context inputs
 
-### Constraints
+### Constraint
 
-- Not authoritative state
-- Not used to compute legitimacy directly
-- Not a state machine
+Not authoritative state.
 
 ---
 
@@ -148,90 +138,96 @@ Primary input source for:
 
 - Context isolation
 - Session orchestration
-- Baseline review (integration path)
-- Restore (authoritative rehydration)
+- Baseline review
+- Restore
 - Engine invocation
 
 ---
 
 ### Integration Paths
 
-#### Baseline Review (Artifact Path)
+Baseline Review:
+Artifact → Review → Session → Resolution  
 
-Artifact → Baseline Review → Session → Resolution  
-
-- Required for foreign or exploratory inputs
-- Does not create legitimacy
-
----
-
-#### Restore (Authoritative Path)
-
-CCE → Spec Verify → Restore → Persistence  
-
-- No baseline review
-- No merging
-- Strict compatibility enforcement
+Restore:
+CCE → Verify → Restore → Persistence  
 
 ---
 
-### Constraints
+# IV. Structure Layer (VLS)
 
-- Cannot compute legitimacy
-- Cannot infer authority
-- Cannot bypass engine
-
----
-
-# IV. Structure Layer
-
-## 5. Federation Layer (VLS-Aligned)
+## 5. Value Lineage System (VLS)
 
 ### Responsibilities
 
-- Reconstruct multi-area DAG
+- Reconstruct global DAG from areas
 - Preserve identity boundaries
-- Enable cross-context visibility
+- Track identity versions and scope
+- Maintain lineage continuity
 
-### Properties
+---
 
-- Graph-based, not hierarchical
-- No authority transfer
-- No enforcement
+### Outputs
+
+- Federated DAG (structure only)
+- Identity-scoped graph partitions
 
 ---
 
 ### Constraints
 
-- Does not compute alignment
-- Does not interpret signals
-- Does not mutate identity
+VLS does NOT:
+
+- Observe signals
+- Compute alignment
+- Interpret behavior
+- Enforce action
 
 ---
 
-# V. Observation Layer
+### Principle
 
-## 6. VDS Layer (Signal Production)
+VLS defines:
+
+“Who we are structurally, and how that evolved.”
+
+---
+
+# V. Observation Layer (VDS)
+
+## 6. Value Directed System (VDS)
 
 ### Responsibilities
 
-- Generate alignment signals (check-ins)
+- Emit signals (check-ins)
 - Observe behavior relative to decisions
-- Produce care metrics
+- Record supportability
+
+---
 
 ### Properties
 
-- Observational only
-- Append-only signals
-- Non-coercive
+- Append-only
+- Non-authoritative
+- Descriptive
 
 ---
 
 ### Constraints
 
-- Does not compute alignment dynamics
-- Does not mutate identity
-- Does not create legitimacy
+VDS does NOT:
+
+- Compute alignment
+- Modify identity
+- Create legitimacy
+
+---
+
+### Principle
+
+VDS defines:
+
+“What appears to be happening.”
 
 ---
 
@@ -243,15 +239,15 @@ CCE → Spec Verify → Restore → Persistence
 
 - Compute drift, variance, density
 - Compute renewal (freshness vs stagnation)
-- Maintain derived alignment state
-- Perform deterministic analysis over DAG
+- Compute trends and instability
+- Aggregate metrics over DAG
 
 ---
 
 ### Inputs
 
-- VLS reconstructed DAG (via Federation)
-- VDS signals (from Commit Store)
+- VLS DAG (structure)
+- VDS signals (observations)
 - Context (time, windows)
 
 ---
@@ -259,16 +255,24 @@ CCE → Spec Verify → Restore → Persistence
 ### Outputs
 
 - Alignment State Store
-- Queryable metrics
+- Derived metrics
 
 ---
 
 ### Constraints
 
-- Deterministic and rebuildable
-- No authority
+- Deterministic
+- Rebuildable
+- Non-authoritative
 - No legitimacy mutation
-- No direct relay access
+
+---
+
+### Principle
+
+Alignment Engine defines:
+
+“What patterns exist in behavior relative to intent.”
 
 ---
 
@@ -277,43 +281,45 @@ CCE → Spec Verify → Restore → Persistence
 ### Properties
 
 - Rebuildable
-- Non-authoritative
 - Cacheable
 - Discardable
+- Non-authoritative
+
+---
 
 ### Contains
 
-- Drift metrics
+- Drift
 - Variance
-- Signal density
-- Renewal state
-- Aggregated area metrics
+- Density
+- Renewal
+- Aggregations
 
 ---
 
 ### Invariant
 
-If deleted, nothing is lost.
+Loss of this store does not affect truth.
 
 ---
 
 # VII. Interpretation Layer
 
-## 9. Guidance / Exegesis (V5 Repositioned)
+## 9. Guidance / Exegesis (V5)
 
 ### Responsibilities
 
 - Interpret alignment state
-- Summarize patterns
-- Highlight drift, tension, renewal risk
+- Surface patterns
+- Highlight drift, tension, stagnation
 
 ---
 
 ### Inputs
 
-- Alignment Engine outputs
-- Audit
+- Alignment state
 - Commit history
+- Audit
 
 ---
 
@@ -321,15 +327,16 @@ If deleted, nothing is lost.
 
 - Read-only
 - Stateless
-- Non-legitimizing
 - Non-coercive
+- Non-legitimizing
 
 ---
 
 ### Principle
 
-Guidance explains.  
-It does not decide.
+Guidance answers:
+
+“What does this appear to mean?”
 
 ---
 
@@ -337,27 +344,20 @@ It does not decide.
 
 ## 10. Commit Relay (V7)
 
-### Nature
-
-- Parallel to the system
-- Not part of the computation stack
-
----
-
 ### Responsibilities
 
-- Append-only commit storage
-- Transport between systems
-- Archival preservation
+- Store commits immutably
+- Transport commits between systems
+- Preserve history
 
 ---
 
 ### Properties
 
 - Opaque
-- Immutable
-- UUID-based
+- Append-only
 - Idempotent
+- Stateless
 
 ---
 
@@ -368,40 +368,31 @@ Relay does NOT:
 - Interpret commits
 - Compute legitimacy
 - Reconstruct state
-- Enforce ordering
 - Validate references
 
 ---
 
-## Foreignness Boundary
+## Foreignness Rule
 
-All relay-fetched commits are:
+All relay data is:
 
 Foreign until locally integrated
 
-They cannot affect:
-
-- legitimacy
-- alignment
-- identity
-
-Until:
-
-- baseline review, or
-- restore
-
 ---
 
-## Critical Rule
+## Critical Constraint
 
-Alignment Engine and VDS operate only on local commits.  
-Relay is never a direct computation source.
+Alignment Engine and VDS operate only on:
+
+Local commit store
+
+Never directly on relay.
 
 ---
 
 # IX. Dependency Direction
 
-## Canonical Flow
+## Truth Axis
 
 Engine  
 ↑  
@@ -411,11 +402,11 @@ Runtime
 
 ---
 
-## Epistemic Flow
+## Epistemic Axis
 
 Runtime  
 ↑  
-Federation  
+VLS  
 ↑  
 VDS  
 ↑  
@@ -427,51 +418,50 @@ Guidance
 
 ## Transport
 
-Relay operates independently and interfaces only with commit stores.
+Relay is parallel and isolated.
 
 ---
 
 # X. Cross-Layer Invariants
 
 - Resolution is the smallest legitimacy unit
-- Only Engine computes legitimacy
-- Commit Store is canonical input, not state
-- Alignment State is derived, not authoritative
-- Guidance never mutates state
-- Relay never interprets data
-- Federation never creates authority
-- VDS never enforces action
-- Alignment Engine never creates legitimacy
+- Only Engine creates legitimacy
+- VLS defines structure, not behavior
+- VDS observes behavior, not identity
+- Alignment Engine computes, not decides
+- Guidance interprets, not enforces
+- Commit Store is input, not state
+- Alignment State is derived, not truth
+- Relay is transport only
 
 ---
 
 # XI. System Mental Model
 
-| Layer | Question Answered |
-|------|------------------|
-| Engine | Was this legitimate? |
-| Persistence | What was recorded? |
-| Runtime | How is it integrated? |
-| Federation | How is it structured? |
-| VDS | What is happening? |
-| Alignment Engine | What patterns exist? |
-| Guidance | What does it mean? |
-| Relay | How is it transported? |
+| Layer            | Question Answered        |
+| ---------------- | ------------------------ |
+| Engine           | Was this legitimate?     |
+| Persistence      | What was recorded?       |
+| Runtime          | How is it integrated?    |
+| VLS              | Who are we structurally? |
+| VDS              | What is happening?       |
+| Alignment Engine | What patterns exist?     |
+| Guidance         | What does it mean?       |
+| Relay            | How is it transported?   |
 
 ---
 
 # XII. Final Principle
 
-Charter is not a tool.
+Charter is a layered system of:
 
-It is a structured system for:
+- legitimacy (truth)
+- lineage (structure)
+- observation (signals)
+- computation (alignment)
+- interpretation (guidance)
+- transport (relay)
 
-- preserving legitimacy
-- observing reality
-- computing alignment
-- interpreting patterns
-- transporting truth
+Each layer preserves a different dimension of reality.
 
-It evolves by adding layers of visibility and computation —
-
-never by mutating legitimacy.
+None may collapse into another.
