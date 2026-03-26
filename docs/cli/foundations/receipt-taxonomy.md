@@ -82,6 +82,7 @@ Emitted upon closure of:
 - Lineage links (prior artifacts or receipts)  
 - Explicit end-state (e.g., SYNTHESIZED, ABANDONED)  
 - Timestamp  
+- semantic_summary (optional, non-authoritative)
 
 ### Does NOT Capture
 
@@ -121,7 +122,7 @@ Applies to:
 - Accepted IDs  
 - Rejected IDs  
 - Abandoned IDs  
-- Session IDs created (if any)  
+- Session IDs (if sessions were initiated following review)
 - Lineage links (e.g., exploration receipts referenced)  
 - Timestamp  
 
@@ -142,9 +143,9 @@ They do not create legitimacy.
 
 Emitted upon:
 
-- Session closure with acceptance  
+- Session closure
 
-A session that closes without acceptance does not emit a legitimacy receipt.
+A session that closes without acceptance also emits a legitimacy receipt.
 
 ### Captures
 
@@ -159,7 +160,7 @@ A session that closes without acceptance does not emit a legitimacy receipt.
 - Topic  
 - Annotations  
 - Timestamp  
-- Acceptance result  
+- Acceptance or cancellation result
 
 This is the only receipt type that records legitimacy.
 
@@ -176,10 +177,12 @@ The following are non-negotiable:
 3. Every deliberate closure MUST produce an EXPLORATION receipt.  
 4. Every breakout closure MUST produce an EXPLORATION receipt.  
 5. Receipts are immutable.  
-6. Receipts must be reconstructible deterministically from audit logs.  
-7. Receipt presence never implies correctness.  
-8. Receipt presence never implies consensus beyond what is recorded.  
-9. Receipt absence means structural closure did not occur.  
+6. Receipts are the canonical proof artifacts for structural closure.
+7. Audit logs are the underlying event stream from which receipts can be deterministically reconstructed.
+8. If a receipt and audit diverge, the system is invalid.
+9. Receipt presence never implies correctness.  
+10. Receipt presence never implies consensus beyond what is recorded.  
+11. Receipt absence means structural closure did not occur.  
 
 Violation of these invariants indicates CLI correctness failure.
 

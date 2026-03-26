@@ -191,13 +191,14 @@ Notes:
     "active_resolution_id": "R-SCOPE-003"
   },
   "resolutions": [ ... ],
-  "sessions": [ ... ]
+  "sessions": [ ... ],
+  "receipts": [...]
 }
 ```
 ### Area Rules
 
 - Area identity is immutable.
-- Exactly one ACTIVE Authority resolution MUST exist.
+- At any point in the reconstructed timeline, exactly one Authority resolution MUST be active.
 - Exactly one ACTIVE Scope resolution MUST exist.
 - Authority MUST NOT be in UNDER_REVIEW.
 - Scope MAY be in UNDER_REVIEW.
@@ -336,7 +337,7 @@ restore MUST reject structural inconsistency.
   "content": {
     "text": "Use PostgreSQL for all production workloads"
   },
-  "rationale": "Strong ACID guarantees and team experience",
+  "annotation": "Strong ACID guarantees and team experience",
   "created_at": "2025-02-01T13:10:00Z"
 }
 ```

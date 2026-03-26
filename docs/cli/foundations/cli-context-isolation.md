@@ -113,7 +113,7 @@ While operating inside a Context:
 - The CLI MUST NOT expose their Areas.
 - The CLI MUST NOT expose their commits.
 - The CLI MUST NOT expose their metadata.
-- The CLI MUST NOT resolve references across Contexts.
+- The CLI must not resolve cross-context references as active state. References may exist as opaque identifiers but must not be dereferenced into live objects without explicit import.
 
 Contexts are opaque to each other.
 
@@ -125,7 +125,7 @@ Areas exist within a single Context.
 
 Area IDs:
 
-- Are globally unique
+- Are globally unique within a Context. Global uniqueness is not required across Contexts.
 - Remain valid if exported
 - Do not encode Context identity
 
@@ -244,6 +244,9 @@ Switching Context does not:
 
 It only changes which isolated universe is active.
 
+By default, only one Context is active at a time.
+Future extensions may allow controlled multi-context read operations, but must preserve isolation guarantees.
+
 ---
 
 ## Security & Multi-Tenancy
@@ -277,6 +280,8 @@ Legitimacy remains scoped to Areas only.
 8. Contexts cannot be nested.
 9. Context identity is independent of filesystem path.
 10. Deleting a Context deletes its entire storage universe.
+11. Context boundaries define the maximum scope of implicit trust.
+12. All data entering a Context from outside must be treated as foreign and must pass through explicit integration mechanisms (e.g., baseline review or restore).
 
 ---
 

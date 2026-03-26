@@ -54,7 +54,7 @@ Nothing outside a session creates legitimacy:
 - Not Baseline Reviews  
 - Not Imports  
 
-**Sessions do not discover decisions; they record them.**
+**Sessions are not intended for discovery; they exist to formalize decisions once formed.**
 
 ---
 
@@ -62,7 +62,7 @@ Nothing outside a session creates legitimacy:
 Within a session:
 
 - **Topic and annotations** may change freely until the first stance or acceptance  
-- **Candidate content** is immutable after first stance  
+- **Candidate content** is immutable after first stance/voting
 - **Participants, Authority, Scope, and constraints** are frozen after first stance  
 - **Session receipts** are generated incrementally, capturing all changes for audit  
 
@@ -190,6 +190,7 @@ Baseline Review is a **consolidation workspace**, not a decision engine.
 When a proposal is accepted from a baseline:
 
 - A new session is created  
+- It produces a session-ready candidate. 
 - Topic and candidates are **preserved**  
 - Participants are **defined for the new session**  
 - Authority and Scope are evaluated **fresh**  
@@ -201,6 +202,7 @@ When a proposal is accepted from a baseline:
 
 - Creates multiple sessions  
 - Emits multiple **Legitimacy Receipts**, one per accepted proposal  
+- Each accepted proposal corresponds to exactly one session and one legitimacy receipt.
 
 **Key Principle:** importing Authority/Scope from baseline **is forbidden**, to prevent accidental legitimacy drift.
 
@@ -223,6 +225,9 @@ Local authority always governs acceptance. Trust is **never assumed**, similarit
 **Evaluation:** Sessions → Authority → Explicit stances → Legitimacy  
 **Commitment:** Acceptance → Closure → Immutable outcomes  
 **Memory:** Audit → Export → Import → Baseline review → Historical continuity  
+
+Legitimacy records define authoritative decisions.
+Audit records describe how those decisions occurred.
 
 Charter never:
 

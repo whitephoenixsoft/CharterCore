@@ -20,6 +20,11 @@ This avoids overloading the name field with explanation.
 ### Invariant
 > No legitimacy or scope inference may use short_label, display_name, or annotation.
 
+Annotations may be absent without affecting legitimacy.
+
+The absence of annotation must never reduce the validity, completeness,
+or interpretability of legitimacy.
+
 ## 2. Session: same pattern, but tighter
 
 *problem_statement is the “long name”.*

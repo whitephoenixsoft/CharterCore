@@ -30,7 +30,7 @@ This document prevents identity drift and preserves long-term legitimacy boundar
 An Area is:
 
 - A legitimacy boundary
-- A namespace for sessions and resolutions
+- A containment boundary for sessions and resolutions
 - A governance isolation domain
 - The root context provided to the Engine
 
@@ -59,7 +59,7 @@ The Engine operates only within a single Area context provided by the CLI.
 - Area ID is a UUID version 7.
 - It is generated at Area creation by the CLI.
 - It is immutable for the lifetime of the Area.
-- It is globally unique with high probability.
+- Are expected to be globally unique (UUIDv7), but the system must not rely on global uniqueness for correctness. All cross-Area interactions must remain explicit and auditable.
 - It is time-ordered for efficient indexing and storage.
 
 Area ID is opaque. It encodes no meaning.
@@ -93,6 +93,10 @@ Area ID does not:
 - Encode version information
 
 Identity and meaning are strictly separated.
+
+Area identity does not imply authority.
+
+Authority is defined explicitly within sessions and must not be inferred from Area ownership, naming, or external associations.
 
 ---
 
@@ -128,6 +132,9 @@ Annotations support understanding, not authority.
 - Area ID binds both stores together
 
 Immutable legitimacy and mutable description are separated by design.
+
+At runtime, an Area is always associated with exactly one Context.
+Context defines storage isolation; Area defines legitimacy.
 
 ---
 
@@ -187,6 +194,10 @@ Restore:
 
 Multiple installations may host the same Area ID if created via restore.
 
+Cloned Areas share identity but do not share state.
+
+Divergence between clones is allowed and expected unless explicitly reconciled.
+
 Restore does not require baseline review.
 
 Restore does not alter legitimacy.
@@ -239,6 +250,13 @@ External Area References bind to:
 References are immutable.
 
 References are informational only.
+
+If a referenced Area is not present in the current Context:
+
+- The reference remains valid as an identifier
+- The CLI may display it as unresolved
+- No attempt is made to resolve or fetch it implicitly
+- No legitimacy or dependency is inferred
 
 ---
 

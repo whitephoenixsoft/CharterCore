@@ -18,6 +18,10 @@ It exists to prevent:
 Baseline Review is not a shortcut.  
 It is a legitimacy firewall: nothing reviewed here becomes canonical until explicitly accepted through a session in the main engine.
 
+Baseline review may use approval rules that are constrained to match area authority.
+This ensures consistency with later legitimacy evaluation.
+But legitimacy is still created only when the resulting session closes and emits a legitimacy receipt.
+
 ---
 
 ## Core Idea
@@ -130,6 +134,11 @@ When a proposal is accepted:
 
 Baseline Authority or Scope metadata is advisory only and never imported as governance truth.
 
+Baseline review may have explicit decision rules,
+but those rules are workflow rules, not legitimacy rules.
+
+For legitimacy-bound baseline review, the review rule must be equivalent to the area’s authority rule.
+
 Batch acceptance:
 
 - Creates multiple independent sessions  
@@ -175,10 +184,13 @@ It is structural, not interpretive.
 
 Proposals within a baseline may be:
 
-- UNDER_REVIEW  
+- UNDER_REVIEW  (in the baseline review workflow)
 - ACCEPTED (once session emitted)  
 - REJECTED (explicit workflow rejection)  
+- RETIRED (retiring an existing area resolution)
 - ABANDONED (implicitly closed at baseline closure)  
+
+Comparison aids / diff annotations for divergent baselines:
 - HISTORICAL (Superceded)
 - ACTIVE (active in local area by Resolution id or decision text)
 
