@@ -292,6 +292,14 @@ AI only explains its shadow.
 
 ---
 
+## Invariants 
+
+1. Guidance may read canonical history, workflow history, receipts, annotations, and derived alignment state.
+2. Guidance must never become required for interpreting legitimacy.
+3. Legitimacy must remain mechanically provable without guidance.
+
+---
+
 ## Future Considerations (Non-Commitments)
 
 Potential extensions:

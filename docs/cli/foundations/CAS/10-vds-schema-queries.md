@@ -116,6 +116,7 @@ uncertainty = -0.5
 misalignment = -1
 reduced_capacity = -0.7
 pause = -0.4
+need_reassesment = -0.3
 
 Horizon Level (Optional Metadata)
 Maximum graph distance for signal influence.

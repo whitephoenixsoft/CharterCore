@@ -58,6 +58,8 @@ Commit properties:
 - Referentially transparent  
 - Identity-addressed or content-addressed (implementation-agnostic)  
 
+Commits have stable identity (UUID) and deterministic integrity hashes.
+
 Charter V6 maintains **no mutable state**.  
 No “current state” exists outside what can be derived from commit history.
 
@@ -78,11 +80,6 @@ All semantics are expressed via **commit types**, not system modes.
 - Exploratory and non-authoritative  
 - Used for drafting, thinking, and synthesis  
 - May reference other commits  
-
-### Baseline Review Commit
-- Integrates foreign history into local legitimacy  
-- Freezes imported meaning  
-- Supports explicit evaluation  
 
 ### Import Commit
 - Records foreign commits verbatim  
@@ -116,10 +113,16 @@ Characteristics:
 
 Identity **emerges from commit lineage**, not as a separate object.
 
-- Areas are referenced by commits  
+- Areas ids are referenced by commits. Area itself holds the legitimacy data.
 - Identity is established through historical record  
 - Scope changes are explicit commits  
 - Deprecation is recorded as a commit, not deletion  
+
+Another way of looking at it:
+
+- Identity is UUID-based.
+- Integrity is hash-based.
+- Serialization may be content-addressed without making domain identity content-addressed.
 
 > This approach binds identity mechanics directly to the commit structure.
 
@@ -207,6 +210,20 @@ V6 commits form the **CLI’s interface** for all local operations:
 - Federation boundaries and artifacts are respected
 
 > The CLI is the **workhorse**; commits are the single source of truth locally.
+
+---
+## 11. Invariants 
+
+All commits share a common envelope including:
+
+- commit_id
+- commit_type
+- created_at
+- referenced_area_id(s)
+- parent or related commit references
+- integrity hash
+
+Commit-type-specific fields extend this base structure.
 
 ---
 

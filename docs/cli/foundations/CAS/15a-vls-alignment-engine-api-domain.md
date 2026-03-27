@@ -64,6 +64,7 @@ enum SemanticState {
     Uncertainty,
     ReducedCapacity,
     Pause,
+    NeedReassessment,
 }
 
 ---

@@ -116,6 +116,7 @@ uncertainty      = -0.5
 reduced_capacity = -0.7  
 pause            = -0.4  
 misalignment     = -1.0  
+need_reassessment = -0.3
 
 ---
 
