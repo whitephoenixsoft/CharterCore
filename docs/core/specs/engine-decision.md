@@ -1,6 +1,6 @@
 # ENG-DECISION — Decision Evaluation & Acceptance Orchestration
 
-Status: REFACTORED (v14 – Candidate-Scoped Blocking & Winning-Candidate Eligibility Alignment)  
+Status: REFACTORED (v15 – ENG-STRUCTURE / ENG-USABILITY Renaming & ON_HOLD Alignment)  
 Applies to: Engine Core (V1/V2+)  
 
 Authority: Behavioral orchestration layer for decision evaluation and acceptance eligibility.
@@ -9,8 +9,8 @@ Subordinate to:
 
 - ENG-DOMAIN
 - ENG-SESSION
-- ENG-SUPERSESSION
-- ENG-REVIEW-RETIRED
+- ENG-STRUCTURE
+- ENG-USABILITY
 - ENG-RECEIPT
 - ENG-INTEGRITY
 - ENG-PERSISTENCE
@@ -40,8 +40,8 @@ ENG-DECISION does not define:
 
 - domain object schemas
 - session lifecycle mechanics
-- supersession graph rules or ACTIVE derivation
-- UNDER_REVIEW / RETIRED semantics
+- structural graph rules or ACTIVE derivation
+- ON_HOLD / RETIRED semantics
 - receipt structure or hashing
 - atomic commit implementation
 - structural halt or degraded-mode policy
@@ -92,8 +92,8 @@ It is responsible for:
 It is not responsible for:
 
 - mutating session state → ENG-SESSION
-- computing ACTIVE sets → ENG-SUPERSESSION
-- determining usability semantics → ENG-REVIEW-RETIRED
+- computing ACTIVE sets → ENG-STRUCTURE
+- determining usability semantics → ENG-USABILITY
 - validating structural integrity → ENG-INTEGRITY
 - producing EvaluationReports → ENG-ERROR
 - committing state → ENG-PERSISTENCE
@@ -113,7 +113,8 @@ Inputs include:
 - authority_snapshot_id
 - scope_snapshot_id
 - session state and phase
-- current usability and supersession outcomes supplied by authoritative specifications
+- current usability outcomes supplied by ENG-USABILITY
+- current structural outcomes supplied by ENG-STRUCTURE
 
 All structure and mutability rules are defined externally.
 
@@ -168,8 +169,8 @@ Definitions of:
 
 are external and provided by:
 
-- ENG-SUPERSESSION
-- ENG-REVIEW-RETIRED
+- ENG-STRUCTURE
+- ENG-USABILITY
 - ENG-INTEGRITY
 
 If governance preconditions fail:
@@ -312,14 +313,14 @@ Decision evaluation must respect usability constraints of referenced objects.
 
 These include:
 
-- UNDER_REVIEW
+- ON_HOLD
 - RETIRED
 - SUPERSEDED
 
 Semantics are defined in:
 
-- ENG-REVIEW-RETIRED
-- ENG-SUPERSESSION
+- ENG-USABILITY
+- ENG-STRUCTURE
 
 ENG-DECISION must:
 
@@ -369,7 +370,7 @@ A candidate is temporarily blocked when its action depends on a reversibly unusa
 
 Examples include:
 
-- a candidate action target is UNDER_REVIEW
+- a candidate action target is ON_HOLD
 - a candidate depends on a reversible governance usability suspension that applies to that candidate specifically
 
 A temporarily blocked candidate:
@@ -525,7 +526,7 @@ These are distinct from candidate-level blocking conditions.
 
 Triggered by reversible session-global conditions such as:
 
-- Scope UNDER_REVIEW
+- Scope ON_HOLD
 - another reversible governance usability condition that affects the session’s governing context as a whole
 
 ENG-DECISION determines the block.
@@ -548,11 +549,11 @@ Lifecycle handling is external.
 
 ---
 
-# 16. Supersession & Conflict Integration
+# 16. Structural Conflict Integration
 
-## ENG-DECISION-13 — Graph Outcomes Are Consumed
+## ENG-DECISION-13 — Structural Outcomes Are Consumed
 
-ENG-DECISION must consume supersession outcomes from ENG-SUPERSESSION.
+ENG-DECISION must consume structural outcomes from ENG-STRUCTURE.
 
 This includes:
 
@@ -647,7 +648,7 @@ Given identical:
 - governance references
 - votes
 - constraints
-- supersession outcomes
+- structural outcomes
 - usability outcomes
 - candidate action definitions
 
@@ -676,7 +677,7 @@ It must not depend on:
 - blocked or invalid candidates do not participate in winning determination
 - constraints must pass for a candidate to remain acceptance-eligible
 - authority rule applies only to eligible candidates
-- supersession outcomes must be respected
+- structural outcomes must be respected
 - eligibility determination is deterministic
 - acceptance requires atomic commit defined elsewhere
 
@@ -688,7 +689,7 @@ ENG-DECISION must never:
 
 - create legitimacy directly
 - bypass atomic commit
-- override supersession outcomes
+- override structural outcomes
 - reinterpret lifecycle states
 - infer consensus
 - repair invalid structures

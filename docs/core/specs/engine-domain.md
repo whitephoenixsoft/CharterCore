@@ -1,7 +1,7 @@
 # ENG-DOMAIN — Domain Object Schema
 Canonical Engine Object Definitions
 
-Status: REFACTORED (v19 – Candidate Action Model & Annotation Unification)  
+Status: REFACTORED (v20 – ENG-STRUCTURE / ENG-USABILITY Renaming & ON_HOLD Alignment)  
 Applies to: Engine Core (V1/V2+)
 
 Authority: Foundational authority for structural object schemas and structural field classification.
@@ -11,8 +11,8 @@ Subordinate references consumed from:
 - ENG-CANON
 - ENG-SPECVERIFY
 - ENG-RECEIPT
-- ENG-SUPERSESSION
-- ENG-REVIEW-RETIRED
+- ENG-STRUCTURE
+- ENG-USABILITY
 - ENG-INTEGRITY
 - ENG-SESSION
 - ENG-DECISION
@@ -39,8 +39,8 @@ ENG-DOMAIN does not define:
 
 - session lifecycle behavior
 - acceptance mechanics
-- supersession graph meaning
-- UNDER_REVIEW / RETIRED usability semantics
+- structural graph meaning
+- ON_HOLD / RETIRED usability semantics
 - receipt verification policy
 - canonical byte-level serialization rules
 - runtime halt behavior
@@ -51,8 +51,8 @@ Those are defined respectively in:
 
 - ENG-SESSION
 - ENG-DECISION
-- ENG-SUPERSESSION
-- ENG-REVIEW-RETIRED
+- ENG-STRUCTURE
+- ENG-USABILITY
 - ENG-INTEGRITY
 - ENG-CANON
 - ENG-PERSISTENCE
@@ -105,7 +105,7 @@ A field is structural if it affects any of the following:
 
 - legitimacy evaluation
 - governance semantics
-- supersession
+- structural graph meaning
 - receipt identity
 - canonical artifact integrity
 - rule provenance
@@ -127,7 +127,7 @@ Informational preservation does not give the field legitimacy semantics.
 Where lifecycle state exists, it must be represented as a single enum field.
 
 ENG-DOMAIN defines the allowed enum values per object category.  
-ENG-SUPERSESSION and ENG-REVIEW-RETIRED define the behavioral meaning of those values.
+ENG-STRUCTURE and ENG-USABILITY define the behavioral meaning of those values.
 
 Unknown lifecycle values are structurally invalid.
 
@@ -160,7 +160,7 @@ UUID timestamp components must not carry legitimacy meaning.
 
 UUID timestamp components must not determine:
 
-- supersession precedence
+- structural precedence
 - replay ordering unless explicitly defined elsewhere for a different artifact
 - restore precedence
 - acceptance validity
@@ -202,7 +202,7 @@ Annotation must never affect:
 - legitimacy
 - acceptance eligibility
 - governance semantics
-- supersession
+- structural graph meaning
 - ACTIVE derivation
 - structural validation
 - blocking semantics
@@ -276,8 +276,8 @@ ENG-DOMAIN does not define:
 
 Those belong to:
 
-- ENG-SUPERSESSION
-- ENG-REVIEW-RETIRED
+- ENG-STRUCTURE
+- ENG-USABILITY
 - ENG-INTEGRITY
 
 Governance slot participation is structural even when slot usability is temporarily suspended by another specification.
@@ -313,7 +313,7 @@ If present as structural content, they carry structural resolution requirements.
 
 ## ENG-DOMAIN-14 — Informational References
 
-Informational references do not affect legitimacy, supersession, or structural ACTIVE derivation.
+Informational references do not affect legitimacy, structural graph meaning, or structural ACTIVE derivation.
 
 They exist for:
 
@@ -345,7 +345,7 @@ They:
 
 - do not affect legitimacy
 - do not affect ACTIVE derivation
-- do not affect supersession structure
+- do not affect structural graph meaning
 - do not affect governance slot occupancy
 - must not be traversed by legitimacy logic
 
@@ -403,7 +403,7 @@ This object is informational only.
 
 The Engine must not reinterpret this object as:
 
-- a supersession edge
+- a structural edge
 - a structural dependency
 - an acceptance prerequisite
 - a local governance reference
@@ -539,7 +539,7 @@ Rules:
 - no supersession target list may be encoded for this action type
 
 ENG-DOMAIN defines shape and classification only.  
-Execution meaning belongs to ENG-DECISION, ENG-SUPERSESSION, and ENG-REVIEW-RETIRED.
+Execution meaning belongs to ENG-DECISION, ENG-STRUCTURE, and ENG-USABILITY.
 
 ---
 
@@ -696,7 +696,7 @@ Allowed Resolution lifecycle enum values:
 
 - ACTIVE
 - SUPERSEDED
-- UNDER_REVIEW
+- ON_HOLD
 - RETIRED
 
 Resolution rules include:
@@ -727,8 +727,8 @@ cross_area_references:
 
 State semantics are defined behaviorally in:
 
-- ENG-SUPERSESSION
-- ENG-REVIEW-RETIRED
+- ENG-STRUCTURE
+- ENG-USABILITY
 
 Rule provenance meaning is defined in ENG-SPECVERIFY.
 
@@ -812,17 +812,17 @@ If future specifications require explicit snapshotting of informational referenc
 
 ---
 
-# 16. Supersession Encoding
+# 16. Structural Edge Encoding
 
 ## ENG-DOMAIN-26 — superseded_by Field
 
-Supersession is structurally encoded through:
+The current structural Resolution-to-Resolution graph is encoded through:
 
 - superseded_by
 
 ENG-DOMAIN defines only the field and its structural role.
 
-Graph meaning, ACTIVE derivation, conflict handling, and acyclicity belong to ENG-SUPERSESSION.
+Graph meaning, ACTIVE derivation, conflict handling, and acyclicity belong to ENG-STRUCTURE.
 
 Rules:
 
@@ -862,7 +862,7 @@ The following enums are structural and schema-governed.
 
 - ACTIVE
 - SUPERSEDED
-- UNDER_REVIEW
+- ON_HOLD
 - RETIRED
 
 ### Session phase
@@ -932,7 +932,7 @@ It does define the structural artifacts that make deterministic historical compa
 - session identity
 - candidate identity and action structure
 - resolution identity
-- supersession encoding
+- structural edge encoding
 - round snapshots
 - receipt provenance
 - canonicalizable structural fields
@@ -988,8 +988,8 @@ It does not answer:
 
 - how sessions behave
 - when acceptance succeeds
-- how supersession changes ACTIVE derivation
-- how UNDER_REVIEW or RETIRED affect usability
+- how structural graph meaning changes ACTIVE derivation
+- how ON_HOLD or RETIRED affect usability
 - how candidate viability is evaluated
 - how receipts are canonically hashed
 - when the Engine halts

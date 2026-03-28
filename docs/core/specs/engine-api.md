@@ -1,6 +1,6 @@
 # ENG-API — Engine Interface & Execution Boundary Specification
 
-Status: REFACTORED (v17 – Full Command Specification Format, Candidate Action Alignment)  
+Status: REFACTORED (v18 – ENG-STRUCTURE / ENG-USABILITY Renaming, ON_HOLD Alignment & Reference Command Completion)  
 Applies to: Engine Core (V1/V2+)  
 Scope: Deterministic Engine interface, command surface, and runtime interaction boundary
 
@@ -11,7 +11,7 @@ Subordinate references consumed from:
 - ENG-DOMAIN
 - ENG-SESSION
 - ENG-DECISION
-- ENG-SUPERSESSION
+- ENG-STRUCTURE
 - ENG-RECEIPT
 - ENG-CANON
 - ENG-ERROR
@@ -20,7 +20,7 @@ Subordinate references consumed from:
 - ENG-IMPORT
 - ENG-COMPILATION
 - ENG-PERSISTENCE
-- ENG-REVIEW-RETIRED
+- ENG-USABILITY
 
 ---
 
@@ -117,7 +117,7 @@ Identifier semantics are defined in ENG-DOMAIN and ENG-SESSION.
 The API must not provide any operation that:
 
 - creates legitimacy outside session acceptance
-- directly mutates Resolution state (except administrative transitions defined elsewhere)
+- directly mutates Resolution state except administrative transitions defined elsewhere
 - bypasses governance validation
 - reconstructs legitimacy artifacts
 
@@ -140,7 +140,7 @@ Description of the command.
 Required and optional inputs.
 
 **Output**  
-Deterministic result type (EvaluationReport, query result, runtime outcome, or exported graph).
+Deterministic result type such as EvaluationReport, query result, runtime outcome, or exported graph.
 
 **Mutation**  
 Indicates whether the command mutates Engine state.
@@ -179,7 +179,7 @@ Yes (replaces runtime state)
 **Behavioral Authority**  
 - ENG-INITIALIZATION  
 - ENG-INTEGRITY  
-- ENG-SUPERSESSION  
+- ENG-STRUCTURE  
 - ENG-RECEIPT  
 - ENG-CANON  
 - ENG-SPECVERIFY  
@@ -210,13 +210,14 @@ No
 - session exists in active Area
 
 **Behavioral Authority**  
-- ENG-DECISION
+- ENG-DECISION  
+- ENG-SESSION
 
 **Notes**  
-- includes solo-mode vote logic  
 - reflects candidate-level viability  
 - reflects session-level blocking  
 - does not mutate votes or session state  
+- does not persist solo-mode vote materialization  
 
 ---
 
@@ -255,7 +256,7 @@ Yes
 ### resume_session
 
 **Purpose**  
-Advance session to next round.
+Advance a session to the next round.
 
 **Inputs**  
 - session_id
@@ -281,7 +282,7 @@ Yes
 ### close_session
 
 **Purpose**  
-Close session without acceptance.
+Close a session without acceptance.
 
 **Inputs**  
 - session_id
@@ -294,7 +295,7 @@ Close session without acceptance.
 Yes
 
 **High-level Preconditions**  
-- session not already terminal
+- session is not already terminal
 
 **Behavioral Authority**  
 - ENG-SESSION  
@@ -309,26 +310,29 @@ Yes
 ### attempt_acceptance
 
 **Purpose**  
-Attempt to accept the currently winning candidate.
+Attempt to accept the currently winning eligible candidate.
 
 **Inputs**  
 - session_id
 
 **Output**  
-- resolution_id (if success)  
+- resolution_id (if success and a Resolution is created)  
 - receipt_id (if success)  
 - EvaluationReport
 
 **Mutation**  
-Yes (only on success)
+Yes (only on success, except permitted solo-mode vote materialization in the mutating acceptance path)
 
 **High-level Preconditions**  
-- session is in VOTING phase
+- session exists  
+- session is non-terminal  
+- session is not barred from acceptance by runtime mode
 
 **Behavioral Authority**  
 - ENG-DECISION  
 - ENG-SESSION  
-- ENG-SUPERSESSION  
+- ENG-STRUCTURE  
+- ENG-USABILITY  
 - ENG-PERSISTENCE  
 - ENG-RECEIPT  
 
@@ -337,6 +341,7 @@ Yes (only on success)
 - participants may change votes prior to invocation  
 - includes candidate-level blocking checks  
 - includes session-level blocking checks  
+- may materialize a real solo-mode vote during the mutating acceptance path  
 
 ---
 
@@ -345,7 +350,7 @@ Yes (only on success)
 ### add_participant
 
 **Purpose**  
-Add participant to session round.
+Add a participant to the current session round.
 
 **Inputs**  
 - session_id  
@@ -360,20 +365,50 @@ Add participant to session round.
 Yes
 
 **High-level Preconditions**  
-- session in PRE_STANCE phase
+- session is in PRE_STANCE phase
 
 **Behavioral Authority**  
 - ENG-SESSION  
+- ENG-DOMAIN  
 
 **Notes**  
 - participant identity is epoch-based  
+- annotation is informational only  
+
+---
+
+### remove_participant
+
+**Purpose**  
+Remove a participant from the current session round.
+
+**Inputs**  
+- session_id  
+- participant_id
+
+**Output**  
+- EvaluationReport
+
+**Mutation**  
+Yes
+
+**High-level Preconditions**  
+- session is in PRE_STANCE phase  
+- participant exists in current round
+
+**Behavioral Authority**  
+- ENG-SESSION  
+- ENG-ERROR  
+
+**Notes**  
+- cannot violate participant-count rules defined elsewhere  
 
 ---
 
 ### add_candidate
 
 **Purpose**  
-Add candidate proposal.
+Add a candidate proposal to the current session round.
 
 **Inputs**  
 - session_id  
@@ -389,7 +424,7 @@ Add candidate proposal.
 Yes
 
 **High-level Preconditions**  
-- session in PRE_STANCE phase
+- session is in PRE_STANCE phase
 
 **Behavioral Authority**  
 - ENG-SESSION  
@@ -402,10 +437,38 @@ Yes
 
 ---
 
+### remove_candidate
+
+**Purpose**  
+Remove a candidate from the current session round.
+
+**Inputs**  
+- session_id  
+- candidate_id
+
+**Output**  
+- EvaluationReport
+
+**Mutation**  
+Yes
+
+**High-level Preconditions**  
+- session is in PRE_STANCE phase  
+- candidate exists in current round
+
+**Behavioral Authority**  
+- ENG-SESSION  
+- ENG-ERROR  
+
+**Notes**  
+- candidate removal is not allowed after freeze  
+
+---
+
 ### add_constraint
 
 **Purpose**  
-Add constraint to session round.
+Add a constraint to the current session round.
 
 **Inputs**  
 - session_id  
@@ -421,18 +484,50 @@ Add constraint to session round.
 Yes
 
 **High-level Preconditions**  
-- session in PRE_STANCE phase
+- session is in PRE_STANCE phase
 
 **Behavioral Authority**  
 - ENG-SESSION  
 - ENG-DECISION  
+- ENG-DOMAIN  
+
+**Notes**  
+- annotation is informational only  
+
+---
+
+### remove_constraint
+
+**Purpose**  
+Remove a constraint from the current session round.
+
+**Inputs**  
+- session_id  
+- constraint_id
+
+**Output**  
+- EvaluationReport
+
+**Mutation**  
+Yes
+
+**High-level Preconditions**  
+- session is in PRE_STANCE phase  
+- constraint exists in current round
+
+**Behavioral Authority**  
+- ENG-SESSION  
+- ENG-ERROR  
+
+**Notes**  
+- constraint removal is not allowed after freeze  
 
 ---
 
 ### cast_vote
 
 **Purpose**  
-Record vote.
+Record or replace a vote.
 
 **Inputs**  
 - session_id  
@@ -454,10 +549,305 @@ Yes
 **Behavioral Authority**  
 - ENG-SESSION  
 - ENG-DECISION  
+- ENG-DOMAIN  
 
 **Notes**  
 - votes may change prior to acceptance  
-- one vote per participant per candidate per round  
+- one current vote per participant per candidate per round  
+- annotation is informational only  
+
+---
+
+### clear_vote
+
+**Purpose**  
+Remove a participant’s current vote for a candidate in the current round.
+
+**Inputs**  
+- session_id  
+- participant_id  
+- candidate_id
+
+**Output**  
+- EvaluationReport
+
+**Mutation**  
+Yes
+
+**High-level Preconditions**  
+- vote exists in current round  
+- session is not terminal
+
+**Behavioral Authority**  
+- ENG-SESSION  
+- ENG-DECISION  
+- ENG-ERROR  
+
+**Notes**  
+- supported because vacillation is part of the design  
+- subsequent voting may recreate the vote before acceptance  
+
+---
+
+### set_session_annotation
+
+**Purpose**  
+Set or replace the session annotation during mutable session operation.
+
+**Inputs**  
+- session_id  
+- annotation
+
+**Output**  
+- EvaluationReport
+
+**Mutation**  
+Yes
+
+**High-level Preconditions**  
+- session exists  
+- session is non-terminal
+
+**Behavioral Authority**  
+- ENG-DOMAIN  
+- ENG-SESSION  
+
+**Notes**  
+- annotation is informational only  
+
+---
+
+### set_participant_annotation
+
+**Purpose**  
+Set or replace a participant annotation while the participant remains mutable.
+
+**Inputs**  
+- session_id  
+- participant_id  
+- annotation
+
+**Output**  
+- EvaluationReport
+
+**Mutation**  
+Yes
+
+**High-level Preconditions**  
+- session is in PRE_STANCE phase  
+- participant exists in current round
+
+**Behavioral Authority**  
+- ENG-DOMAIN  
+- ENG-SESSION  
+
+**Notes**  
+- annotation is informational only  
+
+---
+
+### set_candidate_annotation
+
+**Purpose**  
+Set or replace a candidate annotation while the candidate remains mutable.
+
+**Inputs**  
+- session_id  
+- candidate_id  
+- annotation
+
+**Output**  
+- EvaluationReport
+
+**Mutation**  
+Yes
+
+**High-level Preconditions**  
+- session is in PRE_STANCE phase  
+- candidate exists in current round
+
+**Behavioral Authority**  
+- ENG-DOMAIN  
+- ENG-SESSION  
+
+**Notes**  
+- annotation is informational only  
+
+---
+
+### set_constraint_annotation
+
+**Purpose**  
+Set or replace a constraint annotation while the constraint remains mutable.
+
+**Inputs**  
+- session_id  
+- constraint_id  
+- annotation
+
+**Output**  
+- EvaluationReport
+
+**Mutation**  
+Yes
+
+**High-level Preconditions**  
+- session is in PRE_STANCE phase  
+- constraint exists in current round
+
+**Behavioral Authority**  
+- ENG-DOMAIN  
+- ENG-SESSION  
+
+**Notes**  
+- annotation is informational only  
+
+---
+
+### set_vote_annotation
+
+**Purpose**  
+Set or replace a vote annotation while the vote remains mutable.
+
+**Inputs**  
+- session_id  
+- vote_id  
+- annotation
+
+**Output**  
+- EvaluationReport
+
+**Mutation**  
+Yes
+
+**High-level Preconditions**  
+- vote exists in current round  
+- session is not terminal
+
+**Behavioral Authority**  
+- ENG-DOMAIN  
+- ENG-SESSION  
+
+**Notes**  
+- annotation is informational only  
+
+---
+
+### add_internal_resolution_reference
+
+**Purpose**  
+Add an informational same-Area Resolution reference to the current session round.
+
+**Inputs**  
+- session_id  
+- resolution_id
+
+**Output**  
+- EvaluationReport
+
+**Mutation**  
+Yes
+
+**High-level Preconditions**  
+- session is in PRE_STANCE phase  
+- target Resolution exists in active Area
+
+**Behavioral Authority**  
+- ENG-DOMAIN  
+- ENG-SESSION  
+- ENG-INTEGRITY  
+
+**Notes**  
+- informational only  
+- must preserve uniqueness and lexicographic ordering  
+
+---
+
+### remove_internal_resolution_reference
+
+**Purpose**  
+Remove an informational same-Area Resolution reference from the current session round.
+
+**Inputs**  
+- session_id  
+- resolution_id
+
+**Output**  
+- EvaluationReport
+
+**Mutation**  
+Yes
+
+**High-level Preconditions**  
+- session is in PRE_STANCE phase  
+- reference exists in current round
+
+**Behavioral Authority**  
+- ENG-DOMAIN  
+- ENG-SESSION  
+
+**Notes**  
+- informational only  
+
+---
+
+### add_cross_area_reference
+
+**Purpose**  
+Add an informational cross-Area reference to the current session round.
+
+**Inputs**  
+- session_id  
+- external_area_id  
+- external_area_label  
+- external_resolution_id (optional)  
+- external_resolution_label (optional)
+
+**Output**  
+- EvaluationReport
+
+**Mutation**  
+Yes
+
+**High-level Preconditions**  
+- session is in PRE_STANCE phase
+
+**Behavioral Authority**  
+- ENG-DOMAIN  
+- ENG-SESSION  
+
+**Notes**  
+- informational only  
+- must not be interpreted as structural dependency  
+
+---
+
+### remove_cross_area_reference
+
+**Purpose**  
+Remove an informational cross-Area reference from the current session round.
+
+**Inputs**  
+- session_id  
+- external_area_id  
+- external_resolution_id (optional)
+
+**Output**  
+- EvaluationReport
+
+**Mutation**  
+Yes
+
+**High-level Preconditions**  
+- session is in PRE_STANCE phase  
+- matching reference exists in current round
+
+**Behavioral Authority**  
+- ENG-DOMAIN  
+- ENG-SESSION  
+
+**Notes**  
+- informational only  
 
 ---
 
@@ -484,12 +874,15 @@ Yes
 - ENG-COMPILATION  
 - ENG-INTEGRITY  
 
+**Notes**  
+- suspends normal mutating session workflows while active  
+
 ---
 
 ### add_incremental_batch
 
 **Purpose**  
-Add batch to incremental compilation.
+Add a batch to incremental compilation.
 
 **Inputs**  
 - domain_objects
@@ -506,7 +899,10 @@ Yes
 **Behavioral Authority**  
 - ENG-COMPILATION  
 - ENG-INTEGRITY  
-- ENG-SUPERSESSION  
+- ENG-STRUCTURE  
+
+**Notes**  
+- historical replay ordering is defined externally  
 
 ---
 
@@ -531,14 +927,17 @@ Yes
 - ENG-COMPILATION  
 - ENG-INTEGRITY  
 
+**Notes**  
+- restores normal runtime workflow if successful  
+
 ---
 
 # 9. Administrative Operations
 
-### set_resolution_under_review
+### set_resolution_on_hold
 
 **Purpose**  
-Place resolution under review.
+Place a Resolution in ON_HOLD state.
 
 **Inputs**  
 - resolution_id
@@ -550,18 +949,23 @@ Place resolution under review.
 Yes
 
 **High-level Preconditions**  
-- resolution exists
+- Resolution exists  
+- Resolution supports ON_HOLD transition
 
 **Behavioral Authority**  
-- ENG-REVIEW-RETIRED  
+- ENG-USABILITY  
 - ENG-INTEGRITY  
+
+**Notes**  
+- does not create legitimacy  
+- does not alter historical legitimacy  
 
 ---
 
 ### restore_resolution_active
 
 **Purpose**  
-Restore resolution from UNDER_REVIEW to ACTIVE.
+Restore a Resolution from ON_HOLD to ACTIVE.
 
 **Inputs**  
 - resolution_id
@@ -573,11 +977,15 @@ Restore resolution from UNDER_REVIEW to ACTIVE.
 Yes
 
 **High-level Preconditions**  
-- resolution is UNDER_REVIEW
+- Resolution exists  
+- Resolution is ON_HOLD
 
 **Behavioral Authority**  
-- ENG-REVIEW-RETIRED  
+- ENG-USABILITY  
 - ENG-INTEGRITY  
+
+**Notes**  
+- administrative usability transition only  
 
 ---
 
@@ -586,7 +994,7 @@ Yes
 ### list_sessions
 
 **Purpose**  
-List sessions in current Area.
+List sessions in the current Area.
 
 **Inputs**  
 - none
@@ -597,27 +1005,39 @@ List sessions in current Area.
 **Mutation**  
 No
 
+**High-level Preconditions**  
+- runtime initialized
+
 **Behavioral Authority**  
 - ENG-DOMAIN  
+
+**Notes**  
+- deterministic ordering required  
 
 ---
 
 ### list_resolutions
 
 **Purpose**  
-List resolutions in current Area.
+List Resolutions in the current Area.
 
 **Inputs**  
 - none
 
 **Output**  
-- resolution summaries
+- Resolution summaries
 
 **Mutation**  
 No
 
+**High-level Preconditions**  
+- runtime initialized
+
 **Behavioral Authority**  
 - ENG-DOMAIN  
+
+**Notes**  
+- deterministic ordering required  
 
 ---
 
@@ -635,34 +1055,46 @@ Retrieve full session state.
 **Mutation**  
 No
 
+**High-level Preconditions**  
+- session exists in active Area
+
 **Behavioral Authority**  
 - ENG-DOMAIN  
+
+**Notes**  
+- returns current runtime state only  
 
 ---
 
 ### get_resolution_state
 
 **Purpose**  
-Retrieve resolution state.
+Retrieve Resolution state.
 
 **Inputs**  
 - resolution_id
 
 **Output**  
-- resolution object
+- Resolution object
 
 **Mutation**  
 No
 
+**High-level Preconditions**  
+- Resolution exists in active Area
+
 **Behavioral Authority**  
 - ENG-DOMAIN  
+
+**Notes**  
+- returns current runtime state only  
 
 ---
 
 ### get_session_receipt
 
 **Purpose**  
-Retrieve session receipt.
+Retrieve the terminal receipt for a session.
 
 **Inputs**  
 - session_id
@@ -673,15 +1105,21 @@ Retrieve session receipt.
 **Mutation**  
 No
 
+**High-level Preconditions**  
+- session has terminal receipt
+
 **Behavioral Authority**  
 - ENG-RECEIPT  
+
+**Notes**  
+- terminal receipt is authoritative  
 
 ---
 
 ### list_session_receipts
 
 **Purpose**  
-List receipts for a session.
+List receipts associated with a session.
 
 **Inputs**  
 - session_id
@@ -692,8 +1130,14 @@ List receipts for a session.
 **Mutation**  
 No
 
+**High-level Preconditions**  
+- session exists in active Area
+
 **Behavioral Authority**  
 - ENG-RECEIPT  
+
+**Notes**  
+- deterministic ordering required  
 
 ---
 
@@ -738,6 +1182,9 @@ List candidates with evaluated status.
 **Mutation**  
 No
 
+**High-level Preconditions**  
+- session exists in active Area
+
 **Behavioral Authority**  
 - ENG-DECISION  
 - ENG-API  
@@ -763,6 +1210,9 @@ Retrieve evaluated status for a candidate.
 **Mutation**  
 No
 
+**High-level Preconditions**  
+- session and candidate exist in active Area
+
 **Behavioral Authority**  
 - ENG-DECISION  
 
@@ -777,7 +1227,7 @@ No
 ### get_spec_set_hash
 
 **Purpose**  
-Retrieve current spec set hash.
+Retrieve the current spec set hash.
 
 **Inputs**  
 - none
@@ -788,27 +1238,39 @@ Retrieve current spec set hash.
 **Mutation**  
 No
 
+**High-level Preconditions**  
+- runtime initialized
+
 **Behavioral Authority**  
 - ENG-SPECVERIFY  
+
+**Notes**  
+- read-only identity query  
 
 ---
 
 ### verify_spec_hash
 
-**Purpose**  
-Verify spec hash.
+**Purpose**  
+Verify a spec hash value.
 
-**Inputs**  
+**Inputs**  
 - spec_set_hash
 
-**Output**  
+**Output**  
 - verification result
 
-**Mutation**  
+**Mutation**  
 No
 
-**Behavioral Authority**  
-- ENG-SPECVERIFY  
+**High-level Preconditions**  
+- input hash provided
+
+**Behavioral Authority**  
+- ENG-SPECVERIFY  
+
+**Notes**  
+- does not reinterpret rule identity semantics  
 
 ---
 
@@ -816,22 +1278,29 @@ No
 
 ### export_area_dag
 
-**Purpose**  
-Export Area graph.
+**Purpose**  
+Export the current Area graph.
 
-**Inputs**  
+**Inputs**  
 - none
 
-**Output**  
+**Output**  
 - domain graph
 
-**Mutation**  
+**Mutation**  
 No
 
-**Behavioral Authority**  
-- ENG-DOMAIN  
-- ENG-CANON  
-- ENG-RECEIPT  
+**High-level Preconditions**  
+- runtime initialized
+
+**Behavioral Authority**  
+- ENG-DOMAIN  
+- ENG-CANON  
+- ENG-RECEIPT  
+
+**Notes**  
+- export must be deterministic  
+- export must preserve canonical structure required for downstream use  
 
 ---
 
@@ -839,26 +1308,26 @@ No
 
 ## ENG-API-07 — Dual-Level Blocking Model
 
-Blocking exists at two levels:
+Blocking exists at two levels.
 
 ### Session-Level Blocking
 
 Caused by:
 
-- Authority invalidation → BLOCK_PERMANENT  
-- Scope supersession or invalidation → BLOCK_PERMANENT  
-- Scope UNDER_REVIEW → BLOCK_TEMPORARY  
+- Authority invalidation → BLOCK_PERMANENT  
+- Scope supersession or invalidation → BLOCK_PERMANENT  
+- Scope ON_HOLD → BLOCK_TEMPORARY  
 
 ### Candidate-Level Blocking
 
 Caused by:
 
-- superseded target  
-- retired target  
-- UNDER_REVIEW target  
-- unusable referenced artifacts  
+- superseded target  
+- retired target  
+- ON_HOLD target  
+- unusable referenced artifacts  
 
-ENG-API exposes both through EvaluationReport and query interfaces.  
+ENG-API exposes both through EvaluationReport and query interfaces.  
 It does not define their semantics.
 
 ---
@@ -869,13 +1338,13 @@ It does not define their semantics.
 
 When runtime mode is DEGRADED_READ_ONLY:
 
-- mutating commands must fail deterministically  
-- read-only operations remain available  
+- mutating commands must fail deterministically  
+- read-only operations remain available  
 
-Behavior defined in:
+Behavior is defined in:
 
-- ENG-INTEGRITY  
-- ENG-INITIALIZATION  
+- ENG-INTEGRITY  
+- ENG-INITIALIZATION  
 
 ---
 
@@ -885,21 +1354,24 @@ Behavior defined in:
 
 Given identical inputs and runtime state:
 
-- identical commands produce identical EvaluationReports  
-- identical queries produce identical results  
-- no behavior depends on timestamps, ordering, or environment  
+- identical commands produce identical EvaluationReports  
+- identical queries produce identical results  
+- no behavior depends on timestamps, ordering, or environment  
+
+Determinism is enforced by the authoritative specifications consumed by the API.
 
 ---
 
 # 16. Engine Invariants
 
-- API never creates legitimacy directly  
-- API never bypasses validation  
-- API never mutates state on failed validation  
-- API exposes both session-level and candidate-level blocking  
-- API reflects authoritative evaluation without reinterpretation  
-- API never merges Areas  
-- API never reuses identifiers  
+- API never creates legitimacy directly  
+- API never bypasses validation  
+- API never mutates state on failed validation except explicitly permitted solo-mode vote materialization during mutating acceptance flow  
+- API exposes both session-level and candidate-level blocking  
+- API reflects authoritative evaluation without reinterpretation  
+- API never merges Areas  
+- API never reuses identifiers  
+- API never persists derived candidate status as candidate state  
 
 ---
 
@@ -909,16 +1381,16 @@ ENG-API is the execution surface.
 
 It exposes:
 
-- session orchestration  
-- candidate-based decision making  
-- deterministic evaluation  
-- immutable historical inspection  
+- session orchestration  
+- candidate-based decision making  
+- deterministic evaluation  
+- immutable historical inspection  
 
 It does not define:
 
-- legitimacy  
-- graph semantics  
-- usability semantics  
-- structural validity  
+- legitimacy  
+- structural graph semantics  
+- usability semantics  
+- structural validity  
 
 Those belong to their respective specifications.
