@@ -1,6 +1,6 @@
 # ENG-CANON — Canonical Serialization & Hashing Specification
 
-Status: REFACTORED (v5 – Structural Inclusion Clarification & Determinism Tightening)  
+Status: REFACTORED (v6 – Structure-Aligned, Boundary Tightening)  
 Applies to: Engine Core (V1/V2+)  
 Scope: Canonical serialization and hashing rules for structural artifacts
 
@@ -12,6 +12,8 @@ Subordinate references consumed from:
 - ENG-RECEIPT
 - ENG-SPECVERIFY
 - ENG-INTEGRITY
+- ENG-STRUCTURE
+- ENG-USABILITY
 
 ---
 
@@ -37,6 +39,8 @@ ENG-CANON does not define:
 - rule identity meaning
 - runtime halt policy
 - persistence boundaries
+- structural graph semantics
+- usability semantics
 
 Those are defined respectively in:
 
@@ -45,6 +49,8 @@ Those are defined respectively in:
 - ENG-SPECVERIFY
 - ENG-INTEGRITY
 - ENG-PERSISTENCE
+- ENG-STRUCTURE
+- ENG-USABILITY
 
 ENG-CANON defines only how recognized structural content becomes canonical bytes suitable for deterministic hashing.
 
@@ -69,6 +75,8 @@ ENG-CANON does not answer:
 - whether an artifact is legitimate
 - whether a runtime must halt
 - which fields are structurally required by a given schema
+- whether a field participates in structural graph meaning
+- whether a field affects usability
 - which rule set a spec_set_hash represents
 
 Those truths must be supplied by other specifications before canonicalization is attempted.
@@ -120,38 +128,39 @@ ENG-CANON is the sole authority for canonical object field ordering.
 
 ## ENG-CANON-04 — Arrays Preserve External Deterministic Order
 
-ENG-CANON does not define the semantic ordering rules for every array.
+ENG-CANON does not define semantic ordering rules for arrays.
 
 Instead:
 
-- the authoritative structural specification defines the required order
-- ENG-CANON requires that canonical serialization preserve that order exactly
+- authoritative specifications define required ordering
+- ENG-CANON requires that canonical serialization preserves that order exactly
 
-Examples of ordering authority defined elsewhere include:
+Examples include:
 
-- participant_set ordering
-- candidate_set ordering
-- constraint_set ordering
-- vote_set ordering
-- round ordering
-- informational reference lists (e.g., resolution_references)
-
-The ordering requirements for informational reference arrays are defined in ENG-DOMAIN and must be satisfied prior to canonicalization.
+- participant_set ordering (ENG-SESSION / ENG-DOMAIN)
+- candidate_set ordering (ENG-SESSION / ENG-DOMAIN)
+- constraint_set ordering (ENG-SESSION / ENG-DOMAIN)
+- vote_set ordering (ENG-SESSION / ENG-DOMAIN)
+- round ordering (ENG-RECEIPT)
+- informational reference lists (ENG-DOMAIN)
 
 Implementations must not reorder arrays during canonicalization.
 
-If an array is not already in the deterministic order required by its governing specification, canonicalization must fail or the artifact must be treated as invalid by the consuming layer.
+If ordering requirements are not satisfied prior to canonicalization:
+
+- canonicalization must fail, or  
+- the artifact must be rejected by the consuming layer  
 
 ---
 
 # 6. Structural vs Informational Inclusion
 
-## ENG-CANON-05 — Structural Classification Governs Canonical Inclusion
+## ENG-CANON-05 — Schema-Driven Inclusion Only
 
 Canonical hashing includes only recognized structural fields.
 
-ENG-CANON does not independently classify fields as structural or informational.  
-That classification is supplied by the authoritative schema or artifact specification, including:
+ENG-CANON does not classify fields.  
+Classification is defined by:
 
 - ENG-DOMAIN
 - ENG-RECEIPT
@@ -160,33 +169,35 @@ That classification is supplied by the authoritative schema or artifact specific
 ENG-CANON requires:
 
 - all recognized structural fields must be included
-- informational fields are included only if the governing schema classifies them as structural fields despite their informational semantics
+- informational fields are included only if the governing schema explicitly classifies them as structural
 - unknown informational fields must be excluded
 - unknown structural fields must cause canonicalization failure
 
-Canonicalization must not silently reinterpret unrecognized structural content.
+Canonicalization must not reinterpret or reclassify fields.
 
 ---
 
-## ENG-CANON-05A — Informational References Are Canonical but Non-Semantic
+## ENG-CANON-05A — Informational References Are Encoded but Non-Semantic
 
-Informational references (including intra-Area Resolution references and cross-Area references) may be represented as structural fields whose semantics are informational.
+Informational references may be present as structural fields.
 
-When classified as structural by the governing schema:
+When present and schema-recognized:
 
-- they must be included in canonical serialization
-- they must be included in canonical hash input
-- they must follow all canonical ordering rules
+- they must be serialized canonically
+- they must be included in hash input
 
-However:
+However, canonicalization must not:
 
-- their presence must not be interpreted as structural edges
-- their content must not affect supersession
-- their content must not affect ACTIVE derivation
-- their content must not affect conflict detection
-- their content must not introduce ordering semantics
+- treat them as structural edges
+- assign graph meaning
+- affect structural ACTIVE derivation
+- affect conflict detection
+- introduce ordering or precedence semantics
 
-ENG-CANON enforces representation, not interpretation.
+Graph meaning belongs exclusively to ENG-STRUCTURE.  
+Usability meaning belongs exclusively to ENG-USABILITY.
+
+ENG-CANON encodes; it does not interpret.
 
 ---
 
@@ -200,13 +211,12 @@ Rules:
 
 - missing required structural fields cause failure
 - explicit structural nulls must remain explicit
-- fields must not be synthesized during canonicalization
-- fields must not be inferred during canonicalization
+- fields must not be synthesized
+- fields must not be inferred
 
-Whether a field is required is not decided by ENG-CANON.  
-That is decided by the governing schema or artifact specification.
+Field requirements are defined externally.
 
-ENG-CANON only requires that the canonicalized object be structurally complete according to those definitions.
+ENG-CANON enforces completeness only.
 
 ---
 
@@ -214,24 +224,21 @@ ENG-CANON only requires that the canonicalized object be structurally complete a
 
 ## ENG-CANON-07 — Strings Must Preserve Exact Content
 
-Strings must be encoded using standard JSON string rules.
+Strings must follow standard JSON encoding.
 
 Requirements:
 
-- UTF-8 encoding required
-- escape sequences used only as required by JSON syntax
-- Unicode characters must not be unnecessarily escaped
-- string contents must remain semantically unchanged
+- UTF-8 encoding
+- minimal required escaping only
+- no unnecessary Unicode escaping
+- exact content preservation
 
 Canonicalization must never:
 
 - normalize Unicode
 - change case
 - trim whitespace
-- alter string content
-- reinterpret escaped content as normalized content
-
-The same logical string must always produce the same canonical JSON string encoding under the same input representation.
+- alter content
 
 ---
 
@@ -239,29 +246,20 @@ The same logical string must always produce the same canonical JSON string encod
 
 ## ENG-CANON-08 — Integer Canonical Form
 
-Integers must be encoded without leading zeros.
+Integers must:
 
-Valid examples:
-
-- 1
-- 10
-- 42
-
-Invalid examples:
-
-- 01
-- 0005
+- have no leading zeros
+- be represented in minimal decimal form
 
 ---
 
-## ENG-CANON-09 — Floating-Point Numbers Prohibited in Structural Canonical Content
+## ENG-CANON-09 — Floating-Point Prohibition
 
-Floating-point values are not permitted in canonical structural artifacts.
+Floating-point values are not permitted in structural canonical content.
 
-If encountered in structural content, canonicalization must fail.
+If encountered:
 
-Whether a field is structural is determined externally.  
-ENG-CANON enforces that structural canonical byte generation may not proceed with floating-point values.
+- canonicalization must fail
 
 ---
 
@@ -269,12 +267,12 @@ ENG-CANON enforces that structural canonical byte generation may not proceed wit
 
 ## ENG-CANON-10 — Standard JSON Booleans
 
-Boolean values must use standard JSON literals:
+Allowed values:
 
 - true
 - false
 
-No alternate capitalization or non-JSON representation is allowed.
+No alternatives permitted.
 
 ---
 
@@ -286,187 +284,137 @@ Null values must be encoded as:
 
 - null
 
-If a governing specification requires explicit null presence, canonicalization must preserve that field explicitly.
-
-Missing and null are not equivalent in canonical structural content.
+Missing vs null must not be conflated.
 
 ---
 
 # 12. Timestamp Encoding
 
-## ENG-CANON-12 — Timestamp Strings Preserve Structural Policy but Do Not Create Ordering
+## ENG-CANON-12 — Timestamp Strings Are Non-Authoritative
 
-Timestamps must be serialized as strings using RFC 3339 / ISO-8601 format with timezone when the governing artifact specification requires timestamp fields.
+Timestamps must:
 
-Canonical timestamp requirements:
+- follow RFC 3339 / ISO-8601
+- use UTC where required
+- maintain fixed precision when present
 
-- UTC required where the governing spec requires UTC
-- Z suffix required where UTC normalization is required
-- millisecond precision must be stable for identical objects when present
-- timestamp precision must not vary for semantically identical artifacts
+Timestamps must not influence:
 
-ENG-CANON does not decide whether a timestamp is structural or informational.  
-That decision belongs to the governing schema or artifact specification.
-
-Timestamps must never influence:
-
-- canonical field ordering
-- legitimacy evaluation
-- supersession precedence
-- structural interpretation
+- ordering
+- structural graph meaning
+- legitimacy
+- precedence
 
 ---
 
 # 13. Canonical Hash Input
 
-## ENG-CANON-13 — Canonical Hash Input Is UTF-8 Canonical JSON Bytes
+## ENG-CANON-13 — Canonical Hash Input Definition
 
-Canonical hash input must be:
+Hash input is:
 
-- the UTF-8 bytes of the canonical serialized JSON representation of the recognized structural content
+- UTF-8 bytes of canonical JSON of recognized structural content
 
-Hash input must include:
+Must include:
 
 - all recognized structural fields
 - nested structural content
-- rule identity fields where the governing artifact requires them
+- rule identity fields when required
 
-Hash input must exclude:
+Must exclude:
 
 - unknown informational fields
-- runtime-only metadata not classified as structural
-- host-specific presentation metadata not classified as structural
-
-ENG-CANON defines byte construction only.  
-It does not define which artifact types require hashing.
+- runtime-only metadata
 
 ---
 
 # 14. Hash Algorithm Declaration
 
-## ENG-CANON-14 — Declared Hash Algorithm Required
+## ENG-CANON-14 — Explicit Algorithm Requirement
 
-The artifact containing a canonical hash must declare the algorithm used.
+Artifacts must declare:
 
-Typical examples are defined elsewhere, such as in receipts.
+- hash_algorithm
 
-ENG-CANON requires:
+Hash output:
 
-- algorithm explicitly declared by the artifact schema
-- hash output encoded as lowercase hexadecimal unless the governing artifact specification states otherwise
-
-ENG-CANON does not define artifact identity semantics for algorithm migration.  
-That belongs to the artifact specification and rule provenance specifications.
+- lowercase hexadecimal unless specified otherwise
 
 ---
 
 # 15. Determinism Guarantee
 
-## ENG-CANON-15 — Identical Structural Input Produces Identical Canonical Bytes
+## ENG-CANON-15 — Full Determinism
 
-Given identical recognized structural input content, compliant implementations must produce:
+Identical structural input must produce identical:
 
-- identical canonical JSON
-- identical UTF-8 byte streams
-- identical canonical hash input
-- identical hash outputs when the same declared hash algorithm is applied
-
-Any divergence indicates:
-
-- serialization defect
-- canonicalization defect
-- violation of upstream structural ordering requirements
-- implementation error
+- canonical JSON
+- byte sequences
+- hash outputs
 
 ---
 
 # 16. Prohibited Behaviors
 
-## ENG-CANON-16 — Canonicalization Must Not Invent or Normalize Structure
+## ENG-CANON-16 — No Structural Mutation
 
-The Engine must never, during canonicalization:
+Canonicalization must not:
 
-- reorder object fields arbitrarily
-- reorder arrays contrary to authoritative structural ordering
-- normalize Unicode
-- insert formatting whitespace
-- emit floating-point structural content
-- omit required explicit nulls
-- infer missing structural fields
-- synthesize missing fields
-- include unknown informational fields in canonical hash input
-- silently ignore unknown structural fields
+- reorder arrays
+- normalize data
+- infer fields
+- omit required fields
+- include unknown structural fields
+- ignore unknown structural fields
 
 ---
 
-# 17. Relationship to Rule Identity
+# 17. Rule Identity Integration
 
-## ENG-CANON-17 — Rule Identity Fields Participate Only When Required by Governing Artifacts
+## ENG-CANON-17 — Provenance Inclusion Only
 
-ENG-CANON does not define rule provenance semantics.
-
-It consumes them from governing artifact specifications.
-
-Where a governing artifact requires fields such as:
+Where required fields exist:
 
 - engine_version
 - spec_set_hash
 
-ENG-CANON requires that those recognized structural fields participate in canonical serialization and canonical hash input exactly as defined by the artifact specification.
+They must be included exactly.
 
-Meaning and verification of those fields belong to ENG-SPECVERIFY.
-
----
-
-# 18. Relationship to Receipts
-
-## ENG-CANON-18 — Receipts Consume Canonicalization, Not Vice Versa
-
-ENG-RECEIPT defines the receipt artifact structure.
-
-ENG-CANON defines how that structure becomes canonical bytes for hashing.
-
-ENG-CANON does not redefine:
-
-- receipt fields
-- round snapshot schemas
-- receipt emission conditions
-- receipt immutability
-
-It only defines canonical representation of the recognized structural receipt content.
+Meaning belongs to ENG-SPECVERIFY.
 
 ---
 
-# 19. Relationship to Runtime Integrity
+# 18. Receipt Relationship
 
-## ENG-CANON-19 — Integrity Consumes Canonicalization Results
+## ENG-CANON-18 — Receipts Consume Canonicalization
 
-ENG-INTEGRITY may use canonicalization results to determine:
+ENG-RECEIPT defines structure.
 
-- hash mismatch
-- structural trust failure
-- degraded or halt outcomes
+ENG-CANON defines encoding.
 
-ENG-CANON does not decide runtime consequences.
+---
 
-It defines only whether canonical serialization and canonical hash input construction are valid and deterministic.
+# 19. Integrity Relationship
+
+## ENG-CANON-19 — Integrity Consumes Output
+
+ENG-INTEGRITY may:
+
+- validate hashes
+- determine trust outcomes
+
+ENG-CANON does not define consequences.
 
 ---
 
 # 20. Engine Invariants
 
-- canonical object field ordering is deterministic
-- canonicalization preserves authoritative array ordering
-- informational reference arrays must preserve declared order
-- only recognized structural content participates in canonical hashing
-- unknown structural fields cause canonicalization failure
-- explicit structural nulls are preserved
-- floating-point structural content is prohibited
-- canonical output is UTF-8 JSON without formatting whitespace
-- identical structural input yields identical canonical bytes
-- informational references do not imply structural meaning
-- rule identity fields participate only where required by governing artifact specifications
-- dependent specifications must consume ENG-CANON rather than redefine byte-level canonicalization
+- deterministic encoding
+- no structural inference
+- no semantic interpretation
+- strict inclusion rules
+- UTF-8 JSON canonical output
+- informational references remain non-semantic
 
 ---
 
@@ -474,22 +422,10 @@ It defines only whether canonical serialization and canonical hash input constru
 
 ENG-CANON defines byte truth.
 
-It answers:
+It transforms structure into bytes.
 
-- how structural content becomes canonical JSON
-- how canonical bytes are constructed
-- how deterministic hash input is formed
+It does not interpret meaning.
 
-It does not answer:
+It does not validate legitimacy.
 
-- which artifacts exist
-- whether an artifact is valid
-- whether a runtime must halt
-- what a spec_set_hash means
-- whether references imply graph structure
-- when a receipt is emitted
-
-Those belong elsewhere.
-
-ENG-CANON is the serialization layer.  
-Other specifications must consume it rather than duplicate it.
+It does not decide outcomes.

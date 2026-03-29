@@ -1,22 +1,23 @@
 # ENG-ERROR — Engine Error & EvaluationReport Model
 
-Status: REFACTORED (v11.1 – Reference-Driven Reporting Contract, Determinism Clarified)  
+Status: REFACTORED (v13 – Full Determinism Closure, Candidate & Structure Alignment)  
 Applies to: Engine Core (V1/V2+)  
-Scope: Deterministic reporting, EvaluationReport structure, error classification, and canonical output
+Scope: Deterministic reporting, EvaluationReport structure, error classification, and canonical output  
 
 Authority: Foundational authority for Engine error representation and EvaluationReport semantics.
 
 Subordinate references consumed from:
 
-- ENG-INTEGRITY
-- ENG-INITIALIZATION
-- ENG-DECISION
-- ENG-SESSION
-- ENG-SUPERSESSION
-- ENG-RECEIPT
-- ENG-CANON
-- ENG-SPECVERIFY
-- ENG-API
+- ENG-INTEGRITY  
+- ENG-INITIALIZATION  
+- ENG-DECISION  
+- ENG-SESSION  
+- ENG-STRUCTURE  
+- ENG-USABILITY  
+- ENG-RECEIPT  
+- ENG-CANON  
+- ENG-SPECVERIFY  
+- ENG-API  
 
 ---
 
@@ -26,34 +27,23 @@ ENG-ERROR defines the Engine’s deterministic reporting contract.
 
 It is the authoritative specification for:
 
-- EvaluationReport structure
-- ErrorEntry structure
-- outcome classification
-- ordered error accumulation rules
-- deterministic report ordering
-- canonical EvaluationReport representation
-- stable error code vocabulary
+- EvaluationReport structure  
+- ErrorEntry structure  
+- outcome classification  
+- ordered error accumulation rules  
+- deterministic report ordering  
+- canonical EvaluationReport representation  
+- stable and closed error code vocabulary  
 
 ENG-ERROR does not define:
 
-- structural validation rules
-- halt conditions
-- degraded mode eligibility
-- session lifecycle rules
-- acceptance rules
-- supersession graph semantics
-- receipt structure or receipt validity rules
+- structural validity rules → ENG-STRUCTURE / ENG-INTEGRITY  
+- usability semantics → ENG-USABILITY  
+- decision logic → ENG-DECISION  
+- session lifecycle → ENG-SESSION  
+- receipt structure or validity → ENG-RECEIPT  
 
-Those are defined elsewhere, especially in:
-
-- ENG-INTEGRITY
-- ENG-INITIALIZATION
-- ENG-DECISION
-- ENG-SESSION
-- ENG-SUPERSESSION
-- ENG-RECEIPT
-
-ENG-ERROR defines how those outcomes are reported, not how they are decided.
+ENG-ERROR defines how all other specifications surface their outcomes.
 
 ---
 
@@ -61,478 +51,458 @@ ENG-ERROR defines how those outcomes are reported, not how they are decided.
 
 ## ENG-ERROR-01 — Deterministic Structured Reporting
 
-The Engine must produce a structured, deterministic EvaluationReport for every API command that is defined to return command-level reporting.
-
-Read-only query APIs may instead return deterministic snapshots as defined by ENG-API.
+Every command-level operation must produce exactly one EvaluationReport.
 
 Requirements:
 
-- no silent failures
-- no semantic meaning in free-form strings
-- all violations machine-readable
-- no first-error short-circuit reporting
-- identical input must produce identical report semantics
-- canonical output form must be deterministic
+- no silent failures  
+- no semantic meaning in free-form strings  
+- all violations machine-readable  
+- no short-circuit evaluation  
+- identical inputs produce identical report semantics  
 
-Restore-time and initialization failures are not ordinary session mutations, but their reported violations must still map into the deterministic error vocabulary defined here when surfaced through Engine reporting interfaces.
+EvaluationReport applies to command-level operations.
+
+Initialization, import, and compilation processes may produce outcomes outside this model.  
+When surfaced through ENG-API, they must be represented using this EvaluationReport structure and error vocabulary.
 
 ---
 
 # 3. Evaluation Model
 
-## ENG-ERROR-02 — Full Deterministic Evaluation Pass
+## ENG-ERROR-02 — Full Evaluation Before Outcome
 
-For command reporting, the Engine must:
+The Engine must:
 
-- execute a full validation pass appropriate to the invoked operation
-- accumulate all detected violations
-- derive outcome only after evaluation completes
-- never short-circuit reporting on the first error
-
-Each EvaluationReport has exactly one outcome:
-
-- SUCCESS
-- REJECTED
-- BLOCKED
-- NO_OP
+- execute a complete validation pass  
+- accumulate all violations  
+- derive outcome only after evaluation completes  
 
 The Engine must not:
 
-- throw unstructured semantic exceptions as the reporting model
-- emit multiple competing outcomes
-- encode legitimacy meaning in narrative text
+- stop on first error  
+- infer outcome early  
+- omit applicable violations  
 
-ENG-ERROR defines the reporting model only.  
-Command behavior is defined in ENG-API and underlying authoritative specifications.
+All violations detectable under governing specifications must be reported.
+
+Each EvaluationReport has exactly one outcome:
+
+- SUCCESS  
+- REJECTED  
+- BLOCKED  
+- NO_OP  
+
+---
+
+## ENG-ERROR-03 — Evaluation Is Pure
+
+Evaluation must be side-effect free.
+
+Evaluation must not:
+
+- mutate state  
+- emit receipts  
+- emit audit events  
+- trigger lifecycle transitions  
+
+Evaluation inspects structural truth and produces a report only.
 
 ---
 
 # 4. Evaluation Phase Ordering
 
-## ENG-ERROR-03 — Fixed Ordering of Reported Violations
+## ENG-ERROR-04 — Deterministic Violation Ordering
 
-When multiple violations are reported in one EvaluationReport, they must be ordered deterministically by validation phase.
+Violations must be ordered by reporting phase:
 
-Default reporting phase order:
+1. Structural validation  
+2. Receipt validation  
+3. Governance validation  
+4. Session state validation  
+5. Freeze boundary validation  
+6. Participant validation  
+7. Resolution lifecycle validation  
+8. Decision / constraint validation  
+9. Blocking evaluation  
 
-1. Structural graph validation
-2. Receipt integrity validation
-3. Governance slot validation
-4. Session state validation
-5. Freeze boundary validation
-6. Participant validation and epoch enforcement
-7. Resolution and lifecycle validation
-8. Acceptance and constraint validation
-9. Block condition evaluation
+Reporting phases are logical groupings for deterministic ordering.  
+They do not depend on execution order.
 
 Within each phase:
 
-- errors sorted lexicographically by error_code
-- then lexicographically by related object identifiers
+- errors sorted lexicographically by error_code  
+- then lexicographically by related object identifiers  
 
-ENG-ERROR defines the ordering of reported violations.  
-It does not require every command to execute every phase if a phase is not applicable to that command type.
+block_scope must not affect ordering.
 
 ---
 
 # 5. EvaluationReport Schema
 
-## ENG-ERROR-04 — Fixed Report Shape
+## ENG-ERROR-05 — Fixed Report Shape
 
-EvaluationReport fields must appear in the following fixed order:
+Fields in exact order:
 
-1. evaluation_id
-2. command_type
-3. target_object_type
-4. target_object_id
-5. outcome
-6. errors
-7. primary_error_code
-8. diagnostics
-9. occurred_at
-10. schema_version
-
-Field meanings:
-
-- evaluation_id — Engine-generated UUIDv7
-- command_type — command identifier
-- target_object_type — ENUM or null
-- target_object_id — UUIDv7 or null
-- outcome — one of SUCCESS | REJECTED | BLOCKED | NO_OP
-- errors — ordered list of ErrorEntry
-- primary_error_code — derived first error_code or null
-- diagnostics — optional structured non-semantic context
-- occurred_at — RFC 3339 UTC timestamp with fixed millisecond precision
-- schema_version — report schema version
-
-No field reordering permitted.  
-Future fields may only be appended with schema_version increment.
-
----
-
-## ENG-ERROR-05 — ErrorEntry Structure
-
-Each ErrorEntry contains:
-
-- error_code
-- related_objects
-- block_type
+1. evaluation_id  
+2. command_type  
+3. target_object_type  
+4. target_object_id  
+5. outcome  
+6. errors  
+7. primary_error_code  
+8. diagnostics  
+9. occurred_at  
+10. schema_version  
 
 Rules:
 
-- related_objects must be lexicographically sorted
-- block_type must be non-null only for blocking conditions
-- each error_code may appear at most once per EvaluationReport
+- no field reordering  
+- optional fields must be explicit null  
+- deterministic serialization required  
 
-block_type values:
+---
 
-- TEMPORARY
-- PERMANENT
-- null
+## ENG-ERROR-06 — ErrorEntry Structure
 
-ENG-ERROR defines structure only.  
-Whether a given condition is blocking is determined by the authoritative behavioral specification and then represented here.
+Each ErrorEntry contains:
+
+- error_code  
+- related_objects  
+- block_type  
+- block_scope  
+
+### block_type
+
+- TEMPORARY  
+- PERMANENT  
+- null  
+
+### block_scope
+
+- SESSION  
+- CANDIDATE  
+- null  
+
+Rules:
+
+- block_scope must be present when block_type is non-null  
+- related_objects sorted lexicographically  
+- each error_code appears at most once  
 
 ---
 
 # 6. Outcome Derivation
 
-## ENG-ERROR-06 — Outcome Precedence
+## ENG-ERROR-07 — Outcome Precedence
 
-Outcome is derived after full evaluation using this precedence:
+Outcome is derived after full evaluation:
 
-1. If any structural error present → REJECTED
-2. Else if any hard invariant violation present → REJECTED
-3. Else if any blocking condition present → BLOCKED
-4. Else if mutation occurred → SUCCESS
-5. Else → NO_OP
+1. Any structural violation → REJECTED  
+2. Any hard invariant violation → REJECTED  
+3. Any blocking condition → BLOCKED  
+4. Mutation occurred → SUCCESS  
+5. Otherwise → NO_OP  
 
-primary_error_code must equal the first error_code in the ordered errors list, or null if errors is empty.
-
-ENG-ERROR defines outcome derivation once violations are known.  
-It does not define which violations exist.
+Mutation must be determined from command semantics, not from evaluation side effects.
 
 ---
 
-# 7. Error Code Vocabulary
+# 7. Blocking Model (Reporting Layer)
 
-## ENG-ERROR-07 — Stable Enumerated Error Codes
+## ENG-ERROR-08 — Dual-Level Blocking Representation
 
-Error codes must be:
+Blocking must be explicitly represented.
 
-- explicit
-- stable
-- deterministic
-- versioned through this specification
+### Session-Level Blocking
 
-ENG-ERROR is the authority for the error-code vocabulary.
+- block_scope = SESSION  
+- affects entire session  
 
----
+### Candidate-Level Blocking
 
-## 7.1 Structural Errors
+- block_scope = CANDIDATE  
+- affects individual candidates  
 
-Structural errors represent failures of graph or runtime-entry validity.
+Blocking classification is defined by:
 
-Defined structural error codes:
+- ENG-DECISION  
+- ENG-USABILITY  
+- ENG-STRUCTURE  
 
-- INVALID_UUID
-- DUPLICATE_ID
-- MISSING_REFERENCE
-- ORPHAN_REFERENCE_DETECTED
-- INVALID_ENUM_VALUE
-- INVALID_STATE_COMBINATION
-- SUPERSESSION_CYCLE_DETECTED
-- MULTI_AREA_GRAPH_DETECTED
-- CROSS_AREA_SUPERSESSION_PROHIBITED
-- GOVERNANCE_SLOT_EMPTY
-- GOVERNANCE_SLOT_MULTIPLICITY
-- PARTICIPANT_ID_REUSE_DETECTED
-
-Receipt-related structural error codes:
-
-- RECEIPT_MISSING
-- RECEIPT_HASH_MISMATCH
-- RECEIPT_ORPHAN_DETECTED
-- SNAPSHOT_PARTICIPANT_MISMATCH
-
-ENG-ERROR defines these codes and their reporting class.  
-ENG-INTEGRITY and ENG-INITIALIZATION determine when they arise and whether runtime must halt.
+ENG-ERROR represents blocking only.
 
 ---
 
-## 7.2 Degraded Mode Error
+# 8. Error Code Vocabulary
 
-Defined degraded mode error code:
+## ENG-ERROR-09 — Closed Enumerated Codes
 
-- DEGRADED_MODE_ACTIVE
+Error codes are:
 
-This code is used when a mutating operation is rejected because runtime mode forbids mutation.
+- explicit  
+- stable  
+- deterministic  
+- closed for a given schema_version  
 
-Degraded mode policy is defined in ENG-INTEGRITY and ENG-INITIALIZATION.
-
----
-
-## 7.3 Session State Violations
-
-Defined session-state error codes:
-
-- SESSION_TERMINAL_IMMUTABLE
-- SESSION_NOT_ACTIVE
-- SESSION_BLOCKED_TEMPORARY
-- SESSION_BLOCKED_PERMANENT
-
-These codes represent command-time session state reporting.  
-Session lifecycle rules belong to ENG-SESSION.
+Implementations must not introduce additional error codes.
 
 ---
 
-## 7.4 Freeze Boundary Violations
+## 8.1 Structural Errors
 
-Defined freeze-boundary error codes:
+- INVALID_UUID  
+- DUPLICATE_ID  
+- MISSING_REFERENCE  
+- ORPHAN_REFERENCE_DETECTED  
+- INVALID_ENUM_VALUE  
+- INVALID_STATE_COMBINATION  
+- STRUCTURE_CYCLE_DETECTED  
+- MULTI_AREA_GRAPH_DETECTED  
+- CROSS_AREA_STRUCTURE_EDGE_PROHIBITED  
+- GOVERNANCE_SLOT_EMPTY  
+- GOVERNANCE_SLOT_MULTIPLICITY  
+- PARTICIPANT_ID_REUSE_DETECTED  
 
-- CANDIDATE_SET_FROZEN
-- PARTICIPANT_SET_FROZEN
-- CONSTRAINT_MUTATION_FORBIDDEN
+Receipt-related:
 
-Freeze-boundary semantics belong to ENG-SESSION and ENG-DECISION.  
-ENG-ERROR defines how they are reported.
-
----
-
-## 7.5 Participant Errors
-
-Defined participant-related error codes:
-
-- PARTICIPANT_NOT_FOUND
-- CANNOT_REMOVE_LAST_PARTICIPANT
-- DUPLICATE_PARTICIPANT_DISPLAY_NAME
-- PARTICIPANT_ALREADY_REMOVED
-- INVALID_PARTICIPANT_EPOCH
-
-These may represent command-time errors or structural restore violations depending on context.
+- RECEIPT_MISSING  
+- RECEIPT_HASH_MISMATCH  
+- RECEIPT_ORPHAN_DETECTED  
+- SNAPSHOT_PARTICIPANT_MISMATCH  
 
 ---
 
-## 7.6 Governance & Context Violations
+## 8.2 Runtime Mode
 
-Defined governance-context error codes:
-
-- AUTHORITY_CONTEXT_MISMATCH
-- SCOPE_CONTEXT_MISMATCH
-
-These codes report governance-context failures surfaced by underlying validation rules.
+- DEGRADED_MODE_ACTIVE  
 
 ---
 
-## 7.7 Acceptance & Legitimacy Violations
+## 8.3 Session State Errors
 
-Defined acceptance-related error codes:
-
-- ACCEPTANCE_CONDITIONS_NOT_MET
-- AREA_BLOCKED_BY_PERMANENT_SESSION
-- AUTHORITY_RULE_VIOLATION
-- CONSTRAINT_VIOLATION
-- SUPERSESSION_CONFLICT
-- RESOLUTION_ALREADY_SUPERSEDED
-
-Acceptance rules are not defined here.  
-They are represented here.
+- SESSION_TERMINAL_IMMUTABLE  
+- SESSION_NOT_ACTIVE  
+- SESSION_BLOCKED_TEMPORARY  
+- SESSION_BLOCKED_PERMANENT  
 
 ---
 
-## 7.8 Resolution & Lifecycle Errors
+## 8.4 Freeze Boundary Errors
 
-Defined lifecycle-related error codes:
-
-- INVALID_RESOLUTION_STATE_TRANSITION
-- RETIRED_STATE_VIOLATION
-- UNDER_REVIEW_STATE_VIOLATION
-- SNAPSHOT_INCOMPLETE
-
-Lifecycle semantics are defined elsewhere.  
-ENG-ERROR provides stable reporting codes.
+- CANDIDATE_SET_FROZEN  
+- PARTICIPANT_SET_FROZEN  
+- CONSTRAINT_MUTATION_FORBIDDEN  
 
 ---
 
-# 8. Failure Classes
+## 8.5 Participant Errors
 
-## ENG-ERROR-08 — Hard Failures
-
-Hard failures produce outcome = REJECTED.
-
-Hard failures include:
-
-- structural violations
-- governance slot violations
-- receipt violations
-- participant epoch reuse
-- invariant violations
-- freeze-boundary violations
-- other non-blocking failures that prevent operation validity
-
-Hard failures:
-
-- must never mutate state
-- must never trigger automatic repair
+- PARTICIPANT_NOT_FOUND  
+- CANNOT_REMOVE_LAST_PARTICIPANT  
+- DUPLICATE_PARTICIPANT_DISPLAY_NAME  
+- PARTICIPANT_ALREADY_REMOVED  
+- INVALID_PARTICIPANT_EPOCH  
 
 ---
 
-## ENG-ERROR-09 — Soft Blocks
+## 8.6 Governance Errors
 
-Soft blocks produce outcome = BLOCKED.
-
-Soft blocks include command-valid but currently non-executable conditions such as:
-
-- reversible blocking state
-- permanent blocking state where command remains reportable as blocked
-- Area-level blocking conditions
-
-Soft blocks:
-
-- do not mutate state
-- remain descriptive only
-- require external or explicit action according to underlying behavioral rules
-
-ENG-ERROR defines reporting classification only.  
-It does not define what causes a block.
+- AUTHORITY_CONTEXT_MISMATCH  
+- SCOPE_CONTEXT_MISMATCH  
 
 ---
 
-# 9. Receipt Reporting Doctrine
+## 8.7 Decision & Acceptance Errors
 
-## ENG-ERROR-10 — Receipt Failures Are Reported, Not Repaired
-
-Receipt-related failures must be represented using deterministic error codes.
-
-ENG-ERROR does not define receipt validity or halt policy.  
-Those belong to:
-
-- ENG-RECEIPT
-- ENG-CANON
-- ENG-SPECVERIFY
-- ENG-INTEGRITY
-
-ENG-ERROR defines only how receipt failures surface in reports.
-
-The Engine must not use reporting as a repair mechanism.
+- ACCEPTANCE_CONDITIONS_NOT_MET  
+- AREA_BLOCKED_BY_PERMANENT_SESSION  
+- AUTHORITY_RULE_VIOLATION  
+- CONSTRAINT_VIOLATION  
+- STRUCTURAL_CONFLICT  
+- RESOLUTION_ALREADY_SUPERSEDED  
 
 ---
 
-# 10. Canonical Determinism
+## 8.8 Usability & Lifecycle Errors
 
-## ENG-ERROR-11 — Semantic Determinism
-
-Given identical:
-
-- runtime graph
-- command input
-- runtime mode
-- authoritative validation outcomes
-
-the Engine must produce identical:
-
-- errors list
-- error ordering
-- primary_error_code
-- outcome
-- related_objects
+- INVALID_RESOLUTION_STATE_TRANSITION  
+- RETIRED_STATE_VIOLATION  
+- ON_HOLD_STATE_VIOLATION  
+- SNAPSHOT_INCOMPLETE  
 
 ---
 
-## ENG-ERROR-12 — Canonical Report Determinism
+# 9. Failure Classes
 
-EvaluationReport must be canonically representable with deterministic field ordering and deterministic error ordering.
+## ENG-ERROR-10 — Hard Failures
 
-ENG-ERROR guarantees canonical report structure, not necessarily byte-identical full-report equality across separate executions when informational fields such as `occurred_at` differ.
+Outcome = REJECTED
 
-Byte-identical equivalence is guaranteed only for report content excluding execution-variant informational fields, or where such fields are themselves externally fixed.
+Includes:
 
-Canonical report rules:
-
-- fields appear in fixed schema order
-- errors ordered by reporting phase, then error_code, then related_objects
-- related_objects sorted lexicographically
-- diagnostics sorted lexicographically by key
-- optional fields explicitly present as null when absent
-- occurred_at formatted as RFC 3339 UTC with fixed millisecond precision
-
-Canonical byte-level serialization rules are consumed from ENG-CANON where applicable to report serialization policy.
-
-ENG-ERROR defines report ordering and schema, not general Engine canonicalization rules.
+- structural violations  
+- hard invariant violations  
+- domain schema violations  
+- freeze-boundary violations  
 
 ---
 
-# 11. No Implicit Repair
+## ENG-ERROR-11 — Blocking Failures
 
-## ENG-ERROR-13 — Reporting Is Descriptive Only
+Outcome = BLOCKED
 
-The Engine must not use errors to imply or perform automatic repair.
+Includes:
+
+- session-level blocking  
+- candidate-level blocking  
+- runtime blocking  
+
+---
+
+# 10. Candidate Model Integration
+
+## ENG-ERROR-12 — Candidate Status Is Derived
+
+Candidate status is not stored and must not be represented as an explicit state model.
+
+Candidate status is derived from:
+
+- presence or absence of violations  
+- error_code classification  
+- block_type  
+- block_scope  
+
+Eligibility and blocking semantics are defined by:
+
+- ENG-DECISION  
+- ENG-USABILITY  
+- ENG-STRUCTURE  
+
+---
+
+# 11. Determinism Guarantees
+
+## ENG-ERROR-13 — Evaluation Input Closure
+
+Deterministic evaluation requires identical:
+
+- domain graph  
+- command input  
+- runtime mode  
+- spec_set_hash  
+- schema_version  
+
+---
+
+## ENG-ERROR-14 — Deterministic Reporting
+
+Given identical inputs:
+
+- identical errors  
+- identical ordering  
+- identical outcome  
+- identical primary_error_code  
+
+The following fields may differ:
+
+- evaluation_id  
+- occurred_at  
+
+---
+
+## ENG-ERROR-15 — Canonical Equivalence
+
+Two EvaluationReports are equivalent if all fields except:
+
+- evaluation_id  
+- occurred_at  
+
+are identical.
+
+---
+
+## ENG-ERROR-16 — Canonical Representation
+
+EvaluationReport must be canonically representable:
+
+- fixed field order  
+- deterministic ordering  
+- explicit nulls  
+- RFC 3339 timestamps  
+
+---
+
+# 12. Diagnostics Constraints
+
+## ENG-ERROR-17 — Diagnostics Are Non-Semantic
+
+diagnostics:
+
+- must be deterministic for identical inputs  
+- must not affect outcome  
+- must not include canonical domain objects  
+- must not encode hidden semantics  
+- must be present or null deterministically  
+
+---
+
+# 13. No Implicit Repair
+
+## ENG-ERROR-18 — Reporting Is Descriptive Only
 
 The Engine must not:
 
-- regenerate receipts
-- repair governance slots
-- reconcile participant epochs
-- auto-resolve conflicts
-- auto-close sessions
-
-Error reporting is descriptive.  
-Repair, if any, must be explicit and external to this reporting contract.
+- repair data  
+- infer corrections  
+- mutate state  
+- resolve conflicts automatically  
 
 ---
 
-# 12. Versioning
+# 14. Versioning
 
-## ENG-ERROR-14 — Report Schema Versioning
+## ENG-ERROR-19 — Schema Versioning
 
-Every EvaluationReport must include schema_version.
+Every report includes schema_version.
 
 Changes to:
 
-- EvaluationReport structure
-- ErrorEntry structure
-- outcome model
-- error code vocabulary
+- structure  
+- ordering  
+- error codes  
 
-require a version increment.
-
-ENG-ERROR is the versioning authority for the report contract.
+require version increment.
 
 ---
 
-# 13. Engine Invariants
+# 15. Engine Invariants
 
-- every command-level reportable operation yields deterministic structured output
-- outcome derived only after full applicable evaluation completes
-- errors accumulated deterministically
-- report ordering stable across implementations
-- error-code vocabulary stable within schema version
-- reporting never mutates state
-- reporting never substitutes for validation logic
-- dependent specifications must use ENG-ERROR rather than redefining reporting structure or error precedence
+- reporting is deterministic  
+- reporting is complete  
+- reporting never mutates state  
+- reporting reflects authoritative specifications only  
+- error vocabulary is closed  
+- blocking is explicitly classified  
+- candidate-level vs session-level blocking is always distinguishable  
 
 ---
 
-# 14. Mental Model
+# 16. Mental Model
 
 ENG-ERROR defines reporting truth.
 
 It answers:
 
-- how Engine failures and blocks are represented
-- how multiple violations are ordered
-- how outcomes are derived
-- how reports remain deterministic across implementations
+- what failed  
+- what is blocked  
+- what is eligible  
+- why  
 
 It does not answer:
 
-- what structural rules exist
-- when the Engine halts
-- how sessions behave
-- how legitimacy is decided
-- how receipts are verified
+- how structure works  
+- how usability works  
+- how decisions are made  
 
-Those belong elsewhere.
-
-ENG-ERROR is the reporting layer.  
-Other specifications must consume it rather than redefine report semantics.
+It exposes those results deterministically.

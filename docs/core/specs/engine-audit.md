@@ -1,6 +1,6 @@
 # ENG-AUD — Audit Event Specification
 
-Status: REFACTORED (v4 – Pure Observability Model)  
+Status: REFACTORED (v5 – Candidate-Aware, Structure-Aligned Observability Model)  
 Applies to: Engine Core (V1/V2+)  
 Scope: Audit event structure, emission rules, and observability guarantees
 
@@ -8,15 +8,17 @@ Authority: Observability specification subordinate to ENG-API and ENG-INTEGRITY.
 
 Subordinate references consumed from:
 
-- ENG-DOMAIN
-- ENG-SESSION
-- ENG-DECISION
-- ENG-SUPERSESSION
-- ENG-RECEIPT
-- ENG-ERROR
-- ENG-CANON
-- ENG-INITIALIZATION
-- ENG-SPECVERIFY
+- ENG-DOMAIN  
+- ENG-SESSION  
+- ENG-DECISION  
+- ENG-STRUCTURE  
+- ENG-RECEIPT  
+- ENG-ERROR  
+- ENG-CANON  
+- ENG-INITIALIZATION  
+- ENG-SPECVERIFY  
+- ENG-IMPORT  
+- ENG-COMPILATION  
 
 ---
 
@@ -26,24 +28,25 @@ ENG-AUD defines the Engine’s audit event model.
 
 It is the authoritative specification for:
 
-- audit event structure
-- audit emission rules
-- audit identity and ordering
-- audit scope classification
-- guarantees of audit non-interference
+- audit event structure  
+- audit emission rules  
+- audit identity and ordering  
+- audit scope classification  
+- guarantees of audit non-interference  
 
 Audit answers:
 
-- what explicit Engine action occurred
-- which structural objects were affected
-- under which governance context it occurred
+- what explicit Engine action occurred  
+- which structural objects were affected  
+- under which governance context it occurred  
 
 Audit does not:
 
-- define legitimacy
-- participate in evaluation
-- affect structural state
-- influence runtime behavior
+- define legitimacy  
+- participate in evaluation  
+- affect structural state  
+- influence runtime behavior  
+- participate in historical reconstruction  
 
 ---
 
@@ -53,25 +56,26 @@ Audit does not:
 
 Audit events:
 
-- do not create legitimacy
-- do not modify structural state
-- do not influence evaluation or acceptance
-- do not participate in restore or rehydration
-- do not affect supersession or ACTIVE derivation
+- do not create legitimacy  
+- do not modify structural state  
+- do not influence evaluation or acceptance  
+- do not participate in restore, import, or compilation  
+- do not affect structural ACTIVE derivation  
 
 The Engine must not:
 
-- consult audit data for decision-making
-- depend on audit presence for correctness
-- derive ordering or precedence from audit
+- consult audit data for decision-making  
+- depend on audit presence for correctness  
+- derive ordering or precedence from audit  
 
 Removal or corruption of audit must not change:
 
-- legitimacy outcomes
-- structural validity
-- runtime behavior
+- legitimacy outcomes  
+- structural validity  
+- runtime behavior  
+- compilation results  
 
-Audit is memory, not law.
+Audit is memory, not authority.
 
 ---
 
@@ -79,22 +83,21 @@ Audit is memory, not law.
 
 ## ENG-AUD-02 — Emission After Successful Mutation
 
-Audit events are emitted only after successful Engine operations that mutate state.
+Audit events are emitted only after successful state mutation.
 
 Audit must not be emitted for:
 
-- failed commands
-- evaluation-only operations
-- rejected acceptance attempts
+- failed commands  
+- evaluation-only operations  
+- rejected acceptance attempts  
 
 Audit emission:
 
-- occurs after the underlying operation succeeds
-- must not be part of the atomic legitimacy boundary
-- must not affect success or failure of the operation
+- occurs strictly after mutation succeeds  
+- must not be part of any atomic persistence boundary  
+- must not affect mutation success or failure  
 
-Atomicity rules are defined in ENG-PERSISTENCE.  
-Audit is outside that boundary.
+Atomicity is defined in ENG-PERSISTENCE.
 
 ---
 
@@ -104,12 +107,12 @@ The Engine is the only producer of audit events.
 
 The Engine must not:
 
-- ingest audit as input
-- reconstruct state from audit
-- repair state using audit
-- require audit for initialization
+- ingest audit as input  
+- reconstruct state from audit  
+- repair state using audit  
+- require audit for initialization or rehydration  
 
-Audit is write-only from the Engine’s perspective.
+Audit is write-only from the Engine perspective.
 
 ---
 
@@ -121,9 +124,9 @@ Audit events are append-only.
 
 The Engine must not:
 
-- modify existing audit events
-- delete audit events implicitly
-- reorder historical audit entries
+- modify existing events  
+- delete events implicitly  
+- reorder events  
 
 Corrections must be expressed as new events.
 
@@ -133,18 +136,18 @@ Corrections must be expressed as new events.
 
 ## ENG-AUD-05 — Event Scope Classification
 
-Each audit event must belong to exactly one scope:
+Each event must belong to exactly one scope:
 
 - GLOBAL  
 - AREA:<area_id>  
 
-Scope defines organizational grouping only.
+Scope defines grouping only.
 
-Scope must not:
+Scope must not affect:
 
-- affect legitimacy
-- affect evaluation
-- affect restore behavior
+- legitimacy  
+- evaluation  
+- restore or compilation behavior  
 
 ---
 
@@ -152,16 +155,15 @@ Scope must not:
 
 GLOBAL scope:
 
-- must always exist
-- must be immutable
-- must not be superseded or removed
+- must always exist  
+- must be immutable  
 
 Used for:
 
-- engine lifecycle events
-- rehydration outcomes
-- import/export operations
-- system-level transitions
+- engine lifecycle events  
+- rehydration results  
+- import/export operations  
+- system-level transitions  
 
 ---
 
@@ -171,14 +173,14 @@ Used for:
 
 Each audit event must include:
 
-- event_id (UUIDv7)
-- event_type
-- occurred_at (UTC ISO-8601, informational)
-- actor (nullable)
-- scope
-- subject
-- context
-- details
+- event_id (UUIDv7)  
+- event_type  
+- occurred_at (UTC ISO-8601, informational)  
+- actor (nullable)  
+- scope  
+- subject  
+- context  
+- details  
 
 ---
 
@@ -186,6 +188,13 @@ Each audit event must include:
 
 - object_type  
 - object_id  
+
+Must support all domain object types, including:
+
+- session  
+- candidate  
+- resolution  
+- participant  
 
 ---
 
@@ -202,11 +211,20 @@ Must include explicit nulls where not applicable:
 
 ### Details
 
-- informational only  
-- must not contain canonical domain objects  
-- must not be required for structural reconstruction  
+Details are strictly informational.
 
-Event structure must be stable across implementations.
+They must not:
+
+- contain canonical domain objects  
+- duplicate full structural payloads  
+- be required for reconstruction  
+- affect evaluation or legitimacy  
+
+Details may include:
+
+- human-readable summaries  
+- lightweight contextual metadata  
+- identifiers already present elsewhere  
 
 ---
 
@@ -214,14 +232,9 @@ Event structure must be stable across implementations.
 
 ## ENG-AUD-08 — Event Identity
 
-Each event must have:
+Each event must have a globally unique UUIDv7.
 
-- globally unique UUIDv7 `event_id`
-
-The Engine must not:
-
-- reuse event IDs
-- derive meaning from ID ordering beyond deterministic export
+Event identity must not encode semantic meaning.
 
 ---
 
@@ -229,30 +242,22 @@ The Engine must not:
 
 `occurred_at`:
 
-- must be UTC ISO-8601
-- is informational only
-
-Timestamps must not:
-
-- influence legitimacy
-- influence ordering for evaluation
-- influence supersession or acceptance
+- is informational only  
+- must not influence ordering, evaluation, or legitimacy  
 
 ---
 
 ## ENG-AUD-10 — Deterministic Export Ordering
 
-Audit export must be deterministic.
+Audit export ordering must be:
 
-Ordering must be:
-
-- lexicographic by `event_id`
+- lexicographic by event_id  
 
 Ordering must not depend on:
 
-- timestamps
-- storage order
-- insertion order
+- timestamps  
+- storage order  
+- insertion order  
 
 ---
 
@@ -260,148 +265,165 @@ Ordering must not depend on:
 
 ## ENG-AUD-11 — Emission Coverage
 
-Audit must be emitted for successful Engine operations including:
+Audit must be emitted for successful mutations including:
 
-- session lifecycle transitions
-- participant changes
-- candidate changes
-- vote recording
-- acceptance and closure
-- resolution creation and supersession
-- administrative state transitions (UNDER_REVIEW / ACTIVE)
-- governance slot changes
-- rehydration outcomes
-- degraded mode entry
-- import/export operations
+- session lifecycle transitions  
+- participant changes  
+- candidate creation and mutation  
+- vote updates (including vacillation)  
+- acceptance and closure  
+- resolution creation and supersession  
+- usability transitions (ACTIVE ↔ ON_HOLD, RETIRED)  
+- governance slot changes  
+- rehydration outcomes  
+- degraded mode entry  
+- import and export operations  
 
-The exact semantics of these actions are defined elsewhere.
+Audit must reflect:
 
-ENG-AUD defines only that:
+- the action performed  
+- the affected object  
 
-- successful state-changing operations must produce audit events
-- audit must reflect the action that occurred
+Audit must not infer or interpret outcomes.
 
 ---
 
-# 9. Actor Semantics
+# 9. Candidate Model Alignment
 
-## ENG-AUD-12 — Actor Is Informational
+## ENG-AUD-12 — Candidate-Centric Observability
+
+Audit must support candidate-level visibility.
+
+This includes:
+
+- candidate creation  
+- candidate updates  
+- candidate participation in rounds  
+
+Audit may record context such as:
+
+- candidate involvement in acceptance attempts  
+- candidate-level blocking visibility  
+
+Audit must not determine candidate eligibility.
+
+Eligibility is defined in ENG-DECISION.
+
+---
+
+# 10. Actor Semantics
+
+## ENG-AUD-13 — Actor Is Informational Only
 
 `actor`:
 
-- is optional
-- is opaque
-- does not confer authority
+- is optional  
+- is opaque  
+- does not confer authority  
 
 The Engine must not:
 
-- derive permissions from actor
-- use actor in evaluation logic
+- derive permissions from actor  
+- use actor in evaluation  
 
 ---
 
-# 10. Relationship to Receipts
+# 11. Relationship to Receipts
 
-## ENG-AUD-13 — Audit vs Receipt
+## ENG-AUD-14 — Audit vs Receipt
 
 Receipts:
 
-- are structural artifacts
-- define legitimacy outcomes
+- define legitimacy  
 
 Audit:
 
-- records that an action occurred
+- records actions  
 
-Audit must not:
+If conflict exists:
 
-- substitute for receipts
-- imply legitimacy without corresponding domain objects
+- receipts and domain objects prevail  
 
-If audit and domain objects disagree, domain objects prevail.
+Audit must never imply legitimacy.
 
 ---
 
-# 11. Runtime Independence
+# 12. Runtime Independence
 
-## ENG-AUD-14 — Rehydration Independence
+## ENG-AUD-15 — Rehydration Independence
 
 Initialization must not:
 
-- require audit presence
-- validate audit structure
-- depend on audit ordering
-
-Rehydration rules are defined in ENG-INITIALIZATION and ENG-INTEGRITY.
+- require audit  
+- validate audit  
+- depend on audit ordering  
 
 ---
 
-## ENG-AUD-15 — Degraded Mode Behavior
+## ENG-AUD-16 — Degraded Mode
 
 In degraded mode:
 
-- audit may continue to append events (implementation-dependent)
-- audit must not enable mutation or legitimacy creation
-- audit must not compensate for integrity failures
-
-Degraded mode rules are defined in ENG-INTEGRITY.
+- audit may continue  
+- audit must not enable mutation  
+- audit must not compensate for failures  
 
 ---
 
-# 12. Storage Independence
+# 13. Storage Independence
 
-## ENG-AUD-16 — Audit Persistence Independence
+## ENG-AUD-17 — Audit Storage Separation
 
-Audit storage:
-
-- is independent of domain object storage
-- must not affect legitimacy or restore
+Audit storage is independent.
 
 The Engine must not:
 
-- fail initialization due to missing audit
-- reconstruct audit from domain objects
-- reconstruct domain objects from audit
+- fail due to missing audit  
+- reconstruct audit from domain objects  
+- reconstruct domain objects from audit  
 
 ---
 
-# 13. Determinism Guarantees
+# 14. Determinism Guarantees
 
-## ENG-AUD-17 — Deterministic Emission
+## ENG-AUD-18 — Deterministic Emission
 
-Given identical Engine operations:
+Given identical operations:
 
-- identical audit events must be emitted
-- event structure must be identical
-- ordering must be identical for export
+- event_type must match  
+- subject must match  
+- context must match  
+- details structure must match  
 
-Audit must not introduce nondeterminism.
+The following may differ:
 
----
+- event_id  
+- occurred_at  
 
-# 14. Engine Invariants (Audit Layer)
-
-- Audit never creates legitimacy
-- Audit never influences evaluation
-- Audit never alters structural state
-- Audit never participates in restore
-- Audit never substitutes for receipts
-- Audit never encodes hidden rules
-- Audit ordering never affects outcomes
-
-Violation constitutes an observability defect, not a legitimacy rule.
+Audit must not introduce nondeterminism into Engine behavior.
 
 ---
 
-# 15. Mental Model
+# 15. Engine Invariants
 
-Audit is the Engine’s observable trace.
+- audit never creates legitimacy  
+- audit never affects evaluation  
+- audit never alters structure  
+- audit never participates in restore or compilation  
+- audit never substitutes for receipts  
+- audit never encodes hidden rules  
+- audit ordering never affects outcomes  
 
-- Sessions create legitimacy
-- Resolutions define structure
-- Receipts freeze outcomes
-- Integrity governs safety
-- API exposes behavior
+---
+
+# 16. Mental Model
+
+Audit is the observable trace.
+
+- sessions create legitimacy  
+- candidates carry intent  
+- structure defines graph truth  
+- receipts finalize outcomes  
 
 Audit records what happened.
 

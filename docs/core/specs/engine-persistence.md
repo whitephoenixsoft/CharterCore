@@ -1,8 +1,8 @@
 # ENG-PERSISTENCE — Atomic Commit, Durability & Crash Recovery
 
-Status: REFACTORED (v2 – Reference-Driven Model)  
+Status: REFACTORED (v3 – Candidate-Centric Atomic Boundary & Structural Alignment)  
 Applies to: Engine Core (V1/V2+)  
-Scope: Atomic durability boundaries, crash recovery guarantees, and persistence safety requirements
+Scope: Atomic durability boundaries, crash recovery guarantees, and persistence safety requirements  
 
 Authority: Foundational authority for atomic persistence boundaries and crash recovery guarantees.
 
@@ -11,10 +11,11 @@ Subordinate references consumed from:
 - ENG-DOMAIN
 - ENG-SESSION
 - ENG-DECISION
-- ENG-SUPERSESSION
+- ENG-STRUCTURE
 - ENG-RECEIPT
 - ENG-INTEGRITY
 - ENG-SPECVERIFY
+- ENG-USABILITY
 - ENG-AUD
 
 ---
@@ -25,32 +26,32 @@ ENG-PERSISTENCE defines the persistence guarantees required for legitimacy artif
 
 It is the authoritative specification for:
 
-- atomic durability boundaries
-- crash recovery guarantees
-- storage adapter persistence requirements
-- separation of audit from legitimacy durability
-- persistence-level non-reconstruction requirements
-- persistence trust assumptions consumed by runtime integrity
+- atomic durability boundaries  
+- crash recovery guarantees  
+- storage adapter persistence requirements  
+- separation of audit from legitimacy durability  
+- persistence-level non-reconstruction requirements  
+- persistence trust assumptions consumed by runtime integrity  
 
 ENG-PERSISTENCE does not define:
 
-- session acceptance validity
-- session lifecycle semantics
-- supersession graph meaning
-- receipt structure
-- canonical serialization rules
-- runtime halt policy
-- UNDER_REVIEW / RETIRED usability semantics
+- session acceptance validity  
+- session lifecycle semantics  
+- structural graph semantics  
+- receipt structure  
+- canonical serialization rules  
+- runtime halt policy  
+- usability semantics  
 
 Those are defined respectively in:
 
-- ENG-DECISION
-- ENG-SESSION
-- ENG-SUPERSESSION
-- ENG-RECEIPT
-- ENG-CANON
-- ENG-INTEGRITY
-- ENG-REVIEW-RETIRED
+- ENG-DECISION  
+- ENG-SESSION  
+- ENG-STRUCTURE  
+- ENG-RECEIPT  
+- ENG-CANON  
+- ENG-INTEGRITY  
+- ENG-USABILITY  
 
 ENG-PERSISTENCE defines how legitimacy artifacts must be durably committed once they are valid for creation.
 
@@ -64,8 +65,8 @@ Legitimacy creation must be durably atomic.
 
 A legitimacy event must either:
 
-- fully persist
-- or not exist at all
+- fully persist  
+- or not exist at all  
 
 Partial persistence of legitimacy artifacts is structural corruption.
 
@@ -75,36 +76,52 @@ ENG-PERSISTENCE is the authority for this indivisibility guarantee.
 
 # 3. Acceptance Atomic Boundary
 
-## ENG-PERSISTENCE-02 — Legitimacy Atomic Commit Set
+## ENG-PERSISTENCE-02 — Candidate-Centric Atomic Commit Set
 
-When a session transitions to ACCEPTED, the following structural results must commit in one durable atomic operation:
+When a session transitions to ACCEPTED, the Engine must durably commit the **accepted candidate outcome** in a single atomic operation.
 
-1. session state transition to ACCEPTED
-2. Resolution creation
-3. supersession graph mutation, if applicable
-4. LEGITIMACY receipt creation
+The atomic commit set must include:
 
-These four elements form the legitimacy atomic boundary.
+1. session state transition to ACCEPTED  
+2. persistence of the accepted candidate outcome  
+3. structural graph mutation, if required by the candidate action  
+4. LEGITIMACY receipt creation  
 
-All must commit or none must commit.
-
-ENG-PERSISTENCE does not define whether acceptance is valid.  
-It defines that once acceptance is valid, these artifacts must be durably committed together.
+All elements must commit or none must commit.
 
 ---
 
-## ENG-PERSISTENCE-03 — Resolution Provenance Must Be Committed Atomically
+## ENG-PERSISTENCE-02A — Accepted Candidate Outcome Persistence
 
-The Resolution created during atomic acceptance must include the structural rule provenance fields required by ENG-DOMAIN and ENG-SPECVERIFY:
+The accepted candidate outcome must be durably realized according to the candidate_action_type.
 
-- engine_version
-- spec_set_hash
+Depending on the candidate action, this may include:
 
-These fields must be committed as part of the same atomic durability boundary as:
+- creation of a new Resolution  
+- mutation of Resolution lifecycle state (e.g., retirement)  
+- structural graph updates (e.g., supersession edges)  
+- persistence of any required provenance-bearing structural artifacts  
 
-- session ACCEPTED state
-- supersession mutation
-- LEGITIMACY receipt
+ENG-PERSISTENCE does not define candidate semantics.  
+ENG-DOMAIN and ENG-DECISION define candidate action meaning.
+
+ENG-PERSISTENCE defines only that the resulting structural effects must be committed atomically.
+
+---
+
+## ENG-PERSISTENCE-03 — Provenance Fields Must Be Atomically Persisted
+
+Any artifact created or mutated as part of accepted candidate outcome persistence that requires provenance fields must include:
+
+- engine_version  
+- spec_set_hash  
+
+These fields must be committed atomically with the artifact they belong to.
+
+This includes, where applicable:
+
+- newly created Resolution objects  
+- other provenance-bearing structural artifacts  
 
 ENG-PERSISTENCE defines the durability requirement only.  
 Meaning of those fields belongs to ENG-SPECVERIFY.
@@ -115,15 +132,16 @@ Meaning of those fields belongs to ENG-SPECVERIFY.
 
 The following persisted states are forbidden:
 
-- Resolution exists without ACCEPTED session
-- ACCEPTED session exists without Resolution
-- Resolution exists without LEGITIMACY receipt
-- LEGITIMACY receipt exists without Resolution
-- supersession mutation exists without the Resolution that caused it
+- ACCEPTED session without corresponding accepted candidate outcome  
+- accepted candidate outcome artifacts without ACCEPTED session  
+- LEGITIMACY receipt without ACCEPTED session  
+- ACCEPTED session without LEGITIMACY receipt  
+- structural graph mutation without the accepted candidate action that caused it  
+- provenance-bearing artifacts missing required provenance fields  
 
 Runtime consequences of detecting such corruption are defined in ENG-INTEGRITY.
 
-ENG-PERSISTENCE defines that these states must never be produced by a compliant persistence implementation.
+ENG-PERSISTENCE defines that these states must never be produced.
 
 ---
 
@@ -133,12 +151,12 @@ ENG-PERSISTENCE defines that these states must never be produced by a compliant 
 
 When a session transitions to CLOSED without accepted legitimacy creation, the following must commit atomically:
 
-1. session state transition to CLOSED
-2. EXPLORATION receipt creation
+1. session state transition to CLOSED  
+2. EXPLORATION receipt creation  
 
-No Resolution is created.
+No accepted candidate outcome is persisted.
 
-Partial persistence of terminal closure artifacts is forbidden.
+Partial persistence of closure artifacts is forbidden.
 
 ---
 
@@ -150,22 +168,25 @@ Audit events are not part of the legitimacy atomic durability boundary.
 
 Audit emission:
 
-- must not be required for legitimacy validity
-- must not be required for terminal receipt validity
-- may fail independently after successful legitimacy persistence
+- must not be required for legitimacy validity  
+- must not be required for terminal receipt validity  
+- may fail independently after successful legitimacy persistence  
 
 If legitimacy commit succeeds and audit emission fails, legitimacy remains valid.
 
-Audit semantics are defined in ENG-AUD.  
-ENG-PERSISTENCE defines only that audit is outside the legitimacy commit set.
+Audit semantics are defined in ENG-AUD.
 
 ---
 
 ## ENG-PERSISTENCE-07 — Audit May Be Reconstructed, Legitimacy Artifacts May Not
 
-Audit may be reconstructed from domain facts by external systems if needed.
+Audit may be reconstructed externally.
 
-Receipts and Resolutions must never be reconstructed after a failed or partial legitimacy commit.
+The following must never be reconstructed:
+
+- accepted candidate outcome artifacts  
+- receipts  
+- structural graph mutations  
 
 If they were not durably committed, they must be treated as never having existed.
 
@@ -177,12 +198,12 @@ If they were not durably committed, they must be treated as never having existed
 
 If a crash occurs before atomic commit completes:
 
-- session must remain non-ACCEPTED for legitimacy creation attempts
-- no Resolution may exist from that acceptance attempt
-- no receipt may exist from that acceptance attempt
-- no supersession mutation from that acceptance attempt may exist
+- session must remain non-ACCEPTED  
+- no accepted candidate outcome artifacts may exist  
+- no receipt may exist  
+- no structural graph mutation may exist  
 
-The system must behave as though the acceptance never happened.
+The system must behave as though the acceptance never occurred.
 
 ---
 
@@ -190,14 +211,12 @@ The system must behave as though the acceptance never happened.
 
 If a crash occurs after atomic commit completes:
 
-- session must already be durably ACCEPTED, or durably CLOSED as applicable
-- all artifacts inside the relevant atomic boundary must already exist
-- no replay or reconstruction may be required to recover legitimacy artifacts
-- the supersession graph must already reflect the committed structural result
+- session must already be ACCEPTED or CLOSED  
+- all artifacts in the atomic boundary must exist  
+- no reconstruction is required  
+- structural graph must reflect the committed outcome  
 
-The Engine must never reconstruct committed legitimacy artifacts after crash recovery.
-
-It may only reload them.
+The Engine must only reload persisted artifacts.
 
 ---
 
@@ -205,53 +224,49 @@ It may only reload them.
 
 Post-crash recovery must not fabricate:
 
-- Resolution objects
-- receipt objects
-- supersession mutations
-- session terminal state transitions
-
-Recovery may only observe durable state that already exists.
+- accepted candidate outcomes  
+- Resolution objects  
+- receipts  
+- structural graph mutations  
+- session terminal state transitions  
 
 If durable state is incomplete, corruption has occurred.
-
-Runtime response to that corruption is governed by ENG-INTEGRITY.
 
 ---
 
 # 7. Persistence Relationship to Rehydration
 
-## ENG-PERSISTENCE-11 — Runtime Integrity Consumes Persistence Outcomes
+## ENG-PERSISTENCE-11 — Runtime Integrity Consumes Persistence Guarantees
 
-ENG-PERSISTENCE does not define rehydration halt or degraded-mode policy.
+ENG-PERSISTENCE defines guarantees.
 
-It defines the persistence assumptions that rehydration may rely on.
+ENG-INTEGRITY consumes them to validate:
 
-ENG-INTEGRITY consumes those assumptions when validating:
-
-- session / Resolution / receipt correspondence
-- receipt existence
-- supersession coherence
-- rule provenance consistency
-- crash safety assumptions
-
-If persistence guarantees were violated, ENG-INTEGRITY determines runtime consequences.
+- session / receipt / outcome consistency  
+- structural graph correctness  
+- provenance integrity  
+- crash safety assumptions  
 
 ---
 
-## ENG-PERSISTENCE-12 — Historical Stability Across Later Lifecycle Changes
+## ENG-PERSISTENCE-12 — Historical Stability Across Later Usability Changes
 
-Later lifecycle changes to a referenced Resolution, including:
+Later usability transitions, including:
 
-- UNDER_REVIEW
-- RETIRED
-- SUPERSEDED
+- ACTIVE → ON_HOLD  
+- ON_HOLD → ACTIVE  
+- ACTIVE → RETIRED  
 
-do not invalidate the historical legitimacy artifacts that were already durably committed.
+do not invalidate previously committed legitimacy artifacts.
 
-ENG-PERSISTENCE defines only that already committed legitimacy artifacts remain part of durable history.
+These transitions:
 
-Usability semantics for later states belong to ENG-REVIEW-RETIRED.  
-Graph meaning belongs to ENG-SUPERSESSION.
+- do not rewrite receipts  
+- do not alter prior accepted candidate outcomes  
+- do not retroactively change structural history  
+
+ENG-USABILITY defines forward-use semantics.  
+ENG-STRUCTURE defines graph meaning.
 
 ---
 
@@ -261,224 +276,173 @@ Graph meaning belongs to ENG-SUPERSESSION.
 
 The storage adapter must support:
 
-- atomic durable commit across all objects in the defined boundary
-- all-or-nothing transactional persistence
-- crash-safe durability
+- atomic multi-object commit  
+- all-or-nothing durability  
+- crash-safe persistence  
 
-ENG-PERSISTENCE is storage-agnostic about implementation technology.
-
-The guarantee is mandatory, regardless of storage mechanism.
-
-Possible compliant implementation strategies may include:
-
-- ACID transactions
-- atomic write batches
-- write-ahead logs with commit markers
-- equivalent all-or-nothing durable commit models
+Implementation is storage-agnostic but guarantees are mandatory.
 
 ---
 
-## ENG-PERSISTENCE-14 — Persistence Order Must Not Escape the Atomic Boundary
+## ENG-PERSISTENCE-14 — No External Visibility of Partial State
 
-The implementation must not expose externally visible partial orderings that violate atomicity.
+The system must not expose:
 
-Specifically, it must not durably expose:
+- ACCEPTED session without receipt  
+- receipt without session  
+- structural graph mutation without corresponding candidate outcome  
+- partial persistence of atomic commit set  
 
-- session terminal state before the corresponding receipt when both are in the same boundary
-- Resolution before the ACCEPTED session if atomicity is not yet complete
-- supersession mutation before the Resolution that justifies it
-- receipt creation as an asynchronous follow-up to accepted legitimacy creation
-
-Intermediate write steps may exist internally, but they must not become durable committed truth independently.
+Internal steps may exist but must not become externally visible.
 
 ---
 
 # 9. Prohibited Behaviors
 
-## ENG-PERSISTENCE-15 — No Lazy or Split Legitimacy Persistence
+## ENG-PERSISTENCE-15 — No Split or Deferred Legitimacy Persistence
 
-The Engine or its storage adapter must never:
+The Engine must never:
 
-- write Resolution asynchronously after session acceptance
-- write receipt asynchronously after session acceptance
-- apply supersession mutation outside the legitimacy atomic boundary
-- repair partial legitimacy commits automatically
-- generate receipts lazily after terminal transition
-- reconstruct receipts from audit
-- reconstruct Resolutions from receipts or audit after failed persistence
-
-These are persistence violations, not merely behavioral preferences.
+- persist candidate outcome separately from session acceptance  
+- persist receipt asynchronously after acceptance  
+- apply structural graph mutation outside atomic boundary  
+- reconstruct legitimacy artifacts after failure  
+- generate receipts lazily  
+- derive artifacts from audit  
 
 ---
 
 # 10. Non-Legitimacy Transitions
 
-## ENG-PERSISTENCE-16 — Ordinary State Mutations Are Not Legitimacy Atomic Boundaries
+## ENG-PERSISTENCE-16 — Non-Legitimacy Mutations Are Not Atomic Boundaries
 
-State transitions that do not create legitimacy do not require the multi-object legitimacy atomic boundary.
+Only:
 
-Examples may include ordinary session lifecycle changes outside terminal acceptance and closure.
+- ACCEPTED  
+- CLOSED  
 
-ENG-PERSISTENCE defines only that:
+define persistence atomic boundaries.
 
-- ACCEPTED legitimacy creation requires the legitimacy atomic boundary
-- CLOSED terminal closure requires the closure atomic boundary
-
-Other mutation grouping requirements may be defined elsewhere, but are not legitimacy persistence boundaries unless explicitly stated.
+Other mutations are outside this scope unless explicitly defined elsewhere.
 
 ---
 
-## ENG-PERSISTENCE-17 — Administrative Usability Transitions Are Outside the Legitimacy Boundary
+## ENG-PERSISTENCE-17 — Usability Transitions Are Outside Legitimacy Boundaries
 
-Administrative lifecycle transitions affecting forward usability, including transitions such as:
+Usability transitions:
 
-- ACTIVE → UNDER_REVIEW
-- UNDER_REVIEW → ACTIVE
-- ACTIVE → RETIRED
+- ACTIVE ↔ ON_HOLD  
+- ACTIVE → RETIRED  
 
-are not part of the legitimacy atomic boundary.
+are not legitimacy events.
 
-These transitions must not rewrite:
+They must not:
 
-- historical receipts
-- prior session history
-- previously committed legitimacy artifacts
-- supersession graph structure unless separately authorized by graph rules elsewhere
-
-ENG-PERSISTENCE defines only that such transitions are not legitimacy creation commits.
+- rewrite receipts  
+- alter structural graph truth  
+- mutate historical outcomes  
 
 ---
 
 # 11. Determinism Guarantee
 
-## ENG-PERSISTENCE-18 — Persistence Must Not Introduce Nondeterminism
-
-Given identical valid pre-commit structural state and identical accepted decision outcome, persistence must preserve deterministic artifacts.
+## ENG-PERSISTENCE-18 — Persistence Must Preserve Determinism
 
 Persistence must not alter:
 
-- Resolution content
-- receipt content
-- supersession mutation content
-- provenance fields
-- hash-bearing artifact content
-
-Artifact construction rules belong elsewhere.  
-ENG-PERSISTENCE guarantees that persistence does not distort them.
+- candidate outcome content  
+- receipt content  
+- structural graph state  
+- provenance fields  
 
 ---
 
 # 12. Evidentiary Integrity
 
-## ENG-PERSISTENCE-19 — Legitimacy Artifacts Must Remain Admissible as a Durable Pair
+## ENG-PERSISTENCE-19 — Legitimacy Artifacts Form an Indivisible Set
 
-For accepted legitimacy, the admissible durable artifact set is:
+For accepted sessions, the durable legitimacy set consists of:
 
-- Resolution
-- corresponding LEGITIMACY receipt
+- accepted candidate outcome artifacts  
+- corresponding LEGITIMACY receipt  
+- ACCEPTED session state  
+- structural graph state  
 
-with the associated accepted session state and any committed supersession mutation.
+These must remain:
 
-These artifacts must remain:
-
-- indivisible
-- durable
-- deterministic
-- verifiable
-
-Audit remains supplemental and non-constitutive.
+- indivisible  
+- verifiable  
+- deterministic  
 
 ---
 
 # 13. Relationship to Rule Provenance
 
-## ENG-PERSISTENCE-20 — Provenance Fields Are Persistence-Critical Structural Content
+## ENG-PERSISTENCE-20 — Provenance Is Structurally Required
 
-Where governing artifact specifications require:
+Provenance fields must:
 
-- engine_version
-- spec_set_hash
+- exist where required  
+- be persisted atomically  
+- never be partially written  
 
-ENG-PERSISTENCE requires that those fields persist atomically with the artifact they belong to.
-
-ENG-PERSISTENCE does not define:
-
-- provenance semantics
-- historical spec-set compatibility policy
-
-Those belong to ENG-SPECVERIFY.
-
-It defines only that provenance-bearing artifacts must not be partially persisted.
+Meaning belongs to ENG-SPECVERIFY.
 
 ---
 
 # 14. Relationship to Receipts
 
-## ENG-PERSISTENCE-21 — Receipt Emission Is Consumed, Not Defined, Here
+## ENG-PERSISTENCE-21 — Receipt Emission Is Consumed
 
-ENG-RECEIPT defines:
+ENG-RECEIPT defines receipt structure.
 
-- receipt types
-- receipt structure
-- receipt immutability
+ENG-PERSISTENCE defines only:
 
-ENG-PERSISTENCE defines only that required receipts must be durably created inside the correct atomic boundary.
-
-ENG-PERSISTENCE must not redefine receipt schema or canonical structure.
+- receipts must be created atomically  
+- receipts must not be partially persisted  
 
 ---
 
 # 15. Relationship to Runtime Integrity
 
-## ENG-PERSISTENCE-22 — Integrity Enforces Trust in Persistence Guarantees
+## ENG-PERSISTENCE-22 — Integrity Enforces Trust
 
-ENG-INTEGRITY may use persistence outcomes and corruption evidence to determine:
+ENG-INTEGRITY determines:
 
-- halt
-- degraded mode
-- restore refusal
+- halt  
+- degraded mode  
 
-ENG-PERSISTENCE does not define those runtime policies.
-
-It defines the durability guarantees that those policies depend on.
+based on persistence correctness.
 
 ---
 
 # 16. Engine Invariants
 
-- legitimacy creation commits atomically as session + Resolution + supersession mutation + LEGITIMACY receipt
-- terminal non-legitimacy closure commits atomically as session + EXPLORATION receipt
-- audit is outside legitimacy atomicity
-- crash before commit yields no legitimacy artifact
-- crash after commit requires no artifact reconstruction
-- receipts and Resolutions must never be fabricated during recovery
-- storage adapter must provide all-or-nothing durability for required commit sets
-- provenance-bearing structural artifacts must persist atomically with their commit boundary
-- administrative usability transitions do not rewrite historical legitimacy artifacts
-- dependent specifications must consume ENG-PERSISTENCE rather than redefine atomic durability rules
+- acceptance commits atomically as session + candidate outcome + structural mutation + receipt  
+- closure commits atomically as session + receipt  
+- audit is outside atomic boundary  
+- no partial legitimacy persistence allowed  
+- no reconstruction of legitimacy artifacts  
+- provenance fields persist atomically  
+- usability transitions do not alter history  
 
 ---
 
 # 17. Mental Model
 
-ENG-PERSISTENCE defines durable commit truth.
+ENG-PERSISTENCE defines durable truth.
 
 It answers:
 
-- what must persist together
-- what may never partially persist
-- what crash recovery may rely on
-- what may never be reconstructed after failure
+- what must persist together  
+- what must never partially persist  
+- what crash recovery may assume  
 
-It does not answer:
+It does not define:
 
-- whether acceptance is valid
-- what a receipt contains
-- how a Resolution becomes structurally ACTIVE
-- whether the Engine must halt on corruption
-- how bytes are canonically hashed
+- legitimacy  
+- structure  
+- usability  
+- decision logic  
 
-Those belong elsewhere.
-
-ENG-PERSISTENCE is the durability layer.  
-Other specifications must consume it rather than duplicate its atomicity guarantees.
+It guarantees that once legitimacy exists, it is permanent and indivisible.

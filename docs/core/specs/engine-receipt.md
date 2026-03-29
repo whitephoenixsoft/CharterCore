@@ -1,6 +1,6 @@
 # ENG-RECEIPT — Terminal Receipt Structure, Canonical Form & Rule Provenance
 
-Status: REFACTORED (v10 – Reference-Driven Model)  
+Status: REFACTORED (v11 – Candidate Alignment, Naming Unification & Reference Preservation)  
 Applies to: Engine Core (V1/V2+)  
 Scope: Immutable terminal receipts for legitimacy history, reconstruction, verification, and portability
 
@@ -14,7 +14,8 @@ Subordinate references consumed from:
 - ENG-SPECVERIFY
 - ENG-PERSISTENCE
 - ENG-INTEGRITY
-- ENG-REVIEW-RETIRED
+- ENG-USABILITY
+- ENG-STRUCTURE
 - ENG-ERROR
 
 ---
@@ -40,8 +41,8 @@ ENG-RECEIPT does not define:
 - structural halt conditions
 - canonical encoding algorithm details
 - atomic commit boundaries
-- UNDER_REVIEW / RETIRED usability rules
-- supersession graph semantics
+- ON_HOLD / RETIRED usability rules
+- structural graph semantics
 
 Those are defined respectively in:
 
@@ -50,8 +51,8 @@ Those are defined respectively in:
 - ENG-INTEGRITY
 - ENG-CANON
 - ENG-PERSISTENCE
-- ENG-REVIEW-RETIRED
-- ENG-SUPERSESSION
+- ENG-USABILITY
+- ENG-STRUCTURE
 
 Receipts do not create legitimacy.  
 They are the immutable terminal artifacts emitted when legitimacy or closure has already been determined elsewhere.
@@ -132,6 +133,7 @@ A receipt must contain the following structural fields:
 - receipt_type
 - receipt_id
 - session_id
+- resolution_id (nullable)
 - area_id
 - engine_version
 - spec_set_hash
@@ -148,7 +150,7 @@ A receipt must contain the following structural fields:
 Optional or informational fields may include:
 
 - problem_statement
-- annotations
+- annotation
 - created_at
 - lineage_references
 
@@ -218,9 +220,13 @@ Each round snapshot must include:
 - candidate_set
 - constraint_set
 - vote_set
+- internal_resolution_references (if present)
+- cross_area_references (if present)
 
 A receipt records full structural round state.  
 It does not record diffs.
+
+Informational references remain informational and must not be interpreted as structural graph edges or legitimacy inputs.
 
 ---
 
@@ -268,9 +274,12 @@ Receipt candidates must preserve:
 - session_id
 - area_id
 - round_index
-- candidate_content
+- candidate_action_type
+- candidate_payload
 
-Candidate lifecycle semantics are defined in ENG-DOMAIN and ENG-SESSION.
+Candidate snapshots must preserve candidate identity and action definition exactly as defined in ENG-DOMAIN.
+
+Candidate lifecycle and evaluation semantics are defined in ENG-DOMAIN, ENG-SESSION, and ENG-DECISION.
 
 ---
 
@@ -383,15 +392,33 @@ ENG-RECEIPT records, but does not create, round history.
 
 If a referenced Resolution later becomes:
 
-- UNDER_REVIEW
+- ON_HOLD
 - RETIRED
 - SUPERSEDED
 
 the historical receipt remains valid as a record of what occurred at acceptance or closure time.
 
-ENG-REVIEW-RETIRED defines forward usability semantics.  
-ENG-SUPERSESSION defines later graph meaning.  
+ENG-USABILITY defines forward usability semantics.  
+ENG-STRUCTURE defines later graph meaning.  
 ENG-RECEIPT defines that neither retroactively rewrites historical receipts.
+
+---
+
+## ENG-RECEIPT-20A — Receipts Do Not Define Structure or Usability
+
+Receipts must not be used to derive:
+
+- structural graph truth
+- supersession relationships
+- ACTIVE derivation
+- usability state
+
+Those concerns belong exclusively to:
+
+- ENG-STRUCTURE
+- ENG-USABILITY
+
+Receipts are historical artifacts only.
 
 ---
 
@@ -472,7 +499,7 @@ ENG-RECEIPT is the authority for artifact immutability itself.
 
 ## ENG-RECEIPT-26 — Receipt Is Not Audit
 
-Receipts are distinct from audit records.
+Receipts are distinct from audit records and EvaluationReport artifacts.
 
 Receipts:
 
@@ -480,6 +507,7 @@ Receipts:
 - are immutable
 - preserve final legitimacy or closure history
 
+EvaluationReport represents runtime evaluation output.  
 Audit is observational telemetry defined in ENG-AUD.
 
 ENG-RECEIPT does not create, replace, or mutate audit records.
@@ -492,12 +520,15 @@ ENG-RECEIPT does not create, replace, or mutate audit records.
 - receipt type matches terminal outcome
 - receipts preserve ordered full round snapshots
 - receipts preserve rule provenance fields
+- receipts preserve candidate action definitions exactly
+- receipts preserve informational references without reinterpreting them
 - receipts are immutable
-- later UNDER_REVIEW / RETIRED / SUPERSEDED transitions do not rewrite receipts
+- later ON_HOLD / RETIRED / SUPERSEDED transitions do not rewrite receipts
 - canonical hashing requirements are consumed from ENG-CANON
 - runtime trust decisions are consumed by ENG-INTEGRITY
 - atomic durability is consumed from ENG-PERSISTENCE
 - rule identity semantics are consumed from ENG-SPECVERIFY
+- receipts must not be used as inputs to structural or usability evaluation
 
 ---
 
@@ -519,7 +550,7 @@ It does not answer:
 - whether the Engine must halt
 - how bytes are canonically encoded
 - how receipts are durably committed
-- how UNDER_REVIEW or RETIRED affect forward usability
+- how ON_HOLD or RETIRED affect forward usability
 
 Those belong elsewhere.
 

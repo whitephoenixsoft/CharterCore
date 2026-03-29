@@ -1,6 +1,6 @@
 # ENG-INITIALIZATION — Engine Rehydration & Runtime Entry Specification
 
-Status: REFACTORED (v10 – Informational Reference Alignment)  
+Status: REFACTORED (v11 – Structure/Usability Alignment & Referential Consistency)  
 Applies to: Engine Core (V1/V2+)  
 Scope: Engine rehydration, structural runtime entry, and runtime mode establishment
 
@@ -10,7 +10,7 @@ Subordinate references consumed from:
 
 - ENG-DOMAIN
 - ENG-INTEGRITY
-- ENG-SUPERSESSION
+- ENG-STRUCTURE
 - ENG-RECEIPT
 - ENG-CANON
 - ENG-SPECVERIFY
@@ -37,7 +37,7 @@ ENG-INITIALIZATION does not redefine:
 - halt conditions
 - degraded mode eligibility criteria
 - domain object schemas
-- supersession graph semantics
+- structural graph semantics or ACTIVE derivation
 - receipt structure
 - canonical serialization rules
 - specification identity semantics
@@ -46,7 +46,7 @@ Those are defined respectively in:
 
 - ENG-INTEGRITY
 - ENG-DOMAIN
-- ENG-SUPERSESSION
+- ENG-STRUCTURE
 - ENG-RECEIPT
 - ENG-CANON
 - ENG-SPECVERIFY
@@ -66,12 +66,17 @@ The graph may include:
 - Sessions
 - Resolutions
 - Receipts
-- Annotations
 
 All structural references required by the loaded graph must already be present in the provided graph.
 
-Informational references may also be present according to ENG-DOMAIN.  
-If present, they are consumed according to their declared class and must not be reinterpreted during initialization.
+Informational references may also be present according to ENG-DOMAIN.
+
+Initialization must:
+
+- consume informational references according to their declared class
+- not reinterpret informational references as structural inputs
+
+Validation outcomes for informational references, including failure conditions, are defined by ENG-INTEGRITY.
 
 During initialization, the Engine must not:
 
@@ -96,7 +101,7 @@ It does not:
 - repair history
 - create legitimacy artifacts
 - modify domain objects
-- rewrite supersession structure
+- rewrite structural graph relationships
 - emit receipts
 - emit audit as a substitute for validation
 
@@ -120,13 +125,13 @@ Rehydration must not:
 - change session states or phases
 - alter Resolution states
 - create or delete objects
-- modify supersession edges
+- modify structural graph relationships
 - promote or demote governance state
 - normalize or migrate structural content implicitly
 
 Mutation prohibition during runtime entry is absolute.
 
-Any required migration or repair must occur outside initialization and outside this specification.
+Any required migration or repair must occur outside initialization.
 
 ---
 
@@ -139,7 +144,7 @@ ENG-INITIALIZATION does not define its own independent integrity doctrine.
 Instead, it consumes authoritative outcomes from:
 
 - ENG-INTEGRITY → structural safety, halt / degrade outcomes, runtime trust
-- ENG-SUPERSESSION → graph reconstruction and structural ACTIVE derivation
+- ENG-STRUCTURE → graph reconstruction and structural ACTIVE derivation
 - ENG-RECEIPT → receipt artifact structure
 - ENG-CANON → canonical hash input construction
 - ENG-SPECVERIFY → rule provenance verification
@@ -161,7 +166,7 @@ That sequence must, at minimum, obtain authoritative results for:
 2. single-Area graph validity
 3. structural reference resolution
 4. governance slot structural validity
-5. supersession graph reconstruction
+5. structural graph reconstruction
 6. structural ACTIVE derivation
 7. receipt structural validity
 8. canonical receipt integrity validation
@@ -201,17 +206,15 @@ After rehydration attempt, initialization must produce exactly one runtime entry
 ENG-INITIALIZATION does not independently define when degraded mode or failure applies.  
 Those rules belong to ENG-INTEGRITY.
 
-ENG-INITIALIZATION defines only that runtime entry must resolve to one of these mutually exclusive outcomes.
-
 ---
 
 ## ENG-INIT-08 — NORMAL_RUNTIME
 
-NORMAL_RUNTIME is entered only when all required structural and runtime trust validations succeed according to ENG-INTEGRITY and the authorities it consumes.
+NORMAL_RUNTIME is entered only when all required structural and runtime trust validations succeed.
 
 In NORMAL_RUNTIME:
 
-- runtime APIs may proceed subject to their own behavioral specifications
+- runtime APIs may proceed
 - legitimacy evaluation may occur
 - mutating operations may occur if otherwise permitted
 
@@ -226,12 +229,9 @@ DEGRADED_READ_ONLY is entered only when ENG-INTEGRITY determines that:
 
 In DEGRADED_READ_ONLY:
 
-- read-only operations may proceed as allowed elsewhere
+- read-only operations may proceed
 - mutation must remain disabled
 - legitimacy creation must remain disabled
-
-ENG-INITIALIZATION must not reinterpret degraded mode policy.  
-It must only apply it.
 
 ---
 
@@ -242,10 +242,8 @@ INITIALIZATION_FAILURE occurs when runtime entry safety cannot be established.
 If initialization fails:
 
 - the Engine must not enter runtime
-- runtime APIs that require successful rehydration must not execute
-- no implicit repair or fallback legitimacy mode is permitted
-
-Failure semantics are governed by ENG-INTEGRITY and ENG-ERROR.
+- runtime APIs must not execute
+- no implicit repair or fallback mode is permitted
 
 ---
 
@@ -253,70 +251,57 @@ Failure semantics are governed by ENG-INTEGRITY and ENG-ERROR.
 
 ## ENG-INIT-11 — Structural Validation Belongs to ENG-INTEGRITY
 
-ENG-INITIALIZATION must not duplicate structural integrity doctrine.
+All structural validation belongs to ENG-INTEGRITY.
 
-Structural validation, including but not limited to:
+ENG-INITIALIZATION must not duplicate:
 
-- mixed-area graph detection
-- schema incompatibility
-- unresolved structural references
-- invalid informational references where their governing specification requires local resolution
-- governance slot invalidity
-- participant epoch violations
-- receipt trust failures
-- partial mutation trust failures
+- mixed-area detection
+- schema incompatibility handling
+- structural reference validation
+- informational reference validation rules
+- governance slot validation
+- participant epoch validation
+- receipt trust validation
 
-belongs to ENG-INTEGRITY.
-
-ENG-INITIALIZATION consumes the result of those validations to decide whether runtime entry is possible.
+ENG-INITIALIZATION consumes those results only.
 
 ---
 
-# 8. Relationship to Supersession Reconstruction
+# 8. Relationship to Structural Graph
 
-## ENG-INIT-12 — Graph Reconstruction Belongs to ENG-SUPERSESSION
+## ENG-INIT-12 — Structural Graph Is External Authority
 
-ENG-INITIALIZATION must not define supersession graph semantics.
+ENG-INITIALIZATION must not define structural graph semantics.
 
-It depends on ENG-SUPERSESSION for:
+It depends on ENG-STRUCTURE for:
 
 - graph reconstruction
 - acyclicity truth
 - structural ACTIVE derivation
-- graph-valid governance slot participation outcomes
-
-ENG-INITIALIZATION uses those results only to establish runtime readiness.
+- governance slot structural outcomes
 
 ---
 
 # 9. Relationship to Receipts
 
-## ENG-INIT-13 — Receipt Structure and Integrity Are Consumed, Not Defined, Here
+## ENG-INIT-13 — Receipt Validation Is External
 
-ENG-INITIALIZATION does not define:
-
-- receipt schema
-- receipt round structure
-- content_hash semantics
-- canonical serialization rules
-- rule identity semantics
+ENG-INITIALIZATION does not define receipt rules.
 
 It depends on:
 
-- ENG-RECEIPT for receipt artifact structure
-- ENG-CANON for canonical serialization and hash input rules
-- ENG-SPECVERIFY for rule provenance validation
-- ENG-INTEGRITY for runtime consequence of any failure
-
-Initialization must therefore treat receipts as already-defined artifacts whose validity is externally determined.
+- ENG-RECEIPT
+- ENG-CANON
+- ENG-SPECVERIFY
+- ENG-INTEGRITY
 
 ---
 
-# 10. Relationship to Domain Schema
+# 10. Domain Object Immutability
 
 ## ENG-INIT-14 — Domain Objects Are Immutable Inputs
 
-All domain objects presented during initialization are treated as immutable historical inputs.
+All domain objects are treated as immutable inputs.
 
 Initialization must not:
 
@@ -325,10 +310,7 @@ Initialization must not:
 - modify identifiers
 - normalize structure
 - alter provenance fields
-- rewrite cross references
-
-ENG-DOMAIN defines object shape.  
-ENG-INITIALIZATION consumes those objects exactly as provided.
+- rewrite references
 
 ---
 
@@ -343,68 +325,43 @@ Initialization must not function as:
 - a repair pipeline
 - a schema upgrade pipeline
 
-If the graph is not acceptable in its provided structural form, runtime entry must fail or degrade according to ENG-INTEGRITY.
-
 ---
 
 # 12. Determinism Guarantee
 
-## ENG-INIT-16 — Identical Input Graph, Identical Runtime Entry Outcome
+## ENG-INIT-16 — Deterministic Runtime Entry
 
-Given identical provided domain objects, initialization must produce identical:
+Given identical inputs, initialization must produce identical:
 
-- structural validation results
-- runtime mode outcome
-- supersession reconstruction inputs consumed
-- receipt validation inputs consumed
-- rule identity verification inputs consumed
-
-Initialization must not depend on:
-
-- storage ordering
-- file ordering
-- external timestamps
-- host environment differences
-- runtime iteration order
-
-This is a runtime-entry determinism guarantee, not an independent structural validation doctrine.
+- validation outcomes
+- runtime mode
+- graph reconstruction inputs
+- receipt validation inputs
 
 ---
 
 # 13. Readiness Definition
 
-## ENG-INIT-17 — Runtime Readiness Is a Derived Result
+## ENG-INIT-17 — Runtime Readiness Is Derived
 
-The Engine is ready for runtime only when initialization completes successfully into a valid runtime mode.
+The Engine is ready only when initialization completes successfully.
 
 Readiness means:
 
-- the provided graph has passed required runtime-entry validation
-- the Engine has a coherent single-Area structural universe
-- dependent authorities have supplied acceptable results
-- runtime mode has been established deterministically
-
-Readiness does not imply:
-
-- that any particular session can accept
-- political or social legitimacy
-- governance approval beyond structural readiness
-- future mutation success
-
-Initialization grants runtime entry, not outcome success.
+- structural validation passed
+- graph reconstructed
+- runtime mode established
 
 ---
 
 # 14. Relationship to API
 
-## ENG-INIT-18 — Runtime Entry Is Consumed Through ENG-API
+## ENG-INIT-18 — Consumed Through API
 
-ENG-INITIALIZATION does not define a separate public execution path.
+Initialization is invoked through ENG-API.
 
-Runtime entry is consumed through the API boundary defined in ENG-API, including rehydrate_engine and any read-only runtime mode behavior exposed there.
-
-ENG-INITIALIZATION defines runtime-entry semantics.  
-ENG-API defines how callers invoke them.
+ENG-INITIALIZATION defines semantics.  
+ENG-API defines invocation.
 
 ---
 
@@ -414,20 +371,8 @@ ENG-INITIALIZATION is the runtime-entry layer.
 
 It answers:
 
-- how the Engine starts from provided structural history
-- how rehydration is bounded
-- how runtime mode is established
-- how authoritative validation results are consumed before runtime begins
+- how the Engine starts
+- how runtime mode is determined
+- how validation results are consumed
 
-It does not answer:
-
-- whether the graph is structurally valid in detail
-- how supersession works
-- how receipts are canonically hashed
-- whether the Engine must halt versus degrade
-- whether a session may accept
-
-Those belong elsewhere.
-
-ENG-INITIALIZATION coordinates runtime entry.  
-It does not redefine the authorities it depends on.
+It does not define validation itself.

@@ -1,6 +1,6 @@
 # ENG-INTEGRITY — Engine Integrity, Runtime Safety & Structural Halt Guarantees
 
-Status: REFACTORED (v17 – Intra-Area Reference Validation Alignment)  
+Status: REFACTORED (v18 – Structure/Usability Alignment & Informational Reference Consistency)  
 Applies to: Engine Core (V1/V2+)  
 
 Authority: Foundational runtime authority for structural validity, halt conditions, degraded mode, and single-Area enforcement.
@@ -8,8 +8,8 @@ Authority: Foundational runtime authority for structural validity, halt conditio
 Subordinate references consumed from:
 
 - ENG-DOMAIN
-- ENG-SUPERSESSION
-- ENG-REVIEW-RETIRED
+- ENG-STRUCTURE
+- ENG-USABILITY
 - ENG-RECEIPT
 - ENG-CANON
 - ENG-SPECVERIFY
@@ -24,23 +24,23 @@ ENG-INTEGRITY defines the global runtime integrity rules of the Engine Core.
 
 It is the authoritative specification for:
 
-- Structural halt conditions
-- Single-Area runtime enforcement
-- Rehydration safety validation
-- Schema compatibility enforcement
-- Structural reference validity
-- Governance slot exclusivity enforcement
-- Participant epoch integrity validation
-- Receipt integrity validation at runtime
-- Fatal vs degraded mode boundaries
-- Resource safety and atomic failure requirements
-- Legitimacy compiler runtime doctrine
+- structural halt conditions
+- single-Area runtime enforcement
+- rehydration safety validation
+- schema compatibility enforcement
+- structural reference validity
+- governance slot exclusivity enforcement
+- participant epoch integrity validation
+- receipt integrity validation at runtime
+- fatal vs degraded mode boundaries
+- resource safety and atomic failure requirements
+- legitimacy compiler runtime doctrine
 
 ENG-INTEGRITY does not redefine:
 
 - object schemas
-- supersession graph semantics
-- review / retired state semantics
+- structural graph semantics or ACTIVE derivation
+- ON_HOLD / RETIRED usability semantics
 - receipt structure
 - canonical serialization format
 - atomic persistence transaction boundaries
@@ -49,8 +49,8 @@ ENG-INTEGRITY does not redefine:
 Those are defined respectively in:
 
 - ENG-DOMAIN
-- ENG-SUPERSESSION
-- ENG-REVIEW-RETIRED
+- ENG-STRUCTURE
+- ENG-USABILITY
 - ENG-RECEIPT
 - ENG-CANON
 - ENG-PERSISTENCE
@@ -153,7 +153,7 @@ All legitimacy derivation requires:
 
 1. successful rehydrate_engine
 2. structural validation
-3. supersession reconstruction
+3. structural graph reconstruction
 4. governance slot derivation
 
 No relaxed structural mode exists for legitimacy evaluation.
@@ -200,17 +200,17 @@ During rehydration and restore it must validate:
 
 - schema compatibility
 - single-Area graph validity
-- structural reference resolution
+- structural reference resolution (including candidate action targets)
 - governance slot exclusivity
 - participant epoch integrity
 - receipt integrity at runtime
-- structural readiness for supersession reconstruction
+- structural readiness for graph reconstruction
 
-ENG-INTEGRITY does not define how supersession works or how usability states are interpreted.  
+ENG-INTEGRITY does not define how the structural graph works or how usability states are interpreted.  
 It consumes those results from:
 
-- ENG-SUPERSESSION
-- ENG-REVIEW-RETIRED
+- ENG-STRUCTURE
+- ENG-USABILITY
 
 It determines whether the runtime can safely proceed with them.
 
@@ -244,7 +244,7 @@ Any repair must occur outside the Engine or through explicit Engine operations g
 Structural references:
 
 - affect legitimacy
-- affect supersession
+- affect structural graph behavior
 - affect ACTIVE derivation
 - affect restore safety
 
@@ -254,45 +254,48 @@ Missing structural references must cause deterministic failure.
 
 Cross-area structural references are prohibited.
 
-Reference classification is defined structurally in ENG-DOMAIN.
+Reference classification is defined in ENG-DOMAIN.
 
 ---
 
-## ENG-INTEGRITY-07A — Informational References Must Respect Their Declared Class
+## ENG-INTEGRITY-07A — Informational References Must Resolve but Remain Non-Structural
 
-Informational references must not be reinterpreted as structural edges.
+Informational references are not part of structural graph semantics.
 
-Cross-area informational references:
+They must not:
+
+- affect legitimacy
+- affect ACTIVE derivation
+- be interpreted as structural dependencies
+- be used in graph traversal or evaluation
+
+However, if present, informational references must satisfy referential validity.
+
+### Cross-Area Informational References
 
 - are metadata only
-- must not affect legitimacy
-- must not affect ACTIVE derivation
-- must not be traversed for restore or runtime validation beyond their own field validity
+- must not affect legitimacy or graph behavior
+- are not required to resolve to locally present artifacts
 
-Intra-Area informational Resolution references:
+### Intra-Area Informational Resolution References
 
-- must resolve to existing Resolution objects within the same Area
-- must not affect legitimacy
-- must not affect ACTIVE derivation
-- must not be interpreted as supersession
-- must not introduce graph precedence or acceptance semantics
+- must reference existing Resolution objects within the same Area
+- must not affect legitimacy or structural graph behavior
+- must not be interpreted as supersession edges
+- must not introduce ordering or precedence semantics
 
-If an intra-Area informational Resolution reference is present but unresolved:
+If an intra-Area informational Resolution reference is present but does not resolve:
 
-- it must not affect legitimacy
-- it must not affect ACTIVE derivation
-- it must not be treated as a structural reference failure
+- the input is structurally invalid for runtime entry
+- initialization must fail deterministically
 
-The Engine may:
+This failure:
 
-- reject the artifact as invalid input, OR
-- enter degraded mode if configured to tolerate incomplete informational metadata
+- is not due to graph semantics
+- does not reinterpret the reference as structural
+- enforces referential consistency required by ENG-DOMAIN
 
-The Engine must not treat such references as structural graph edges or supersession inputs.
-
-Validation of informational references is limited to referential consistency and must not introduce new structural constraints beyond those defined in ENG-DOMAIN.
-
-ENG-INTEGRITY validates local referential consistency for such references while preserving their informational-only semantics.
+Informational references remain non-structural even when invalid.
 
 ---
 
@@ -301,8 +304,8 @@ ENG-INTEGRITY validates local referential consistency for such references while 
 ## ENG-INTEGRITY-08 — Governance Slots Must Be Structurally Valid
 
 Governance slot structure is defined in ENG-DOMAIN.  
-ACTIVE derivation is defined in ENG-SUPERSESSION.  
-Usability suspension semantics are defined in ENG-REVIEW-RETIRED.
+ACTIVE derivation is defined in ENG-STRUCTURE.  
+Usability suspension semantics are defined in ENG-USABILITY.
 
 ENG-INTEGRITY is responsible for ensuring the runtime sees a structurally valid governance configuration.
 
@@ -374,16 +377,16 @@ Receipt structure is defined in ENG-RECEIPT.
 Canonical encoding is defined in ENG-CANON.  
 Rule identity semantics are defined in ENG-SPECVERIFY.
 
-Historical receipts remain authoritative even if later Resolution usability changes under ENG-REVIEW-RETIRED.
+Historical receipts remain authoritative even if later Resolution usability changes under ENG-USABILITY.
 
 ---
 
 # 11. ACTIVE Derivation & Usability Consumption
 
-## ENG-INTEGRITY-11 — Integrity Consumes, It Does Not Define, ACTIVE and Usability
+## ENG-INTEGRITY-11 — Integrity Consumes, It Does Not Define, Structure and Usability
 
-Structural ACTIVE derivation belongs to ENG-SUPERSESSION.  
-UNDER_REVIEW / RETIRED usability semantics belong to ENG-REVIEW-RETIRED.
+Structural ACTIVE derivation belongs to ENG-STRUCTURE.  
+ON_HOLD / RETIRED usability semantics belong to ENG-USABILITY.
 
 ENG-INTEGRITY consumes those outcomes to determine whether runtime can proceed safely.
 
@@ -406,7 +409,7 @@ Degraded mode may activate only if:
 
 - structural graph is internally consistent
 - schema compatibility is satisfied
-- supersession graph can be reconstructed
+- structural graph can be reconstructed
 - governance slots can be derived
 - runtime trust or completeness is insufficient for safe mutation or acceptance
 
@@ -416,7 +419,7 @@ Examples include:
 - missing optional non-structural artifacts
 - host-configured artifacts unavailable where not structurally required
 
-Degraded mode activation criteria must be deterministic and must not depend on host configuration or caller interpretation.
+Degraded mode activation criteria must be deterministic.
 
 In degraded mode:
 
@@ -448,9 +451,9 @@ If resource exhaustion occurs during:
 
 - rehydration
 - restore validation
-- ACTIVE derivation
+- structural graph reconstruction
 - acceptance
-- supersession application
+- graph mutation application
 - receipt verification
 - canonical serialization
 - hash computation
@@ -464,7 +467,7 @@ the Engine must:
 
 If atomic safety cannot be guaranteed, the Engine must halt.
 
-Atomic persistence boundaries themselves are defined in ENG-PERSISTENCE.  
+Atomic persistence boundaries are defined in ENG-PERSISTENCE.  
 ENG-INTEGRITY governs runtime safety if those guarantees cannot be maintained.
 
 ---
@@ -477,11 +480,10 @@ The Engine must halt if structural legitimacy cannot be proven.
 
 Fatal structural failures include, at minimum:
 
-- supersession cycle detected
+- structural graph cycle detected
 - mixed-area structural graph detected
 - cross-area structural supersession detected
 - unresolved structural references
-- unresolved intra-Area informational Resolution references where present
 - unsupported schema version
 - unknown structural enum or field
 - governance slot multiplicity or structurally invalid emptiness
@@ -491,6 +493,10 @@ Fatal structural failures include, at minimum:
 - receipt hash mismatch where runtime policy makes it fatal
 - partial mutation after resource failure
 - any structural inconsistency that prevents safe legitimacy compilation
+
+Additionally:
+
+- unresolved intra-Area informational Resolution references must cause initialization failure (see ENG-INTEGRITY-07A)
 
 No automatic repair is permitted.
 
@@ -513,7 +519,7 @@ Within schema compatibility and resource envelope constraints, ENG-INTEGRITY mus
 - runtime mode selection (normal, degraded, halt)
 
 ENG-INTEGRITY does not define historical replay ordering or graph precedence rules.  
-Those belong to ENG-COMPILATION and ENG-SUPERSESSION.
+Those belong to ENG-COMPILATION and ENG-STRUCTURE.
 
 It must, however, apply their outputs deterministically.
 
@@ -544,14 +550,14 @@ ENG-INTEGRITY does not redefine the persistence transaction model.
 - no partial restore mode for legitimacy
 - schema compatibility enforced before runtime legitimacy compilation
 - structural references must resolve
-- intra-Area informational Resolution references, if present, must resolve locally
-- informational references must not be reinterpreted as supersession
+- intra-Area informational Resolution references, if present, must resolve locally or cause initialization failure
+- informational references must not be reinterpreted as structural graph edges
 - governance slots structurally valid
 - participant epochs structurally enforced
 - runtime determinism mandatory
 - resource failure atomic or fatal
-- ACTIVE derivation consumed from ENG-SUPERSESSION
-- UNDER_REVIEW / RETIRED usability consumed from ENG-REVIEW-RETIRED
+- structural ACTIVE derivation consumed from ENG-STRUCTURE
+- ON_HOLD / RETIRED usability consumed from ENG-USABILITY
 - receipt integrity validated through ENG-RECEIPT + ENG-CANON + ENG-SPECVERIFY
 - atomic persistence guarantees assumed from ENG-PERSISTENCE and enforced as runtime trust conditions
 

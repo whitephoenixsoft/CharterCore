@@ -1,23 +1,34 @@
 # ENG-COMPILATION  
 Historical DAG Reconstruction & Incremental Compilation Model  
 
-Status: REFACTORED (v2 – Receipt-Driven Deterministic Reconstruction)  
+Status: REFACTORED (v3 – Structure-Aligned, Terminology-Converged)  
 Applies to: Engine Core (V1/V2+)  
 
-Authority: Subordinate to ENG-INTEGRITY, ENG-SUPERSESSION, ENG-RECEIPT, ENG-SPECVERIFY  
+Authority: Subordinate to ENG-INTEGRITY, ENG-STRUCTURE, ENG-RECEIPT, ENG-SPECVERIFY  
+
+Subordinate references consumed from:
+
+- ENG-DOMAIN
+- ENG-STRUCTURE
+- ENG-USABILITY
+- ENG-INTEGRITY
+- ENG-RECEIPT
+- ENG-CANON
+- ENG-SPECVERIFY
 
 ---
 
 # 1. Purpose
 
-ENG-COMPILATION defines how the Engine reconstructs a valid legitimacy DAG from historical artifacts.
+ENG-COMPILATION defines how the Engine reconstructs a valid structural legitimacy DAG from historical artifacts.
 
 It is the authoritative specification for:
 
 - deterministic reconstruction of accepted history  
+- structural graph reconstruction  
 - resolution index construction  
 - incremental ingestion of historical artifacts  
-- conflict detection during ingestion  
+- structural conflict detection during ingestion  
 - canonical ordering independent of timestamps  
 
 Compilation does not:
@@ -44,15 +55,15 @@ Runtime Mode:
 
 - evaluates sessions  
 - performs acceptance  
-- creates resolutions  
+- creates structural artifacts (including Resolutions where applicable)  
 - emits receipts  
 
 Compilation Mode:
 
 - ingests historical artifacts  
 - verifies receipts  
-- reconstructs supersession graph  
-- derives ACTIVE sets  
+- reconstructs structural graph  
+- derives structural ACTIVE sets  
 
 Compilation must not:
 
@@ -69,9 +80,7 @@ Compilation must not:
 The canonical source of historical legitimacy is:
 
 - LEGITIMACY receipts  
-- associated Resolutions  
-
-Sessions are informational during compilation.
+- associated structural artifacts (including Resolutions)  
 
 Receipts define:
 
@@ -79,6 +88,8 @@ Receipts define:
 - the final round state  
 - governance context  
 - rule identity (`spec_set_hash`)  
+
+Sessions are not authoritative for accepted historical truth during compilation.
 
 If a receipt and session disagree:
 
@@ -109,6 +120,8 @@ The index must:
 - be fully derivable from domain objects  
 - be deterministic across implementations  
 
+The resolution index represents the structural node set used for graph reconstruction.
+
 ---
 
 # 5. Ordering Model
@@ -117,38 +130,39 @@ The index must:
 
 Compilation must not depend on:
 
-- timestamps (`accepted_at`, `created_at`, etc.)
+- timestamps (`accepted_at`, `created_at`, etc.)  
 - audit ordering  
 - storage ordering  
 
 Canonical ordering is derived from:
 
-- supersession relationships  
-- deterministic structural ordering  
+- structural relationships  
+- deterministic identifier ordering  
 - resolution index consistency  
 
-If additional ordering is required for deterministic processing:
+If additional ordering is required:
 
 - it must be derived from canonical identifiers (e.g., lexicographic ordering)  
 - it must not imply legitimacy precedence  
 
 ---
 
-# 6. Supersession Reconstruction
+# 6. Structural Graph Reconstruction
 
 ## ENG-COMP-05 — Graph Reconstruction
 
 Compilation must:
 
-- reconstruct supersession edges from Resolution objects  
+- reconstruct structural edges from Resolution objects  
+- reconstruct the structural graph, including supersession relationships  
 - validate graph acyclicity  
 - enforce Area-local constraints  
 
-Supersession semantics are defined in ENG-SUPERSESSION.
+Structural graph semantics are defined in ENG-STRUCTURE.
 
 Compilation must not redefine:
 
-- conflict rules  
+- structural conflict rules  
 - acceptance race semantics  
 
 ---
@@ -159,10 +173,11 @@ Compilation must not redefine:
 
 Compilation detects structural inconsistencies such as:
 
-- multiple resolutions superseding the same target inconsistently  
-- missing supersession targets  
+- conflicting structural edges  
+- multiple incompatible successors for the same target  
+- missing structural references  
 - cycles  
-- invalid state transitions  
+- invalid state combinations  
 
 On conflict:
 
@@ -181,11 +196,11 @@ Compilation must not:
 
 ## ENG-COMP-07 — Incremental Ingestion
 
-Incremental compilation allows partial ingestion of historical artifacts.
+Incremental compilation allows staged ingestion of historical artifacts.
 
 Requirements:
 
-- all referenced objects must be present or staged  
+- all structural dependencies must be present or staged  
 - receipts must validate (ENG-RECEIPT + ENG-CANON)  
 - spec_set_hash must pass verification (ENG-SPECVERIFY)  
 
@@ -208,22 +223,24 @@ If dependencies are missing:
 
 Resolution states:
 
-- UNDER_REVIEW  
+- ON_HOLD  
 - RETIRED  
 
 affect:
 
-- runtime usability  
+- forward usability  
 
 They do not affect:
 
 - historical legitimacy  
-- supersession reconstruction  
+- structural graph reconstruction  
 - DAG structure  
 
 Compilation must treat them as:
 
-- metadata on top of structural graph  
+- non-structural metadata layered on top of the graph  
+
+Usability semantics are defined in ENG-USABILITY.
 
 ---
 
@@ -237,9 +254,13 @@ For each LEGITIMACY receipt:
 - content_hash must match  
 - spec_set_hash must be verified (ENG-SPECVERIFY)  
 
-Failure → StructuralIntegrityFailure
+Failure:
+
+- must result in compilation failure  
 
 Compilation must not proceed with invalid receipts.
+
+Runtime consequences of invalid receipts are defined in ENG-INTEGRITY.
 
 ---
 
@@ -251,12 +272,12 @@ Given identical inputs:
 
 - domain objects  
 - receipts  
-- resolutions  
+- structural artifacts  
 
 All implementations must produce identical:
 
 - resolution index  
-- supersession graph  
+- structural graph  
 - ACTIVE set  
 
 Compilation must not depend on:
@@ -291,8 +312,8 @@ Compilation must fail if:
 
 - structural inconsistencies exist  
 - receipts fail validation  
-- supersession graph invalid  
-- references missing  
+- structural graph is invalid  
+- required references are missing  
 
 Failure must be:
 
@@ -304,13 +325,13 @@ Failure must be:
 
 # 14. Engine Invariants
 
-- Compilation never creates legitimacy  
-- Compilation never replays acceptance  
-- Compilation never overrides receipts  
-- Compilation never uses timestamps for authority  
-- Compilation never resolves conflicts heuristically  
-- Compilation always derives from canonical artifacts  
-- Compilation always deterministic  
+- compilation never creates legitimacy  
+- compilation never replays acceptance  
+- compilation never overrides receipts  
+- compilation never uses timestamps for authority  
+- compilation never resolves conflicts heuristically  
+- compilation always derives from canonical artifacts  
+- compilation is fully deterministic  
 
 ---
 
@@ -319,10 +340,10 @@ Failure must be:
 Compilation reconstructs the past.
 
 - Receipts define what happened  
-- Resolutions define structure  
-- Supersession defines evolution  
-- Integrity defines validity  
+- Structural artifacts define graph structure  
+- ENG-STRUCTURE defines graph meaning  
+- ENG-INTEGRITY defines validity  
 
 Compilation does not decide history.
 
-It proves history is internally consistent.
+It proves that history is internally consistent.
