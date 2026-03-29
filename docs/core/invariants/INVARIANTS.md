@@ -1,510 +1,462 @@
 # Charter Core — Engine Invariants
 
-Status: REFACTORED (V4 – Constitutional Alignment Pass)  
+Status: REFACTORED (V5 – Determinism Closure & Spec Alignment)  
 Applies to: Charter Core Engine  
 Role: Constitutional invariants  
 Violations indicate an engine correctness failure
 
 ---
 
-## Purpose
+# 1. Purpose
 
-These invariants define the non-negotiable mechanical behavior of the Charter Core engine.
+These invariants define the non-negotiable mechanical behavior of the Engine.
 
 They preserve:
 
-- legitimacy
-- determinism
-- auditability
-- non-retroactivity
+- legitimacy  
+- determinism  
+- auditability  
+- non-retroactivity  
 
 These invariants are constitutional.
 
-They do not replace the detailed engine specifications.  
-They state the truths those specifications must uphold.
-
-Behavior not guaranteed here must be implemented outside the engine.
+They do not replace detailed specifications.  
+They define the truths those specifications must uphold.
 
 ---
 
-## I. Core Boundary
+# 2. Global Determinism (Foundational)
 
-### ENG-CORE-01 — Charter Core Is a Legitimacy Engine
+## ENG-DET-00 — Absolute Determinism
 
-Charter Core does not:
+Given identical:
 
-- reason about content
-- facilitate workflow
-- interpret semantics
-- infer intent
+- domain objects  
+- structural graph  
+- receipts  
+- command inputs  
+- runtime mode  
+- spec_set_hash  
+- schema versions  
 
-Its responsibility is strictly to:
+the Engine must produce identical:
 
-- enforce explicit legitimacy
-- maintain deterministic governance rules
-- preserve structural history
-- ensure auditability
-- prevent retroactive reinterpretation
+- evaluation outcomes  
+- EvaluationReports  
+- structural mutations  
+- receipts  
+- canonical hashes  
+- runtime mode decisions (normal / degraded / halt)  
 
 ---
 
-## II. Identity & Immutability
+## ENG-DET-01 — No Hidden Inputs
 
-### ENG-ID-01 — Canonical Engine Identity
+Engine behavior must not depend on:
 
-Engine-owned structural entities must have stable canonical identifiers.
+- timestamps (non-semantic only)  
+- storage order  
+- environment  
+- audit logs  
+- execution timing  
+- implicit defaults  
+- inferred data  
+
+All behavior must derive from explicit structural inputs.
+
+---
+
+## ENG-DET-02 — No Implementation Discretion
+
+The Engine must not include:
+
+- heuristic decisions  
+- policy-based classification  
+- implementation-defined outcome differences  
+
+All outcomes must be rule-defined and reproducible.
+
+---
+
+# 3. Core Boundary
+
+## ENG-CORE-01 — Engine Is a Legitimacy Compiler
+
+The Engine:
+
+- enforces legitimacy  
+- evaluates explicit rules  
+- preserves structural history  
+- produces deterministic outcomes  
+
+The Engine does not:
+
+- interpret semantics  
+- infer intent  
+- provide workflow logic  
+- reason about content  
+
+---
+
+# 4. Identity & Immutability
+
+## ENG-ID-01 — Canonical Identity
+
+Engine-owned structural entities must have stable identifiers.
 
 Identity must survive:
 
-- restart
-- export
-- import
-- serialization
+- restart  
+- export/import  
+- serialization  
 
-Fail if identity changes due to relabeling, reorganization, transport, or representation.
-
----
-
-### ENG-ID-02 — Accepted Resolutions Are Immutable
-
-Once a Resolution is accepted:
-
-- its accepted content is immutable
-- its acceptance context is immutable
-- its historical legitimacy is immutable
-
-Subsequent lifecycle evolution may occur only through explicit mechanisms defined elsewhere, including supersession and permitted forward-usability state changes.
-
-Fail if accepted content or acceptance context is edited, rewritten, or reinterpreted.
+Identifiers must not carry semantic meaning.
 
 ---
 
-## III. Legitimacy & Decision Semantics
+## ENG-ID-02 — Accepted Artifacts Are Immutable
 
-### ENG-LEG-01 — Explicit Decisions Only
+Once accepted:
 
-Legitimacy arises only from explicit acceptance within a session.
+- Resolution content is immutable  
+- acceptance context is immutable  
+- legitimacy is immutable  
 
----
+Evolution occurs only through:
 
-### ENG-LEG-02 — Sessions Are the Sole Unit of Legitimacy
-
-Sessions are the sole mechanism through which legitimacy is created.
-
-Resolutions outside sessions do not confer legitimacy.
-
----
-
-### ENG-LEG-03 — Legitimacy Evaluated at Acceptance
-
-Legitimacy is determined only by the accepted session state, including:
-
-- Authority governing that session
-- Scope governing that session
-- constraints active for that session
-- recorded votes at acceptance
-
-Past legitimacy must not be recomputed from later governance changes.
+- supersession (structure)  
+- usability transitions (forward-only)
 
 ---
 
-### ENG-LEG-04 — Deterministic Evaluation
+# 5. Legitimacy Model
 
-Identical structural inputs must produce identical evaluation outcomes.
+## ENG-LEG-01 — Explicit Legitimacy Only
 
-The engine must not depend on:
-
-- timing
-- environment
-- storage order
-- audit order
-- inferred intent
+Legitimacy arises only from explicit session acceptance.
 
 ---
 
-### ENG-LEG-05 — Explicit Dissent Is First-Class
+## ENG-LEG-02 — Sessions Are the Sole Legitimacy Mechanism
 
-Silence is not consent.
-
-Absence is not rejection.
-
-Only explicit recorded votes have evaluative meaning.
+Only sessions create legitimacy.
 
 ---
 
-## IV. Resolution Lifecycle & History
+## ENG-LEG-03 — Acceptance-Time Truth
 
-### ENG-HIST-01 — Append-Only History
+Legitimacy is determined solely by:
 
-Resolution history is append-only.
+- accepted session state  
+- authority and scope at acceptance  
+- votes and constraints at acceptance  
 
-Accepted history is never rewritten.
-
-Corrections require explicit forward artifacts, such as:
-
-- supersession
-- clarifying resolutions
-- permitted administrative forward-usability transitions
+Later changes must not affect past legitimacy.
 
 ---
 
-### ENG-HIST-02 — Explicit Lifecycle States
+## ENG-LEG-04 — Evaluation Is Deterministic
 
-Resolution lifecycle states are explicit and finite.
+Evaluation must be:
 
-Where supported by the governing schema, valid states are:
-
-- ACTIVE
-- UNDER_REVIEW
-- SUPERSEDED
-- RETIRED
-
-Lifecycle transitions must be explicit, auditable, and rule-bound.
+- deterministic  
+- complete  
+- side-effect free  
 
 ---
 
-### ENG-HIST-03 — Administrative States Do Not Alter Structural Legitimacy
+## ENG-LEG-05 — Explicit Participation Only
 
-UNDER_REVIEW and RETIRED affect forward usability only.
+Only explicit recorded votes have meaning.
 
-They do not:
-
-- revoke past legitimacy
-- change structural ACTIVE derivation
-- rewrite history
-- invalidate historical receipts
+No inference from absence.
 
 ---
 
-### ENG-HIST-04 — Supersession Is One-Way
+# 6. Structural History
 
-Supersession is directional and irreversible.
+## ENG-HIST-01 — Append-Only History
 
-A superseded Resolution cannot regain structural ACTIVE status.
+History is append-only.
 
----
-
-## V. Areas, Authority, and Scope
-
-### ENG-AREA-01 — Areas Are Governance Boundaries
-
-Each structural Resolution belongs to exactly one Area.
-
-Legitimacy is Area-local.
-
-Cross-area references may exist only as explicit non-governing references unless a governing schema states otherwise.
+No in-place mutation of accepted artifacts.
 
 ---
 
-### ENG-AREA-02 — Governed Runtime Requires Authority and Scope
+## ENG-HIST-02 — Explicit Lifecycle States
 
-An Area runtime intended for ordinary legitimacy evaluation requires exactly one ACTIVE Authority and one ACTIVE Scope.
+Lifecycle states are explicit and finite:
 
-Decisions must not proceed in an ungoverned runtime context.
-
-Bootstrap exceptions, if supported by the detailed specifications, must be:
-
-- explicit
-- deterministic
-- recorded structurally
-- non-implicit
-
-This invariant does not itself define bootstrap procedure details.
+- ACTIVE  
+- ON_HOLD  
+- SUPERSEDED  
+- RETIRED  
 
 ---
 
-### ENG-AREA-03 — Governance Anchors Do Not Disappear Implicitly
+## ENG-HIST-03 — Usability Does Not Alter Structure
 
-Authority and Scope are first-class governance anchors.
+ON_HOLD and RETIRED:
 
-They must evolve only through explicit rule-governed mechanisms.
-
-They must never vanish, be inferred, or be silently replaced.
-
----
-
-### ENG-AUTH-01 — Authority Is Mechanical
-
-Authority defines vote evaluation mechanically.
-
-Authority:
-
-- is structural
-- is singular within an Area runtime
-- cannot be inferred
-- cannot be interpreted semantically by the engine
-- never rewrites historical legitimacy
+- do not change structural graph  
+- do not change ACTIVE derivation  
+- do not rewrite legitimacy  
 
 ---
 
-### ENG-SCOPE-01 — Scope Is Structural Governance Context
+## ENG-HIST-04 — Supersession Is One-Way
 
-Scope is a first-class governance artifact.
+Supersession is:
 
-Scope may affect whether sessions may proceed.
-
-Scope semantics must remain explicit and auditable.
-
----
-
-### ENG-CONTEXT-01 — Authority and Scope Are Historically Bound
-
-Every accepted legitimacy artifact permanently records the governing Authority and Scope context under which it was accepted.
-
-Historical legitimacy must remain bound to that context permanently.
+- directional  
+- irreversible  
+- structural  
 
 ---
 
-## VI. Sessions, Candidates, and Constraints
+# 7. Structure vs Usability Separation
 
-### ENG-SES-01 — Candidates Are Neutral Until Acceptance
+## ENG-SEP-01 — Structural Truth vs Usability
 
-Candidates are proposal artifacts, not legitimacy artifacts.
+- STRUCTURE defines graph truth and ACTIVE  
+- USABILITY defines forward availability  
 
-Rejection, abandonment, or removal of a candidate does not create legitimacy.
-
----
-
-### ENG-SES-02 — Candidate Set Freezes at the Vote Boundary
-
-Once the session crosses from mutable pre-vote state into voting, candidate structure is frozen for that round.
+They must remain strictly separate.
 
 ---
 
-### ENG-CON-01 — Constraints Are Engine-Enforced
+# 8. Areas and Governance
 
-Constraints are explicit, session-scoped, and mechanically enforced.
+## ENG-AREA-01 — Area Locality
 
-They do not redefine Authority or Scope.
+Legitimacy is strictly Area-local.
 
-They tighten acceptance conditions only through explicit engine rules.
-
----
-
-### ENG-SES-03 — Resume Creates a New Deterministic Participation Round
-
-Resume never restores prior voting state.
-
-Resume creates a new deterministic round and requires renewed forward participation under the then-valid session rules.
-
-Historical rounds remain historical.
+No cross-area dependency for legitimacy.
 
 ---
 
-## VII. Voting & Acceptance
+## ENG-AREA-02 — Governed Runtime Requirement
 
-### ENG-VOTE-01 — Votes Are Evaluative Only
+A valid runtime must have:
 
-Votes contribute to evaluation.
+- exactly one ACTIVE Authority  
+- exactly one ACTIVE Scope  
 
-Votes do not themselves create legitimacy.
-
----
-
-### ENG-ACCEPT-01 — Explicit Acceptance Required
-
-Legitimacy arises only through explicit session acceptance.
-
-No amount of votes, proposals, or inferred agreement may substitute for acceptance.
+No implicit governance.
 
 ---
 
-### ENG-ACCEPT-02 — Acceptance Is Atomic
+## ENG-AREA-03 — Governance Is Explicit
 
-Accepted legitimacy must be created atomically with its required structural artifacts.
+Authority and Scope:
 
-There must be no partial accepted legitimacy.
-
----
-
-### ENG-ACCEPT-03 — Acceptance Freezes Historical Truth
-
-Acceptance freezes the accepted session truth that produced legitimacy.
-
-That frozen truth must remain reconstructable and verifiable.
+- must be explicit  
+- must not be inferred  
+- must not disappear implicitly  
 
 ---
 
-### ENG-ACCEPT-04 — Non-Retroactivity
+## ENG-CONTEXT-01 — Context Is Permanently Bound
 
-Changes after acceptance, including changes to:
+Accepted legitimacy permanently binds:
 
-- votes
-- governance usability
-- scope
-- authority
-- later supersession relationships
-
-must not retroactively alter past legitimacy.
+- Authority  
+- Scope  
 
 ---
 
-## VIII. Concurrency & Isolation
+# 9. Sessions & Candidates
 
-### ENG-CONCUR-01 — Concurrent Sessions Are Isolated Until Structural Conflict
+## ENG-SES-01 — Candidates Are Non-Legitimate
 
-Concurrent sessions remain isolated unless explicit structural conflict arises.
-
-Conflicts may arise through changes such as:
-
-- governance change
-- supersession of referenced artifacts
-- blocking conditions
-
-Interference must be explicit, deterministic, and rule-governed.
+Candidates are proposals only.
 
 ---
 
-## IX. Import, Export, and Compilation
+## ENG-SES-02 — Candidate State Is Derived
 
-### ENG-EXP-01 — Export Preserves Structural Legitimacy History
+Candidate status is not stored.
 
-Exports must preserve the structural artifacts required to reconstruct legitimacy history.
-
-Unfinished runtime state must not be exported as completed legitimacy.
+It is derived deterministically during evaluation.
 
 ---
 
-### ENG-IMP-01 — Import Does Not Create Legitimacy
+## ENG-SES-03 — Deterministic Rounds
 
-Import introduces historical structural artifacts.
+Resume creates a new deterministic round.
 
-Import does not create legitimacy.
-
-Imported legitimacy must already be provable from the imported artifacts themselves.
+No prior vote state is reused.
 
 ---
 
-### ENG-COMP-01 — Compilation Reconstructs, It Does Not Re-Decide
+## ENG-CON-01 — Constraints Are Explicit
 
-Historical compilation reconstructs the legitimacy DAG from historical artifacts.
+Constraints must be:
 
-Compilation must be deterministic.
-
-Compilation must not:
-
-- recreate legitimacy
-- reinterpret legitimacy under new rules silently
-- choose winners heuristically
-- override historical receipts
+- explicit  
+- deterministic  
+- mechanically enforced  
 
 ---
 
-## X. Supersession, Review, and Governance Stability
+# 10. Voting & Acceptance
 
-### ENG-SUP-01 — Supersession Is Structural and One-Way
+## ENG-VOTE-01 — Votes Are Inputs Only
 
-Supersession changes structural governance history forward.
-
-It is irreversible and directional.
+Votes contribute to evaluation only.
 
 ---
 
-### ENG-SUP-02 — Authority Evolves Only by Explicit Structural Means
+## ENG-ACCEPT-01 — Explicit Acceptance Required
 
-Authority cannot drift, be inferred, or be administratively reinterpreted into a new governing truth.
-
-Authority evolution must remain explicit and structural.
+Only acceptance creates legitimacy.
 
 ---
 
-### ENG-SUP-03 — Review State Is Usability, Not History Rewrite
+## ENG-ACCEPT-02 — Atomic Acceptance
 
-Review-like states suspend forward usability only.
+Acceptance must be atomic with:
 
-They must not rewrite historical legitimacy.
-
----
-
-### ENG-SUP-04 — Review Blocks Forward Dependence
-
-If a session depends on an artifact that is not forward-usable, the session must not proceed as though nothing changed.
-
-The exact lifecycle consequence is defined elsewhere, but the interruption must be explicit and deterministic.
+- Resolution  
+- receipt  
+- structural mutation  
 
 ---
 
-### ENG-SUP-05 — Context Revalidation Must Be Explicit
+## ENG-ACCEPT-03 — Acceptance Freezes Truth
 
-When governing context changes in a way that matters to a pending session, forward progress must require explicit revalidation.
+Accepted state must remain:
 
----
-
-### ENG-SUP-06 — Terminal Forward-Usability States Remain Terminal
-
-Terminal lifecycle states remain terminal according to the governing lifecycle model.
-
-The engine must not silently re-open or reinterpret them.
+- reconstructable  
+- verifiable  
+- immutable  
 
 ---
 
-## XI. Audit Requirements
+## ENG-ACCEPT-04 — Non-Retroactivity
 
-### ENG-AUD-01 — Structural and Administrative Actions Are Auditable
-
-Administrative and structural actions that affect forward governance or state evolution must be auditable.
-
-Audit must remain observational only.
-
-Audit may record legitimacy-related actions, but must never create legitimacy.
+No later change may alter past legitimacy.
 
 ---
 
-## XII. Determinism & Locality
+# 11. Concurrency
 
-### ENG-DET-01 — Legitimacy Is Structural and Local
+## ENG-CONCUR-01 — Deterministic Conflict Resolution
+
+Concurrent sessions must resolve conflicts deterministically.
+
+No heuristic resolution permitted.
+
+---
+
+# 12. Persistence & Artifacts
+
+## ENG-PERSIST-01 — Atomic Legitimacy
+
+Legitimacy artifacts must persist atomically.
+
+---
+
+## ENG-EXP-01 — Export Preserves Truth
+
+Export must preserve legitimacy artifacts completely.
+
+---
+
+## ENG-IMP-01 — Import Does Not Create Legitimacy
+
+Import introduces artifacts only.
+
+---
+
+## ENG-COMP-01 — Compilation Is Reconstruction Only
+
+Compilation:
+
+- reconstructs history  
+- does not re-evaluate legitimacy  
+- does not reinterpret rules  
+
+---
+
+# 13. Supersession & Usability Effects
+
+## ENG-SUP-01 — Supersession Is Structural
+
+Supersession defines structural evolution only.
+
+---
+
+## ENG-SUP-02 — Usability Affects Forward Only
+
+ON_HOLD / RETIRED:
+
+- affect forward usage  
+- do not affect history  
+
+---
+
+## ENG-SUP-03 — Blocking Must Be Explicit
+
+If forward usage is invalid:
+
+- blocking must be explicit  
+- must be deterministic  
+
+---
+
+# 14. Audit
+
+## ENG-AUD-01 — Audit Is Observational
+
+Audit:
+
+- records events  
+- does not affect legitimacy  
+- does not affect evaluation  
+
+---
+
+# 15. Determinism & Locality
+
+## ENG-DET-03 — Local Structural Legitimacy
 
 Legitimacy must be computable from:
 
-- local Area structural artifacts
-- explicit rules
-- explicit references
-- explicit receipts where required
-
-It must not depend on:
-
-- external Areas
-- workflow context
-- hidden metadata
-- human interpretation by the engine
+- local structural artifacts  
+- explicit rules  
 
 ---
 
-### ENG-DET-02 — Nothing Is Inferred Implicitly
+## ENG-DET-04 — No Implicit Inference
 
-The engine must not infer:
+The Engine must not infer:
 
-- missing governance
-- missing receipts
-- missing votes
-- missing intent
-- missing legitimacy
+- missing data  
+- missing legitimacy  
+- missing intent  
 
-If legitimacy cannot be proven mechanically, the engine must not pretend otherwise.
+If legitimacy cannot be proven → it does not exist.
 
 ---
 
-## XIII. Explicit Non-Goals
+# 16. Non-Goals
 
-### ENG-NONGOAL-01 — No Workflow or Semantic Facilitation
+## ENG-NONGOAL-01 — No Semantic or Workflow Logic
 
-Charter Core does not provide:
+The Engine does not provide:
 
-- reasoning
-- workflow management
-- facilitation
-- semantic interpretation
-- policy authorship
-- social decision support
-
-Those belong outside the engine.
+- reasoning  
+- workflow  
+- interpretation  
+- policy  
 
 ---
 
-## Lock Statement
+# 17. Lock Statement
 
 These invariants are constitutional.
 
-Detailed specifications may refine behavior, but they must not violate these invariants.
+All specifications must conform to them.
 
-Adherence defines engine correctness.
+Any violation constitutes an Engine correctness failure.
