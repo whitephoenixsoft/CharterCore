@@ -1,6 +1,6 @@
 # ENG-INTEGRITY — Engine Integrity, Runtime Safety & Structural Halt Guarantees
 
-Status: REFACTORED (v18 – Structure/Usability Alignment & Informational Reference Consistency)  
+Status: REFACTORED (v19 – Determinism Closure & Policy Elimination)  
 Applies to: Engine Core (V1/V2+)  
 
 Authority: Foundational runtime authority for structural validity, halt conditions, degraded mode, and single-Area enforcement.
@@ -216,8 +216,6 @@ It determines whether the runtime can safely proceed with them.
 
 ---
 
-# 6a. No Repair or Mutation
-
 ## ENG-INTEGRITY-06A — Integrity Is Validation Only
 
 ENG-INTEGRITY must not:
@@ -237,6 +235,14 @@ Any repair must occur outside the Engine or through explicit Engine operations g
 
 ---
 
+## ENG-INTEGRITY-06B — Complete Validation Requirement
+
+ENG-INTEGRITY must detect and report all applicable structural and runtime integrity violations defined by governing specifications.
+
+Implementations must not omit applicable violations.
+
+---
+
 # 7. Structural vs Informational References
 
 ## ENG-INTEGRITY-07 — Structural References Must Resolve
@@ -252,50 +258,34 @@ Structural references must resolve locally within the active Area.
 
 Missing structural references must cause deterministic failure.
 
-Cross-area structural references are prohibited.
+Cross-area structural edges are prohibited.
 
 Reference classification is defined in ENG-DOMAIN.
 
 ---
 
-## ENG-INTEGRITY-07A — Informational References Must Resolve but Remain Non-Structural
+## ENG-INTEGRITY-07A — Informational References Are Non-Structural but Must Be Consistent
 
-Informational references are not part of structural graph semantics.
+Informational references:
 
-They must not:
-
-- affect legitimacy
-- affect ACTIVE derivation
-- be interpreted as structural dependencies
-- be used in graph traversal or evaluation
-
-However, if present, informational references must satisfy referential validity.
+- do not affect legitimacy
+- do not affect ACTIVE derivation
+- must not be interpreted as structural edges
 
 ### Cross-Area Informational References
 
 - are metadata only
-- must not affect legitimacy or graph behavior
-- are not required to resolve to locally present artifacts
+- are not required to resolve locally
 
 ### Intra-Area Informational Resolution References
 
 - must reference existing Resolution objects within the same Area
-- must not affect legitimacy or structural graph behavior
-- must not be interpreted as supersession edges
-- must not introduce ordering or precedence semantics
 
-If an intra-Area informational Resolution reference is present but does not resolve:
+If such a reference does not resolve:
 
-- the input is structurally invalid for runtime entry
 - initialization must fail deterministically
 
-This failure:
-
-- is not due to graph semantics
-- does not reinterpret the reference as structural
-- enforces referential consistency required by ENG-DOMAIN
-
-Informational references remain non-structural even when invalid.
+This requirement is a structural integrity constraint defined by ENG-DOMAIN, not a semantic interpretation of the reference.
 
 ---
 
@@ -303,13 +293,7 @@ Informational references remain non-structural even when invalid.
 
 ## ENG-INTEGRITY-08 — Governance Slots Must Be Structurally Valid
 
-Governance slot structure is defined in ENG-DOMAIN.  
-ACTIVE derivation is defined in ENG-STRUCTURE.  
-Usability suspension semantics are defined in ENG-USABILITY.
-
-ENG-INTEGRITY is responsible for ensuring the runtime sees a structurally valid governance configuration.
-
-It must validate:
+ENG-INTEGRITY must validate:
 
 - Authority slot exclusivity
 - Scope slot exclusivity
@@ -318,29 +302,18 @@ It must validate:
 
 If structural governance validity cannot be proven, runtime must not proceed.
 
-ENG-INTEGRITY does not redefine Authority or Scope usability rules.  
-It enforces that runtime operation cannot continue if those rules produce unsafe governance state.
-
 ---
 
 # 9. Participant Epoch Integrity
 
 ## ENG-INTEGRITY-09 — Epoch Integrity Is Structural
 
-Participant identity is session-scoped and epoch-based.
-
 ENG-INTEGRITY must validate:
 
 - no participant_id reuse within a session
 - no merge of historical participation epochs
-- round snapshots align with frozen session history as represented in receipts
+- round snapshots align with frozen session history
 - epoch boundaries remain deterministic across restore
-
-Participant schema is defined in ENG-DOMAIN.  
-Round and receipt structure are defined in ENG-RECEIPT.  
-Session lifecycle boundaries are defined in ENG-SESSION.
-
-ENG-INTEGRITY is the runtime authority that determines whether those structures are safe and valid.
 
 ---
 
@@ -348,16 +321,7 @@ ENG-INTEGRITY is the runtime authority that determines whether those structures 
 
 ## ENG-INTEGRITY-10 — Receipt Integrity Is Runtime Trust-Critical
 
-Receipts are integrity artifacts.
-
-They do not create legitimacy, but are required to prove legitimacy history and to establish runtime trust classification.
-
-Receipt validation occurs in multiple contexts:
-
-- ENG-IMPORT → validation at ingestion time
-- ENG-INTEGRITY → validation at runtime safety boundary
-
-ENG-INTEGRITY must validate, for runtime safety:
+ENG-INTEGRITY must validate:
 
 - terminal sessions have exactly one receipt
 - no orphaned receipts exist where prohibited
@@ -365,110 +329,80 @@ ENG-INTEGRITY must validate, for runtime safety:
 - canonical serialization is valid
 - declared hash_algorithm is valid
 - receipt snapshots are structurally consistent
-- rule identity fields are acceptable for runtime interpretation under ENG-SPECVERIFY
+- rule identity fields are valid under ENG-SPECVERIFY
 
-ENG-INTEGRITY determines whether receipt validation results in:
+Receipt validation failures must be deterministically classified as:
 
-- normal runtime
-- degraded read-only mode
-- initialization failure (halt)
+- fatal (halt)
+- non-fatal (degraded)
 
-Receipt structure is defined in ENG-RECEIPT.  
-Canonical encoding is defined in ENG-CANON.  
-Rule identity semantics are defined in ENG-SPECVERIFY.
-
-Historical receipts remain authoritative even if later Resolution usability changes under ENG-USABILITY.
+This classification must not depend on runtime configuration or implementation policy.
 
 ---
 
 # 11. ACTIVE Derivation & Usability Consumption
 
-## ENG-INTEGRITY-11 — Integrity Consumes, It Does Not Define, Structure and Usability
+## ENG-INTEGRITY-11 — Integrity Consumes Structure and Usability
 
-Structural ACTIVE derivation belongs to ENG-STRUCTURE.  
-ON_HOLD / RETIRED usability semantics belong to ENG-USABILITY.
+ENG-INTEGRITY consumes:
 
-ENG-INTEGRITY consumes those outcomes to determine whether runtime can proceed safely.
+- structural ACTIVE derivation from ENG-STRUCTURE
+- usability semantics from ENG-USABILITY
 
-This includes:
-
-- governance slot readiness
-- session evaluation readiness
-- restore-time runtime safety
-- acceptance guard safety
-
-ENG-INTEGRITY must never redefine graph semantics or administrative usability semantics independently.
+It must not redefine either.
 
 ---
 
 # 12. Degraded Read-Only Mode
 
-## ENG-INTEGRITY-12 — Degraded Mode Is Contained Runtime Damage
+## ENG-INTEGRITY-12 — Degraded Mode Is Deterministic
 
-Degraded mode may activate only if:
+Degraded mode activation must be fully determined by rule evaluation.
 
-- structural graph is internally consistent
-- schema compatibility is satisfied
-- structural graph can be reconstructed
-- governance slots can be derived
-- runtime trust or completeness is insufficient for safe mutation or acceptance
+A condition must be classified as either:
 
-Examples include:
+- fatal (requires halt), or
+- non-fatal (permits degraded mode)
 
-- non-fatal receipt trust issues as determined by ENG-INTEGRITY runtime policy
-- missing optional non-structural artifacts
-- host-configured artifacts unavailable where not structurally required
+This classification must be:
 
-Degraded mode activation criteria must be deterministic.
+- explicitly defined by governing specifications
+- deterministic for identical inputs
+- independent of implementation or configuration
+
+ENG-INTEGRITY must not rely on implementation-defined policy.
 
 In degraded mode:
 
 - no mutating operations allowed
 - no acceptance allowed
-- no incremental legitimacy extension allowed
-- evaluation permitted for informational use only where safe
+- no legitimacy extension allowed
+- evaluation permitted for informational use only
 - DAG export permitted
-
-Degraded mode must never mask structural corruption.
-
-If structural corruption exists, the Engine must halt instead.
 
 ---
 
 # 13. Resource Exhaustion & Atomic Failure
 
-## ENG-INTEGRITY-13 — Determinism Exists Within a Resource Envelope
+## ENG-INTEGRITY-13 — Determinism Within Resource Envelope
 
-The Engine guarantees deterministic behavior only within a sufficient resource envelope.
+Within a given implementation and resource configuration:
 
-Resource ceilings are implementation-defined.
+- identical inputs must produce identical outcomes
 
 ---
 
-## ENG-INTEGRITY-14 — Resource Failure Must Be Atomic or Fatal
+## ENG-INTEGRITY-14 — Atomic Failure Requirement
 
-If resource exhaustion occurs during:
-
-- rehydration
-- restore validation
-- structural graph reconstruction
-- acceptance
-- graph mutation application
-- receipt verification
-- canonical serialization
-- hash computation
-
-the Engine must:
+If resource exhaustion occurs, the Engine must:
 
 - abort the operation atomically
 - leave structural state unchanged
 - emit no partial structural results
-- emit no partial transitions
 
 If atomic safety cannot be guaranteed, the Engine must halt.
 
-Atomic persistence boundaries are defined in ENG-PERSISTENCE.  
-ENG-INTEGRITY governs runtime safety if those guarantees cannot be maintained.
+The determination of atomic safety must be deterministic for identical inputs and environment conditions.
 
 ---
 
@@ -478,30 +412,26 @@ ENG-INTEGRITY governs runtime safety if those guarantees cannot be maintained.
 
 The Engine must halt if structural legitimacy cannot be proven.
 
-Fatal structural failures include, at minimum:
+Fatal failures include:
 
 - structural graph cycle detected
 - mixed-area structural graph detected
-- cross-area structural supersession detected
+- cross-area structural edge detected
 - unresolved structural references
 - unsupported schema version
 - unknown structural enum or field
-- governance slot multiplicity or structurally invalid emptiness
+- governance slot multiplicity or invalid emptiness
 - participant epoch reuse
-- terminal receipt missing where required
-- receipt snapshot mismatch where runtime policy makes it fatal
-- receipt hash mismatch where runtime policy makes it fatal
+- terminal receipt missing
+- receipt hash mismatch (when classified fatal)
+- receipt snapshot mismatch (when classified fatal)
 - partial mutation after resource failure
-- any structural inconsistency that prevents safe legitimacy compilation
 
 Additionally:
 
-- unresolved intra-Area informational Resolution references must cause initialization failure (see ENG-INTEGRITY-07A)
+- unresolved intra-Area informational Resolution references must cause initialization failure
 
 No automatic repair is permitted.
-
-ENG-ERROR defines reporting form.  
-ENG-INTEGRITY defines whether runtime may continue.
 
 ---
 
@@ -509,57 +439,60 @@ ENG-INTEGRITY defines whether runtime may continue.
 
 ## ENG-INTEGRITY-16 — Runtime Structural Determinism
 
-Within schema compatibility and resource envelope constraints, ENG-INTEGRITY must guarantee deterministic runtime outcomes for:
+Within constraints of schema compatibility and resource envelope, ENG-INTEGRITY must produce deterministic outcomes.
 
-- restore validation
-- structural readiness determination
-- governance slot validity
-- participant epoch validation
-- receipt runtime integrity validation
-- runtime mode selection (normal, degraded, halt)
+---
 
-ENG-INTEGRITY does not define historical replay ordering or graph precedence rules.  
-Those belong to ENG-COMPILATION and ENG-STRUCTURE.
+## ENG-INTEGRITY-16A — Deterministic Input Closure
 
-It must, however, apply their outputs deterministically.
+Deterministic integrity outcomes require identical:
 
-No storage order, environment variation, or implicit timestamp ordering may alter integrity outcomes.
+- domain graph (canonical structural content)
+- receipt artifacts
+- runtime inputs
+- spec_set_hash
+- schema versions
+- canonical serialization rules
+
+Outcomes must not depend on implicit or external context.
+
+---
+
+## ENG-INTEGRITY-16B — Runtime Trust Determinism
+
+Runtime trust must be derived solely from deterministic validation outcomes.
+
+It must not depend on heuristic or implementation-specific interpretation.
 
 ---
 
 # 16. Relationship to Atomic Persistence
 
-## ENG-INTEGRITY-17 — Integrity Requires Persistence Guarantees but Does Not Define Them
+## ENG-INTEGRITY-17 — Persistence Assumptions
 
-Atomic commit boundaries are defined in ENG-PERSISTENCE.
+ENG-INTEGRITY consumes atomic persistence guarantees from ENG-PERSISTENCE.
 
-ENG-INTEGRITY requires that runtime trust in legitimacy artifacts depends on those guarantees remaining true.
+If those guarantees are violated:
 
-If runtime evidence indicates those guarantees were violated:
-
-- degraded mode or halt must result, depending on whether structural legitimacy can still be safely reasoned about
-
-ENG-INTEGRITY does not redefine the persistence transaction model.
+- degraded mode or halt must result deterministically
 
 ---
 
 # 17. Engine Invariants
 
-- exactly one Area active at runtime
-- no foreign DAG legitimacy evaluation
-- no partial restore mode for legitimacy
-- schema compatibility enforced before runtime legitimacy compilation
+- exactly one Area active
+- no foreign DAG evaluation
+- no partial restore for legitimacy
+- schema compatibility enforced
 - structural references must resolve
-- intra-Area informational Resolution references, if present, must resolve locally or cause initialization failure
-- informational references must not be reinterpreted as structural graph edges
-- governance slots structurally valid
-- participant epochs structurally enforced
+- informational references remain non-structural
+- governance slots valid
+- participant epochs valid
+- receipt integrity validated
 - runtime determinism mandatory
+- degraded vs halt classification deterministic
 - resource failure atomic or fatal
-- structural ACTIVE derivation consumed from ENG-STRUCTURE
-- ON_HOLD / RETIRED usability consumed from ENG-USABILITY
-- receipt integrity validated through ENG-RECEIPT + ENG-CANON + ENG-SPECVERIFY
-- atomic persistence guarantees assumed from ENG-PERSISTENCE and enforced as runtime trust conditions
+- no repair or mutation by integrity
 
 ---
 
@@ -569,6 +502,6 @@ If legitimacy cannot be mechanically proven from structural domain objects, the 
 
 If atomic runtime safety cannot be guaranteed, the Engine must halt.
 
-If structural validity is preserved but runtime trust is insufficient for mutation, the Engine may degrade to read-only mode.
+If structural validity is preserved but trust is insufficient for mutation, the Engine may degrade to read-only mode.
 
-ENG-INTEGRITY is the final runtime authority for making that distinction.
+ENG-INTEGRITY is the final runtime authority.
