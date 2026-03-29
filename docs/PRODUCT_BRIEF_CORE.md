@@ -1,4 +1,4 @@
-# Charter Core — Product Brief 
+# Charter Legitimacy Engine (Core) — Product Brief 
 
 Modern systems lose legitimacy over time.
 
