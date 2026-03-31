@@ -185,12 +185,12 @@ No in-place mutation of accepted artifacts.
 
 ## ENG-HIST-02 — Explicit Lifecycle States
 
-Lifecycle states are explicit and finite:
-
-- ACTIVE  
-- ON_HOLD  
-- SUPERSEDED  
-- RETIRED  
+- lifecycle states are explicit and finite
+- in the current specification set, valid Resolution lifecycle states are:
+  - ACTIVE
+  - ON_HOLD
+  - SUPERSEDED
+  - RETIRED
 
 ---
 
@@ -383,7 +383,7 @@ Compilation:
 
 ## ENG-SUP-01 — Supersession Is Structural
 
-Supersession defines structural evolution only.
+Supersession is a structural mechanism of forward evolution.
 
 ---
 

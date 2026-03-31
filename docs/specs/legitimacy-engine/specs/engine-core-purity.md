@@ -227,11 +227,16 @@ Structural meaning belongs to ENG-STRUCTURE.
 
 Given identical:
 
-- domain objects  
-- structural graph  
-- session state  
-- governance state  
-- rule identity  
+- domain objects
+- structural graph
+- receipts
+- spec_set_hash
+- session state
+- governance state
+- command input where applicable
+- runtime mode where applicable
+- rule identity
+- schema versions
 
 the Engine must produce identical results.
 
@@ -244,7 +249,10 @@ The Engine must not depend on:
 - external availability  
 - audit ordering  
 
-Determinism is absolute within the resource envelope.
+Determinism is absolute:
+
+- within a given implementation and resource configuration
+- within identical inputs must produce identical outcomes
 
 ---
 
@@ -282,7 +290,10 @@ Determinism is guaranteed only within sufficient resources.
 
 The Engine does not guarantee:
 
-- liveness under exhaustion  
+- liveness under exhaustion 
+
+
+Within a given implementation and resource configuration, identical inputs must produce identical outcomes.
 
 ---
 
@@ -297,10 +308,10 @@ If resources are insufficient:
 Applies to:
 
 - initialization  
-- evaluation where required  
 - acceptance  
 - receipt emission  
 - structural commit  
+- validation operations whose failure must not leave partial runtime state
 
 ---
 
@@ -313,6 +324,8 @@ The specification does not define:
 - performance guarantees  
 
 Implementations must not violate determinism or atomicity.
+
+Within a given implementation and resource configuration, identical inputs must produce identical outcomes.
 
 ---
 
