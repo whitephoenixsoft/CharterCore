@@ -92,6 +92,7 @@ All lifecycle changes that affect forward usability must occur through valid gov
 The only administrative transition governed here is:
 
 - ACTIVE ↔ ON_HOLD
+- ACTIVE → RETIRED is not an administrative transition in this specification set and must occur only through valid governance acceptance
 
 All other lifecycle changes remain governed by:
 
@@ -383,6 +384,20 @@ ENG-USABILITY does not define:
 Those belong to ENG-STRUCTURE.
 
 ENG-USABILITY consumes structural outcomes.
+
+---
+
+### ENG-USABILITY-20A — Deterministic Usability Outcomes
+
+Given identical:
+
+- structural ACTIVE truth
+- lifecycle state
+- object class
+- schema versions
+- governing rule identity where applicable
+
+ENG-USABILITY must produce identical usability outcomes.
 
 ---
 

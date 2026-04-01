@@ -256,6 +256,8 @@ Informational references must not be used as inputs to:
 If multiple acceptance attempts compete to supersede the same structural target set:
 
 - the first successfully committed acceptance wins
+- ENG-STRUCTURE consumes the committed structural result
+- ENG-PERSISTENCE defines the atomic mechanism by which that result becomes authoritative
 - later competing attempts become graph-invalid for acceptance purposes
 
 This is the authoritative structural conflict rule.
@@ -355,7 +357,7 @@ ENG-STRUCTURE consumes lifecycle state only where it affects graph interpretatio
 Graph-relevant principles:
 
 - ACTIVE may participate in structural ACTIVE derivation
-- SUPERSEDED is graph-terminal as a predecessor outcome
+- SUPERSEDED records that a Resolution is no longer structurally ACTIVE because a valid accepted successor exists
 - ON_HOLD does not change graph structure
 - RETIRED does not change graph structure
 
@@ -381,6 +383,20 @@ Restore-time runtime safety, halt, or degraded-mode decisions are not defined he
 Those belong to ENG-INTEGRITY.
 
 ENG-STRUCTURE defines only the graph reconstruction truth that those runtime decisions consume.
+
+---
+
+### ENG-STRUCTURE-18A — Deterministic Input Closure
+
+Deterministic structural outcomes require identical:
+
+- structural domain objects
+- structural edges
+- graph-valid historical legitimacy artifacts where required
+- schema versions
+- rule identity inputs where applicable
+
+ENG-STRUCTURE outcomes must not depend on storage order, timestamps, or implementation heuristics.
 
 ---
 
