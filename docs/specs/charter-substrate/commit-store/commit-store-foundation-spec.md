@@ -2,7 +2,7 @@
 
 Status: FOUNDATIONAL  
 Intent: Define how commits are stored, retrieved, and lifecycle-managed locally  
-Scope: Commit persistence, indexing, archival, purge boundaries  
+Scope: Commit persistence, indexing, archival, and purge boundaries  
 Does NOT Define: commit structure (CCS), legitimacy, runtime workflows, alignment, guidance, or transport semantics  
 
 ---
@@ -16,9 +16,9 @@ The Charter Commit Store defines how commits are:
 - preserved over time  
 - archived and optionally purged  
 
-It exists to provide a **durable, append-only storage substrate** for commit artifacts defined by the Charter Commit System (CCS).
+It exists to provide a **durable storage substrate** for commit artifacts defined by the Charter Commit System (CCS).
 
-The Commit Store manages **where commits live**, not **what they mean**.
+The Commit Store manages **where commits are available**, not **what they mean**.
 
 ---
 
@@ -29,16 +29,46 @@ The Commit Store manages **where commits live**, not **what they mean**.
 The Commit Store:
 
 - stores commit artifacts exactly as defined by CCS  
+- treats all commits as opaque structures  
 - does not assign meaning, authority, or correctness  
-- does not compute state or alignment  
+- does not compute state, alignment, or relationships  
 
 It is a **storage and lifecycle system**, not a semantic system.
 
 ---
 
-# 3. Separation of Concerns
+# 3. Logical Model vs Physical Storage
 
-## 3.1 Relationship to CCS
+## 3.1 Logical Append-Only Model
+
+The Commit Store is **logically append-only**:
+
+- commits, once recorded, are never modified  
+- commit identity and integrity are permanent  
+- history is never rewritten  
+
+This defines the **truth model** of the system.
+
+---
+
+## 3.2 Physical Storage Behavior
+
+Physical storage MAY:
+
+- archive commits to different storage tiers  
+- remove commits via explicit purge  
+
+However:
+
+> Physical removal does not alter the historical validity of commits as artifacts.
+
+Absence in the local store does not imply non-existence.
+
+---
+
+# 4. Separation of Concerns
+
+## 4.1 Relationship to CCS
 
 - CCS defines **what a commit is**  
 - Commit Store defines **how commits are stored and retained**  
@@ -47,15 +77,15 @@ The Commit Store must treat all commits as:
 
 - opaque  
 - immutable  
-- append-only artifacts  
+- append-only artifacts (logically)  
 
 ---
 
-## 3.2 Relationship to Runtime Layer
+## 4.2 Relationship to Runtime Layer
 
 - Runtime produces commits  
-- Runtime may query commits  
-- Runtime may initiate archival or purge workflows  
+- Runtime queries commits  
+- Runtime initiates archival and purge workflows  
 
 The Commit Store must not:
 
@@ -65,40 +95,45 @@ The Commit Store must not:
 
 ---
 
-## 3.3 Separation from Runtime Object Store
+## 4.3 Separation from Runtime Object Store
 
 The Commit Store is **distinct from the Runtime object store**.
 
 | Runtime Object Store | Commit Store |
 |---------------------|--------------|
 | Mutable working state | Immutable commit artifacts |
-| Supports workflows | Stores outcomes and records |
-| May be pruned or reorganized | Append-only (with controlled purge) |
+| Supports workflows | Stores recorded artifacts |
+| May be reorganized | Logically append-only |
 | Not portable by default | Portable via commits |
 
-The two systems must never be conflated.
+These systems must never be conflated.
 
 ---
 
-# 4. Storage Model
+# 5. Non-Interpretation Guarantee
 
-## 4.1 Append-Only Storage
+The Commit Store must not:
 
-The Commit Store is append-only by default:
+- inspect commit payload semantics  
+- branch logic based on commit type  
+- infer relationships between commits  
+- compute derived or canonical state  
 
-- new commits may be added  
-- existing commits must not be modified  
-- commit identity and integrity must be preserved  
+> The Commit Store must not define or expose “current”, “latest”, or “authoritative” state.
+
+All interpretation belongs to higher layers (Runtime, CAS, CGL).
 
 ---
 
-## 4.2 Identity and Integrity
+# 6. Storage Model
+
+## 6.1 Identity and Integrity
 
 For every stored commit:
 
 - commit_id must remain unchanged  
 - integrity_hash must remain verifiable  
-- referenced relationships must remain intact  
+- commit contents must remain byte-consistent  
 
 The store must not:
 
@@ -108,49 +143,97 @@ The store must not:
 
 ---
 
-## 4.3 Indexing
+## 6.2 Opaque Storage
 
-The Commit Store may provide indexing for:
+Commits must be stored as opaque artifacts.
+
+The store may index metadata fields but must not:
+
+- depend on internal semantics  
+- alter storage behavior based on meaning  
+
+---
+
+## 6.3 No Ordering Guarantee
+
+The Commit Store must not guarantee:
+
+- global ordering of commits  
+- causal ordering between commits  
+
+Ordering may exist via:
+
+- timestamps  
+- external interpretation  
+
+But is not enforced by storage.
+
+---
+
+# 7. Indexing
+
+The Commit Store may provide indexes for:
 
 - commit_id  
 - commit_type  
 - referenced_area_id  
 - timestamps  
-- relationships  
 
 Indexes:
 
-- are secondary structures  
-- may be rebuilt  
+- are secondary and rebuildable  
 - must not affect commit integrity  
+- must not introduce inferred relationships  
+
+> Indexes accelerate access. They do not create meaning.
 
 ---
 
-# 5. Retrieval Model
+# 8. Retrieval Model
 
 The Commit Store must support:
 
 - direct retrieval by commit_id  
-- traversal via commit relationships  
 - filtered queries (type, area, time)  
 
-All retrieval must return:
+Retrieval must:
 
-- original, unmodified commit artifacts  
+- return original, unmodified commit artifacts  
+
+Retrieval must not:
+
+- merge commits  
+- synthesize views  
+- infer relationships  
+- transform commit contents  
 
 ---
 
-# 6. Lifecycle Model
+# 9. Presence Model
 
-The Commit Store defines **storage lifecycle**, not semantic lifecycle.
+The Commit Store operates over **local availability**, not global completeness.
+
+Each commit is in one of three states:
+
+- **Present** — stored locally and queryable  
+- **Archived** — stored in an alternate location (local or external)  
+- **Absent** — not present in the local store  
+
+> The Commit Store does not guarantee that all related commits are present locally.
 
 ---
 
-## 6.1 Default State
+# 10. Lifecycle Model
+
+The Commit Store defines **storage lifecycle only**, not semantic lifecycle.
+
+---
+
+## 10.1 Default State
 
 All commits are:
 
-- active  
+- present  
 - locally available  
 - queryable  
 
@@ -158,47 +241,55 @@ No implicit aging or expiration exists.
 
 ---
 
-## 6.2 Archival
+## 10.2 Archival
 
-Archival moves commits into a **different storage posture** without altering them.
+Archival changes storage posture without altering commits.
 
 ### Properties:
 
 - commits remain immutable  
 - identity and hashes preserved  
 - relationships preserved  
-- may be relocated to:
-  - cold storage  
-  - export bundles  
-  - relay endpoints  
+- storage location may change  
 
-### Archival does NOT:
+Archival may move commits to:
 
-- delete commits  
-- compress meaning  
-- rewrite history  
+- cold storage  
+- export bundles  
+- relay systems  
 
 ---
 
-## 6.3 Archival Modes
+### Archival Invariants
 
-Archival may follow modes such as:
+Archival must not:
+
+- mutate commits  
+- replace commits  
+- create new identities for existing commits  
+
+Archival may produce **new commits representing archival artifacts**,  
+but must not alter original commits.
+
+---
+
+### Archival Modes
+
+Archival may use modes such as:
 
 - MINIMAL  
 - CLOSURE  
 - NARRATIVE  
 
-These modes determine **completeness**, not meaning.
+These define completeness, not meaning.
 
 ---
 
-## 6.4 Purge (Explicit and Controlled)
+## 10.3 Purge (Explicit and Controlled)
 
 Purge is the **physical removal of commits from the local store**.
 
-### Critical Distinction:
-
-> Purge affects local availability, not historical truth.
+> Purge affects local availability, not historical existence.
 
 ---
 
@@ -209,47 +300,30 @@ Purge must be:
 - explicit  
 - user-initiated  
 - auditable  
-- reversible only via re-import  
+
+Restoration requires re-import or retrieval from archive/relay.
 
 ---
 
-### Purge Workflow (Conceptual)
+### Purge Responsibilities
 
-1. Selection  
-   - commits identified via filters or explicit selection  
+The Commit Store:
 
-2. Review  
-   - dependencies evaluated  
-   - impact understood  
+- executes removal  
+- reports impact  
+- preserves auditability  
 
-3. Archival (recommended)  
-   - commits exported before removal  
+The Commit Store must not:
 
-4. Purge Execution  
-   - commits removed from local store  
+- enforce semantic importance  
+- prevent purge based on meaning  
+- infer which commits “should” be retained  
 
----
-
-### Purge Constraints
-
-The system must prevent or warn against:
-
-- breaking required dependency chains (unless explicitly allowed)  
-- accidental removal of critical lineage without awareness  
+Higher layers (Runtime, CAS, user) are responsible for decisions.
 
 ---
 
-### Important Boundary
-
-Purge does NOT:
-
-- invalidate commits globally  
-- erase commits from relay or other systems  
-- alter CCS invariants  
-
----
-
-# 7. Import and Rehydration
+# 11. Import and Rehydration
 
 The Commit Store must support:
 
@@ -260,12 +334,15 @@ The Commit Store must support:
 Imported commits:
 
 - retain original identity  
-- remain immutable  
-- are treated as local copies of external truth  
+- retain integrity  
+- preserve provenance  
+
+They are treated as **locally stored artifacts with external origin**,  
+not as transformed or reinterpreted data.
 
 ---
 
-# 8. Relationship to Relay (CRS)
+# 12. Relationship to Relay (CRS)
 
 The Commit Store may:
 
@@ -274,8 +351,8 @@ The Commit Store may:
 
 Relay:
 
-- acts as external archival/transport  
-- does not affect local storage rules  
+- acts as transport and external archival  
+- does not affect local storage semantics  
 
 The Commit Store must not:
 
@@ -284,7 +361,7 @@ The Commit Store must not:
 
 ---
 
-# 9. Relationship to Alignment and Guidance
+# 13. Relationship to Alignment and Guidance
 
 The Commit Store provides input to:
 
@@ -299,23 +376,39 @@ It does not:
 
 ---
 
-# 10. Invariants
+# 14. Retention Policy Boundary
+
+The Commit Store does not:
+
+- enforce retention policies  
+- automatically archive data  
+- automatically purge data  
+
+All lifecycle transitions are:
+
+- explicit  
+- externally initiated  
+
+---
+
+# 15. Invariants
 
 The following must always hold:
 
-- commits are stored immutably  
+- commits are immutable  
 - commit identity is preserved  
 - commit integrity is verifiable  
 - storage does not alter meaning  
 - archival does not alter meaning  
-- purge does not imply deletion of truth globally  
-- commit relationships remain intact unless explicitly broken  
+- purge does not imply global deletion  
+- commit interpretation never occurs at this layer  
+- local completeness is not guaranteed  
 
 Violation of these invariants breaks the Commit Store contract.
 
 ---
 
-# 11. What the Commit Store Does NOT Do
+# 16. What the Commit Store Does NOT Do
 
 The Commit Store does not:
 
@@ -325,26 +418,28 @@ The Commit Store does not:
 - compute alignment (CAS responsibility)  
 - interpret commits (CGL responsibility)  
 - transport commits (CRS responsibility)  
+- define canonical state  
 
 ---
 
-# 12. Mental Model
+# 17. Mental Model
 
 The Commit Store is:
 
-- a durable ledger of artifacts  
-- a local memory of recorded truth  
-- a storage boundary with lifecycle controls  
+- a local ledger of artifacts  
+- a storage boundary for recorded truth  
+- a system of availability and retention  
 
 It is not:
 
+- a source of meaning  
 - a database of current state  
 - a decision engine  
-- an interpretation layer  
+- a graph interpreter  
 
 ---
 
-# 13. Final Principle
+# 18. Final Principle
 
 The Commit Store ensures that:
 
@@ -352,5 +447,5 @@ The Commit Store ensures that:
 - storage can evolve without rewriting history  
 - data can be reduced locally without destroying truth globally  
 
-It manages **where truth lives**,  
-without ever deciding **what truth means**.
+It manages **where artifacts are available**,  
+without ever deciding **what those artifacts mean**.

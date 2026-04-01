@@ -1,0 +1,1 @@
+Charter exposes reusable substrate modules for legitimacy, artifact truth, care, lineage, alignment, guidance, and transport. The human-facing Charter product is the first consumer of those modules. System-level VDS and VLS products are additional consumers built on the same substrate contracts, specialized for software and distributed operational environments.
