@@ -1,9 +1,9 @@
 # Charter Commit Store — Archival & Purge Specification
 
 Status: FOUNDATIONAL  
-Intent: Define the archival and purge model for runtime artifacts and commit artifacts  
-Scope: Runtime → CCS archival pipeline, archive bundle commits, local purge, future commit-store purge  
-Does NOT Define: commit structure beyond archival extension (CCS), runtime workflows in detail, legitimacy semantics, alignment, or guidance  
+Intent: Define the archival and purge model across all runtime-managed data and commit artifacts  
+Scope: Runtime → CCS archival pipeline, archive bundle commits, runtime purge, forward-compatible commit-store purge  
+Does NOT Define: commit structure beyond archival extension (CCS), runtime UX, legitimacy semantics, alignment, or guidance  
 
 ---
 
@@ -11,15 +11,15 @@ Does NOT Define: commit structure beyond archival extension (CCS), runtime workf
 
 This specification defines how Charter:
 
-- preserves runtime artifacts as immutable commit artifacts  
-- reduces active storage safely and explicitly  
-- enables controlled removal of local data  
-- maintains integrity across local and federated environments  
+- preserves runtime-managed data as immutable commit artifacts  
+- safely reduces local storage without compromising integrity  
+- provides a structured and auditable path for data removal  
+- maintains consistency across local and federated environments  
 
-Archival and purge are **separate but related workflows**:
+Archival and purge are distinct:
 
-- **Archival** creates preserved, immutable artifacts  
-- **Purge** removes local data only after preservation is verified  
+- **Archival** preserves data  
+- **Purge** removes local copies after preservation  
 
 ---
 
@@ -27,50 +27,72 @@ Archival and purge are **separate but related workflows**:
 
 > Nothing is removed until it is safely preserved.
 
-The system must guarantee:
+The system guarantees:
 
 - preservation precedes removal  
-- removal is always explicit  
+- removal is explicit and auditable  
 - meaning is never altered during storage transitions  
 
-At no point may the system:
+The system must not:
 
 - delete data implicitly  
-- rewrite or reinterpret artifacts  
-- destroy data without user intent  
+- rewrite artifacts  
+- infer meaning during archival or purge  
 
 ---
 
-# 3. Storage Domains
+# 3. Runtime-Orchestrated Storage Model
 
-Charter operates across two primary storage domains.
+The Runtime Layer orchestrates all local data stores.
 
 ---
 
-## 3.1 Runtime Store (Working State)
+## 3.1 Runtime-Managed Stores
 
-Holds:
+The Runtime Layer manages multiple categories of data:
 
-- sessions  
+### A. Workflow Store (Non-Legitimacy)
 - deliberates  
 - breakouts  
 - synthesis artifacts  
 - baseline review workspaces  
-- candidates and workflow state  
+- draft candidates  
 
 Characteristics:
-
 - mutable within workflow constraints  
-- optimized for active use  
-- eligible for archival and purge  
+- generally purgeable after archival  
+
+---
+
+### B. Legitimacy Store (Integrity-Critical)
+- sessions  
+- resolutions  
+- authority and scope records  
+- receipts  
+- supersession relationships  
+
+Characteristics:
+- immutable or append-only at the semantic level  
+- required for legitimacy validation and audit  
+
+---
+
+### C. Derived / Auxiliary Stores (Optional)
+- indexes  
+- caches  
+- metadata  
+
+Characteristics:
+- rebuildable  
+- not primary sources of truth  
 
 ---
 
 ## 3.2 Commit Store (Preserved Artifacts)
 
-Holds:
+The Commit Store contains:
 
-- immutable commits (all types)  
+- immutable commits  
 - resolution commits  
 - receipt commits  
 - archive bundle commits  
@@ -87,399 +109,351 @@ Characteristics:
 
 ## 3.3 Key Distinction
 
-- Runtime Store = **working state**  
-- Commit Store = **preserved truth artifacts**  
-
-Archival moves data from Runtime → Commit Store.  
-Purge removes data from local storage only.
+- Runtime-managed stores = **active and operational data**  
+- Commit Store = **preserved, immutable artifacts**  
 
 ---
 
-# 4. Definition: Archival
+# 4. Archivable vs Purgeable
+
+## 4.1 Archivable
+
+All runtime-managed data is **archivable**.
+
+This includes:
+
+- workflow artifacts  
+- legitimacy artifacts  
+
+Archival produces immutable commits and does not affect meaning.
+
+---
+
+## 4.2 Purgeable
+
+Not all data is purgeable.
+
+- Workflow artifacts → generally purgeable  
+- Legitimacy artifacts → **conditionally purgeable**  
+
+Purgeability depends on whether removal preserves system integrity.
+
+---
+
+# 5. Definition: Archival
 
 Archival is:
 
-> An explicit, auditable process that transforms runtime artifacts into immutable commit artifacts.
+> An explicit, auditable transformation of runtime-managed data into immutable commit artifacts.
 
 Archival:
 
 - preserves identity, hashes, lineage, and provenance  
-- does not modify or reinterpret artifacts  
-- produces new commits representing preserved data  
-
-Archival changes **storage posture**, not meaning.
+- produces new commits  
+- does not interpret or modify meaning  
 
 ---
 
-# 5. Archive Bundle Commit
+# 6. Archive Bundle Commit
 
-## 5.1 Definition
+## 6.1 Definition
 
-An **Archive Bundle Commit** is a commit that encapsulates a set of runtime artifacts for preservation.
-
-It is:
-
-- a first-class commit type within CCS  
-- immutable and append-only  
-- self-contained or partially dependent (based on mode)  
+An **Archive Bundle Commit** is a commit that encapsulates a set of runtime artifacts.
 
 ---
 
-## 5.2 Properties
+## 6.2 Properties
 
 An Archive Bundle Commit:
 
-- contains serialized runtime artifacts  
+- contains serialized artifacts from runtime stores  
 - preserves original identifiers and hashes  
 - may include dependency closure  
 - may include contextual artifacts (narrative mode)  
-- may include optional references to original runtime objects  
+- may optionally reference original runtime objects  
 
 ---
 
-## 5.3 Structural Role
+## 6.3 Structural Role
 
-The Archive Bundle Commit:
-
-- replaces temporary storage constructs as the canonical archival unit  
-- serves as the durable boundary between working state and preserved artifacts  
-- is transportable via relay  
-- is rehydratable by runtime systems  
+- canonical archival unit  
+- replaces ad hoc export packaging  
+- transportable via relay  
+- rehydratable by runtime  
 
 ---
 
-## 5.4 Non-Interpretation Guarantee
+## 6.4 Non-Interpretation Guarantee
 
-The Archive Bundle Commit:
+Archive Bundle Commits are:
 
-- is opaque to CCS, Commit Store, and Relay  
-- carries no intrinsic authority  
-- is not interpreted during storage or transport  
-
-Interpretation occurs only in higher layers (e.g., runtime rehydration or guidance).
+- opaque to CCS, Commit Store, and Relay  
+- non-authoritative  
+- not interpreted during storage or transport  
 
 ---
 
-# 6. Archival Pipeline
-
-Archival proceeds through explicit stages.
+# 7. Archival Pipeline
 
 ---
 
-## 6.1 Stage 1 — Candidate Selection
+## 7.1 Stage 1 — Selection
 
-Artifacts are selected from the Runtime Store using:
-
-- explicit selection  
-- time-based filters  
-- state-based filters  
-- workflow classification  
+Artifacts selected from any runtime-managed store.
 
 ---
 
-## 6.2 Stage 2 — Archival Review
+## 7.2 Stage 2 — Review
 
-A non-legitimizing review process validates:
+Non-legitimizing validation of:
 
 - inclusion  
 - dependency completeness  
 - archival mode  
 
-This stage:
+---
 
-- does not create authority  
-- does not modify artifacts  
-- ensures safe packaging  
+## 7.3 Stage 3 — Packaging
+
+Artifacts grouped into an archive bundle.
+
+- no transformation  
+- IDs and hashes preserved  
 
 ---
 
-## 6.3 Stage 3 — Packaging
+## 7.4 Stage 4 — Commit Creation (CCS)
 
-Artifacts are packaged into an Archive Bundle:
-
-- no transformation of content  
-- preservation of IDs and hashes  
-- optional dependency expansion  
-
-Implementation details (e.g., temporary areas) are runtime concerns.
-
----
-
-## 6.4 Stage 4 — Commit Creation (CCS)
-
-The packaged archive is committed as an:
+Archive bundle becomes an:
 
 - Archive Bundle Commit  
 
-This ensures:
+---
 
-- immutability  
-- identity assignment  
-- integration into commit graph  
+## 7.5 Stage 5 — Persistence
+
+Commit stored in Commit Store.
 
 ---
 
-## 6.5 Stage 5 — Commit Store Persistence
+## 7.6 Stage 6 — Purge Eligibility
 
-The Archive Bundle Commit is stored in the Commit Store:
-
-- becomes durable  
-- becomes queryable  
-- may be exported or relayed  
+Original artifacts become eligible for purge.
 
 ---
 
-## 6.6 Stage 6 — Purge Eligibility
+# 8. Archival Modes
 
-Once preservation is verified:
+## MINIMAL
+- selected artifacts only  
 
-- original runtime artifacts become eligible for purge  
+## CLOSURE
+- dependency-complete  
 
-They are not removed automatically.
-
----
-
-# 7. Archival Modes
-
-Archival modes define completeness.
+## NARRATIVE
+- closure + contextual history  
 
 ---
-
-## 7.1 MINIMAL
-
-- includes only selected artifacts  
-- does not include dependencies  
-- may contain unresolved references  
-
----
-
-## 7.2 CLOSURE
-
-- includes all required dependencies  
-- produces a self-contained archive  
-
----
-
-## 7.3 NARRATIVE
-
-- includes closure + contextual artifacts  
-- preserves reasoning and evolution  
-
----
-
-## 7.4 Mode Principle
 
 > Modes affect completeness, not meaning.
 
-All modes preserve:
+---
 
-- identity  
-- hashes  
-- lineage  
+# 9. Runtime Purge
+
+## 9.1 Definition
+
+> Explicit removal of runtime-managed data after archival.
 
 ---
 
-# 8. Definition: Purge (Runtime Store)
-
-Purge is:
-
-> An explicit operation that removes runtime artifacts after archival.
-
----
-
-## 8.1 Requirements
-
-Purge must be:
+## 9.2 Requirements
 
 - user-initiated  
-- explicit  
 - auditable  
-- preceded by verified archival  
+- preservation verified  
 
 ---
 
-## 8.2 Safety Model
+## 9.3 Safety Model
 
-The system may:
+System:
 
-- warn about dependency breakage  
-- surface impact  
+- must surface dependency impact  
+- must allow explicit override  
 
-The system must not:
+System must not:
 
 - infer semantic importance  
-- block purely on interpretation  
+- enforce hidden authority  
 
 ---
 
-## 8.3 Guarantees
+## 9.4 Guarantees
 
-After purge:
-
-- archived artifacts remain available  
-- commit store remains intact  
-- legitimacy is unaffected  
+- archived data remains intact  
+- legitimacy remains valid  
+- commit store unchanged  
 
 ---
 
-## 8.4 Scope
+# 10. Legitimacy-Sensitive Constraints
 
-Runtime purge affects only:
+## 10.1 Preservation Rule
 
-- Runtime Store  
+Legitimacy-critical artifacts MUST NOT be removed if removal would break:
 
-It does not affect:
-
-- Commit Store  
-- Relay  
-- external archives  
-
----
-
-# 9. Future Model: Commit Store Purge
-
-Commit Store purge is **out of scope for this version**, but structurally anticipated.
+- resolution validation  
+- authority or scope reconstruction  
+- supersession graph integrity  
+- auditability  
 
 ---
 
-## 9.1 Principles (Forward-Looking)
+## 10.2 Override Model
 
-Commit Store purge must:
+The system may allow purge with:
 
-- be explicit and multi-stage  
-- require review and selection  
-- preserve federation awareness  
-- never rewrite history  
-
----
-
-## 9.2 Key Distinction
-
-> Removing a commit locally does not erase it globally.
-
-Commits may still exist in:
-
-- relay systems  
-- external exports  
-- other local stores  
+- explicit user override  
+- full visibility into consequences  
+- audit trail  
 
 ---
 
-## 9.3 Non-Goal (Current Version)
+## 10.3 Responsibility Boundary
 
-This specification does not define:
-
-- commit deletion mechanics  
-- global coordination  
-- retention policies  
+- Runtime enforces constraints  
+- Legitimacy Engine defines what is required  
+- Commit Store does not interpret importance  
 
 ---
 
-# 10. Federation & Distribution
+# 11. Future: Commit Store Purge
 
-Charter operates in a federated environment.
+## 11.1 Status
+
+Out of scope for current implementation, but structurally supported.
 
 ---
 
-## 10.1 Invariant
+## 11.2 Principles
 
-> Local absence does not imply global absence.
+- explicit and multi-stage  
+- review-driven  
+- auditable  
+- does not rewrite history  
+
+---
+
+## 11.3 Invariant
+
+> Local removal does not imply global deletion.
+
+---
+
+# 12. Federation Model
 
 Artifacts may exist in:
 
 - local commit store  
 - relay systems  
-- external archives  
+- exported bundles  
 
 ---
 
-## 10.2 Implications
+## Invariant
 
-- purge is local  
-- archival enables portability  
-- systems must not assume completeness  
+> Absence locally ≠ absence globally
 
 ---
 
-# 11. Relationship to CCS
+# 13. Relationship to Export (CCE)
+
+## 13.1 Pre-Commit Store Model
+
+- export artifacts (CCE)  
+- store externally (e.g., source control)  
+- re-import as needed  
+
+---
+
+## 13.2 Commit Store Model
+
+- archive → commit  
+- store locally  
+- optionally relay  
+
+---
+
+## 13.3 Invariant
+
+> Commit Store formalizes and internalizes export-based preservation.
+
+---
+
+# 14. Relationship to CCS
 
 CCS defines:
 
 - commit structure  
 - archive bundle commit type  
-- identity and integrity guarantees  
 
-This specification defines:
+This spec defines:
 
 - how archival produces commits  
-- how commits are used for preservation  
 
 ---
 
-# 12. Relationship to Runtime Layer
+# 15. Relationship to Runtime
 
 Runtime:
 
-- selects artifacts  
-- orchestrates archival pipeline  
-- performs purge  
-
-This specification does not define:
-
-- runtime UX  
-- workflow orchestration details  
-- temporary workspace implementations  
+- orchestrates all archival and purge  
+- manages all local stores  
 
 ---
 
-# 13. Relationship to Commit Store
+# 16. Relationship to Commit Store
 
 Commit Store:
 
-- persists archive bundle commits  
-- guarantees immutability  
-- supports retrieval  
-
-It does not:
-
-- interpret archival content  
-- enforce archival workflows  
-- perform runtime purge  
+- stores commits immutably  
+- does not interpret or enforce archival  
 
 ---
 
-# 14. Relationship to Relay (CRS)
+# 17. Relationship to Relay (CRS)
 
 Relay:
 
-- transports archive bundle commits  
-- stores them immutably  
-- does not interpret completeness or meaning  
+- transports commits  
+- stores immutably  
+- does not interpret  
 
 ---
 
-# 15. Invariants
+# 18. Invariants
 
-- Archival must not change meaning  
-- Archival must preserve identity and hashes  
-- Archive Bundle Commits must be immutable  
-- Commit Store must not mutate commits  
-- Purge must not occur before preservation  
-- Purge must be explicit and auditable  
-- Local removal must not imply global deletion  
-- No layer may reinterpret archival artifacts  
+- Archival does not change meaning  
+- All archived data becomes commits  
+- Archive Bundle Commits are immutable  
+- Purge requires prior preservation  
+- Purge is explicit and auditable  
+- Legitimacy integrity must be preserved  
+- No layer may reinterpret artifacts  
+- Local removal does not imply global deletion  
 
 ---
 
-# 16. Mental Model
+# 19. Mental Model
 
-Archival is:
+Archival:
 
-- converting working state into preserved artifacts  
+- converts active data into preserved artifacts  
 
-Purge is:
+Purge:
 
-- removing local working copies after preservation  
+- removes local copies after preservation  
 
 The system:
 
@@ -488,10 +462,10 @@ The system:
 
 ---
 
-# 17. Final Principle
+# 20. Final Principle
 
 Charter preserves before it removes.
 
 Archival creates safety.  
 Purge requires proof.  
-Truth remains intact across all storage boundaries.
+Integrity is never compromised.
