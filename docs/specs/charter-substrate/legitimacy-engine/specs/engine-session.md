@@ -1,6 +1,6 @@
 # ENG-SESSION — Session Lifecycle, Governance Orchestration & Receipt Emission
 
-Status: REFACTORED (v16 – ENG-STRUCTURE / ENG-USABILITY Renaming & ON_HOLD Alignment)  
+Status: REFACTORED (v17 – Solo Mode Removal & Determinism Tightening)  
 Applies to: Engine Core (V1/V2+)  
 
 Authority: Subordinate to ENG-DOMAIN, ENG-DECISION, ENG-RECEIPT, ENG-INTEGRITY, ENG-STRUCTURE, ENG-USABILITY, ENG-CANON, ENG-SPECVERIFY, ENG-PERSISTENCE
@@ -237,12 +237,9 @@ Mutable:
 - Constraints  
 - Informational reference sets  
 
-Transition to VOTING freezes all round-scoped sets.
+Transition to VOTING is triggered exclusively by:
 
-Triggered by:
-
-- first recorded vote  
-- solo-mode vote materialization during acceptance invocation  
+- the first explicitly recorded vote  
 
 After freeze:
 
@@ -262,37 +259,21 @@ Rules:
 - votes are mutable during VOTING until acceptance is invoked  
 - vote mutation means replacement of the participant’s current vote for that candidate in the same round  
 - votes are bound to a single round  
+- all votes must be explicitly created via Engine commands  
 
 Vacillation is allowed:
 
 - participants may change their vote any number of times before acceptance  
 - only the final vote state at evaluation time is authoritative  
 
+The Engine must not:
+
+- create votes implicitly  
+- infer votes from participant count  
+- synthesize votes during evaluation or acceptance  
+
 Vote structure is defined in ENG-DOMAIN.  
 Evaluation semantics are defined in ENG-DECISION.
-
----
-
-## ENG-SESSION-08A — Solo Mode Vote Materialization
-
-If exactly one participant exists and no vote has yet been recorded for the candidate set being evaluated:
-
-- upon acceptance attempt, the Engine must materialize a valid ACCEPT vote for the sole participant before decision evaluation proceeds  
-
-This vote:
-
-- is a standard Vote artifact  
-- belongs to the current round  
-- transitions the session into VOTING if the session was still in PRE_STANCE  
-- is consumed by ENG-DECISION as an ordinary vote  
-- is included in the final receipt snapshot if acceptance or closure occurs after materialization  
-- becomes immutable once the session reaches terminal state  
-
-ENG-SESSION defines vote materialization.  
-ENG-DECISION consumes the materialized vote.
-
-ENG-SESSION must not materialize solo-mode votes during read-only evaluation unless another authoritative specification explicitly permits a non-persisted simulation path.  
-The persisted solo-mode vote used for acceptance must be created only in the mutating acceptance flow.
 
 ---
 
@@ -363,8 +344,13 @@ Acceptance eligibility is determined exclusively by:
 ENG-SESSION must:
 
 - pass the current session state to the decision layer  
-- remain non-mutating if eligibility fails, except for solo-mode vote materialization expressly required by this specification for the mutating acceptance path  
+- remain non-mutating if eligibility fails  
 - invoke atomic commit if eligibility succeeds  
+
+The Engine must not:
+
+- create votes during acceptance  
+- modify vote state during acceptance  
 
 ---
 
@@ -392,6 +378,9 @@ If acceptance eligibility succeeds:
 - supersession updates are applied if the accepted candidate action requires them  
 - retirement state change is applied if the accepted candidate action requires it  
 - receipt is emitted  
+
+All mutation effects occur as a single atomic transition.  
+No intermediate state is observable.
 
 The accepted Resolution, where one is created, must include:
 
@@ -498,7 +487,7 @@ Audit is observational only and must not affect legitimacy or evaluation.
 All failures:
 
 - must be explicit  
-- must not mutate state except where this specification explicitly requires solo-mode vote materialization during the mutating acceptance path  
+- must not mutate state  
 - must produce an EvaluationReport  
 
 Defined in:
@@ -517,7 +506,8 @@ Defined in:
 - informational references are round-scoped and frozen after first stance  
 - informational references are included in accepted artifacts but are non-semantic  
 - vote vacillation is allowed until acceptance  
-- solo mode produces a real Vote artifact during the mutating acceptance path  
+- all votes are explicit Engine artifacts  
+- no implicit or synthesized votes exist  
 - acceptance eligibility is externally defined and consumed  
 - atomic commit is enforced via ENG-PERSISTENCE  
 - receipts are canonical via ENG-RECEIPT and ENG-CANON  
@@ -538,7 +528,6 @@ They define:
 - round structure  
 - governance snapshot capture  
 - informational reference capture  
-- solo-mode vote materialization for acceptance when applicable  
 
 They do not define:
 
@@ -547,8 +536,9 @@ They do not define:
 - usability semantics  
 - acceptance eligibility  
 - canonical serialization  
+- vote inference or synthesis  
 
-They invoke these through authoritative specifications.
+They invoke authoritative specifications.
 
 Acceptance is the coordinated outcome of:
 
@@ -562,5 +552,5 @@ Acceptance is the coordinated outcome of:
 - receipt emission  
 
 Nothing is inferred.  
-Everything is delegated.  
+Everything is explicit.  
 Legitimacy is created only at atomic acceptance.

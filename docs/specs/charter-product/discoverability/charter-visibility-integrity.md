@@ -15,6 +15,7 @@ It establishes:
 
 - what must be visible to form relationships  
 - what makes relationships structurally valid  
+- how cross-area relationships are represented  
 - what constitutes structural completeness  
 - what failures occur when relationships are missing or misrepresented  
 
@@ -35,9 +36,13 @@ All references must resolve to:
 
 ---
 
-## 2.2 Relationships Must Be Explicit
+## 2.2 Relationships Must Be Explicit at the Artifact Level
 
-> If a relationship is not declared, it does not exist in the system.
+> All structural relationships must originate from explicit artifact-level references.
+
+Relationships are expressed through:
+
+- Resolution-level references  
 
 No relationship may be:
 
@@ -51,7 +56,7 @@ No relationship may be:
 
 Charter does not infer real-world relationships.
 
-> The system reflects only what is explicitly represented.
+> The system reflects only what is explicitly represented in artifacts.
 
 ---
 
@@ -100,47 +105,38 @@ The system does not assume global visibility.
 
 Relationships may be expressed through references to:
 
-- **Areas** (boundary-level)  
-- **Resolutions** (artifact-level)  
-
-These represent distinct structural semantics.
+- **Areas** (boundary-level, contextual)  
+- **Resolutions** (artifact-level, structural)  
 
 ---
 
-## 4.2 Area-Level References (Required)
-
-Each Area MUST explicitly declare its relationships to other Areas.
-
-This is expressed as:
-
-- a maintained set of referenced Area IDs  
-
-Area references define:
-
-- structural relevance  
-- dependency boundaries  
-- coordination domains  
-
-Area references MUST NOT:
-
-- imply resolution adoption  
-- imply authority  
-- imply completeness or freshness  
-
----
-
-## 4.3 Resolution-Level References
+## 4.2 Resolution-Level References (Primary Mechanism)
 
 Resolution references define:
 
-- specific decision dependencies  
-- explicit alignment anchors  
-- concrete structural links  
+- decision dependencies  
+- alignment anchors  
+- cross-area structural linkage  
 
-Resolution references:
+These are the **primary source of structural truth**.
 
-- are more precise than area references  
-- must not substitute for area-level relationships  
+---
+
+## 4.3 Area-Level References (Contextual Only)
+
+Area references:
+
+- may exist as contextual or descriptive constructs  
+- may be used during review or workflow  
+
+However:
+
+> Area-level relationships are NOT authoritative structural primitives.
+
+They must not:
+
+- replace resolution-level references  
+- define structural truth independently  
 
 ---
 
@@ -148,76 +144,131 @@ Resolution references:
 
 The system must not:
 
-- infer area relationships from resolution references  
-- infer resolution relationships from area references  
+- infer area relationships from context alone  
+- infer resolution dependencies from area proximity  
 
-Each relationship type must be explicitly declared.
+All structural relationships must originate from explicit references.
 
 ---
 
-# 5. Relational Integrity
+# 5. Runtime-Derived Area Relationship Graph
+
+## 5.1 Definition
+
+The Runtime MUST derive an **active area relationship graph**.
+
+This graph represents:
+
+> the current set of structurally relevant cross-area relationships.
+
+---
+
+## 5.2 Source of Derivation
+
+The area relationship graph is derived from:
+
+- active, reviewed Resolution references  
+- structurally integrated artifacts  
+
+It must NOT be derived from:
+
+- provisional references  
+- unreviewed imports  
+- isolated foreign graphs  
+
+---
+
+## 5.3 Active vs Historical Structure
+
+Two distinct structural views exist:
+
+### A. Active Structure (Runtime-Derived)
+
+- derived from active resolutions  
+- represents current relationships  
+- used for:
+  - federation posture  
+  - current CAS topology  
+  - coordination boundaries  
+
+---
+
+### B. Historical Structure (Full Graph)
+
+- includes all commits and supersession history  
+- used for:
+  - lineage analysis  
+  - alignment computation (CAE)  
+  - historical reasoning  
+
+---
+
+## 5.4 Purpose of Separation
+
+> Active structure defines current topology.  
+> Historical structure preserves full truth.
+
+The system must not conflate these.
+
+---
+
+# 6. Relational Integrity
 
 Relational integrity defines whether declared relationships are structurally valid.
 
 ---
 
-## 5.1 Validity Requirements
+## 6.1 Validity Requirements
 
 All relationships must be:
 
-- explicitly declared  
-- correctly typed (Area vs Resolution)  
+- explicitly declared (via resolutions)  
+- correctly typed  
 - resolvable  
 - non-ambiguous  
 
 ---
 
-## 5.2 Boundary vs Artifact Integrity
+## 6.2 Boundary vs Artifact Integrity
 
-- Area references must reflect **boundary-level relationships**  
-- Resolution references must reflect **artifact-level relationships**  
+- Resolution references define **true structural relationships**  
+- Area relationships are **derived projections**, not primary truth  
 
 Misuse includes:
 
-- using resolution references to represent general coordination  
-- using area references to imply specific decisions  
+- relying on area relationships without resolution anchors  
+- assuming structure from context  
 
 ---
 
-## 5.3 Independence of Layers
+## 6.3 Independence of Layers
 
-Area graph and resolution graph are:
+- Resolution graph = source of truth  
+- Area graph = runtime projection  
 
-- related  
-- but structurally independent  
-
-Both must be correct for the system to be structurally sound.
+Both must remain conceptually distinct.
 
 ---
 
-# 6. Relational Completeness
+# 7. Relational Completeness
 
-Relational completeness defines whether all necessary relationships are represented.
+## 7.1 Definition
 
----
-
-## 6.1 Definition
-
-> A structure is complete when all real dependencies and relationships are explicitly represented.
+> A structure is complete when all real dependencies are explicitly represented in resolution references.
 
 ---
 
-## 6.2 Incomplete Structures
+## 7.2 Incomplete Structures
 
 A structure is incomplete when:
 
-- an Area depends on another Area but no reference exists  
-- coordination exists but is not declared  
+- an Area depends on another Area but no resolution reference exists  
 - decisions rely on external context without referencing it  
+- coordination is real but not modeled  
 
 ---
 
-## 6.3 Nature of Incompleteness
+## 7.3 Nature of Incompleteness
 
 Incomplete structure results in:
 
@@ -229,154 +280,173 @@ This is a **structural deficiency**, not a neutral state.
 
 ---
 
-# 7. Structural Failure Modes
+# 8. Structural Failure Modes
 
-## 7.1 Invisible Dependency
+## 8.1 Invisible Dependency
 
 **Condition:**
 
-- Area A depends on Area B  
-- No Area or Resolution reference exists  
+- Real dependency exists  
+- No resolution reference exists  
 
 **Effect:**
 
-- CAS treats A as independent  
-- real coupling is not visible  
+- Runtime area graph omits the relationship  
+- CAS treats areas as independent  
 
 ---
 
-## 7.2 False Independence
+## 8.2 False Independence
 
 **Condition:**
 
-- multiple Areas share goals or outcomes  
-- no structural relationship is declared  
+- Areas are coupled in reality  
+- No structural references exist  
 
 **Effect:**
 
-- alignment appears stable  
+- CAS reports stability  
 - coordination is unmanaged  
 
 ---
 
-## 7.3 Vague Alignment
+## 8.3 Vague Alignment
 
 **Condition:**
 
-- only Area references exist  
-- no Resolution-level anchors  
+- weak or indirect references only  
+- no clear resolution anchors  
 
 **Effect:**
 
 - alignment appears present  
-- but lacks operational specificity  
+- lacks operational meaning  
 
 ---
 
-## 7.4 False Precision
+## 8.4 Fragmented Graph
 
 **Condition:**
 
-- Resolution references exist  
-- but Area relationship is not declared  
+- partial or inconsistent referencing  
 
 **Effect:**
 
-- local precision exists  
-- but broader structural context is missing  
+- incomplete propagation  
+- inconsistent structural interpretation  
 
 ---
 
-## 7.5 Fragmented Graph
+## 8.5 Delayed Structural Shock
 
 **Condition:**
 
-- relationships are partially declared  
-- graph is inconsistently connected  
+- missing relationships later introduced  
 
 **Effect:**
 
-- incomplete propagation of structure  
-- inconsistent interpretation across systems  
+- sudden CAS changes  
+- apparent instability  
+
+Cause:
+
+> previously hidden structure becomes visible.
 
 ---
 
-# 8. Interaction with CAS and CCare
+# 9. Interaction with CAS and CCare
 
-## 8.1 CAS Behavior
+## 9.1 CAS Behavior
 
 CAS:
 
-- operates only on declared structure  
-- does not infer missing relationships  
+- consumes both:
+  - active area relationship graph  
+  - full historical graph  
 
-As a result:
+CAS does not:
 
-- incomplete structures may appear aligned  
-- missing relationships reduce observable tension  
+- infer missing relationships  
 
 ---
 
-## 8.2 CCare Signals
+## 9.2 False Alignment Condition
+
+If structure is incomplete:
+
+- CAS may show alignment  
+- because missing edges suppress tension  
+
+---
+
+## 9.3 CCare Signals
 
 When structure is incomplete:
 
-- human check-ins may show:
+- check-ins may show:
   - tension  
   - inconsistency  
-  - unexplained misalignment  
+  - unexplained drift  
 
-This occurs because:
+This reflects:
 
-> external, unmodeled relationships affect outcomes.
-
----
-
-## 8.3 Divergence Between CAS and Reality
-
-Possible condition:
-
-- CAS reports stability  
-- CCare indicates stress  
-
-This indicates:
-
-> structural incompleteness, not system failure.
+> influence from unmodeled relationships.
 
 ---
 
-# 9. Invariants
+## 9.4 CAS vs Reality Divergence
 
-- Relationships must be explicitly declared  
+Condition:
+
+- CAS = stable  
+- CCare = stressed  
+
+Indicates:
+
+> structural incompleteness.
+
+---
+
+# 10. Invariants
+
+- Relationships must originate from explicit resolution references  
 - Targets must be visible before referencing  
-- Area references are mandatory for cross-area relationships  
-- Resolution references must not replace area references  
+- Runtime must derive the active area relationship graph  
+- Derived area graph must reflect only reviewed, active structure  
+- Historical and active structures must remain distinct  
 - No implicit relationships may exist  
 - Missing relationships are structural deficiencies  
 - CAS must not infer undeclared structure  
 
 ---
 
-# 10. Mental Model
+# 11. Mental Model
 
-- Structure is a graph of declared relationships  
-- Visibility enables relationships  
-- Explicit references define reality  
-- Missing edges represent missing truth  
-- CAS reflects structure, not reality  
-- CCare reveals pressure where structure is incomplete  
+- Resolutions define relationships  
+- Runtime derives current topology  
+- Area graph is a projection, not truth  
+- Full graph preserves history  
+- Missing edges = missing truth  
+- CAS reflects visible structure  
+- CCare reveals hidden pressure  
 
 ---
 
-# 11. Final Principle
+# 12. Final Principle
 
-Charter requires structural honesty.
+Charter requires structural honesty at the artifact level.
 
-If relationships exist but are not declared:
+Relationships must be:
 
-- the system cannot see them  
+- explicitly declared  
+- visible  
+- and structurally complete  
+
+The Runtime may project structure,  
+but only **explicit references define truth**.
+
+If relationships are not declared:
+
+- they do not exist structurally  
 - alignment becomes misleading  
-- and reality diverges from representation  
-
-The integrity of the system depends on  
-**making relationships explicit, visible, and complete**.
+- and reality diverges from representation

@@ -13,27 +13,25 @@ This document defines how **external Areas and their associated graphs become di
 Discoverability exists to:
 
 - make external Areas **identifiable**
-- enable acquisition of **foreign partial graphs**
+- enable **query and acquisition** of foreign partial graphs
 - support **review and integration workflows**
 - allow **safe cross-area referencing**
 
-Discoverability does not imply:
+Discoverability is a **precondition for structural integrity**.
 
-- trust  
-- freshness  
-- completeness  
-- legitimacy  
+If relationships cannot be discovered, they cannot be modeled.
 
 ---
 
 # 2. Core Principle
 
 > Discoverability provides access to foreign structure.  
-> It does not grant authority, correctness, or integration.
+> It does not grant authority, correctness, integration, or completeness.
 
 A discovered Area is:
 
 - visible  
+- queryable  
 - fetchable  
 - inspectable  
 
@@ -66,7 +64,7 @@ No Area is assumed to contain a complete or globally consistent graph.
 
 Across a federated system:
 
-- different runtimes may hold different subsets of the graph  
+- different runtimes hold different subsets  
 - histories may diverge  
 - snapshots may be stale  
 
@@ -88,7 +86,23 @@ The Runtime must support identifying external Areas via:
 
 ---
 
-## 4.2 Acquisition (Fetch / Pull)
+## 4.2 Query (Lightweight Discovery)
+
+Before acquisition, the Runtime SHOULD support **lightweight queries**:
+
+- Area existence  
+- metadata (identity, scope, version hints)  
+- available snapshots or references  
+
+Querying:
+
+- does not import data  
+- does not create local state  
+- enables informed acquisition decisions  
+
+---
+
+## 4.3 Acquisition (Fetch / Pull)
 
 The Runtime must support acquiring a **foreign partial graph**:
 
@@ -100,7 +114,7 @@ Acquisition produces a **foreign, read-only graph representation**.
 
 ---
 
-## 4.3 Local Availability
+## 4.4 Local Availability
 
 Once acquired, the foreign graph becomes:
 
@@ -110,7 +124,7 @@ Once acquired, the foreign graph becomes:
 
 ---
 
-## 4.4 No Implicit Synchronization
+## 4.5 No Implicit Synchronization
 
 Discoverability does NOT:
 
@@ -126,7 +140,7 @@ All updates require explicit acquisition.
 
 ## 5.1 Isolated Storage
 
-Acquired foreign graphs SHOULD be stored in an **isolated, read-only environment**.
+Acquired foreign graphs MUST be stored in an **isolated, read-only environment**.
 
 Properties:
 
@@ -197,8 +211,6 @@ Cross-area references may target:
 - **Areas** (boundary-level reference)  
 - **Resolutions** (artifact-level reference)  
 
-These represent fundamentally different types of relationships.
-
 ---
 
 ## 7.2 Area References (Boundary-Level)
@@ -207,17 +219,17 @@ An Area reference indicates:
 
 - structural relevance of another Area  
 - dependency, coordination, or relationship at the boundary level  
-- awareness of another graph domain  
+- **acknowledgment of incomplete or evolving knowledge**
 
 Area references:
 
-- do NOT reference any specific resolution  
-- do NOT imply adoption of decisions  
-- do NOT imply authority or trust  
+- do NOT reference specific decisions  
+- do NOT imply adoption  
+- do NOT imply trust  
 - do NOT imply completeness or freshness  
 
-> Area references establish that a boundary matters,  
-> not what inside that boundary is accepted.
+> Area references model that “this boundary matters,”  
+> even when its internal state is not yet known.
 
 ---
 
@@ -227,13 +239,13 @@ A Resolution reference indicates:
 
 - relevance of a specific accepted artifact  
 - a concrete decision anchor  
-- a precise dependency or alignment point  
+- a precise dependency  
 
-Resolution references are:
+Resolution references:
 
-- more specific  
-- stronger than area references  
-- suitable for structural integration after review  
+- are precise  
+- are stronger than area references  
+- require higher confidence  
 
 ---
 
@@ -242,18 +254,19 @@ Resolution references are:
 ### A. Provisional References
 
 - created against isolated foreign graphs  
+- exist **only within review contexts**  
 - may target Areas or Resolutions  
-- used during review and inspection  
 - non-authoritative  
 - non-durable  
+
+> Provisional references are scoped to review and must not escape it.
 
 ---
 
 ### B. Integrated References
 
 - created after successful review  
-- may target Areas or Resolutions  
-- durable within local graph  
+- durable within the local graph  
 - visible to lineage and alignment systems  
 
 ---
@@ -267,10 +280,10 @@ Resolution references are:
 
 ## 7.6 Strength of References
 
-- Area references = structural / boundary-level (weaker)  
-- Resolution references = artifact / decision-level (stronger)  
+- Area references → structural / boundary-level  
+- Resolution references → decision-level  
 
-Systems must not treat Area references as implicit Resolution references.
+Area references must never be treated as implicit resolution references.
 
 ---
 
@@ -292,7 +305,7 @@ The system must not assume freshness.
 
 Staleness is resolved through:
 
-- re-fetching / updating  
+- re-fetching  
 - review workflows  
 - explicit reconciliation  
 
@@ -305,7 +318,7 @@ No automatic rebasing or mutation occurs.
 Different runtimes may hold different histories.
 
 > Convergence occurs through explicit review and integration,  
-> not through enforced synchronization.
+> not synchronization.
 
 ---
 
@@ -315,12 +328,12 @@ Different runtimes may hold different histories.
 
 Federation is:
 
-- repeated or structured acquisition of foreign graphs  
-- governed by the same review principles  
+- structured or repeated acquisition  
+- governed by review principles  
 
 It is not:
 
-- automatic synchronization  
+- synchronization  
 - shared authority  
 - implicit trust  
 
@@ -335,7 +348,7 @@ Federation may:
 
 ---
 
-# 10. Relationship to Commit Store and CCS
+# 10. Relationship to CCS and Commit Store
 
 ## 10.1 CCS
 
@@ -344,8 +357,8 @@ Federation may:
 
 ## 10.2 Commit Store
 
-- stores both local and imported commits  
-- maintains immutability  
+- stores local and imported commits  
+- guarantees immutability  
 - does not enforce discoverability  
 
 ---
@@ -354,6 +367,7 @@ Federation may:
 
 - Discoverability must not imply legitimacy  
 - Discoverability must not imply freshness  
+- Discoverability must not imply completeness  
 - Foreign graphs must remain immutable in isolation  
 - Integration must occur only through review  
 - Provisional and durable references must remain distinct  
@@ -361,17 +375,23 @@ Federation may:
 - No automatic synchronization may occur  
 - History must never be rewritten  
 
+**Critical Structural Invariant:**
+
+- If a dependency cannot be discovered, it cannot be modeled  
+- If it cannot be modeled, alignment cannot be computed  
+
 ---
 
 # 12. Mental Model
 
 - Areas are **partial graph holders**  
-- Discoverability is **finding and fetching graphs**  
+- Discoverability is **visibility + optional acquisition**  
+- Query precedes fetch  
 - Imported graphs are **foreign and isolated**  
 - Review is **the gateway to integration**  
 - References are **provisional until accepted**  
-- Area references express **structural awareness**  
-- Resolution references express **decision alignment**  
+- Area references express **structural awareness under uncertainty**  
+- Resolution references express **explicit decision alignment**  
 - Cohesion is **achieved explicitly, not assumed**  
 
 ---
@@ -383,10 +403,11 @@ Charter does not assume shared reality.
 It enables systems to:
 
 - discover each other  
-- exchange partial truth  
+- observe partial truth  
+- model relationships under uncertainty  
 - and reconcile explicitly  
 
-without ever requiring:
+without requiring:
 
 - implicit trust  
 - global synchronization  
