@@ -1,6 +1,6 @@
 # ENG-ERROR — Engine Error & EvaluationReport Model
 
-Status: REFACTORED (v13 – Full Determinism Closure, Candidate & Structure Alignment)  
+Status: REFACTORED (v14 – Explicit Input Closure & Vote Absence Handling)  
 Applies to: Engine Core (V1/V2+)  
 Scope: Deterministic reporting, EvaluationReport structure, error classification, and canonical output  
 
@@ -92,6 +92,21 @@ Each EvaluationReport has exactly one outcome:
 - REJECTED  
 - BLOCKED  
 - NO_OP  
+
+### Explicit Input Closure
+
+Evaluation must operate only on explicitly present inputs.
+
+The Engine must not:
+
+- synthesize missing inputs  
+- materialize implicit artifacts  
+- assume default votes, participants, or candidates  
+
+If required inputs are absent:
+
+- this must be reported explicitly as a violation  
+- evaluation must not compensate or repair the input set  
 
 ---
 
@@ -203,6 +218,14 @@ Outcome is derived after full evaluation:
 3. Any blocking condition → BLOCKED  
 4. Mutation occurred → SUCCESS  
 5. Otherwise → NO_OP  
+
+### Clarification — Missing Required Inputs
+
+Absence of required inputs for acceptance (including absence of a valid vote state) must result in:
+
+- REJECTED  
+
+Such conditions must not be classified as NO_OP.
 
 Mutation must be determined from command semantics, not from evaluation side effects.
 
@@ -321,6 +344,7 @@ Receipt-related:
 - CONSTRAINT_VIOLATION  
 - STRUCTURAL_CONFLICT  
 - RESOLUTION_ALREADY_SUPERSEDED  
+- NO_VALID_VOTE_STATE  
 
 ---
 
@@ -345,6 +369,7 @@ Includes:
 - hard invariant violations  
 - domain schema violations  
 - freeze-boundary violations  
+- missing required inputs for evaluation (including missing vote state)
 
 ---
 
@@ -485,6 +510,8 @@ require version increment.
 - error vocabulary is closed  
 - blocking is explicitly classified  
 - candidate-level vs session-level blocking is always distinguishable  
+- evaluation operates only on explicit inputs  
+- missing required inputs must be reported, not inferred  
 
 ---
 
