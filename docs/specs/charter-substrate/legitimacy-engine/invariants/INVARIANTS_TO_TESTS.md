@@ -1,6 +1,6 @@
-# Charter Core — Acceptance Tests (Engine Core, Spec-Aligned)
+# Charter Core — Acceptance Tests (Engine Core, Spec-Alitygned)
 
-Status: REFACTORED (V5 – Authority-Aligned, Deterministic, Runtime-Bound)  
+Status: REFACTORED (V6 – Structure/Usability Alignment, Solo-Mode Removal & Determinism Closure)  
 Applies to: Charter Core Engine  
 Test Type: Black-box library acceptance testing  
 Purpose: Verify constitutional invariants, runtime behavior, structural safety, and interface correctness. CLI and UX concerns excluded.
@@ -16,7 +16,7 @@ They verify:
 - legitimacy is created only through explicit session acceptance
 - runtime behavior is deterministic
 - structural integrity is enforced
-- receipts and supersession remain consistent
+- receipts and structural evolution remain consistent
 - API commands respect mutation and reporting boundaries
 - import, rehydration, and degraded mode behave correctly
 
@@ -182,7 +182,7 @@ Alignment:
 
 Given:
 
-- candidates contain arbitrary wording, rationale, or content
+- candidates contain arbitrary wording, annotation, or content
 
 When:
 
@@ -279,7 +279,7 @@ Then:
 Alignment:
 
 - ENG-AUTH-01
-- ENG-SUPERSESSION
+- ENG-STRUCTURE
 - ENG-DECISION
 - ENG-RECEIPT
 
@@ -304,7 +304,7 @@ Then:
 Alignment:
 
 - ENG-SCOPE-01
-- ENG-SUPERSESSION
+- ENG-STRUCTURE
 - ENG-DECISION
 - ENG-RECEIPT
 
@@ -381,7 +381,7 @@ Alignment:
 - ENG-CONTEXT-01
 - ENG-SESSION
 - ENG-DECISION
-- ENG-REVIEW-RETIRED
+- ENG-USABILITY
 
 ---
 
@@ -391,7 +391,7 @@ Given:
 
 - two concurrent sessions in the same Area
 - no shared governance invalidation
-- no supersession conflict
+- no structural conflict
 
 When:
 
@@ -404,12 +404,12 @@ Then:
 Alignment:
 
 - ENG-CONCUR-01
-- ENG-SUPERSESSION
+- ENG-STRUCTURE
 - ENG-DECISION
 
 ---
 
-### AT-14 — Supersession Triggers Explicit Forward Consequence
+### AT-14 — Structural Change Triggers Explicit Forward Consequence
 
 Given:
 
@@ -429,7 +429,7 @@ Alignment:
 
 - ENG-SUP-01
 - ENG-SUP-04
-- ENG-SUPERSESSION
+- ENG-STRUCTURE
 - ENG-DECISION
 
 ---
@@ -449,8 +449,10 @@ Then:
 - a new round begins
 - participant epochs are reset
 - prior round votes do not carry forward
+- prior round participants do not carry forward
 - prior round candidates do not carry forward
 - prior round constraints do not carry forward
+- prior round informational reference sets do not carry forward
 
 Alignment:
 
@@ -478,7 +480,7 @@ Then:
 Alignment:
 
 - ENG-SUP-05
-- ENG-REVIEW-RETIRED
+- ENG-USABILITY
 - ENG-SESSION
 - ENG-DECISION
 
@@ -626,6 +628,144 @@ Alignment:
 
 ---
 
+### AT-22A — Engine Does Not Infer Votes
+
+Given:
+
+- a valid session
+- exactly one participant
+- one or more candidates
+- no votes recorded
+
+When:
+
+- evaluate_session or attempt_acceptance is executed
+
+Then:
+
+- the Engine does not create, infer, or synthesize votes
+- no legitimacy artifact is created
+- evaluation fails deterministically under authority evaluation rules
+
+Alignment:
+
+- ENG-DET-02
+- ENG-DECISION
+- ENG-SESSION
+- ENG-API
+- ENG-ERROR
+
+---
+
+### AT-22B — No Participants Present Fails Deterministically
+
+Given:
+
+- a session state that contains candidates
+- no participants are present
+
+When:
+
+- evaluation or acceptance is attempted
+
+Then:
+
+- the operation fails deterministically
+- NO_PARTICIPANTS_PRESENT is reported
+- no mutation occurs
+- no legitimacy artifact is created
+
+Alignment:
+
+- ENG-SESSION
+- ENG-DECISION
+- ENG-ERROR
+- ENG-API
+
+---
+
+### AT-22C — Vote Absence Fails Through Authority Evaluation
+
+Given:
+
+- a valid session
+- one or more participants
+- one or more candidates
+- no votes recorded
+
+When:
+
+- evaluation or acceptance is attempted
+
+Then:
+
+- the operation fails deterministically
+- AUTHORITY_RULE_VIOLATION is reported
+- no mutation occurs
+- no legitimacy artifact is created
+
+Alignment:
+
+- ENG-DECISION
+- ENG-ERROR
+- ENG-API
+
+---
+
+### AT-22D — Split Win Fails Deterministically
+
+Given:
+
+- a valid session
+- multiple candidates remain eligible
+- the explicit final vote state leaves authority without a unique winning candidate
+
+When:
+
+- evaluation or acceptance is attempted
+
+Then:
+
+- the operation fails deterministically
+- AUTHORITY_RULE_VIOLATION is reported
+- no winner is inferred
+- no mutation occurs
+
+Alignment:
+
+- ENG-DECISION
+- ENG-ERROR
+- ENG-API
+- ENG-DET-02
+
+---
+
+### AT-22E — No Eligible Candidates Remain
+
+Given:
+
+- a session with one or more candidates
+- every candidate is blocked or invalid under current rules
+
+When:
+
+- evaluation or acceptance is attempted
+
+Then:
+
+- the operation fails deterministically
+- NO_ELIGIBLE_CANDIDATES is reported
+- no mutation occurs
+- no legitimacy artifact is created
+
+Alignment:
+
+- ENG-DECISION
+- ENG-ERROR
+- ENG-API
+
+---
+
 ## E. Acceptance, Receipts & Non-Retroactivity
 
 ### AT-23 — Explicit Acceptance Creates Legitimacy
@@ -644,7 +784,7 @@ Then:
 - a Resolution is created
 - the session becomes ACCEPTED
 - a LEGITIMACY receipt is emitted
-- required supersession effects are applied
+- required structural effects are applied
 - all occur atomically
 
 Alignment:
@@ -670,7 +810,7 @@ When:
 Then:
 
 - no duplicate legitimacy artifact is created
-- the operation is rejected or no-op according to the governing command semantics
+- the operation deterministically fails under command semantics
 - historical legitimacy remains singular
 
 Alignment:
@@ -714,7 +854,7 @@ Given:
 
 When:
 
-- referenced artifacts later become UNDER_REVIEW, RETIRED, or SUPERSEDED
+- referenced artifacts later become ON_HOLD, RETIRED, or SUPERSEDED
 
 Then:
 
@@ -724,7 +864,7 @@ Then:
 Alignment:
 
 - ENG-HIST-03
-- ENG-REVIEW-RETIRED
+- ENG-USABILITY
 - ENG-RECEIPT
 
 ---
@@ -753,13 +893,13 @@ Alignment:
 
 ---
 
-## F. Review, Retirement & Supersession
+## F. ON_HOLD, Retirement & Structural Evolution
 
-### AT-28 — UNDER_REVIEW Suspends Forward Usability Only
+### AT-28 — ON_HOLD Suspends Forward Usability Only
 
 Given:
 
-- a Resolution later enters UNDER_REVIEW
+- a Resolution later enters ON_HOLD
 
 When:
 
@@ -773,7 +913,7 @@ Then:
 Alignment:
 
 - ENG-HIST-03
-- ENG-REVIEW-RETIRED
+- ENG-USABILITY
 
 ---
 
@@ -795,11 +935,11 @@ Then:
 Alignment:
 
 - ENG-HIST-03
-- ENG-REVIEW-RETIRED
+- ENG-USABILITY
 
 ---
 
-### AT-30 — Supersession Is One-Way
+### AT-30 — Structural Supersession Is One-Way
 
 Given:
 
@@ -818,15 +958,15 @@ Alignment:
 
 - ENG-HIST-04
 - ENG-SUP-01
-- ENG-SUPERSESSION
+- ENG-STRUCTURE
 
 ---
 
-### AT-31 — Administrative State Does Not Alter Structural ACTIVE Derivation
+### AT-31 — Administrative Usability State Does Not Alter Structural ACTIVE Derivation
 
 Given:
 
-- a structurally active Resolution enters UNDER_REVIEW or RETIRED
+- a structurally active Resolution enters ON_HOLD or RETIRED
 
 When:
 
@@ -840,8 +980,8 @@ Then:
 Alignment:
 
 - ENG-HIST-03
-- ENG-SUPERSESSION
-- ENG-REVIEW-RETIRED
+- ENG-STRUCTURE
+- ENG-USABILITY
 
 ---
 
@@ -1039,12 +1179,11 @@ Alignment:
 
 ---
 
-### AT-40 — Missing Structural References Fail, Missing Informational References Do Not
+### AT-40 — Missing Structural References Fail Deterministically
 
 Given:
 
-- one graph with missing required structural references
-- one graph with missing only informational external references
+- a graph with missing required structural references
 
 When:
 
@@ -1052,8 +1191,57 @@ When:
 
 Then:
 
-- the first graph fails deterministically
-- the second graph is not invalidated solely for missing informational references
+- initialization fails deterministically
+- runtime is not entered
+
+Alignment:
+
+- ENG-DOMAIN
+- ENG-INTEGRITY
+- ENG-INITIALIZATION
+
+---
+
+### AT-40A — Missing Cross-Area Informational References Do Not Invalidate Local Runtime
+
+Given:
+
+- a graph containing cross-area informational references
+- those external references are not locally resolvable
+
+When:
+
+- initialization is attempted
+
+Then:
+
+- initialization is not invalidated solely for those missing external informational references
+- local legitimacy semantics remain Area-local
+
+Alignment:
+
+- ENG-DOMAIN
+- ENG-INTEGRITY
+- ENG-INITIALIZATION
+- ENG-CORE-PURITY
+
+---
+
+### AT-40B — Unresolved Intra-Area Informational Resolution References Fail Initialization
+
+Given:
+
+- a graph containing intra-Area informational Resolution references
+- one or more such references do not resolve to existing local Resolution objects
+
+When:
+
+- initialization is attempted
+
+Then:
+
+- initialization fails deterministically
+- runtime is not entered
 
 Alignment:
 
@@ -1111,7 +1299,7 @@ Alignment:
 
 ---
 
-### AT-43 — Successful Mutations Produce Audit Events
+### AT-43 — Successful Mutations Produce Audit Events Without Altering Legitimacy Semantics
 
 Given:
 
@@ -1124,7 +1312,8 @@ When:
 Then:
 
 - corresponding audit events are emitted according to the audit specification
-- audit emission does not define legitimacy, only observability
+- audit emission remains observational only
+- command legitimacy does not depend on audit semantics
 
 Alignment:
 
@@ -1199,7 +1388,7 @@ Then:
 
 - session terminal state
 - Resolution creation
-- supersession mutation
+- structural mutation
 - LEGITIMACY receipt creation
 
 must either all exist together or not exist at all
