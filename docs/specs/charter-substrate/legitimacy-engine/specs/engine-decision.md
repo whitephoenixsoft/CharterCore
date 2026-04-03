@@ -1,6 +1,6 @@
 # ENG-DECISION — Decision Evaluation & Acceptance Orchestration
 
-Status: REFACTORED (v15 – ENG-STRUCTURE / ENG-USABILITY Renaming & ON_HOLD Alignment)  
+Status: REFACTORED (v16 – Solo Vote Removal, Determinism Closure & Winning-Candidate Tightening)  
 Applies to: Engine Core (V1/V2+)  
 
 Authority: Behavioral orchestration layer for decision evaluation and acceptance eligibility.
@@ -143,9 +143,21 @@ At minimum:
 11. session-level blocking determination
 12. acceptance eligibility result
 
+Within each applicable phase, evaluation must use deterministic ordering over the applicable objects.
+
+At minimum:
+
+- participants must be processed in deterministic participant_id order
+- candidates must be processed in deterministic candidate_id order
+- constraints must be processed in deterministic constraint_id order
+- referenced Resolution objects must be processed in deterministic resolution_id order
+- votes must be processed in deterministic vote_id order where vote iteration is required
+
+ENG-DECISION must not depend on unordered collection iteration.
+
 Error accumulation and ordering are governed by ENG-ERROR.
 
-ENG-DECISION defines only the logical ordering.
+ENG-DECISION defines the logical and object-processing ordering required for deterministic evaluation.
 
 ---
 
@@ -270,7 +282,7 @@ Votes must satisfy:
 
 - each vote references an existing participant in the current round
 - each vote references a candidate in the current round
-- no duplicate vote per participant per candidate
+- no duplicate current vote per participant per candidate
 - all votes belong to the current round
 
 Vote validity is structural and must be enforced before authority evaluation.
@@ -292,16 +304,20 @@ ENG-DECISION must not consider historical vote transitions.
 
 ---
 
-## ENG-DECISION-06B — Solo Mode Consumption
+## ENG-DECISION-06B — No Vote Inference
 
-If solo mode conditions are met:
+ENG-DECISION must consume only explicit recorded votes.
 
-- ENG-SESSION must have materialized a valid vote prior to evaluation
+ENG-DECISION must not:
 
-ENG-DECISION:
+- create votes
+- infer votes from participant count
+- infer votes from candidate count
+- synthesize convenience votes
+- treat absence of opposition as support
 
-- treats this vote as a standard vote
-- must not create or infer votes
+Vote existence and mutation are governed by ENG-SESSION.  
+ENG-DECISION consumes explicit vote artifacts only.
 
 ---
 
@@ -452,7 +468,7 @@ Authority rules are defined by the Authority Resolution referenced in the sessio
 
 ENG-DECISION must:
 
-- apply the authority rule deterministically to the vote set
+- apply the authority rule deterministically to the final vote set
 - respect participant eligibility and round boundaries
 
 Examples include:
@@ -479,11 +495,15 @@ A candidate is eligible for acceptance only if all of the following hold:
 ENG-DECISION must determine:
 
 - the set of currently eligible candidates
-- whether a winning candidate exists among that eligible set
+- whether exactly one winning candidate exists among that eligible set under the governing authority rule
 
 If no eligible candidate satisfies authority:
 
 - acceptance eligibility fails
+
+If more than one eligible candidate satisfies authority and the governing authority rule does not itself deterministically select exactly one winner:
+
+- acceptance eligibility fails deterministically
 
 ---
 
@@ -495,6 +515,7 @@ ENG-DECISION must not:
 - select a candidate outside the defined current-round candidate set
 - select a blocked or invalid candidate
 - break ties using non-deterministic methods
+- invent a winner when the authority rule yields no unique deterministic winner
 
 Candidate selection must be fully determined by:
 
@@ -519,6 +540,10 @@ Decision evaluation must determine whether the session as a whole is:
 Session-level blocking applies only to conditions that invalidate the session’s acceptance context as a whole.
 
 These are distinct from candidate-level blocking conditions.
+
+If the session is session-level blocked:
+
+- acceptance eligibility must be false
 
 ---
 
@@ -645,21 +670,28 @@ ENG-DECISION does not define durability mechanics.
 Given identical:
 
 - session state
+- round_index
 - governance references
-- votes
-- constraints
+- participant set
+- candidate set
+- vote set
+- constraint set
 - structural outcomes
 - usability outcomes
 - candidate action definitions
+- schema versions
+- rule identity inputs where applicable
 
 ENG-DECISION must produce identical results.
 
 It must not depend on:
 
 - timestamps
-- UUID ordering
+- UUID ordering as a semantic input
 - storage order
 - environment
+- unordered collection iteration
+- audit presence or ordering
 
 ---
 
@@ -670,14 +702,16 @@ It must not depend on:
 - candidate set must be valid and non-empty
 - candidate action structure must be valid before candidate participation in winning determination
 - votes must be valid and current-round scoped
-- final vote state determines outcome
+- only explicit final vote state determines outcome
 - vote vacillation is allowed prior to evaluation
+- no votes are inferred or synthesized
 - informational references are non-semantic
 - candidate-level blocking is distinct from session-level blocking
 - blocked or invalid candidates do not participate in winning determination
 - constraints must pass for a candidate to remain acceptance-eligible
 - authority rule applies only to eligible candidates
 - structural outcomes must be respected
+- session-level blocking makes acceptance ineligible
 - eligibility determination is deterministic
 - acceptance requires atomic commit defined elsewhere
 
@@ -696,6 +730,7 @@ ENG-DECISION must never:
 - mutate state during evaluation
 - treat informational references as structural inputs
 - infer structural action targets from informational references
+- create or infer votes
 - allow blocked or invalid candidates to win
 
 ---
@@ -712,14 +747,15 @@ It does not:
 - define the graph
 - define structure
 - define receipts
+- infer votes or synthesize participation
 
 It evaluates:
 
 - whether governance is valid
-- whether votes satisfy authority
+- whether explicit votes satisfy authority
 - whether constraints pass
 - whether candidates are valid and currently eligible
-- whether a valid candidate wins
+- whether a unique valid candidate wins
 
 If the answer is “yes,”  
 another layer commits that truth.
