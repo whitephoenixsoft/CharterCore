@@ -229,6 +229,8 @@ Such conditions must not be classified as NO_OP.
 
 Mutation must be determined from command semantics, not from evaluation side effects.
 
+If no eligible winning candidate exists, this must be reported as a violation.
+
 ---
 
 # 7. Blocking Model (Reporting Layer)
@@ -345,6 +347,7 @@ Receipt-related:
 - STRUCTURAL_CONFLICT  
 - RESOLUTION_ALREADY_SUPERSEDED  
 - NO_VALID_VOTE_STATE  
+- INVALID_VOTE_SET
 
 ---
 
