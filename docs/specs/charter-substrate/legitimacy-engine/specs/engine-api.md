@@ -1,6 +1,6 @@
 # ENG-API — Engine Interface & Execution Boundary Specification
 
-Status: REFACTORED (v18 – ENG-STRUCTURE / ENG-USABILITY Renaming, ON_HOLD Alignment & Reference Command Completion)  
+Status: REFACTORED (v19 – Solo Vote Removal, Deterministic Ordering Completion & Full Command Alignment)  
 Applies to: Engine Core (V1/V2+)  
 Scope: Deterministic Engine interface, command surface, and runtime interaction boundary
 
@@ -154,6 +154,8 @@ Authoritative specifications governing behavior.
 **Notes**  
 Additional clarifications.
 
+All commands and queries must produce deterministic outputs under identical inputs and runtime state.
+
 ---
 
 # 4. Runtime Entry
@@ -217,7 +219,7 @@ No
 - reflects candidate-level viability  
 - reflects session-level blocking  
 - does not mutate votes or session state  
-- does not persist solo-mode vote materialization  
+- does not create, infer, or synthesize votes  
 
 ---
 
@@ -295,7 +297,8 @@ Close a session without acceptance.
 Yes
 
 **High-level Preconditions**  
-- session is not already terminal
+- session is not already terminal  
+- runtime mode permits mutation
 
 **Behavioral Authority**  
 - ENG-SESSION  
@@ -321,12 +324,12 @@ Attempt to accept the currently winning eligible candidate.
 - EvaluationReport
 
 **Mutation**  
-Yes (only on success, except permitted solo-mode vote materialization in the mutating acceptance path)
+Yes (only on success)
 
 **High-level Preconditions**  
 - session exists  
 - session is non-terminal  
-- session is not barred from acceptance by runtime mode
+- runtime mode permits mutation
 
 **Behavioral Authority**  
 - ENG-DECISION  
@@ -341,7 +344,7 @@ Yes (only on success, except permitted solo-mode vote materialization in the mut
 - participants may change votes prior to invocation  
 - includes candidate-level blocking checks  
 - includes session-level blocking checks  
-- may materialize a real solo-mode vote during the mutating acceptance path  
+- does not create, infer, or synthesize votes  
 
 ---
 
@@ -365,7 +368,8 @@ Add a participant to the current session round.
 Yes
 
 **High-level Preconditions**  
-- session is in PRE_STANCE phase
+- session is in PRE_STANCE phase  
+- runtime mode permits mutation
 
 **Behavioral Authority**  
 - ENG-SESSION  
@@ -394,7 +398,8 @@ Yes
 
 **High-level Preconditions**  
 - session is in PRE_STANCE phase  
-- participant exists in current round
+- participant exists in current round  
+- runtime mode permits mutation
 
 **Behavioral Authority**  
 - ENG-SESSION  
@@ -424,7 +429,8 @@ Add a candidate proposal to the current session round.
 Yes
 
 **High-level Preconditions**  
-- session is in PRE_STANCE phase
+- session is in PRE_STANCE phase  
+- runtime mode permits mutation
 
 **Behavioral Authority**  
 - ENG-SESSION  
@@ -454,7 +460,8 @@ Yes
 
 **High-level Preconditions**  
 - session is in PRE_STANCE phase  
-- candidate exists in current round
+- candidate exists in current round  
+- runtime mode permits mutation
 
 **Behavioral Authority**  
 - ENG-SESSION  
@@ -484,7 +491,8 @@ Add a constraint to the current session round.
 Yes
 
 **High-level Preconditions**  
-- session is in PRE_STANCE phase
+- session is in PRE_STANCE phase  
+- runtime mode permits mutation
 
 **Behavioral Authority**  
 - ENG-SESSION  
@@ -513,7 +521,8 @@ Yes
 
 **High-level Preconditions**  
 - session is in PRE_STANCE phase  
-- constraint exists in current round
+- constraint exists in current round  
+- runtime mode permits mutation
 
 **Behavioral Authority**  
 - ENG-SESSION  
@@ -544,7 +553,8 @@ Record or replace a vote.
 Yes
 
 **High-level Preconditions**  
-- participant and candidate exist in current round
+- participant and candidate exist in current round  
+- runtime mode permits mutation
 
 **Behavioral Authority**  
 - ENG-SESSION  
@@ -576,7 +586,8 @@ Yes
 
 **High-level Preconditions**  
 - vote exists in current round  
-- session is not terminal
+- session is not terminal  
+- runtime mode permits mutation
 
 **Behavioral Authority**  
 - ENG-SESSION  
@@ -606,7 +617,8 @@ Yes
 
 **High-level Preconditions**  
 - session exists  
-- session is non-terminal
+- session is non-terminal  
+- runtime mode permits mutation
 
 **Behavioral Authority**  
 - ENG-DOMAIN  
@@ -635,7 +647,8 @@ Yes
 
 **High-level Preconditions**  
 - session is in PRE_STANCE phase  
-- participant exists in current round
+- participant exists in current round  
+- runtime mode permits mutation
 
 **Behavioral Authority**  
 - ENG-DOMAIN  
@@ -664,7 +677,8 @@ Yes
 
 **High-level Preconditions**  
 - session is in PRE_STANCE phase  
-- candidate exists in current round
+- candidate exists in current round  
+- runtime mode permits mutation
 
 **Behavioral Authority**  
 - ENG-DOMAIN  
@@ -693,7 +707,8 @@ Yes
 
 **High-level Preconditions**  
 - session is in PRE_STANCE phase  
-- constraint exists in current round
+- constraint exists in current round  
+- runtime mode permits mutation
 
 **Behavioral Authority**  
 - ENG-DOMAIN  
@@ -722,7 +737,8 @@ Yes
 
 **High-level Preconditions**  
 - vote exists in current round  
-- session is not terminal
+- session is not terminal  
+- runtime mode permits mutation
 
 **Behavioral Authority**  
 - ENG-DOMAIN  
@@ -750,7 +766,8 @@ Yes
 
 **High-level Preconditions**  
 - session is in PRE_STANCE phase  
-- target Resolution exists in active Area
+- target Resolution exists in active Area  
+- runtime mode permits mutation
 
 **Behavioral Authority**  
 - ENG-DOMAIN  
@@ -780,7 +797,8 @@ Yes
 
 **High-level Preconditions**  
 - session is in PRE_STANCE phase  
-- reference exists in current round
+- reference exists in current round  
+- runtime mode permits mutation
 
 **Behavioral Authority**  
 - ENG-DOMAIN  
@@ -810,7 +828,8 @@ Add an informational cross-Area reference to the current session round.
 Yes
 
 **High-level Preconditions**  
-- session is in PRE_STANCE phase
+- session is in PRE_STANCE phase  
+- runtime mode permits mutation
 
 **Behavioral Authority**  
 - ENG-DOMAIN  
@@ -840,7 +859,8 @@ Yes
 
 **High-level Preconditions**  
 - session is in PRE_STANCE phase  
-- matching reference exists in current round
+- matching reference exists in current round  
+- runtime mode permits mutation
 
 **Behavioral Authority**  
 - ENG-DOMAIN  
@@ -868,7 +888,8 @@ Begin incremental compilation mode.
 Yes
 
 **High-level Preconditions**  
-- runtime initialized
+- runtime initialized  
+- runtime mode permits mutation
 
 **Behavioral Authority**  
 - ENG-COMPILATION  
@@ -894,7 +915,8 @@ Add a batch to incremental compilation.
 Yes
 
 **High-level Preconditions**  
-- compilation mode active
+- compilation mode active  
+- runtime mode permits mutation
 
 **Behavioral Authority**  
 - ENG-COMPILATION  
@@ -921,7 +943,8 @@ Finalize incremental compilation.
 Yes
 
 **High-level Preconditions**  
-- compilation mode active
+- compilation mode active  
+- runtime mode permits mutation
 
 **Behavioral Authority**  
 - ENG-COMPILATION  
@@ -950,7 +973,8 @@ Yes
 
 **High-level Preconditions**  
 - Resolution exists  
-- Resolution supports ON_HOLD transition
+- Resolution supports ON_HOLD transition  
+- runtime mode permits mutation
 
 **Behavioral Authority**  
 - ENG-USABILITY  
@@ -978,7 +1002,8 @@ Yes
 
 **High-level Preconditions**  
 - Resolution exists  
-- Resolution is ON_HOLD
+- Resolution is ON_HOLD  
+- runtime mode permits mutation
 
 **Behavioral Authority**  
 - ENG-USABILITY  
@@ -1012,7 +1037,7 @@ No
 - ENG-DOMAIN  
 
 **Notes**  
-- deterministic ordering required  
+- results must be deterministically ordered by session_id  
 
 ---
 
@@ -1037,7 +1062,7 @@ No
 - ENG-DOMAIN  
 
 **Notes**  
-- deterministic ordering required  
+- results must be deterministically ordered by resolution_id  
 
 ---
 
@@ -1137,7 +1162,7 @@ No
 - ENG-RECEIPT  
 
 **Notes**  
-- deterministic ordering required  
+- results must be deterministically ordered by receipt_id  
 
 ---
 
@@ -1165,6 +1190,7 @@ No
 **Notes**  
 - supports reconstruction of prior configurations  
 - informational only  
+- round snapshots must be returned in ascending round_index order  
 
 ---
 
@@ -1192,6 +1218,8 @@ No
 **Notes**  
 - status is derived, not persisted  
 - includes ELIGIBLE / BLOCKED_TEMPORARY / BLOCKED_PERMANENT / INVALID  
+- results must be deterministically ordered by candidate_id  
+- status derivation must be consistent with evaluate_session  
 
 ---
 
@@ -1219,6 +1247,7 @@ No
 **Notes**  
 - reflects current runtime state  
 - may change without candidate mutation  
+- status derivation must be consistent with evaluate_session  
 
 ---
 
@@ -1251,26 +1280,26 @@ No
 
 ### verify_spec_hash
 
-**Purpose**  
+**Purpose**  
 Verify a spec hash value.
 
-**Inputs**  
+**Inputs**  
 - spec_set_hash
 
-**Output**  
+**Output**  
 - verification result
 
-**Mutation**  
+**Mutation**  
 No
 
-**High-level Preconditions**  
+**High-level Preconditions**  
 - input hash provided
 
-**Behavioral Authority**  
-- ENG-SPECVERIFY  
+**Behavioral Authority**  
+- ENG-SPECVERIFY  
 
-**Notes**  
-- does not reinterpret rule identity semantics  
+**Notes**  
+- does not reinterpret rule identity semantics  
 
 ---
 
@@ -1278,29 +1307,29 @@ No
 
 ### export_area_dag
 
-**Purpose**  
+**Purpose**  
 Export the current Area graph.
 
-**Inputs**  
+**Inputs**  
 - none
 
-**Output**  
+**Output**  
 - domain graph
 
-**Mutation**  
+**Mutation**  
 No
 
-**High-level Preconditions**  
+**High-level Preconditions**  
 - runtime initialized
 
-**Behavioral Authority**  
-- ENG-DOMAIN  
-- ENG-CANON  
-- ENG-RECEIPT  
+**Behavioral Authority**  
+- ENG-DOMAIN  
+- ENG-CANON  
+- ENG-RECEIPT  
 
-**Notes**  
-- export must be deterministic  
-- export must preserve canonical structure required for downstream use  
+**Notes**  
+- export must be deterministic  
+- export must preserve canonical structure required for downstream use  
 
 ---
 
@@ -1314,20 +1343,20 @@ Blocking exists at two levels.
 
 Caused by:
 
-- Authority invalidation → BLOCK_PERMANENT  
-- Scope supersession or invalidation → BLOCK_PERMANENT  
-- Scope ON_HOLD → BLOCK_TEMPORARY  
+- Authority invalidation → BLOCK_PERMANENT  
+- Scope supersession or invalidation → BLOCK_PERMANENT  
+- Scope ON_HOLD → BLOCK_TEMPORARY  
 
 ### Candidate-Level Blocking
 
 Caused by:
 
-- superseded target  
-- retired target  
-- ON_HOLD target  
-- unusable referenced artifacts  
+- superseded target  
+- retired target  
+- ON_HOLD target  
+- unusable referenced artifacts  
 
-ENG-API exposes both through EvaluationReport and query interfaces.  
+ENG-API exposes both through EvaluationReport and query interfaces.  
 It does not define their semantics.
 
 ---
@@ -1338,13 +1367,13 @@ It does not define their semantics.
 
 When runtime mode is DEGRADED_READ_ONLY:
 
-- mutating commands must fail deterministically  
-- read-only operations remain available  
+- mutating commands must fail deterministically  
+- read-only operations remain available  
 
 Behavior is defined in:
 
-- ENG-INTEGRITY  
-- ENG-INITIALIZATION  
+- ENG-INTEGRITY  
+- ENG-INITIALIZATION  
 
 ---
 
@@ -1354,9 +1383,9 @@ Behavior is defined in:
 
 Given identical inputs and runtime state:
 
-- identical commands produce identical EvaluationReports  
-- identical queries produce identical results  
-- no behavior depends on timestamps, ordering, or environment  
+- identical commands produce identical EvaluationReports  
+- identical queries produce identical results  
+- no behavior depends on timestamps, ordering, or environment  
 
 Determinism is enforced by the authoritative specifications consumed by the API.
 
@@ -1364,14 +1393,15 @@ Determinism is enforced by the authoritative specifications consumed by the API.
 
 # 16. Engine Invariants
 
-- API never creates legitimacy directly  
-- API never bypasses validation  
-- API never mutates state on failed validation except explicitly permitted solo-mode vote materialization during mutating acceptance flow  
-- API exposes both session-level and candidate-level blocking  
-- API reflects authoritative evaluation without reinterpretation  
-- API never merges Areas  
-- API never reuses identifiers  
-- API never persists derived candidate status as candidate state  
+- API never creates legitimacy directly  
+- API never bypasses validation  
+- API never mutates state on failed validation  
+- API never creates, infers, or synthesizes votes  
+- API exposes both session-level and candidate-level blocking  
+- API reflects authoritative evaluation without reinterpretation  
+- API never merges Areas  
+- API never reuses identifiers  
+- API never persists derived candidate status as candidate state  
 
 ---
 
@@ -1381,16 +1411,16 @@ ENG-API is the execution surface.
 
 It exposes:
 
-- session orchestration  
-- candidate-based decision making  
-- deterministic evaluation  
-- immutable historical inspection  
+- session orchestration  
+- candidate-based decision making  
+- deterministic evaluation  
+- immutable historical inspection  
 
 It does not define:
 
-- legitimacy  
-- structural graph semantics  
-- usability semantics  
-- structural validity  
+- legitimacy  
+- structural graph semantics  
+- usability semantics  
+- structural validity  
 
 Those belong to their respective specifications.
