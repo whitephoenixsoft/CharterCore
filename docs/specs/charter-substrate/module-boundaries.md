@@ -14,7 +14,7 @@ It exists to:
 
 - prevent responsibility drift  
 - eliminate implicit coupling  
-- preserve invariants across evolution (V1–V7+)  
+- preserve invariants across evolution  
 - ensure each module remains independently usable and composable  
 
 Each module is defined by:
@@ -125,7 +125,7 @@ Modules must not:
 
 - Context isolation  
 - Session orchestration  
-- Baseline review  
+- Review orchestration (Baseline, Federation, Archive, etc.)  
 - Import/export coordination  
 - Engine invocation  
 
@@ -155,7 +155,6 @@ Modules must not:
 - Commit definitions  
 - Commit taxonomy  
 - Artifact identity rules  
-- Commit lineage structure  
 
 ### Does NOT Own
 
@@ -201,7 +200,66 @@ Modules must not:
 
 ---
 
-## 3.6 Charter Care Substrate (CCare)
+## 3.6 Charter Structural Graph (CSG)
+
+### Owns
+
+- Construction of the local admitted DAG  
+- Node and edge relationships  
+- Supersession structure  
+- Cross-area and cross-resolution references  
+- Historical and active graph views  
+
+### Does NOT Own
+
+- Identity  
+- Scope or purpose  
+- Alignment computation  
+- Signals  
+- Legitimacy  
+
+### Must NOT
+
+- Interpret meaning  
+- Define identity boundaries  
+- Infer intent or purpose  
+- Compute alignment  
+- Modify commits  
+- Rewrite history  
+
+---
+
+## 3.7 Charter Identity Substrate (CIS)
+
+### Owns
+
+- Identity declaration (human-defined)  
+- Scope binding via resolutions  
+- Identity versioning  
+- Deprecation states  
+- Sunset lifecycle  
+- Identity continuity over time  
+
+### Does NOT Own
+
+- Graph construction  
+- Signals or observations  
+- Alignment computation  
+- Legitimacy  
+- Transport  
+
+### Must NOT
+
+- Modify underlying graph structure  
+- Infer identity implicitly  
+- Observe runtime behavior  
+- Trigger actions  
+- Rewrite history  
+- Collapse identity boundaries  
+
+---
+
+## 3.8 Charter Care Substrate (CCare)
 
 ### Owns
 
@@ -229,43 +287,15 @@ Modules must not:
 
 ---
 
-## 3.7 Charter Lineage Substrate (CLL)
-
-### Owns
-
-- Identity definition  
-- Scope and purpose  
-- Versioning (mechanical)  
-- Deprecation states  
-- Sunset lifecycle  
-
-### Does NOT Own
-
-- Behavior observation  
-- Signals  
-- Alignment computation  
-- Legitimacy  
-- Telemetry  
-
-### Must NOT
-
-- Observe runtime behavior  
-- Interpret system health  
-- Trigger action  
-- Collapse identity boundaries  
-- Rewrite history  
-- Infer intent  
-
----
-
-## 3.8 Charter Alignment Engine (CAE)
+## 3.9 Charter Alignment System (CAS)
 
 ### Owns
 
 - Derived alignment computation  
-- Drift and variance detection  
+- Drift and tension detection  
 - Structural propagation  
-- Predictive alignment indicators  
+- Alignment state modeling  
+- Semantic lattice evaluation  
 
 ### Does NOT Own
 
@@ -286,14 +316,14 @@ Modules must not:
 
 ---
 
-## 3.9 Charter Guidance Layer (CGL)
+## 3.10 Charter Guidance Layer (CGL)
 
 ### Owns
 
 - Interpretation (exegesis)  
 - Summaries  
 - Narrative explanations  
-- Drift descriptions  
+- Alignment descriptions  
 
 ### Does NOT Own
 
@@ -314,12 +344,12 @@ Modules must not:
 
 ---
 
-## 3.10 Charter Relay System (CRS)
+## 3.11 Charter Relay System (CRS)
 
 ### Owns
 
 - Commit transport  
-- Append-only archival storage  
+- Append-only archival endpoints  
 - Push/fetch operations  
 - Timestamp preservation  
 
@@ -382,7 +412,7 @@ This structure prevents:
 - Relay becoming a source of truth  
 - Storage becoming interpretation  
 - Care becoming control  
-- Lineage becoming governance  
+- Identity being conflated with structure  
 
 ---
 
@@ -395,9 +425,10 @@ Each module answers exactly one kind of question:
 - Persistence → “What is stored?”  
 - CCS → “What is a commit?”  
 - Commit Store → “What do we have locally?”  
+- CSG → “What is the structure of relationships?”  
+- CIS → “What identities and scopes exist over that structure?”  
 - CCare → “What is being observed relative to decisions?”  
-- CLL → “Who are we over time?”  
-- CAE → “What does structure + observation imply?”  
+- CAS → “What does structure + observation imply?”  
 - CGL → “How can this be understood?”  
 - CRS → “What can be transported or archived?”  
 

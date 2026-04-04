@@ -75,11 +75,6 @@ Responsibility:
 Key Property:
 - Only component that creates legitimacy
 
-Notes:
-- Derived from V1/V2 concepts
-- Fully deterministic
-- Storage-agnostic
-
 ---
 
 ## 3.2 Persistence Layer
@@ -100,17 +95,17 @@ Key Property:
 
 ## 3.3 Runtime Layer
 
-Canonical Name: **Runtime Layer (CLI Runtime)**
+Canonical Name: **Runtime Layer**
 
 Responsibility:
 - Context isolation
 - Session orchestration
-- Baseline review
+- Review orchestration (Baseline, Federation, Archive, etc.)
 - Import/export coordination
 - Engine invocation
 
 Key Property:
-- Orchestrates workflow but does not create legitimacy
+- Orchestrates workflows but does not create legitimacy
 
 ---
 
@@ -122,14 +117,9 @@ Responsibility:
 - Definition of commit artifacts
 - Commit taxonomy (Resolution, Receipt, Review, Exploration, Signal, etc.)
 - Artifact identity (UUID-based)
-- Commit-level lineage rules
 
 Key Property:
-- Defines *what a commit is*, not where it is stored
-
-Notes:
-- Logical layer, not a storage system
-- Previously referred to as “V6”
+- Defines what a commit is, not where it is stored
 
 ---
 
@@ -140,21 +130,58 @@ Canonical Name: **Charter Commit Store**
 Responsibility:
 - Local append-only storage of commits
 - Commit indexing and retrieval
-- Local lineage materialization inputs
 
 Key Property:
 - Source of local truth artifacts
-- Storage implementation of CCS artifacts
-
-Notes:
-- Distinct from CCS (which defines structure)
-- Distinct from Relay (which transports)
 
 ---
 
-## 3.6 Charter Care Substrate (CCare)
+## 3.6 Charter Structural Graph (CSG)
 
-Canonical Name: **Charter Care Substrate**
+Canonical Name: **Charter Structural Graph (CSG)**
+
+Responsibility:
+- Construction of the local admitted DAG
+- Node and edge representation
+- Supersession relationships
+- Cross-area and cross-resolution references
+- Historical and active graph views
+
+Key Property:
+- Pure structural representation of commit relationships
+
+Constraints:
+- Does NOT define identity
+- Does NOT define scope or purpose
+- Does NOT interpret meaning
+- Does NOT compute alignment
+
+---
+
+## 3.7 Charter Identity Substrate (CIS)
+
+Canonical Name: **Charter Identity Substrate (CIS)**
+
+Responsibility:
+- Identity declaration (human-defined)
+- Scope binding via resolutions
+- Identity versioning
+- Deprecation and sunset states
+- Identity continuity over time
+
+Key Property:
+- Preserves identity and scope evolution over the graph
+
+Notes:
+- Consumes CSG
+- Does not modify graph structure
+- Does not compute alignment
+
+---
+
+## 3.8 Charter Care Substrate (CCare)
+
+Canonical Name: **Charter Care Substrate (CCare)**
 
 Responsibility:
 - Check-ins (alignment observations)
@@ -165,57 +192,33 @@ Responsibility:
 Key Property:
 - Observational, descriptive, non-authoritative
 
-Notes:
-- Human-first caregiving model
-- Foundational layer for future VDS systems
-- Previously referred to as “Charter VDS”
-
 ---
 
-## 3.7 Charter Lineage Substrate (CLL)
+## 3.9 Charter Alignment System (CAS)
 
-Canonical Name: **Charter Lineage Substrate**
-
-Responsibility:
-- Identity definition
-- Scope and purpose tracking
-- Versioning (mechanically derived)
-- Deprecation and sunset states
-- Lineage continuity
-
-Key Property:
-- Preserves identity and intent over time
-- Does not observe behavior
-
-Notes:
-- Foundational layer for future VLS systems
-- Previously referred to as “Charter VLS”
-
----
-
-## 3.8 Charter Alignment Engine (CAE)
-
-Canonical Name: **Charter Alignment Engine (CAE)**
+Canonical Name: **Charter Alignment System (CAS)**
 
 Responsibility:
-- Derived computation over:
-  - commit lineage
-  - identity structure (CLL)
-  - signals/check-ins (CCare)
-- Drift, variance, and propagation analysis
-- Structural and predictive alignment state
+- Derived alignment computation over:
+  - structural graph (CSG)
+  - signals (CCare)
+  - optionally identity partitions (CIS)
+- Alignment state modeling
+- Drift, tension, and capacity analysis
+- Semantic lattice evaluation
 
 Key Property:
-- Deterministic and rebuildable
+- Query-based, descriptive, non-authoritative
 - Produces derived state only
 
 Notes:
-- Consumes CCS + Commit Store + CCare + CLL
-- Does not create legitimacy or authority
+- Does not create legitimacy
+- Does not enforce behavior
+- Identity is optional for core computation
 
 ---
 
-## 3.9 Charter Guidance Layer (CGL)
+## 3.10 Charter Guidance Layer (CGL)
 
 Canonical Name: **Charter Guidance Layer (CGL)**
 
@@ -223,18 +226,14 @@ Responsibility:
 - Interpretation (exegesis)
 - Summaries and narratives
 - Alignment explanation
-- Drift and tension description
+- Structural and semantic translation for humans
 
 Key Property:
 - Read-only, non-authoritative
 
-Notes:
-- Consumes CAE and all underlying artifacts
-- Does not compute alignment itself
-
 ---
 
-## 3.10 Charter Relay System (CRS)
+## 3.11 Charter Relay System (CRS)
 
 Canonical Name: **Charter Relay System (CRS)**
 
@@ -245,11 +244,7 @@ Responsibility:
 
 Key Property:
 - Opaque transport layer
-- No interpretation, no legitimacy, no state reconstruction
-
-Notes:
-- Stores commits without meaning
-- External to local Commit Store
+- No interpretation, no legitimacy, no reconstruction
 
 ---
 
@@ -269,9 +264,11 @@ CCS
 ↑  
 Commit Store  
 ↑  
-CCare / CLL  
+CSG  
 ↑  
-CAE  
+CIS / CCare  
+↑  
+CAS  
 ↑  
 CGL  
 
@@ -284,10 +281,11 @@ CRS operates orthogonally as a transport layer.
 - Legitimacy Engine → creates legitimacy  
 - Runtime → orchestrates workflows  
 - CCS → defines commit structure  
-- Commit Store → stores local commits  
+- Commit Store → stores commits  
+- CSG → defines structural relationships  
+- CIS → defines identity and scope  
 - CCare → records observational signals  
-- CLL → preserves identity and intent  
-- CAE → computes derived alignment  
+- CAS → computes alignment  
 - CGL → interprets  
 - CRS → transports  
 
@@ -295,18 +293,14 @@ No layer may assume another layer’s responsibility.
 
 ---
 
-# 5. Mapping Legacy Version Terms
+# 5. Mapping Legacy Concepts
 
-For historical reference only:
-
-| Legacy Version | Canonical Module |
+| Legacy Concept | Canonical Module |
 |----------------|------------------|
-| V1–V2 | Legitimacy Engine |
-| V1–V4 | Runtime Layer |
-| V5 (alignment substrate emergence) | CAE + CCare + CLL |
-| V6 (commits) | CCS + Commit Store |
-| V6+ (guidance) | CGL |
-| V7 | CRS |
+| CLL (Lineage Substrate) | CSG + CIS |
+| VLS concepts | CIS |
+| VDS concepts | CCare + CAS |
+| CAE | CAS |
 
 This table is informational only.  
 Future documents MUST use canonical names.
@@ -324,9 +318,10 @@ All new documents MUST use:
 - Persistence Layer  
 - Charter Commit System (CCS)  
 - Charter Commit Store  
+- Charter Structural Graph (CSG)  
+- Charter Identity Substrate (CIS)  
 - Charter Care Substrate (CCare)  
-- Charter Lineage Substrate (CLL)  
-- Charter Alignment Engine (CAE)  
+- Charter Alignment System (CAS)  
 - Charter Guidance Layer (CGL)  
 - Charter Relay System (CRS)  
 
@@ -334,13 +329,7 @@ All new documents MUST use:
 
 ## CN-07 — Avoid Abbreviations in First Use
 
-First reference in any document must use full name:
-
-Example:
-
-“Charter Commit System (CCS)”
-
-Subsequent references may use abbreviation.
+First reference must use full name.
 
 ---
 
@@ -367,9 +356,10 @@ Charter is a layered system composed of:
 - a workflow orchestrator  
 - a commit definition layer  
 - a local truth store  
+- a structural graph layer  
+- an identity substrate  
 - a care substrate  
-- a lineage substrate  
-- a derived alignment engine  
+- a derived alignment system  
 - a read-only interpretation layer  
 - an external transport system  
 
