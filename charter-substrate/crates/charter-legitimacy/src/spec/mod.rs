@@ -11,13 +11,12 @@ pub struct SpecificationManifest {
 }
 
 pub fn embedded_manifest() -> &'static SpecificationManifest {
-        &MANIFEST
+    &MANIFEST
 }
 
-static MANIFEST: SpecificationManifest = SpecificationManifest
-{
+static MANIFEST: SpecificationManifest = SpecificationManifest {
     engine_version: "0.1.0",
     hash_algorithm: "sha256",
     spec_set_hash: "UNSET",
     entries: &[],
-}; 
+};
