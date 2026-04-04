@@ -1,0 +1,12 @@
+[package]
+name = "charter-cli"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+charter-legitimacy = { path = "../charter-legitimacy" }
+
+[[bin]]
+name = "charter"
+path = "src/main.rs"
+

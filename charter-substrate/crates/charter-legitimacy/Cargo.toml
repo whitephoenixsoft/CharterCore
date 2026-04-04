@@ -1,0 +1,11 @@
+[package]
+name = "charter-legitimacy"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+
+
+[lib]
+name = "charter_legitimacy"
+path = "src/lib.rs"
