@@ -1,9 +1,10 @@
-# Charter Identity Substrate (CIS) — Foundation Specification
+# Charter Identity Substrate (CIS) — Foundation Specification (Revised)
 
 Status: FOUNDATIONAL  
 Intent: Define identity, scope, and bounded influence over structural graphs  
 Scope: Identity declaration, scope definition, versioning, lineage, and identity relationships  
-Does NOT Define: graph structure (CSG), alignment (CAS/CAE), guidance (CGL), or legitimacy  
+Depends On: Charter Commit System (CCS), Charter Graph Substrate (CSG)  
+Does NOT Define: graph structure (CSG), alignment (CAS), guidance (CGL), or legitimacy  
 
 ---
 
@@ -31,7 +32,7 @@ CIS:
 
 - requires identity to be explicitly declared  
 - requires scope boundaries to be explicitly defined  
-- does not infer identity membership from connectivity  
+- does not infer identity membership from unrestricted connectivity  
 - preserves overlap and incompleteness without correction  
 
 ---
@@ -40,25 +41,29 @@ CIS:
 
 ## 3.1 Identity as a Commit
 
-An identity is defined by an **identity commit**.
+An identity is defined by a **CCS commit type: Identity Commit**.
 
-Each identity commit:
+Identity commits are:
 
-- is immutable  
-- uniquely identifiable  
-- represents a declared identity state  
+- immutable  
+- append-only  
+- non-legitimizing  
+- declarative (not authoritative)  
+
+Each identity commit represents a **versioned state of an identity**.
 
 ---
 
 ## 3.2 Identity Properties
 
-An identity has:
+Each identity version (commit) contains:
 
 - identity_id  
-- optional predecessor_identity_id (for lineage)  
-- current scope_definition  
-- current purpose reference  
-- lifecycle state (active, deprecated, sunset, etc.)  
+- version_id (commit_id)  
+- optional predecessor_identity_id  
+- scope_definition  
+- purpose_reference  
+- lifecycle_state  
 
 ---
 
@@ -66,47 +71,70 @@ An identity has:
 
 Identity evolves through commits:
 
-- updates to purpose  
-- updates to scope definition  
+- purpose updates  
+- scope updates  
 - lifecycle transitions  
 
 All changes are:
 
-- append-only  
 - explicit  
+- append-only  
 - auditable  
 
 ---
 
-# 4. Identity Lineage
+# 4. Identity Versioning Model
 
-## 4.1 Version Continuity
+## 4.1 Version as Identity State
 
-An identity remains in the same lineage when:
+Each identity commit represents a **complete snapshot** of:
 
-- purpose changes  
-- lower-order scope refinements occur  
+- scope  
+- purpose  
+- lifecycle  
 
-These produce new identity commits with the same identity_id.
-
----
-
-## 4.2 Lineage Break
-
-A new identity lineage is created when:
-
-> the identity-defining scope changes materially
-
-This produces:
-
-- a new identity_id  
-- an explicit predecessor reference  
+The **active identity state** is the latest version.
 
 ---
 
-## 4.3 Lineage Principle
+## 4.2 Types of Change
 
-> Identity continuity exists only while its defining boundary remains the same bounded thing.
+### A. Purpose Change
+
+- scope unchanged  
+- identity unchanged  
+
+Result:
+- new version  
+- same identity_id  
+
+---
+
+### B. Scope Refinement
+
+- anchors or boundaries adjusted  
+- identity remains the same bounded concept  
+
+Result:
+- new version  
+- same identity_id  
+
+---
+
+### C. Scope Redefinition (Lineage Break)
+
+- identity-defining boundary changes materially  
+- scope represents a different “thing”  
+
+Result:
+- new identity_id  
+- predecessor reference recorded  
+
+---
+
+## 4.3 Versioning Principle
+
+> Identity persists only while its defining boundary remains the same bounded thing.
 
 ---
 
@@ -114,11 +142,9 @@ This produces:
 
 ## 5.1 Scope Definition
 
-Each identity has exactly one **active scope definition**.
+Each identity version defines exactly one **scope definition**.
 
-A scope definition is:
-
-> a declared boundary specification over the structural graph
+The active scope is the scope of the latest identity version.
 
 ---
 
@@ -128,49 +154,68 @@ A scope definition consists of:
 
 ### 5.2.1 Anchor Resolutions
 
-- resolution_ids where the identity attaches to the graph  
+- resolution_ids where identity attaches to the graph  
 - define structural entry points  
 
 ---
 
 ### 5.2.2 Boundary Stops
 
-- resolution_ids or rules where identity membership must stop  
-- define limits of influence  
+Boundary stops define where traversal must stop.
+
+Two types:
+
+- **Hard Stop**  
+  - node is excluded  
+  - traversal must not continue beyond  
+
+- **Soft Stop**  
+  - node may be included  
+  - traversal must not continue beyond  
 
 ---
 
-### 5.2.3 Optional Explicit Inclusions
+### 5.2.3 Explicit Inclusions (Optional)
 
-- resolution_ids explicitly included regardless of connectivity  
+- resolution_ids explicitly included regardless of traversal  
 
 ---
 
-### 5.2.4 Optional Explicit Exclusions
+### 5.2.4 Explicit Exclusions (Optional)
 
 - resolution_ids explicitly excluded  
 
 ---
 
-## 5.3 Scope Principle
+## 5.3 Scope Evaluation
 
-> Anchors define attachment. Boundaries define limits.
+Membership is determined by a **bounded traversal**:
 
-A valid scope must:
+- starting from anchors  
+- constrained by boundary stops  
+- modified by inclusion/exclusion rules  
 
-- include at least one anchor  
-- define sufficient boundary constraints to prevent implicit expansion  
+Traversal must not:
+
+- expand beyond declared boundaries  
+- assume full graph connectivity  
 
 ---
 
-## 5.4 No Connectivity Inference
+## 5.4 Scope Principle
 
-CIS must not:
+> Anchors define attachment. Boundaries define limits.
 
-- assume identity includes all reachable nodes from anchors  
-- infer membership from graph connectivity alone  
+---
 
-Membership is determined only by the declared scope definition.
+## 5.5 Pre-Structural Identity
+
+An identity may be declared without anchors.
+
+In this state:
+
+- it has no structural membership  
+- it becomes active once anchors are defined  
 
 ---
 
@@ -180,8 +225,9 @@ Membership is determined only by the declared scope definition.
 
 A resolution belongs to an identity if:
 
-- it is included by the scope definition  
-- and not excluded by boundary constraints  
+- it is reachable through bounded traversal from anchors  
+- it is not excluded by boundary rules  
+- or it is explicitly included  
 
 ---
 
@@ -191,9 +237,9 @@ A resolution may belong to multiple identities.
 
 This enables:
 
+- overlap  
 - shared decisions  
-- convergence across identities  
-- structural overlap  
+- convergence  
 
 ---
 
@@ -211,7 +257,7 @@ CIS preserves structural relationships between identities.
 
 ## 7.1 Overlap
 
-Overlap occurs when:
+Occurs when:
 
 > two identities include the same resolution(s)
 
@@ -225,7 +271,7 @@ Properties:
 
 ## 7.2 Collaboration
 
-Collaboration occurs when:
+Occurs when:
 
 > one identity’s structure references or depends on another’s structure
 
@@ -233,15 +279,26 @@ Properties:
 
 - directional  
 - structural  
-- may imply dependency or influence  
 
 ---
 
-## 7.3 Relationship Principle
+## 7.3 Boundary Adjacency
 
-> CIS preserves relationship types. It does not collapse them.
+Occurs when:
 
-Interpretation of these relationships is external (CAS/CGL).
+> identities meet at declared boundaries without overlap
+
+Properties:
+
+- structural  
+- non-overlapping  
+- indicates potential interaction surface  
+
+---
+
+## 7.4 Relationship Principle
+
+> CIS preserves relationships. It does not interpret them.
 
 ---
 
@@ -254,15 +311,15 @@ Interpretation of these relationships is external (CAS/CGL).
 
 CIS must not:
 
-- modify graph structure  
-- infer missing edges  
+- modify graph  
+- infer edges  
 
 ---
 
 ## 8.2 Separation from CAS
 
-- CAS computes alignment and tension  
-- CIS defines identity boundaries  
+- CAS computes alignment  
+- CIS defines boundaries  
 
 CIS must not:
 
@@ -273,7 +330,7 @@ CIS must not:
 
 ## 8.3 Separation from CGL
 
-- CGL interprets identity and alignment  
+- CGL interprets identity  
 - CIS remains structural  
 
 ---
@@ -284,10 +341,11 @@ The following must always hold:
 
 - identity is explicitly declared  
 - identity is commit-based and immutable  
-- identity lineage is explicit  
+- identity versioning is explicit  
 - scope definition is explicit  
-- anchors and boundaries are both required  
-- identity membership is never inferred from connectivity  
+- anchors and boundaries govern scope  
+- membership is bounded and deterministic  
+- identity membership is not inferred from unrestricted connectivity  
 - resolutions may belong to multiple identities  
 - identity relationships are preserved structurally  
 - CIS does not interpret meaning  
@@ -302,7 +360,7 @@ CIS is:
 
 - a system of declared identities  
 - a mapping of bounded influence over a graph  
-- a model of overlapping and collaborating domains  
+- a model of overlapping and interacting domains  
 
 It is not:
 
@@ -324,9 +382,9 @@ CIS ensures that:
 
 It enables systems to understand:
 
-- who is responsible for what  
-- where influence begins and ends  
-- how identities interact  
+- where identity begins  
+- where it ends  
+- how identities relate  
 
 without ever:
 
