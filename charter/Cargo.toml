@@ -1,7 +1,0 @@
-[workspace]
-members = [
-	"crates/charter-core",
-	"crates/charter-cli",
-]
-resolver = "2"
-
