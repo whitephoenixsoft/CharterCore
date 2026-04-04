@@ -1,6 +1,6 @@
 # ENG-RECEIPT — Terminal Receipt Structure, Canonical Form & Rule Provenance
 
-Status: REFACTORED (v11 – Candidate Alignment, Naming Unification & Reference Preservation)  
+Status: REFACTORED (v12 – Solo Mode Removal, Determinism Tightening & Resolution Binding Clarification)  
 Applies to: Engine Core (V1/V2+)  
 Scope: Immutable terminal receipts for legitimacy history, reconstruction, verification, and portability
 
@@ -73,6 +73,10 @@ It records:
 - the terminal accepted outcome
 - the rule identity under which the session was evaluated
 
+Additional requirements:
+
+- resolution_id must be present and reference the created Resolution
+
 A LEGITIMACY receipt may reference a Resolution whose later lifecycle state changes, but those later changes do not alter the receipt.
 
 ---
@@ -86,6 +90,10 @@ It records:
 - the ordered round history
 - the terminal non-accepted outcome
 - the rule identity under which the session closed
+
+Additional requirements:
+
+- resolution_id must be null
 
 An EXPLORATION receipt does not create legitimacy.
 
@@ -133,7 +141,7 @@ A receipt must contain the following structural fields:
 - receipt_type
 - receipt_id
 - session_id
-- resolution_id (nullable)
+- resolution_id (nullable, constrained by receipt_type)
 - area_id
 - engine_version
 - spec_set_hash
@@ -225,6 +233,12 @@ Each round snapshot must include:
 
 A receipt records full structural round state.  
 It does not record diffs.
+
+Receipt round snapshots are historical captures and must not be used as substitutes for:
+
+- current session state
+- structural graph evaluation
+- usability determination
 
 Informational references remain informational and must not be interpreted as structural graph edges or legitimacy inputs.
 
@@ -451,33 +465,38 @@ ENG-RECEIPT must not redefine commit ordering or crash recovery rules.
 
 ---
 
-# 14. Solo Mode Relationship
+# 14. Deterministic Guarantees
 
-## ENG-RECEIPT-23 — Implicit Votes Must Still Be Preserved Structurally
+## ENG-RECEIPT-23 — Identical Terminal State Produces Identical Receipt Content
 
-If session logic introduces an implicit solo vote, that vote must appear in the terminal receipt exactly as part of the final round snapshot.
+Given identical:
 
-ENG-SESSION and ENG-DECISION define when that vote exists.  
-ENG-RECEIPT defines that once it exists at terminalization, it must be preserved structurally.
+- terminal session structural state
+- governance snapshot references
+- round snapshots
+- candidate action definitions
+- constraint sets
+- vote sets
+- informational references
+- rule provenance inputs (engine_version, spec_set_hash)
 
----
+the receipt content must be identical in all structural fields.
 
-# 15. Deterministic Guarantees
+Fields such as:
 
-## ENG-RECEIPT-24 — Identical Terminal State Produces Identical Receipt Content
+- receipt_id
+- created_at
 
-Given identical terminal session state, receipt content must be identical in structure.
+may differ if defined as execution-time artifact metadata, but must not affect canonical content defined by ENG-CANON.
 
 Byte-identical canonical representation is governed by ENG-CANON.  
 Rule identity consistency is governed by ENG-SPECVERIFY.
 
-ENG-RECEIPT defines the structural sameness requirement for the artifact.
-
 ---
 
-# 16. Immutability
+# 15. Immutability
 
-## ENG-RECEIPT-25 — Receipts Are Immutable
+## ENG-RECEIPT-24 — Receipts Are Immutable
 
 Once emitted, a receipt must not be modified.
 
@@ -495,9 +514,9 @@ ENG-RECEIPT is the authority for artifact immutability itself.
 
 ---
 
-# 17. Audit Relationship
+# 16. Audit Relationship
 
-## ENG-RECEIPT-26 — Receipt Is Not Audit
+## ENG-RECEIPT-25 — Receipt Is Not Audit
 
 Receipts are distinct from audit records and EvaluationReport artifacts.
 
@@ -514,10 +533,12 @@ ENG-RECEIPT does not create, replace, or mutate audit records.
 
 ---
 
-# 18. Engine Invariants
+# 17. Engine Invariants
 
 - each terminal session has exactly one receipt
 - receipt type matches terminal outcome
+- LEGITIMACY receipts must include resolution_id
+- EXPLORATION receipts must have null resolution_id
 - receipts preserve ordered full round snapshots
 - receipts preserve rule provenance fields
 - receipts preserve candidate action definitions exactly
@@ -532,7 +553,7 @@ ENG-RECEIPT does not create, replace, or mutate audit records.
 
 ---
 
-# 19. Mental Model
+# 18. Mental Model
 
 ENG-RECEIPT defines the terminal artifact layer.
 

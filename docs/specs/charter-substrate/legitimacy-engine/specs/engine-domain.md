@@ -793,6 +793,8 @@ Round snapshot fields:
 - candidate_set
 - constraint_set
 - vote_set
+- internal_resolution_references
+- cross_area_references
 
 ENG-DOMAIN defines the structural shape of the round snapshot.
 
