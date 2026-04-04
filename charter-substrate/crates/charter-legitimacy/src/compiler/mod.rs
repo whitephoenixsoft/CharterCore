@@ -1,7 +1,7 @@
 use std::collections::BTreeMap;
 
 use crate::domain::{
-    AreaGraph, Receipt, ReceiptId, Resolution, ResolutionId, Session, SessionId,
+    AreaGraph, Receipt, ReceiptId, Resolution, ResolutionId, ResolutionKind, Session, SessionId,
 };
 
 #[derive(Debug, Clone, Default)]
@@ -80,23 +80,26 @@ impl CompiledState {
             values.dedup();
         }
 
-        let active_resolution_ids = resolutions
+        let mut active_resolution_ids = resolutions
             .values()
             .filter(|r| r.state.is_active_structural_candidate() && r.superseded_by.is_none())
             .map(|r| r.resolution_id.clone())
             .collect::<Vec<_>>();
+        active_resolution_ids.sort();
 
-        let authority_resolution_ids = resolutions
+        let mut authority_resolution_ids = resolutions
             .values()
-            .filter(|r| r.kind == crate::domain::ResolutionKind::Authority)
+            .filter(|r| r.kind == ResolutionKind::Authority)
             .map(|r| r.resolution_id.clone())
             .collect::<Vec<_>>();
+        authority_resolution_ids.sort();
 
-        let scope_resolution_ids = resolutions
+        let mut scope_resolution_ids = resolutions
             .values()
-            .filter(|r| r.kind == crate::domain::ResolutionKind::Scope)
+            .filter(|r| r.kind == ResolutionKind::Scope)
             .map(|r| r.resolution_id.clone())
             .collect::<Vec<_>>();
+        scope_resolution_ids.sort();
 
         let mut receipts_by_session = BTreeMap::new();
         for receipt in receipts.values() {

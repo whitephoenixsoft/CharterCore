@@ -1,5 +1,5 @@
 use crate::compiler::CompiledState;
-use crate::domain::{AreaGraph, SessionId};
+use crate::domain::AreaGraph;
 use crate::error::{EngineError, EvaluationReport};
 use crate::spec::SpecificationManifest;
 
@@ -29,7 +29,7 @@ pub struct Engine {
 
 impl Engine {
     pub fn rehydrate(input: RehydrateInput) -> Result<RehydrateResult, EngineError> {
-        let compiled = CompiledState::from_graph(input.graph);
+        let state = CompiledState::from_graph(input.graph);
 
         let report = EvaluationReport::success(
             "rehydrate_engine",
@@ -38,7 +38,7 @@ impl Engine {
         );
 
         let engine = Self {
-            state: compiled,
+            state,
             runtime_mode: RuntimeMode::NormalRuntime,
         };
 
@@ -55,30 +55,6 @@ impl Engine {
 
     pub fn compiled_state(&self) -> &CompiledState {
         &self.state
-    }
-
-    pub fn evaluate_session(
-        &self,
-        session_id: SessionId,
-    ) -> Result<EvaluationReport, EngineError> {
-        if self.runtime_mode == RuntimeMode::DegradedReadOnly {
-            return Ok(EvaluationReport::blocked(
-                "evaluate_session",
-                "session",
-                Some(session_id.as_str()),
-                "DEGRADED_MODE_ACTIVE",
-            ));
-        }
-
-        if !self.state.sessions.contains_key(&session_id) {
-            return Err(EngineError::not_found("session", session_id.as_str()));
-        }
-
-        Ok(EvaluationReport::success(
-            "evaluate_session",
-            "session",
-            Some(session_id.as_str()),
-        ))
     }
 
     pub fn specification_manifest() -> &'static SpecificationManifest {

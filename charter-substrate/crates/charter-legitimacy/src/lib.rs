@@ -3,5 +3,5 @@ pub mod domain;
 pub mod error;
 pub mod spec;
 
-mod compiler;
+pub mod compiler;
 mod runtime;
