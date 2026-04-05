@@ -2,8 +2,8 @@
 
 Status: FOUNDATIONAL  
 Intent: Define identity, scope, and bounded influence over structural graphs  
-Scope: Identity declaration, scope definition, versioning, lineage, and identity relationships  
-Depends On: Charter Commit System (CCS), Charter Graph Substrate (CSG)  
+Scope: Identity declaration, scope definition, versioning, lineage, identity relationships, and identity materialization  
+Depends On: Charter Commit System (CCS), Charter Structural Graph (CSG)  
 Does NOT Define: graph structure (CSG), alignment (CAS), guidance (CGL), or legitimacy  
 
 ---
@@ -26,13 +26,13 @@ CIS is a **structural identity layer**, not a semantic or interpretive system.
 
 # 2. Core Principle
 
-> Identity is declared. Boundaries are explicit. Nothing is inferred.
+> Identity is declared. Boundaries are explicit. Membership is derived, never inferred beyond definition.
 
 CIS:
 
 - requires identity to be explicitly declared  
 - requires scope boundaries to be explicitly defined  
-- does not infer identity membership from unrestricted connectivity  
+- derives membership strictly from declared scope rules  
 - preserves overlap and incompleteness without correction  
 
 ---
@@ -48,7 +48,7 @@ Identity commits are:
 - immutable  
 - append-only  
 - non-legitimizing  
-- declarative (not authoritative)  
+- declarative  
 
 Each identity commit represents a **versioned state of an identity**.
 
@@ -100,7 +100,6 @@ The **active identity state** is the latest version.
 ## 4.2 Types of Change
 
 ### A. Purpose Change
-
 - scope unchanged  
 - identity unchanged  
 
@@ -111,8 +110,7 @@ Result:
 ---
 
 ### B. Scope Refinement
-
-- anchors or boundaries adjusted  
+- boundaries adjusted  
 - identity remains the same bounded concept  
 
 Result:
@@ -122,9 +120,7 @@ Result:
 ---
 
 ### C. Scope Redefinition (Lineage Break)
-
 - identity-defining boundary changes materially  
-- scope represents a different “thing”  
 
 Result:
 - new identity_id  
@@ -144,61 +140,52 @@ Result:
 
 Each identity version defines exactly one **scope definition**.
 
-The active scope is the scope of the latest identity version.
-
 ---
 
 ## 5.2 Scope Components
 
-A scope definition consists of:
-
 ### 5.2.1 Anchor Resolutions
 
-- resolution_ids where identity attaches to the graph  
-- define structural entry points  
+- structural attachment points in CSG  
 
 ---
 
 ### 5.2.2 Boundary Stops
 
-Boundary stops define where traversal must stop.
+- define traversal limits  
 
-Two types:
+Types:
 
-- **Hard Stop**  
-  - node is excluded  
-  - traversal must not continue beyond  
-
-- **Soft Stop**  
-  - node may be included  
-  - traversal must not continue beyond  
+- Hard Stop → exclude + stop traversal  
+- Soft Stop → include + stop traversal  
 
 ---
 
 ### 5.2.3 Explicit Inclusions (Optional)
 
-- resolution_ids explicitly included regardless of traversal  
+- force inclusion  
 
 ---
 
 ### 5.2.4 Explicit Exclusions (Optional)
 
-- resolution_ids explicitly excluded  
+- force exclusion  
 
 ---
 
 ## 5.3 Scope Evaluation
 
-Membership is determined by a **bounded traversal**:
+Membership is determined by **bounded traversal over CSG**:
 
-- starting from anchors  
-- constrained by boundary stops  
-- modified by inclusion/exclusion rules  
+- start from anchors  
+- follow structural edges  
+- respect boundary stops  
+- apply inclusion/exclusion rules  
 
 Traversal must not:
 
-- expand beyond declared boundaries  
-- assume full graph connectivity  
+- exceed declared bounds  
+- assume completeness  
 
 ---
 
@@ -210,12 +197,12 @@ Traversal must not:
 
 ## 5.5 Pre-Structural Identity
 
-An identity may be declared without anchors.
+An identity may exist without anchors.
 
 In this state:
 
 - it has no structural membership  
-- it becomes active once anchors are defined  
+- it becomes structurally active once anchors exist  
 
 ---
 
@@ -225,21 +212,15 @@ In this state:
 
 A resolution belongs to an identity if:
 
-- it is reachable through bounded traversal from anchors  
-- it is not excluded by boundary rules  
-- or it is explicitly included  
+- it is reachable via bounded traversal  
+- not excluded  
+- or explicitly included  
 
 ---
 
 ## 6.2 Shared Membership
 
 A resolution may belong to multiple identities.
-
-This enables:
-
-- overlap  
-- shared decisions  
-- convergence  
 
 ---
 
@@ -251,143 +232,154 @@ This enables:
 
 # 7. Identity Relationships
 
-CIS preserves structural relationships between identities.
-
 ---
 
 ## 7.1 Overlap
 
-Occurs when:
-
-> two identities include the same resolution(s)
-
-Properties:
-
-- symmetric  
-- structural  
-- non-directional  
+Shared membership.
 
 ---
 
 ## 7.2 Collaboration
 
-Occurs when:
-
-> one identity’s structure references or depends on another’s structure
-
-Properties:
-
-- directional  
-- structural  
+Structural dependency across identities.
 
 ---
 
 ## 7.3 Boundary Adjacency
 
-Occurs when:
-
-> identities meet at declared boundaries without overlap
-
-Properties:
-
-- structural  
-- non-overlapping  
-- indicates potential interaction surface  
+Adjacent without overlap.
 
 ---
 
 ## 7.4 Relationship Principle
 
-> CIS preserves relationships. It does not interpret them.
+> Relationships are structural. Interpretation is external.
 
 ---
 
-# 8. Structural Independence
+# 8. Identity Materialization (CIS Store)
 
-## 8.1 Separation from CSG
-
-- CSG defines graph structure  
-- CIS defines identity over that structure  
-
-CIS must not:
-
-- modify graph  
-- infer edges  
+CIS may maintain a **materialized identity store** for performance.
 
 ---
 
-## 8.2 Separation from CAS
+## 8.1 Purpose
 
-- CAS computes alignment  
-- CIS defines boundaries  
+The Identity Store exists to:
 
-CIS must not:
+- accelerate membership queries  
+- provide identity-scoped views  
+- support identity relationship queries  
+- avoid recomputing traversal repeatedly  
 
+---
+
+## 8.2 Properties
+
+The Identity Store is:
+
+- **derived from CCS + CSG**  
+- **fully rebuildable**  
+- **non-authoritative**  
+- **local to the system**  
+
+---
+
+## 8.3 Contents
+
+May include:
+
+- identity → resolution membership maps  
+- resolution → identities index  
+- overlap sets  
+- collaboration edges  
+- boundary adjacency mappings  
+- active identity versions  
+
+---
+
+## 8.4 Rebuild Principle
+
+> The Identity Store must be fully reconstructable.
+
+- loss is non-fatal  
+- rebuild must be deterministic  
+
+---
+
+## 8.5 No Interpretation Rule
+
+The Identity Store must not:
+
+- infer scope  
+- modify identity definitions  
+- interpret relationships  
 - compute alignment  
-- interpret tension  
 
 ---
 
-## 8.3 Separation from CGL
+## 8.6 Separation from Other Stores
 
-- CGL interprets identity  
-- CIS remains structural  
+The Identity Store is not:
+
+- Commit Store  
+- Graph Store (CSG)  
+- Alignment Store (CAS)  
+- Runtime Persistence  
 
 ---
 
-# 9. Invariants
+# 9. Structural Independence
 
-The following must always hold:
+## 9.1 CSG
 
-- identity is explicitly declared  
-- identity is commit-based and immutable  
-- identity versioning is explicit  
-- scope definition is explicit  
-- anchors and boundaries govern scope  
+Provides structure.
+
+---
+
+## 9.2 CAS
+
+Consumes identity.
+
+---
+
+## 9.3 CGL
+
+Interprets identity.
+
+---
+
+# 10. Invariants
+
+- identity is explicit  
+- identity is commit-based  
+- versioning is explicit  
+- scope is explicit  
 - membership is bounded and deterministic  
-- identity membership is not inferred from unrestricted connectivity  
-- resolutions may belong to multiple identities  
-- identity relationships are preserved structurally  
-- CIS does not interpret meaning  
-
-Violation of these breaks CIS correctness.
+- overlap is allowed  
+- no inferred identity  
+- store is derived and rebuildable  
 
 ---
 
-# 10. Mental Model
+# 11. Mental Model
 
 CIS is:
 
-- a system of declared identities  
-- a mapping of bounded influence over a graph  
-- a model of overlapping and interacting domains  
-
-It is not:
-
-- a hierarchy  
-- a control system  
-- an alignment engine  
-- an interpretation layer  
+- identity overlay on a graph  
+- bounded influence mapping  
+- overlapping domain system  
 
 ---
 
-# 11. Final Principle
+# 12. Final Principle
 
-CIS ensures that:
+CIS ensures:
 
 - identity is explicit  
 - boundaries are declared  
 - overlap is preserved  
-- collaboration is visible  
 
-It enables systems to understand:
-
-- where identity begins  
-- where it ends  
-- how identities relate  
-
-without ever:
-
-- guessing  
-- inferring  
-- or collapsing structure into assumption
+It enables systems to understand identity  
+without ever inferring or collapsing structure.

@@ -1,9 +1,9 @@
-# Charter Persistence Layer — Foundational Specification
+# Charter Persistence Layer — Foundational Specification (Revised)
 
 Status: FOUNDATIONAL  
 Intent: Define the storage abstractions and persistence guarantees used by Charter local runtime systems  
-Scope: Runtime persistence contracts, object storage, ref storage, audit storage, metadata storage, indexing boundaries  
-Does NOT Define: legitimacy semantics, commit structure (CCS), commit storage lifecycle, alignment, guidance, or relay transport  
+Scope: Runtime persistence contracts, object storage, refs, audit, metadata, workflow stores, and indexing boundaries  
+Does NOT Define: legitimacy semantics, commit structure (CCS), commit storage lifecycle, alignment (CAS), structure (CSG), identity (CIS), guidance, or relay transport  
 
 ---
 
@@ -13,23 +13,17 @@ The Charter Persistence Layer defines how the Runtime Layer persists and recover
 
 It exists to:
 
-- decouple Runtime and Engine behavior from specific storage backends
-- preserve local object integrity and mutability boundaries
-- support deterministic recovery and rebuild
-- enforce the separation between:
-  - immutable historical objects
-  - mutable current pointers
-  - append-only audit memory
-  - mutable local metadata
+- decouple Runtime and Engine behavior from specific storage backends  
+- preserve local object integrity and mutability boundaries  
+- support deterministic recovery and rebuild  
+- enforce separation between:
+  - immutable runtime objects  
+  - mutable workflow state  
+  - append-only audit memory  
+  - mutable local metadata  
+  - derived indexes  
 
 The Persistence Layer is a **local runtime substrate**.
-
-It is not:
-
-- the Charter Commit System (CCS)
-- the Commit Store
-- the Relay
-- an interpretation layer
 
 ---
 
@@ -37,30 +31,24 @@ It is not:
 
 > Engine and Runtime invariants dominate storage implementation.
 
-Backends may differ in capability and performance, but correctness must never depend on backend-specific behavior.
-
-The Persistence Layer must support:
-
-- portability
-- deterministic recovery
-- explicit mutability boundaries
-- rebuildable derived state
+Correctness must never depend on backend-specific behavior.
 
 ---
 
 # 3. Architectural Position
 
-The Persistence Layer exists below the Runtime Layer and beside the Legitimacy Engine as a supporting substrate.
+The Persistence Layer exists below the Runtime Layer and beside the Legitimacy Engine.
 
 It provides storage contracts for:
 
-- local runtime object state
-- mutable references
-- append-only audit memory
-- mutable runtime metadata
-- rebuildable indexes
+- runtime objects  
+- workflow state  
+- refs  
+- audit  
+- metadata  
+- indexes  
 
-It does not create legitimacy, define commits, or preserve global artifact truth.
+It does not create legitimacy or define artifact meaning.
 
 ---
 
@@ -68,424 +56,384 @@ It does not create legitimacy, define commits, or preserve global artifact truth
 
 ## 4.1 Persistence Layer vs Commit Store
 
-The Persistence Layer and Commit Store are distinct.
+- Commit Store → immutable artifact truth (CCS)  
+- Persistence Layer → runtime operational state  
 
-### Persistence Layer
-Stores:
-
-- runtime objects
-- refs
-- audit events
-- mutable metadata
-- rebuildable indexes
-
-Characteristics:
-
-- local
-- partly mutable
-- optimized for active workflows
-
-### Commit Store
-Stores:
-
-- immutable commit artifacts
-
-Characteristics:
-
-- append-only
-- preservation-oriented
-- separate lifecycle model
-
-These systems must never be conflated.
+They must remain strictly separate.
 
 ---
 
-## 4.2 Persistence Layer vs CCS
+## 4.2 Persistence Layer vs Relay Namespace Stores (CRS)
 
-CCS defines the structure of commits.
+Relay Namespace Stores:
 
-The Persistence Layer does not:
+- store foreign commit artifacts  
+- are append-only  
+- are non-trusting  
 
-- define commit envelopes
-- assign commit meaning
-- transport commit artifacts
+The Persistence Layer:
+
+- must not store relay data as runtime objects  
+- must not assume relay semantics  
+- must not implicitly trust relay artifacts  
+
+---
+
+## 4.3 Persistence Layer vs Derived Substrates
+
+The Persistence Layer does not define storage for:
+
+- CSG (graph materialization)  
+- CIS (identity projection)  
+- CAS (alignment state)  
+
+These are separate derived systems.
+
+---
+
+## 4.4 No Cross-Domain Persistence
+
+Storage domains must remain isolated.
+
+The Persistence Layer must not:
+
+- write to Commit Store implicitly  
+- write to Relay Namespace Stores  
+- ingest foreign artifacts without explicit runtime workflows  
 
 ---
 
 # 5. Storage Categories
 
-The Persistence Layer is composed of distinct storage categories.
-
 ---
 
 ## 5.1 Object Store
 
-The Object Store stores immutable local runtime objects.
-
-Examples may include:
-
-- accepted runtime-domain objects
-- session records
-- baseline review artifacts
-- deliberate artifacts
-- other persisted local domain objects
-
-### Guarantees
-
-- objects are immutable once written
-- objects are never mutated in place
-- duplicate inserts are idempotent
-- identity and integrity are preserved
-- supersession is logical, not physical
-
-### Important Boundary
-
-The Object Store is not the Commit Store.
-
-It stores local runtime-domain objects, not commit artifacts.
-
----
-
-## 5.2 Ref Store
-
-The Ref Store stores mutable pointers to current local state.
+Immutable runtime-domain objects.
 
 Examples:
 
-- current area authority
-- current area scope
-- active session pointer
-- optional ergonomic pointers
+- session outputs  
+- accepted runtime artifacts  
+- baseline review artifacts  
+- finalized structures  
 
 ### Guarantees
 
-- refs are mutable
-- refs represent current state only
-- refs are rebuildable from object history and audit where applicable
-- refs do not define legitimacy
+- immutable  
+- idempotent inserts  
+- integrity-preserving  
 
-### Important Boundary
+### Boundary
 
-Refs are pointers, not facts.
-
----
-
-## 5.3 Audit Store
-
-The Audit Store stores append-only audit events.
-
-### Guarantees
-
-- audit events are immutable
-- audit ordering is preserved
-- audit is never rewritten
-- audit remains reconstructable
-
-### Important Boundary
-
-Audit records what occurred.  
-It does not decide meaning.
+Not:
+- Commit Store  
+- Relay storage  
 
 ---
 
-## 5.4 Metadata Store
+## 5.2 Session Store
 
-The Metadata Store stores mutable local metadata and configuration.
+Mutable in-progress legitimacy sessions.
 
 Examples:
 
-- labels
-- annotations
-- local counters
-- non-legitimizing configuration
-- storage configuration
+- participants  
+- votes / stances  
+- candidate state  
+- closure readiness  
 
 ### Guarantees
 
-- mutable by design
-- not legitimacy-bearing
-- may support compaction where explicitly allowed
+- mutable until closure  
+- sealed on completion  
+- recoverable  
+
+### Boundary
+
+Represents **pre-closure legitimacy state**, not final truth.
 
 ---
 
-## 5.5 Index Layer
+## 5.3 Review Workspace Store
 
-Indexes are derived acceleration structures.
+Mutable integration review workspace.
 
 Examples:
 
-- lifecycle indexes
-- membership indexes
-- supersession indexes
-- lookup maps
+- foreign artifacts under review  
+- provisional references  
+- review decisions  
+- review annotations  
 
 ### Guarantees
 
-- indexes are never authoritative
-- indexes are fully derivable
-- loss of indexes is non-fatal
-- indexes may be rebuilt at startup
+- isolated  
+- mutable until review closure  
+- non-legitimizing  
+
+---
+
+## 5.4 Deliberate Workspace Store
+
+Mutable pre-governance exploration.
+
+Examples:
+
+- epics  
+- breakouts  
+- options  
+- synthesis drafts  
+- workflow state  
+
+### Guarantees
+
+- mutable  
+- supports branching and parallel work  
+- non-legitimizing  
+
+---
+
+## 5.5 Deliberate Artifact Store
+
+Immutable deliberate artifacts.
+
+Examples:
+
+- frozen options  
+- frozen syntheses  
+- breakout outputs  
+- deliberate closure artifacts  
+
+### Guarantees
+
+- immutable  
+- preservational  
+- may later be used in review  
+
+### Boundary
+
+Does not create legitimacy.
+
+---
+
+## 5.6 Ref Store
+
+Mutable pointers to current runtime state.
+
+Examples:
+
+- current authority  
+- active session  
+- active area  
+
+### Guarantees
+
+- mutable  
+- rebuildable  
+- non-authoritative  
+
+---
+
+## 5.7 Audit Store
+
+Append-only record of runtime events.
+
+### Guarantees
+
+- immutable  
+- ordered  
+- never rewritten  
+
+### Boundary
+
+Audit is local runtime memory, not artifact history.
+
+---
+
+## 5.8 Metadata Store
+
+Mutable local metadata.
+
+Examples:
+
+- labels  
+- configuration  
+- local area state  
+- ergonomic settings  
+
+### Guarantees
+
+- mutable  
+- non-legitimizing  
+
+---
+
+## 5.9 Index Layer
+
+Derived acceleration structures.
+
+### Guarantees
+
+- rebuildable  
+- non-authoritative  
 
 ---
 
 # 6. Backend Abstraction
 
-The Persistence Layer must be backend-agnostic.
-
 Backends may include:
 
-- in-memory
-- file-based
-- SQLite
-- key-value
-- cloud-backed implementations
+- in-memory  
+- file-based  
+- SQLite  
+- key-value  
 
-Backends may advertise optional capabilities such as:
+Optional capabilities:
 
-- transactions
-- ordered writes
-- append-only primitives
-- snapshotting
-- compaction
+- transactions  
+- ordered writes  
+- snapshotting  
 
-These capabilities may be used for optimization.
-
-They must never be required for correctness.
+Must not affect correctness.
 
 ---
 
 # 7. Invariant Ownership
 
-## 7.1 Engine / Runtime Responsibility
+## Engine / Runtime
 
-Correctness must be enforced by Engine and Runtime logic, not delegated to the backend.
+Responsible for:
 
-Required invariant ownership includes:
+- immutability  
+- session rules  
+- workflow transitions  
+- audit correctness  
+- rebuild logic  
 
-- object immutability enforcement
-- explicit ref mutation
-- audit append-only guarantees
-- session sealing rules
-- rebuild correctness
-- import / restore boundary handling
+## Backend
 
----
+Responsible for:
 
-## 7.2 Backend Responsibility
-
-Backends are responsible only for:
-
-- faithfully implementing storage contracts
-- preserving bytes as written
-- exposing optional capabilities honestly
-
-Backends must not silently redefine behavior.
+- storing bytes correctly  
+- honoring contracts  
 
 ---
 
 # 8. Object Identity and Integrity
 
-## 8.1 Object Identity
-
-Persisted runtime objects must have stable identity.
-
-Identity must not depend on:
-
-- filesystem path
-- storage root
-- runtime context
-- import source
-
-Identity may be:
-
-- hash-based
-- versioned by hash scheme
-- explicitly migrated when required
-
----
-
-## 8.2 Canonical Integrity
-
-Object hashing and integrity validation must be deterministic.
-
-Required properties:
-
-- canonical serialization
-- explicit hash versioning
-- explicit hash algorithm declaration
-- integrity verification on read/import/fsck
-
-Hash migration must be explicit and auditable.
-
----
-
-## 8.3 Envelope Principle
-
-Persisted objects may be wrapped in an integrity envelope containing:
-
-- hash version
-- hash algorithm
-- object type
-- object hash
-- object body
-
-Envelope metadata must be verifiable against object contents.
+- stable identity  
+- deterministic hashing  
+- canonical serialization  
+- explicit hash versioning  
 
 ---
 
 # 9. Ref Semantics
 
-Refs are mutable local pointers.
+Refs:
 
-They must:
-
-- resolve deterministically
-- fail explicitly when missing
-- remain scoped
-- never infer legitimacy
-- never encode hidden history
-
-Required refs may exist for current local context such as:
-
-- authority
-- scope
-
-Optional refs may exist for ergonomics.
-
-Ergonomic refs must never affect correctness.
+- mutable pointers  
+- must resolve deterministically  
+- must not encode hidden history  
 
 ---
 
 # 10. Audit Semantics
 
-Audit is append-only memory.
+Audit:
 
-Audit must:
-
-- preserve stable ordering
-- remain immutable
-- support replay and verification
-- distinguish event categories clearly
-
-Audit must never be used to silently repair local state.
+- append-only  
+- replayable  
+- non-authoritative  
 
 ---
 
 # 11. Index Semantics
 
-Indexes exist only for speed.
+Indexes:
 
-Indexes must:
-
-- be fully derivable from authoritative stores
-- never be exported as truth
-- never change runtime meaning
-- be rebuildable deterministically
-
-Loss of indexes must be equivalent to a rebuild, not a data loss event.
+- derived  
+- rebuildable  
+- non-authoritative  
 
 ---
 
 # 12. Recovery and Rebuild
 
-The Persistence Layer must support deterministic recovery.
+On startup:
 
-On startup or rebuild:
-
-1. load authoritative local stores
-2. verify integrity where required
-3. rebuild refs if needed
-4. rebuild indexes
-5. expose consistent runtime state
-
-Partial or ambiguous recovery must fail explicitly.
+1. load stores  
+2. verify integrity  
+3. rebuild refs  
+4. rebuild indexes  
 
 ---
 
-# 13. Import / Export Boundary
+# 13. Foreign Artifact Boundary
 
-The Persistence Layer participates in local import/export handling, but does not define legitimacy or commit semantics.
+Foreign artifacts (e.g., from CRS):
 
-### It may support:
-
-- local object persistence for restore workflows
-- integrity validation
-- local ref recreation
-- local rebuild after import
-
-### It must not:
-
-- treat imported refs as authority by default
-- allow imported mutable state to silently override legitimacy
-- export indexes as authoritative data
+- must remain outside runtime object storage  
+- must pass through explicit workflows  
+- must not be implicitly trusted  
 
 ---
 
-# 14. fsck / Validation
+# 14. Import / Export Boundary
 
-Validation tools may:
+Imports may originate from:
 
-- recompute hashes
-- verify envelopes
-- verify ref targets
-- verify referential integrity
-- compare rebuilt indexes to live indexes
+- files  
+- restore operations  
+- relay fetch  
 
-Validation tools must not:
+The Persistence Layer must not:
 
-- mutate objects
-- rewrite refs automatically
-- rewrite indexes silently
-- reinterpret history
-
-fsck is read-only evidence, not repair.
+- auto-admit foreign data  
+- override local truth  
 
 ---
 
-# 15. What the Persistence Layer Does NOT Do
+# 15. Validation (fsck)
 
-The Persistence Layer does not:
+May:
 
-- create legitimacy
-- define commit structure
-- store commit artifacts as CCS truth
-- transport artifacts
-- compute alignment
-- interpret meaning
-- enforce guidance behavior
+- verify integrity  
+- validate refs  
+- rebuild indexes  
 
-It is a storage substrate only.
+Must not:
+
+- mutate data  
+- rewrite history  
 
 ---
 
 # 16. Design Guarantees
 
-The Persistence Layer guarantees that:
-
-- runtime correctness is backend-independent
-- immutable objects remain immutable
-- mutable pointers remain explicit
-- audit remains append-only
-- metadata remains non-legitimizing
-- indexes remain derived and rebuildable
-- local recovery remains deterministic
+- backend-independent correctness  
+- immutable objects remain immutable  
+- workflows remain explicit  
+- audit remains append-only  
+- metadata remains non-authoritative  
+- indexes remain derived  
 
 ---
 
 # 17. Mental Model
 
-- Objects are local facts
-- Refs are current pointers
-- Audit is immutable memory
-- Metadata is mutable description
-- Indexes are scratchpads for speed
-- Backends support storage, but never decide correctness
+- Objects → immutable facts  
+- Sessions → active decisions  
+- Review → controlled admission  
+- Deliberate → exploration  
+- Metadata → local description  
+- Audit → memory  
+- Indexes → acceleration  
 
 ---
 
 # 18. Final Principle
 
-The Persistence Layer exists so that local runtime truth can be stored safely without allowing storage mechanics to redefine system behavior.
-
-It preserves structure, integrity, and recoverability —  
-while leaving legitimacy, interpretation, and transport to the layers that actually own them.
+The Persistence Layer preserves runtime truth and workflow state  
+without allowing storage mechanics to redefine system behavior.

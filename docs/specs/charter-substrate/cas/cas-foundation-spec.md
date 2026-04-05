@@ -1,8 +1,8 @@
-# Charter Alignment System (CAS) — Foundation Specification
+# Charter Alignment System (CAS) — Foundation Specification (Revised)
 
 Status: FOUNDATIONAL  
 Applies to: Charter Alignment System (CAS), Alignment Engine, Alignment State Store, Query Layer  
-Depends On: Charter Commit System (CCS), Commit Store, Charter Care Substrate (CCare), Charter Graph Substrate (CSG), optional Charter Identity Substrate (CIS)  
+Depends On: Charter Commit System (CCS), Commit Store, Charter Care Substrate (CCare), Charter Structural Graph (CSG), optional Charter Identity Substrate (CIS)  
 Does NOT define: legitimacy, workflow orchestration, storage backends, UI rendering  
 
 ---
@@ -49,9 +49,9 @@ CAS operates strictly above:
 
 CAS produces:
 
-- derived alignment state
-- queryable views
-- descriptive outputs
+- derived alignment state  
+- queryable views  
+- descriptive outputs  
 
 CAS does not:
 
@@ -65,18 +65,16 @@ CAS does not:
 
 ## 4.1 Structural Input (CSG)
 
-CAS consumes a reconstructed graph:
-
 - resolution nodes  
 - supersession edges  
-- reference edges (including cross-area)  
-- area membership  
+- reference edges  
+- area boundary references  
 
-Graph properties:
+Graph is:
 
-- directed acyclic  
-- partial and potentially incomplete  
-- cross-area edges allowed  
+- directed  
+- partially ordered (DAG for supersession)  
+- potentially incomplete  
 
 ---
 
@@ -84,15 +82,15 @@ Graph properties:
 
 Signals include:
 
-- semantic state (alignment, misalignment, etc.)
-- confidence
-- timestamp
+- semantic state  
+- confidence  
+- timestamp  
 
 Signals are:
 
 - descriptive  
 - non-authoritative  
-- optional (silence is valid)  
+- optional  
 
 ---
 
@@ -100,14 +98,13 @@ Signals are:
 
 If present:
 
-- identity declarations  
 - identity versions  
-- scope anchors  
+- scope definitions  
 - identity relationships  
 
 If absent:
 
-- CAS operates purely on structure  
+- CAS operates purely structurally  
 
 ---
 
@@ -115,103 +112,108 @@ If absent:
 
 Context includes:
 
-- deployment windows  
+- transitions  
 - experiments  
-- transition periods  
-- identity version transitions  
+- identity version changes  
 
-Context:
-
-- modifies interpretation  
-- does not modify truth  
+Context modifies interpretation, not truth.
 
 ---
 
 # 5. Internal Computation Model
 
-CAS operates in layered computation stages.
+CAS operates in deterministic layers.
 
 ---
 
 ## 5.1 Local Metrics Layer
 
-Computes per-resolution numeric values:
+Per-resolution numeric computation:
 
-- mean drift  
+- drift  
 - variance  
 - signal density  
 - recency  
-
-This layer is purely numeric.
 
 ---
 
 ## 5.2 Semantic State Layer
 
-Maps numeric values to semantic states using a semantic lattice:
-
-Examples:
+Maps numeric → semantic states:
 
 - aligned  
 - misaligned  
-- reduced capacity  
 - unstable  
 - improving  
-
-This layer produces descriptive states.
+- reduced capacity  
 
 ---
 
 ## 5.3 Propagation Layer
 
-Propagates effects across the graph via:
+Propagates across:
 
 - supersession edges  
 - reference edges  
-- area relationships  
-- identity scope (if present)  
+- area boundaries  
+- identity scopes (if present)  
 
 Computes:
 
-- upstream influence  
-- downstream impact  
-- alignment cones  
-- horizons  
+- influence  
+- propagation paths  
+- cones and horizons  
 
 ---
 
 ## 5.4 Dynamics Layer
 
-Computes higher-order system behavior:
+Computes system-level behavior:
 
 - tension  
 - cascades  
-- shock propagation  
-- equilibrium tendencies  
 - volatility  
-
-This layer models alignment as a field.
+- equilibrium tendencies  
 
 ---
 
 ## 5.5 Materialization Layer
 
-Produces the Alignment State Store:
-
-- queryable  
-- derived  
-- rebuildable  
-- non-authoritative  
+Produces derived, queryable state.
 
 ---
 
-# 6. Alignment State Store
+# 6. Alignment State Store (CAS Store)
 
-The Alignment State Store contains derived state at multiple levels.
+CAS may maintain a **materialized alignment store**.
 
 ---
 
-## 6.1 Resolution Level
+## 6.1 Purpose
+
+The Alignment State Store exists to:
+
+- accelerate queries  
+- persist derived alignment state  
+- avoid recomputation  
+- support multiple query views  
+
+---
+
+## 6.2 Properties
+
+The Alignment State Store is:
+
+- **derived from CCS + CCare + CSG (+ CIS)**  
+- **fully rebuildable**  
+- **non-authoritative**  
+- **local to the system**  
+
+---
+
+## 6.3 Contents
+
+### Resolution-Level
 
 - drift  
 - variance  
@@ -221,7 +223,7 @@ The Alignment State Store contains derived state at multiple levels.
 
 ---
 
-## 6.2 Area Level
+### Area-Level
 
 - aggregated drift  
 - variance  
@@ -230,68 +232,98 @@ The Alignment State Store contains derived state at multiple levels.
 
 ---
 
-## 6.3 Identity Level (if CIS present)
+### Identity-Level (if present)
 
 - aggregated drift  
-- transition volatility  
-- scope stability  
 - boundary pressure  
+- overlap tension  
+- transition volatility  
 
 ---
 
-## 6.4 Global Level
+### Global-Level
 
-- overall drift  
-- system variance  
+- system drift  
+- variance  
 - active tension regions  
+
+---
+
+### Structural Derivatives
+
+- cones  
+- propagation paths  
+- influence maps  
+- cascade indicators  
+
+---
+
+## 6.4 Rebuild Principle
+
+> The Alignment Store must be fully reconstructable.
+
+- loss is non-fatal  
+- rebuild must be deterministic  
+- incremental updates must match full rebuild  
+
+---
+
+## 6.5 No Interpretation Rule
+
+The Alignment Store must not:
+
+- infer intent  
+- create authority  
+- enforce decisions  
+- reinterpret identity  
+
+---
+
+## 6.6 Separation from Other Stores
+
+The Alignment Store is not:
+
+- Commit Store  
+- Graph Store (CSG)  
+- Identity Store (CIS)  
+- Runtime Persistence  
 
 ---
 
 # 7. Present vs Predictive Outputs
 
-CAS maintains strict separation:
+CAS separates:
 
-## Present
-“What appears true now”
+### Present
+Observed current state
 
-## Predictive
-“What appears to be emerging”
+### Predictive
+Emerging dynamics
 
-Predictive outputs include:
+Predictive includes:
 
 - drift velocity  
 - cascade likelihood  
 - transition risk  
 
-Predictive outputs are:
-
-- observational  
-- non-binding  
-
 ---
 
 # 8. Numeric vs Semantic Separation
 
-CAS maintains dual representation:
+CAS maintains:
 
-- Numeric layer → computation  
-- Semantic layer → interpretation  
-
-Neither replaces the other.
+- numeric layer → computation  
+- semantic layer → classification  
 
 ---
 
 # 9. Query Model
 
-CAS is query-driven.
-
-All interaction occurs through queries over derived state.
+CAS is query-first.
 
 ---
 
 ## 9.1 Query Components
-
-A query consists of:
 
 ### Target
 - resolution  
@@ -300,60 +332,45 @@ A query consists of:
 - global  
 
 ### View
-Defines interpretation lens
+interpretation lens  
 
 ### Scope (optional)
-Subset of graph or identity
 
 ### Filters (optional)
-Constraints such as:
-
-- semantic state  
-- volatility  
-- time window  
 
 ### Context (optional)
-Posture modifiers
 
 ---
 
 ## 9.2 Query Principle
 
-> Queries do not change state.  
-> They reveal different perspectives of the same derived reality.
+> Queries reveal state. They do not modify it.
 
 ---
 
 # 10. View System
 
-Views are structured interpretations over alignment state.
-
 ---
 
 ## 10.1 Canonical Views
 
-CAS SHOULD provide built-in views such as:
-
 ### Posture View
-- current condition
-- stability / volatility
+- stability / volatility  
 
 ### Trend View
-- direction of change
-- acceleration
+- direction / velocity  
 
 ### Structural View
-- cones
-- horizons
-- influence paths
+- cones  
+- influence paths  
 
 ### Tension View
-- areas of misalignment concentration
+- concentration zones  
 
-### Identity View (if CIS present)
-- overlap
-- collaboration
-- boundary pressure
+### Identity View (optional)
+- overlap  
+- collaboration  
+- boundary pressure  
 
 ---
 
@@ -361,102 +378,76 @@ CAS SHOULD provide built-in views such as:
 
 Views:
 
-- operate on derived state  
-- do not compute core metrics  
-- may derive projections  
-- remain read-only  
+- operate on Alignment Store  
+- are read-only  
+- do not recompute base metrics  
 
 ---
 
 ## 10.3 Extensibility
 
-Hosts may define custom views using:
+Custom views may:
 
-- existing fields  
-- derived projections  
-
----
-
-# 11. Identity Interaction Model (CIS Integration)
-
-When identity is present, CAS supports:
+- combine fields  
+- derive projections  
 
 ---
 
-## 11.1 Identity Overlap
-
-- shared resolutions between identities  
-- shared structural influence  
+# 11. Identity Interaction Model
 
 ---
 
-## 11.2 Identity Collaboration
+## 11.1 Overlap
+Shared membership
 
-- one identity influencing another  
-- directional dependency  
-
----
+## 11.2 Collaboration
+Directional influence
 
 ## 11.3 Boundary Pressure
-
-- tension at identity boundaries  
-- misalignment across scopes  
+Misalignment across scopes
 
 ---
 
 ## 11.4 Identity Optionality
 
-All identity-based computation must degrade gracefully if CIS is absent.
+CAS must degrade cleanly without CIS.
 
 ---
 
 # 12. Posture Handling
 
-Posture is a query-time condition.
+Posture is query-time only.
 
-Posture may:
+It may:
 
-- widen tolerance  
-- adjust sensitivity  
-- change aggregation  
+- adjust thresholds  
+- change sensitivity  
 
-Posture must not:
+It must not:
 
-- change signals  
-- change graph  
-- change identity  
+- change underlying state  
 
 ---
 
 # 13. Structural Awareness
 
-CAS must account for:
+CAS must handle:
 
-- partial graphs  
-- missing references  
-- stale data  
+- incomplete graphs  
+- missing signals  
+- stale inputs  
 
-Outputs must remain valid under incomplete information.
+Outputs must remain valid.
 
 ---
 
 # 14. Runtime Modes
 
-## 14.1 Full Rebuild
+## Full Rebuild
+- deterministic recomputation  
 
-- recompute entire state  
-- deterministic  
-
-## 14.2 Incremental Update
-
-Triggered by:
-
-- new signals  
-- structural changes  
-- identity changes  
-- posture changes  
-
-Must produce results identical to rebuild.
+## Incremental Update
+- must match rebuild  
 
 ---
 
@@ -467,15 +458,12 @@ CAS may:
 - compute  
 - aggregate  
 - classify  
-- expose  
 
 CAS must never:
 
 - create legitimacy  
 - enforce decisions  
-- trigger actions  
-- infer authority  
-- rewrite history  
+- trigger action  
 
 ---
 
@@ -485,23 +473,21 @@ CAS is:
 
 - deterministic  
 - observational  
-- non-authoritative  
 - rebuildable  
-- composable  
-- query-first  
+- non-authoritative  
 
 ---
 
 # 17. Mental Model
 
-- CCS defines what was decided  
-- CSG defines how decisions relate  
-- CCare defines what is observed  
-- CIS defines who claims ownership (optional)  
+- CCS → decisions  
+- CSG → structure  
+- CCare → observation  
+- CIS → identity  
 
 CAS computes:
 
-> how these realities relate over time
+> how these interact over time
 
 ---
 
@@ -509,11 +495,11 @@ CAS computes:
 
 CAS does not tell systems what to do.
 
-It makes it possible to see:
+It makes visible:
 
-- where alignment exists  
-- where it is degrading  
-- where pressure is forming  
-- where change is emerging  
+- alignment  
+- drift  
+- pressure  
+- emerging change  
 
-clearly, consistently, and without coercion.
+without coercion.

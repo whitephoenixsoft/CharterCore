@@ -2,8 +2,8 @@
 
 Status: FOUNDATIONAL  
 Intent: Define the structural graph model derived from admitted commits  
-Scope: Graph construction, node/edge definitions, and structural projections  
-Does NOT Define: identity (CIS), alignment (CAS/CAE), guidance (CGL), or legitimacy  
+Scope: Graph construction, node/edge definitions, structural projections, and graph materialization  
+Does NOT Define: identity (CIS), alignment (CAS/CAE), guidance (CGL), legitimacy, or storage of commits  
 
 ---
 
@@ -170,13 +170,92 @@ The full graph is:
 
 ---
 
-# 6. Active Graph Projection
+# 6. Graph Materialization (CSG Store)
+
+CSG may maintain a **materialized graph store** for performance and query efficiency.
+
+---
+
+## 6.1 Purpose
+
+The Graph Store exists to:
+
+- accelerate structural queries  
+- provide adjacency lookup  
+- support active graph projection efficiently  
+- avoid recomputation of graph relationships  
+
+---
+
+## 6.2 Properties
+
+The Graph Store is:
+
+- **derived from admitted commits**  
+- **fully rebuildable**  
+- **non-authoritative**  
+- **local to the system**  
+
+---
+
+## 6.3 Contents
+
+The Graph Store may include:
+
+- node index (resolution → node)  
+- adjacency structures:
+  - supersession edges  
+  - reference edges  
+  - boundary references  
+- active/inactive node flags  
+- reachability caches  
+- structural lookup maps  
+
+---
+
+## 6.4 Rebuild Principle
+
+> The Graph Store must be fully reconstructable from the Commit Store.
+
+- loss of the graph store is non-fatal  
+- rebuild must produce identical results  
+- no data may exist in the graph store that cannot be derived  
+
+---
+
+## 6.5 No Semantic Interpretation
+
+The Graph Store must not:
+
+- infer missing edges  
+- interpret relationships  
+- apply identity semantics  
+- compute alignment  
+
+It is strictly structural.
+
+---
+
+## 6.6 Separation from Other Stores
+
+The Graph Store is not:
+
+- the Commit Store  
+- a Runtime Persistence store  
+- an Identity store (CIS)  
+- an Alignment store (CAS)  
+
+It is a **derived structural cache** only.
+
+---
+
+# 7. Active Graph Projection
 
 CSG provides a derived **active graph view**.
 
 ---
 
-## 6.1 Active Node Definition
+## 7.1 Active Node Definition
 
 A resolution node is **active** if:
 
@@ -185,7 +264,7 @@ A resolution node is **active** if:
 
 ---
 
-## 6.2 Superseded Nodes
+## 7.2 Superseded Nodes
 
 A node is superseded if:
 
@@ -198,7 +277,7 @@ Superseded nodes:
 
 ---
 
-## 6.3 Retired Nodes
+## 7.3 Retired Nodes
 
 Retirement is:
 
@@ -208,40 +287,32 @@ Retired nodes:
 
 - remain in the full graph  
 - are excluded from the active projection  
-- are not replaced by another node necessarily  
 
 ---
 
-## 6.4 Projection Principle
+## 7.4 Projection Principle
 
 > The active graph is a projection, not a mutation.
 
-- full graph = historical truth  
-- active graph = current structural view  
-
-No history is rewritten or removed.
-
 ---
 
-# 7. Structural Incompleteness
+# 8. Structural Incompleteness
 
 CSG must preserve incomplete structure.
 
 ---
 
-## 7.1 Sparse Graphs
+## 8.1 Sparse Graphs
 
 Valid cases include:
 
-- nodes with no references  
 - disconnected subgraphs  
-- areas with no outgoing edges  
-
-These are not errors.
+- nodes with no references  
+- isolated areas  
 
 ---
 
-## 7.2 Declared Upstream Boundary Linkage
+## 8.2 Declared Upstream Boundary Linkage
 
 An Area may be structurally connected via:
 
@@ -251,120 +322,87 @@ This creates:
 
 > declared upstream boundary linkage
 
-CSG includes such linkage only when explicitly declared.
-
 ---
 
-## 7.3 No Compensation by Inference
+## 8.3 No Compensation by Inference
 
 CSG must not:
 
 - infer missing dependencies  
-- create edges based on hierarchy or expectation  
+- create edges from hierarchy  
 - assume completeness  
 
 ---
 
-# 8. Structural Queries
+# 9. Structural Queries
 
-CSG must support structural queries such as:
+CSG must support:
 
 - predecessors / successors  
 - supersession chains  
-- reachable nodes  
+- reachability  
 - dependency neighborhoods  
-- active vs historical views  
+- active vs historical projections  
 
-All queries must:
-
-- operate on explicit structure  
-- avoid interpretation  
+All queries must operate on explicit structure only.
 
 ---
 
-# 9. Relationship to Other Modules
+# 10. Relationship to Other Modules
+
+## 10.1 CIS (Identity)
+
+Consumes CSG structure.
 
 ---
 
-## 9.1 CIS (Identity)
+## 10.2 CAS / CAE (Alignment)
 
-- consumes CSG structure  
-- defines identity, scope, and versioning  
-- CSG does not represent identity  
+Consumes CSG + CCare.
 
 ---
 
-## 9.2 CAS / CAE (Alignment)
+## 10.3 CGL (Guidance)
 
-- consumes CSG structure + CCare signals  
-- computes alignment dynamics  
-- CSG does not compute alignment  
+Interprets outputs.
 
 ---
 
-## 9.3 CGL (Guidance)
+## 10.4 Runtime
 
-- interprets outputs from CSG + CAE  
-- produces explanations  
-- CSG does not interpret  
+Controls admission.
 
 ---
 
-## 9.4 Runtime
+# 11. Invariants
 
-- controls admission of commits via review  
-- CSG only uses admitted commits  
-
----
-
-# 10. Invariants
-
-The following must always hold:
-
-- CSG uses only admitted commits  
-- Nodes are resolution-only  
-- Areas are not graph nodes  
-- Edges are explicit and declared  
-- No inferred relationships exist  
-- Full graph is append-only  
-- Active graph is a projection only  
-- Supersession preserves history  
-- Retirement is explicit  
-- Structural incompleteness is preserved  
-
-Violation of these breaks CSG correctness.
+- only admitted commits used  
+- nodes are resolution-only  
+- edges are explicit  
+- no inferred structure  
+- graph is append-only  
+- projections do not mutate history  
+- graph store is derived and rebuildable  
 
 ---
 
-# 11. Mental Model
+# 12. Mental Model
 
 CSG is:
 
 - a deterministic structural map  
-- a historical DAG of resolutions  
+- a historical DAG  
 - a boundary-aware graph  
-
-It is not:
-
-- an identity system  
-- an alignment engine  
-- a decision system  
-- an interpretation layer  
 
 ---
 
-# 12. Final Principle
+# 13. Final Principle
 
-CSG ensures that:
+CSG ensures:
 
 - structure is explicit  
 - history is preserved  
 - incompleteness is respected  
 
-It provides the foundation upon which:
-
-- identity can be defined  
-- alignment can be computed  
-- meaning can be interpreted  
-
-without ever distorting the underlying structure.
+It provides a foundation for higher systems  
+without introducing interpretation or assumption.
