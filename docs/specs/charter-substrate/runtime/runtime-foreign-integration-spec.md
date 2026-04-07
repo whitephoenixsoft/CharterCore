@@ -1,4 +1,4 @@
-# Charter Runtime — Baseline Review & Foreign Integration Specification
+# Charter Runtime — Baseline Review & Foreign Integration Specification (Revised)
 
 Status: FOUNDATIONAL  
 Applies to: Runtime Layer, CLI Orchestration, Charter Commit System (CCS), Commit Store, Discoverability & Federation  
@@ -12,11 +12,12 @@ This document defines **Baseline Review** as the primary mechanism for:
 
 - integrating foreign or isolated artifacts into a local Area  
 - evaluating external or pre-governance material safely  
+- promoting deliberate outputs into legitimacy  
 - preserving legitimacy boundaries while enabling reconciliation  
 
 Baseline Review exists to ensure that:
 
-- foreign structure can be observed without being trusted  
+- foreign or pre-legitimacy structure can be observed without being trusted  
 - integration is explicit, auditable, and reversible (until committed)  
 - legitimacy is never created outside the engine  
 
@@ -28,7 +29,7 @@ Baseline Review exists to ensure that:
 
 It allows systems to:
 
-- inspect foreign or isolated material  
+- inspect foreign or pre-legitimacy material  
 - model relationships provisionally  
 - prepare integration  
 
@@ -56,6 +57,11 @@ Baseline Review is the variant that:
 
 > integrates foreign or pre-governance material into legitimacy-relevant local structure.
 
+This includes:
+
+- foreign artifacts (federation/import)  
+- locally produced deliberate outputs (CDS)  
+
 ---
 
 # 4. Inputs and Sources
@@ -65,15 +71,14 @@ Baseline Review may be created from:
 - discovered and fetched foreign Areas  
 - imported commit bundles or flat files  
 - foreign baselines from federation  
-- deliberate synthesis outputs  
+- deliberate synthesis outputs (LOCKED Items)  
 - prior local baselines (consolidation)  
 
 All inputs are treated as:
 
-- foreign  
-- partial  
-- potentially stale  
 - non-authoritative  
+- potentially incomplete  
+- subject to explicit evaluation  
 
 ---
 
@@ -95,9 +100,9 @@ This store is:
 
 Isolation ensures:
 
-- safe inspection of foreign graphs  
+- safe inspection of foreign or pre-legitimacy material  
 - prevention of accidental integration  
-- clear separation between foreign and local truth  
+- clear separation between candidate and local truth  
 
 ---
 
@@ -111,7 +116,7 @@ A review item may represent:
 
 - a proposal  
 - a foreign resolution  
-- a synthesis artifact  
+- a deliberate LOCKED Item  
 - an imported commit  
 - a structural element of a foreign graph  
 
@@ -148,7 +153,7 @@ These states are **workflow states**, not legitimacy states.
 During review:
 
 - items may be inspected, grouped, annotated  
-- differences between local and foreign structure may be explored  
+- differences between local and candidate structure may be explored  
 - provisional relationships may be created  
 
 No legitimacy is created.
@@ -159,7 +164,7 @@ No legitimacy is created.
 
 Within review:
 
-- references to foreign Areas or Resolutions may be created  
+- references to foreign Areas, Resolutions, or Deliberate Items may be created  
 - these are **provisional**  
 - they exist only within the review context  
 
@@ -216,11 +221,76 @@ After successful sessions:
 
 - provisional references may become durable  
 - relationships become part of the local graph  
-- imported structure becomes locally anchored  
+- imported or deliberate-derived structure becomes locally anchored  
 
 ---
 
-# 9. Relationship to Legitimacy
+## 8.4 Derivation Recording (NEW)
+
+When review items originate from deliberate outputs:
+
+- resulting resolution commits SHOULD include a `derived_from` structural reference  
+- this reference may cross Areas  
+- it preserves lineage even if the original deliberate context is unavailable  
+
+These references:
+
+- are structural only (CCS-level)  
+- do not imply authority or correctness  
+- enable traceability across substrates  
+
+---
+
+## 8.5 Application Backlink (NEW)
+
+When a deliberate-derived review item results in successful session output:
+
+- the system MAY record backlinks to originating deliberate Items  
+- these backlinks may be used by Runtime to perform **Deliberate Application Reconciliation**  
+
+Baseline Review itself does not mutate deliberate state.
+
+---
+
+# 9. Relationship to Deliberate (CDS)
+
+## 9.1 Deliberate Inputs
+
+Baseline Review may consume:
+
+- LOCKED Items from CDS  
+
+These Items:
+
+- remain non-legitimate  
+- are treated identically to other review inputs  
+- require full review and session processing  
+
+---
+
+## 9.2 Non-Closure Principle
+
+Baseline Review must NOT require:
+
+- closure of the originating deliberate instance  
+
+Deliberate instances may:
+
+- remain active  
+- continue evolving  
+- receive reconciliation updates independently  
+
+---
+
+## 9.3 Separation of Concerns
+
+- Review performs legitimacy preparation  
+- CDS maintains thinking context  
+- Runtime performs reconciliation between them  
+
+---
+
+# 10. Relationship to Legitimacy
 
 Baseline Review:
 
@@ -237,39 +307,27 @@ Baseline Review prepares inputs for legitimacy.
 
 ---
 
-# 10. Relationship to Discoverability and Federation
+# 11. Relationship to Discoverability and Federation
 
-## 10.1 Discoverability
+## 11.1 Discoverability
 
-Baseline Review typically follows:
-
-- discovery  
-- query  
-- acquisition  
-
-It operates on:
-
-- isolated foreign graphs  
+Unchanged.
 
 ---
 
-## 10.2 Federation
+## 11.2 Federation
 
-Federation is:
+Unchanged, but includes:
 
-- repeated or structured acquisition of foreign graphs  
+- deliberate-derived artifacts crossing system boundaries  
 
-Baseline Review is:
-
-- the local integration boundary for federated data  
-
-No federation process bypasses review.
+Baseline Review remains the integration boundary.
 
 ---
 
-# 11. Receipts and Audit
+# 12. Receipts and Audit
 
-## 11.1 Review Receipt
+## 12.1 Review Receipt
 
 Closure of a Baseline Review emits a **Review Receipt**.
 
@@ -279,6 +337,7 @@ The receipt:
 - records ACCEPTED, REJECTED, ABANDONED states  
 - references resulting sessions  
 - preserves provenance  
+- may include references to originating deliberate items (if applicable)  
 
 It does not:
 
@@ -288,54 +347,47 @@ It does not:
 
 ---
 
-## 11.2 Audit Guarantees
+## 12.2 Audit Guarantees
 
 The system must preserve:
 
 - full review lineage  
 - mapping from review items to resulting sessions  
-- complete traceability of integration decisions  
+- traceability from deliberate Items → review → sessions → resolutions  
 
 ---
 
-# 12. CLI Orchestration Policies (Non-Structural)
+# 13. CLI Orchestration Policies (Non-Structural)
 
-The following are **CLI-level policies**, not runtime invariants:
-
-- one active baseline review per Area  
-- baseline review may pause active sessions in that Area  
-- baseline review may act as the primary workspace during evaluation  
-
-These policies:
-
-- improve usability and safety  
-- do not alter core system invariants  
+Unchanged.
 
 ---
 
-# 13. Invariants
+# 14. Invariants
 
 - Baseline Review must not create legitimacy  
-- Foreign artifacts remain non-authoritative until accepted via session  
+- All inputs are non-authoritative until session completion  
 - All integration must pass through sessions  
 - Review must operate on isolated data  
-- Provisional references must not become durable without review completion  
+- Provisional references must not become durable without completion  
 - Review must be fully auditable  
 - Closure must emit a Review Receipt  
+- Deliberate instances must not be implicitly closed by review  
+- Derivation links must be explicit if recorded  
 - History must never be rewritten  
 
 ---
 
-# 14. Mental Model
+# 15. Mental Model
 
 Baseline Review means:
 
-> “We can see foreign or proposed structure,  
+> “We can see candidate structure,  
 > but we must decide it again before it becomes ours.”
 
 It allows systems to:
 
-- safely observe external truth  
+- safely observe external or pre-legitimacy truth  
 - model relationships under uncertainty  
 - reconcile differences explicitly  
 
@@ -347,7 +399,7 @@ without ever:
 
 ---
 
-# 15. Final Principle
+# 16. Final Principle
 
 Baseline Review creates **friction by design**.
 
