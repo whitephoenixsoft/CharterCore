@@ -7,6 +7,7 @@ pub struct CrossAreaReference {
     pub external_area_label: String,
     pub external_resolution_id: Option<String>,
     pub external_resolution_label: Option<String>,
+    pub relationship: CrossAreaRelationship,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]

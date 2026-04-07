@@ -75,3 +75,11 @@ pub enum ResolutionKind {
     Scope,
     Regular,
 }
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
+pub enum CrossAreaRelationship {
+    DerivedFrom,
+    Affects,
+    AffectedBy,
+    Related,
+}
