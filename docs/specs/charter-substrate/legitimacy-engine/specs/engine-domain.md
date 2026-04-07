@@ -345,13 +345,15 @@ They:
 
 - do not affect legitimacy
 - do not affect ACTIVE derivation
-- do not affect structural graph meaning
+- do not affect legitimacy structural graph meaning
 - do not affect governance slot occupancy
 - must not be traversed by legitimacy logic
 
 They are opaque metadata only.
 
 Cross-area informational references may be retained on Sessions, Candidates, Resolutions, or Receipts for context, but their external targets are not part of the local structural graph.
+
+Cross-area references are unilateral declarations by the local Area and are not required to be reciprocated or validated by external Areas.
 
 ---
 
@@ -394,12 +396,22 @@ Where present on Resolution objects, they represent the informational references
 
 CrossAreaReference contains:
 
-- external_area_id
-- external_area_label
+- external_area_id (required)
+- external_area_label (required)
 - external_resolution_id (nullable)
 - external_resolution_label (nullable)
+- relationship (required)
 
-This object is informational only.
+Where relationship is an enum defined by ENG-DOMAIN and may be extended in future schema versions. Currently the following is defined:
+
+- derived_from
+- affects
+- affected_by
+- related
+
+The Engine must not derive, infer, or validate any semantic meaning from the relationship field.
+
+This object is informational only. The Engine must not require the existence, accessibility, or validity of external references for evaluation or acceptance.
 
 The Engine must not reinterpret this object as:
 
