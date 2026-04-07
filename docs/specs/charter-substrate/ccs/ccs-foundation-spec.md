@@ -1,4 +1,4 @@
-# Charter Commit System (CCS) — Foundation Specification
+# Charter Commit System (CCS) — Foundation Specification (Revised)
 
 Status: FOUNDATIONAL  
 Intent: Define the commit as Charter’s core immutable artifact envelope  
@@ -34,7 +34,7 @@ It is not:
 
 > Commits preserve recorded artifacts. They do not interpret them.
 
-A commit records that something was declared, observed, packaged, or preserved.
+A commit records that something was declared, observed, packaged, preserved, or derived.
 
 A commit does not determine:
 
@@ -258,6 +258,8 @@ Properties:
 - may be consumed by downstream systems as a decision anchor
 - does not create legitimacy by existing alone
 
+Resolution commits may also preserve explicit structural lineage to other resolutions through references such as `supersedes` and `derives_from`.
+
 ---
 
 ## 6.3 Identity Commit
@@ -308,7 +310,7 @@ Properties:
 
 - structural
 - non-legitimizing by default
-- may reference accepted, rejected, or abandoned artifacts
+- may reference accepted, rejected, abandoned, or derived artifacts
 
 ---
 
@@ -356,7 +358,9 @@ Properties:
 
 - append-only
 - does not modify prior commits
-- may provide rationale, commentary, or explanatory attachment
+- may provide rationale, commentary, explanatory attachment, or structural context
+
+Annotations remain descriptive and non-authoritative.
 
 ---
 
@@ -460,34 +464,56 @@ Additional target kinds may be introduced through schema extension.
 
 ---
 
-## 9.3 Standard Structural Reference Types
+## 9.3 Standard Structural Reference Families
 
-Recognized structural reference types may include:
+Recognized structural reference families may include:
 
+### Generic Structural References
 - `references`
 - `annotates`
+
+### Packaging / Preservation References
 - `contains`
 - `preserves`
+- `originates_from`
+- `produced_by_review`
+
+### Structural Lineage References
 - `supersedes`
 - `derives_from`
-- `produced_by_review`
+
+### Boundary References
 - `references_area`
-- `originates_from`
 
 These are standard structural labels only.
 
-CCS does not assign higher-layer semantic meaning such as:
+---
 
+## 9.4 Derivation Reference
+
+`derives_from` is the canonical structural reference for **artifact derivation and recontextualization lineage**.
+
+Properties:
+
+- explicit
+- directional
+- non-destructive
+- may cross areas
+- may reference one or more source artifacts
+
+`derives_from` does not imply:
+
+- supersession
+- retirement
+- dependency
 - legitimacy
 - authority
-- dependency semantics
-- identity semantics
-- alignment semantics
-- active-state semantics
+
+Such meanings belong to workflow context or higher layers.
 
 ---
 
-## 9.4 Reference Neutrality
+## 9.5 Reference Neutrality
 
 A structural reference does not imply:
 
@@ -502,7 +528,7 @@ Such meanings, if they exist, belong to payload semantics or higher layers.
 
 ---
 
-## 9.5 No Inference Rule
+## 9.6 No Inference Rule
 
 If a reference is not explicitly declared, CCS must not infer it from:
 
@@ -554,7 +580,7 @@ The Legitimacy Engine defines legitimacy semantics. CCS only provides the artifa
 
 ## 11.2 Runtime Layer
 
-The Runtime Layer may orchestrate commit creation, import, review, archival, and other workflows.
+The Runtime Layer may orchestrate commit creation, import, review, archival, derivation, recontextualization, and other workflows.
 
 The Runtime Layer does not redefine CCS structure.
 
@@ -578,7 +604,7 @@ CCS does not interpret caregiving meaning.
 
 ## 11.5 Charter Identity Substrate (CIS)
 
-CIS may package identity, scope, purpose, boundary, and lineage artifacts inside commits.
+CIS may package identity, scope, purpose, boundary, and lineage artifacts inside commits, and may consume derivation lineage indirectly through structural graph materialization.
 
 CCS does not interpret identity meaning.
 
@@ -586,7 +612,7 @@ CCS does not interpret identity meaning.
 
 ## 11.6 Charter Structural Graph (CSG)
 
-CSG may consume explicit structural references from commits to construct graph relationships.
+CSG may consume explicit structural references from commits to construct graph relationships, including supersession, derivation, and area-boundary structure.
 
 CCS does not construct graph meaning.
 
@@ -602,7 +628,7 @@ CCS does not compute alignment.
 
 ## 11.8 Charter Guidance Layer (CGL)
 
-CGL interprets commits and derived state for descriptive explanation.
+CGL interprets commits, annotations, and derived state for descriptive explanation.
 
 CCS does not interpret meaning.
 
