@@ -36,6 +36,23 @@ CAS is:
 > CAS computes alignment.  
 > It does not decide, enforce, or interpret intent beyond structure and signals.
 
+CAS consumes declared structure and observed signals.
+
+It may distinguish structural relationship classes, including:
+
+- supersession
+- reference
+- derivation
+
+but it must not interpret derivation as:
+
+- promotion
+- demotion
+- correctness
+- authority
+
+Those meanings remain outside CAS.
+
 ---
 
 # 3. Position in Architecture
@@ -65,16 +82,20 @@ CAS does not:
 
 ## 4.1 Structural Input (CSG)
 
+CAS consumes a structural graph that may include:
+
 - resolution nodes  
 - supersession edges  
 - reference edges  
+- derivation edges  
 - area boundary references  
 
-Graph is:
+Graph properties:
 
 - directed  
 - partially ordered (DAG for supersession)  
 - potentially incomplete  
+- structurally explicit  
 
 ---
 
@@ -92,6 +113,8 @@ Signals are:
 - non-authoritative  
 - optional  
 
+Silence is valid.
+
 ---
 
 ## 4.3 Identity Input (Optional — CIS)
@@ -101,6 +124,7 @@ If present:
 - identity versions  
 - scope definitions  
 - identity relationships  
+- derivation-aware identity projections  
 
 If absent:
 
@@ -115,6 +139,7 @@ Context includes:
 - transitions  
 - experiments  
 - identity version changes  
+- other declared posture modifiers  
 
 Context modifies interpretation, not truth.
 
@@ -135,11 +160,13 @@ Per-resolution numeric computation:
 - signal density  
 - recency  
 
+This layer is local and numeric only.
+
 ---
 
 ## 5.2 Semantic State Layer
 
-Maps numeric → semantic states:
+Maps numeric outputs into semantic states such as:
 
 - aligned  
 - misaligned  
@@ -147,14 +174,17 @@ Maps numeric → semantic states:
 - improving  
 - reduced capacity  
 
+This layer classifies. It does not interpret intent.
+
 ---
 
 ## 5.3 Propagation Layer
 
-Propagates across:
+Propagates across declared structural relationships, including:
 
 - supersession edges  
 - reference edges  
+- derivation edges  
 - area boundaries  
 - identity scopes (if present)  
 
@@ -162,7 +192,22 @@ Computes:
 
 - influence  
 - propagation paths  
-- cones and horizons  
+- cones  
+- horizons  
+
+### 5.3.1 Relationship Distinction
+
+CAS may distinguish propagation behavior by relationship class.
+
+Examples:
+
+- supersession may affect active-state continuity  
+- reference may affect dependency-like influence  
+- derivation may affect lineage-aware propagation across scopes  
+
+This distinction is structural only.
+
+CAS must not interpret derivation as authority or hierarchy.
 
 ---
 
@@ -174,6 +219,10 @@ Computes system-level behavior:
 - cascades  
 - volatility  
 - equilibrium tendencies  
+- boundary pressure  
+- derivation-related continuity or divergence surfaces  
+
+This layer models alignment as a field over structure and signals.
 
 ---
 
@@ -238,6 +287,7 @@ The Alignment State Store is:
 - boundary pressure  
 - overlap tension  
 - transition volatility  
+- derivation-aware identity continuity surfaces  
 
 ---
 
@@ -255,6 +305,8 @@ The Alignment State Store is:
 - propagation paths  
 - influence maps  
 - cascade indicators  
+- derivation lineage paths  
+- cross-scope continuity surfaces  
 
 ---
 
@@ -276,6 +328,7 @@ The Alignment Store must not:
 - create authority  
 - enforce decisions  
 - reinterpret identity  
+- reinterpret derivation semantics beyond declared structure  
 
 ---
 
@@ -294,10 +347,10 @@ The Alignment Store is not:
 
 CAS separates:
 
-### Present
+## Present
 Observed current state
 
-### Predictive
+## Predictive
 Emerging dynamics
 
 Predictive includes:
@@ -305,6 +358,13 @@ Predictive includes:
 - drift velocity  
 - cascade likelihood  
 - transition risk  
+- cross-scope continuity risk  
+- derivation-related divergence risk  
+
+Predictive outputs are:
+
+- observational  
+- non-binding  
 
 ---
 
@@ -314,6 +374,8 @@ CAS maintains:
 
 - numeric layer → computation  
 - semantic layer → classification  
+
+Neither replaces the other.
 
 ---
 
@@ -332,13 +394,21 @@ CAS is query-first.
 - global  
 
 ### View
-interpretation lens  
+Interpretation lens
 
 ### Scope (optional)
+Subset of graph, identity, lineage, or time
 
 ### Filters (optional)
+Constraints such as:
+
+- semantic state  
+- volatility  
+- time window  
+- relationship class  
 
 ### Context (optional)
+Posture modifiers
 
 ---
 
@@ -355,22 +425,35 @@ interpretation lens
 ## 10.1 Canonical Views
 
 ### Posture View
-- stability / volatility  
+- stability  
+- volatility  
+- contextual condition  
 
 ### Trend View
-- direction / velocity  
+- direction  
+- velocity  
+- emerging shift  
 
 ### Structural View
 - cones  
 - influence paths  
+- lineage-aware paths  
 
 ### Tension View
 - concentration zones  
+- boundary pressure  
+- systemic strain  
 
 ### Identity View (optional)
 - overlap  
 - collaboration  
 - boundary pressure  
+- continuity across derivation paths  
+
+### Lineage View
+- derivation-aware continuity  
+- recontextualization surfaces  
+- cross-scope propagation  
 
 ---
 
@@ -381,6 +464,7 @@ Views:
 - operate on Alignment Store  
 - are read-only  
 - do not recompute base metrics  
+- may expose derivation-aware projections where present  
 
 ---
 
@@ -390,6 +474,7 @@ Custom views may:
 
 - combine fields  
 - derive projections  
+- specialize by structural relationship class  
 
 ---
 
@@ -398,13 +483,28 @@ Custom views may:
 ---
 
 ## 11.1 Overlap
-Shared membership
+
+Shared membership.
+
+---
 
 ## 11.2 Collaboration
-Directional influence
+
+Directional influence.
+
+This may include influence that travels through:
+
+- direct references  
+- shared structure  
+- derivation-aware identity continuity  
+
+---
 
 ## 11.3 Boundary Pressure
-Misalignment across scopes
+
+Misalignment across scopes.
+
+This may include pressure introduced when derived structure and identity boundaries diverge.
 
 ---
 
@@ -422,10 +522,13 @@ It may:
 
 - adjust thresholds  
 - change sensitivity  
+- modify aggregation posture  
 
 It must not:
 
 - change underlying state  
+- rewrite structure  
+- alter identity definitions  
 
 ---
 
@@ -436,18 +539,28 @@ CAS must handle:
 - incomplete graphs  
 - missing signals  
 - stale inputs  
+- disconnected structures  
+- cross-scope derivation lineage  
 
-Outputs must remain valid.
+Outputs must remain valid under incomplete information.
 
 ---
 
 # 14. Runtime Modes
 
-## Full Rebuild
+## 14.1 Full Rebuild
 - deterministic recomputation  
 
-## Incremental Update
+## 14.2 Incremental Update
 - must match rebuild  
+
+Incremental update may be triggered by:
+
+- new signals  
+- structural changes  
+- derivation changes  
+- identity changes  
+- posture changes  
 
 ---
 
@@ -458,12 +571,15 @@ CAS may:
 - compute  
 - aggregate  
 - classify  
+- expose derivation-aware structural effects  
 
 CAS must never:
 
 - create legitimacy  
 - enforce decisions  
 - trigger action  
+- infer authority  
+- reinterpret structural lineage as normative hierarchy  
 
 ---
 
@@ -475,6 +591,8 @@ CAS is:
 - observational  
 - rebuildable  
 - non-authoritative  
+- structurally aware  
+- query-first  
 
 ---
 
@@ -489,6 +607,8 @@ CAS computes:
 
 > how these interact over time
 
+including when structure evolves through derivation across scopes.
+
 ---
 
 # 18. Final Principle
@@ -501,5 +621,6 @@ It makes visible:
 - drift  
 - pressure  
 - emerging change  
+- continuity and divergence across structural lineage  
 
 without coercion.
