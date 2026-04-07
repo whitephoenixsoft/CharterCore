@@ -1,4 +1,4 @@
-# Charter Structural Graph (CSG) — Foundation Specification
+# Charter Structural Graph (CSG) — Foundation Specification (Revised)
 
 Status: FOUNDATIONAL  
 Intent: Define the structural graph model derived from admitted commits  
@@ -15,6 +15,7 @@ It exists to:
 
 - materialize structural relationships between resolutions  
 - preserve full historical lineage without mutation  
+- support structural evolution across scopes (via derivation)  
 - provide a stable foundation for higher-order systems (CIS, CAS, CGL)  
 - enable structural queries without introducing interpretation  
 
@@ -60,8 +61,6 @@ The following are NOT graph nodes:
 - Signals (CCare)  
 - Identity artifacts (CIS)  
 
-These may be referenced but are not part of the structural graph.
-
 ---
 
 ## 3.3 Boundary Model (Areas)
@@ -74,8 +73,6 @@ Areas are:
 In CSG:
 
 > Areas are **not nodes**, but **addressable boundaries**.
-
-They may be referenced by nodes but are not traversable graph vertices.
 
 ---
 
@@ -90,51 +87,71 @@ CSG defines a minimal, explicit edge set.
 Represents replacement over time.
 
 - Type: node → node  
-- Meaning: “this resolution supersedes another”
+- Meaning: “this resolution supersedes another”  
 
 Properties:
 
 - directional  
-- acyclic (must not form loops)  
-- preserves historical lineage  
+- acyclic  
+- preserves lineage  
 
 ---
 
 ## 4.2 Resolution Reference Edge
 
-Represents explicit dependency or relevance.
+Represents dependency or relevance.
 
 - Type: node → node  
-- Meaning: “this resolution references another resolution”
+- Meaning: “this resolution references another resolution”  
 
 Properties:
 
 - directional  
 - non-destructive  
-- may form arbitrary graph structures  
+- arbitrary graph structures allowed  
 
 ---
 
-## 4.3 Area Reference (Boundary Reference)
+## 4.3 Derivation Edge (NEW)
 
-Represents structural awareness of another boundary.
+Represents structural lineage across scopes.
 
-- Type: node → area boundary  
-- Meaning: “this resolution depends on or relates to another Area”
+- Type: node → node  
+- Meaning: “this resolution is derived from another resolution”  
 
 Properties:
 
-- not a node-to-node edge  
-- weaker than resolution reference  
-- does not imply knowledge of internal structure  
+- directional  
+- non-destructive  
+- cross-area allowed  
+- many-to-one and one-to-many allowed  
+- does not imply supersession  
+- does not imply dependency  
 
 ---
 
-## 4.4 Edge Principles
+### 4.3.1 Derivation Principle
+
+> Derivation captures recontextualization without replacement.
+
+- source resolution remains valid unless separately retired  
+- derivation preserves lineage across scope changes  
+- no semantic interpretation (promotion/demotion) is performed in CSG  
+
+---
+
+## 4.4 Area Reference (Boundary Reference)
+
+- Type: node → area  
+- Meaning: awareness of another boundary  
+
+---
+
+## 4.5 Edge Principles
 
 - All edges must originate from explicit commit declarations  
-- No inferred or implicit edges are allowed  
-- Missing relationships must remain missing  
+- No inferred edges  
+- Missing relationships remain missing  
 
 ---
 
@@ -142,229 +159,134 @@ Properties:
 
 ## 5.1 Input
 
-CSG operates only on:
-
-- **admitted commits within the local Commit Store**
-
-Unreviewed or foreign commits are excluded.
+- admitted commits only  
 
 ---
 
 ## 5.2 Determinism
 
-Graph construction must be:
-
-- deterministic  
-- reproducible from the same commit set  
-- independent of runtime state  
+- fully deterministic  
+- reproducible  
 
 ---
 
 ## 5.3 Full Graph
 
-The full graph is:
-
 - append-only  
-- immutable in history  
-- inclusive of all nodes and edges ever admitted  
+- historical  
 
 ---
 
 # 6. Graph Materialization (CSG Store)
 
-CSG may maintain a **materialized graph store** for performance and query efficiency.
-
----
-
 ## 6.1 Purpose
 
-The Graph Store exists to:
-
-- accelerate structural queries  
-- provide adjacency lookup  
-- support active graph projection efficiently  
-- avoid recomputation of graph relationships  
+- adjacency  
+- lookup  
+- projections  
 
 ---
 
 ## 6.2 Properties
 
-The Graph Store is:
-
-- **derived from admitted commits**  
-- **fully rebuildable**  
-- **non-authoritative**  
-- **local to the system**  
+- derived  
+- rebuildable  
+- non-authoritative  
 
 ---
 
 ## 6.3 Contents
 
-The Graph Store may include:
-
-- node index (resolution → node)  
-- adjacency structures:
-  - supersession edges  
-  - reference edges  
+- node index  
+- adjacency:
+  - supersession  
+  - reference  
+  - **derivation (NEW)**  
   - boundary references  
-- active/inactive node flags  
-- reachability caches  
-- structural lookup maps  
+- active flags  
+- reachability  
 
 ---
 
 ## 6.4 Rebuild Principle
 
-> The Graph Store must be fully reconstructable from the Commit Store.
-
-- loss of the graph store is non-fatal  
-- rebuild must produce identical results  
-- no data may exist in the graph store that cannot be derived  
+- fully reconstructable  
 
 ---
 
 ## 6.5 No Semantic Interpretation
 
-The Graph Store must not:
+CSG must not:
 
-- infer missing edges  
-- interpret relationships  
-- apply identity semantics  
-- compute alignment  
-
-It is strictly structural.
-
----
-
-## 6.6 Separation from Other Stores
-
-The Graph Store is not:
-
-- the Commit Store  
-- a Runtime Persistence store  
-- an Identity store (CIS)  
-- an Alignment store (CAS)  
-
-It is a **derived structural cache** only.
+- interpret derivation as promotion or demotion  
+- infer hierarchy  
+- compute identity  
 
 ---
 
 # 7. Active Graph Projection
 
-CSG provides a derived **active graph view**.
+## 7.1 Active Node
+
+- not superseded  
+- not retired  
 
 ---
 
-## 7.1 Active Node Definition
+## 7.2 Supersession
 
-A resolution node is **active** if:
-
-- it is not superseded  
-- it is not retired  
+- excludes from active  
 
 ---
 
-## 7.2 Superseded Nodes
+## 7.3 Retirement
 
-A node is superseded if:
-
-- another node declares a supersession edge pointing to it  
-
-Superseded nodes:
-
-- remain in the full graph  
-- are excluded from the active projection  
-
----
-
-## 7.3 Retired Nodes
-
-Retirement is:
-
-> an explicit structural state declared by a commit
-
-Retired nodes:
-
-- remain in the full graph  
-- are excluded from the active projection  
+- excludes from active  
 
 ---
 
 ## 7.4 Projection Principle
 
-> The active graph is a projection, not a mutation.
+- projection only  
 
 ---
 
 # 8. Structural Incompleteness
 
-CSG must preserve incomplete structure.
-
----
-
-## 8.1 Sparse Graphs
-
-Valid cases include:
-
-- disconnected subgraphs  
-- nodes with no references  
-- isolated areas  
-
----
-
-## 8.2 Declared Upstream Boundary Linkage
-
-An Area may be structurally connected via:
-
-- higher-order resolutions that reference its boundary  
-
-This creates:
-
-> declared upstream boundary linkage
-
----
-
-## 8.3 No Compensation by Inference
-
-CSG must not:
-
-- infer missing dependencies  
-- create edges from hierarchy  
-- assume completeness  
+- sparse graphs valid  
+- disconnected valid  
 
 ---
 
 # 9. Structural Queries
 
-CSG must support:
+Must support:
 
 - predecessors / successors  
 - supersession chains  
+- **derivation lineage (NEW)**  
 - reachability  
-- dependency neighborhoods  
-- active vs historical projections  
-
-All queries must operate on explicit structure only.
+- neighborhoods  
 
 ---
 
 # 10. Relationship to Other Modules
 
-## 10.1 CIS (Identity)
+## 10.1 CIS
 
-Consumes CSG structure.
-
----
-
-## 10.2 CAS / CAE (Alignment)
-
-Consumes CSG + CCare.
+Consumes structure including derivation.
 
 ---
 
-## 10.3 CGL (Guidance)
+## 10.2 CAS
 
-Interprets outputs.
+May use derivation for propagation modeling.
+
+---
+
+## 10.3 CGL
+
+Explains derivation history.
 
 ---
 
@@ -376,13 +298,11 @@ Controls admission.
 
 # 11. Invariants
 
-- only admitted commits used  
-- nodes are resolution-only  
-- edges are explicit  
-- no inferred structure  
-- graph is append-only  
-- projections do not mutate history  
-- graph store is derived and rebuildable  
+- explicit edges only  
+- derivation is non-destructive  
+- no inferred hierarchy  
+- append-only graph  
+- store is rebuildable  
 
 ---
 
@@ -390,19 +310,19 @@ Controls admission.
 
 CSG is:
 
-- a deterministic structural map  
-- a historical DAG  
-- a boundary-aware graph  
+- structural truth  
+- lineage-preserving graph  
+- scope-agnostic  
 
 ---
 
 # 13. Final Principle
 
-CSG ensures:
+CSG ensures that:
 
-- structure is explicit  
-- history is preserved  
-- incompleteness is respected  
+- structure evolves without mutation  
+- lineage is preserved across scopes  
+- meaning can shift without rewriting history  
 
-It provides a foundation for higher systems  
-without introducing interpretation or assumption.
+Derivation enables structure to grow —  
+without assuming what that growth means.
