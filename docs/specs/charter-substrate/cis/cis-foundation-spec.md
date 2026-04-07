@@ -18,6 +18,7 @@ It exists to:
 - define bounded areas of influence over graph structure  
 - support overlapping and collaborating identities  
 - preserve identity continuity and lineage over time  
+- allow identity to evolve as structure is refined, promoted, demoted, or recontextualized  
 - enable higher-order systems (CAS, CGL) to reason about identity without ambiguity  
 
 CIS is a **structural identity layer**, not a semantic or interpretive system.
@@ -32,7 +33,8 @@ CIS:
 
 - requires identity to be explicitly declared  
 - requires scope boundaries to be explicitly defined  
-- derives membership strictly from declared scope rules  
+- derives membership strictly from declared scope rules over CSG  
+- may consume structural lineage such as derivation without interpreting its semantic meaning  
 - preserves overlap and incompleteness without correction  
 
 ---
@@ -100,29 +102,35 @@ The **active identity state** is the latest version.
 ## 4.2 Types of Change
 
 ### A. Purpose Change
+
 - scope unchanged  
 - identity unchanged  
 
 Result:
+
 - new version  
 - same identity_id  
 
 ---
 
 ### B. Scope Refinement
+
 - boundaries adjusted  
 - identity remains the same bounded concept  
 
 Result:
+
 - new version  
 - same identity_id  
 
 ---
 
 ### C. Scope Redefinition (Lineage Break)
+
 - identity-defining boundary changes materially  
 
 Result:
+
 - new identity_id  
 - predecessor reference recorded  
 
@@ -147,6 +155,11 @@ Each identity version defines exactly one **scope definition**.
 ### 5.2.1 Anchor Resolutions
 
 - structural attachment points in CSG  
+
+Anchors may include:
+
+- directly declared resolutions  
+- resolutions that became identity-relevant through explicit derivation lineage  
 
 ---
 
@@ -182,10 +195,16 @@ Membership is determined by **bounded traversal over CSG**:
 - respect boundary stops  
 - apply inclusion/exclusion rules  
 
+Traversal may consider:
+
+- supersession edges where structurally relevant  
+- derivation lineage where explicitly present in CSG  
+
 Traversal must not:
 
 - exceed declared bounds  
 - assume completeness  
+- infer scope from undeclared hierarchy  
 
 ---
 
@@ -216,11 +235,23 @@ A resolution belongs to an identity if:
 - not excluded  
 - or explicitly included  
 
+Membership may evolve as:
+
+- new structural references are admitted  
+- derivation lineage introduces new valid identity-relevant paths  
+- scope definitions are updated explicitly  
+
 ---
 
 ## 6.2 Shared Membership
 
 A resolution may belong to multiple identities.
+
+This enables:
+
+- overlap  
+- shared decisions  
+- structural convergence across identities  
 
 ---
 
@@ -232,8 +263,6 @@ A resolution may belong to multiple identities.
 
 # 7. Identity Relationships
 
----
-
 ## 7.1 Overlap
 
 Shared membership.
@@ -243,6 +272,12 @@ Shared membership.
 ## 7.2 Collaboration
 
 Structural dependency across identities.
+
+This may arise through:
+
+- direct shared structure  
+- cross-identity references  
+- structural derivation paths that create adjacent or interacting domains  
 
 ---
 
@@ -258,13 +293,58 @@ Adjacent without overlap.
 
 ---
 
-# 8. Identity Materialization (CIS Store)
+# 8. Identity and Structural Lineage
+
+CIS may consume structural lineage exposed by CSG, including derivation relationships.
+
+---
+
+## 8.1 Derivation Awareness
+
+When CSG exposes explicit derivation lineage, CIS may use it as part of bounded scope evaluation.
+
+This allows identities to remain coherent when structure evolves through:
+
+- promotion  
+- demotion  
+- copy  
+- move  
+- recontextualization across areas  
+
+---
+
+## 8.2 No Semantic Interpretation
+
+CIS must not interpret derivation as:
+
+- promotion  
+- demotion  
+- correctness  
+- legitimacy  
+
+CIS uses derivation only as **declared structural lineage**.
+
+---
+
+## 8.3 Identity Stability Across Recontextualization
+
+Identity may remain stable, change version, or break lineage depending on:
+
+- declared scope updates  
+- not merely the existence of derivation edges  
+
+Structural lineage informs identity evaluation.  
+It does not decide it automatically.
+
+---
+
+# 9. Identity Materialization (CIS Store)
 
 CIS may maintain a **materialized identity store** for performance.
 
 ---
 
-## 8.1 Purpose
+## 9.1 Purpose
 
 The Identity Store exists to:
 
@@ -275,7 +355,7 @@ The Identity Store exists to:
 
 ---
 
-## 8.2 Properties
+## 9.2 Properties
 
 The Identity Store is:
 
@@ -286,7 +366,7 @@ The Identity Store is:
 
 ---
 
-## 8.3 Contents
+## 9.3 Contents
 
 May include:
 
@@ -296,10 +376,12 @@ May include:
 - collaboration edges  
 - boundary adjacency mappings  
 - active identity versions  
+- derivation-aware membership projections  
+- identity-local lineage paths  
 
 ---
 
-## 8.4 Rebuild Principle
+## 9.4 Rebuild Principle
 
 > The Identity Store must be fully reconstructable.
 
@@ -308,7 +390,7 @@ May include:
 
 ---
 
-## 8.5 No Interpretation Rule
+## 9.5 No Interpretation Rule
 
 The Identity Store must not:
 
@@ -319,7 +401,7 @@ The Identity Store must not:
 
 ---
 
-## 8.6 Separation from Other Stores
+## 9.6 Separation from Other Stores
 
 The Identity Store is not:
 
@@ -330,27 +412,27 @@ The Identity Store is not:
 
 ---
 
-# 9. Structural Independence
+# 10. Structural Independence
 
-## 9.1 CSG
+## 10.1 CSG
 
-Provides structure.
-
----
-
-## 9.2 CAS
-
-Consumes identity.
+Provides structure, including explicit derivation lineage.
 
 ---
 
-## 9.3 CGL
+## 10.2 CAS
 
-Interprets identity.
+Consumes identity and structural context.
 
 ---
 
-# 10. Invariants
+## 10.3 CGL
+
+Interprets identity, lineage, and structural evolution.
+
+---
+
+# 11. Invariants
 
 - identity is explicit  
 - identity is commit-based  
@@ -359,27 +441,30 @@ Interprets identity.
 - membership is bounded and deterministic  
 - overlap is allowed  
 - no inferred identity  
+- derivation may inform membership only through declared structural rules  
 - store is derived and rebuildable  
 
 ---
 
-# 11. Mental Model
+# 12. Mental Model
 
 CIS is:
 
 - identity overlay on a graph  
 - bounded influence mapping  
 - overlapping domain system  
+- structurally aware of lineage without interpreting it  
 
 ---
 
-# 12. Final Principle
+# 13. Final Principle
 
 CIS ensures:
 
 - identity is explicit  
 - boundaries are declared  
 - overlap is preserved  
+- structural evolution can be incorporated without rewriting identity history automatically  
 
 It enables systems to understand identity  
 without ever inferring or collapsing structure.
