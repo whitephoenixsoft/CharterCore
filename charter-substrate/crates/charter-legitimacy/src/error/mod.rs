@@ -118,13 +118,99 @@ impl EvaluationReport {
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
+pub enum IntegrityError {
+    MultiAreaGraph {
+        expected_area_id: String,
+        found_area_id: String,
+        object_type: String,
+        object_id: String,
+    },
+    DuplicateId {
+        object_type: String,
+        object_id: String,
+    },
+    MissingReference {
+        object_type: String,
+        object_id: String,
+        field_name: String,
+        missing_object_type: String,
+        missing_object_id: String,
+    },
+    InvalidReceiptResolutionBinding {
+        receipt_id: String,
+        detail: String,
+    },
+    InvalidTerminalReceiptReference {
+        session_id: String,
+        receipt_id: String,
+    },
+}
+
+impl IntegrityError {
+    pub fn code(&self) -> &'static str {
+        match self {
+            Self::MultiAreaGraph { .. } => "MULTI_AREA_GRAPH_DETECTED",
+            Self::DuplicateId { .. } => "DUPLICATE_ID",
+            Self::MissingReference { .. } => "MISSING_REFERENCE",
+            Self::InvalidReceiptResolutionBinding { .. } => "INVALID_RECEIPT_RESOLUTION_BINDING",
+            Self::InvalidTerminalReceiptReference { .. } => "MISSING_REFERENCE",
+        }
+    }
+
+    pub fn related_objects(&self) -> Vec<String> {
+        match self {
+            Self::MultiAreaGraph {
+                object_type,
+                object_id,
+                ..
+            } => vec![format!("{object_type}:{object_id}")],
+            Self::DuplicateId {
+                object_type,
+                object_id,
+            } => vec![format!("{object_type}:{object_id}")],
+            Self::MissingReference {
+                object_type,
+                object_id,
+                missing_object_type,
+                missing_object_id,
+                ..
+            } => vec![
+                format!("{object_type}:{object_id}"),
+                format!("{missing_object_type}:{missing_object_id}"),
+            ],
+            Self::InvalidReceiptResolutionBinding { receipt_id, .. } => {
+                vec![format!("receipt:{receipt_id}")]
+            }
+            Self::InvalidTerminalReceiptReference {
+                session_id,
+                receipt_id,
+            } => vec![
+                format!("session:{session_id}"),
+                format!("receipt:{receipt_id}"),
+            ],
+        }
+    }
+
+    pub fn to_error_entry(&self) -> ErrorEntry {
+        ErrorEntry {
+            error_code: self.code().to_string(),
+            related_objects: self.related_objects(),
+            block_type: None,
+            block_scope: None,
+        }
+    }
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub enum EngineError {
     NotFound {
         object_type: String,
         object_id: String,
     },
     InvalidInput(String),
-    InitializationFailed(String),
+    InitializationFailed {
+        errors: Vec<IntegrityError>,
+    },
 }
 
 impl EngineError {
@@ -144,7 +230,9 @@ impl fmt::Display for EngineError {
                 object_id,
             } => write!(f, "{} not found: {}", object_type, object_id),
             Self::InvalidInput(msg) => write!(f, "invalid input: {}", msg),
-            Self::InitializationFailed(msg) => write!(f, "initialization failed: {}", msg),
+            Self::InitializationFailed { errors } => {
+                write!(f, "initialization failed with {} integrity error(s)", errors.len())
+            }
         }
     }
 }
