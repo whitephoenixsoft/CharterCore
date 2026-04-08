@@ -78,6 +78,15 @@ Properties:
 - non-authoritative  
 - local to the deliberate instance  
 
+Process:
+
+- a deliberate a decision rule is must selected:
+    - SOLE_ACTOR (default)
+    - UNANIMOUS_PRESENT
+    - MAJORITY_PRESENT
+- participants are selected to be part of the voting for synthesis
+- during synthesis the participants vote to allow the Item to become LOCKED
+
 ---
 
 ## 4.3 Item
@@ -96,7 +105,7 @@ An Item may represent:
 
 ---
 
-### 4.3.1 Observations (NEW)
+### 4.3.1 Observations
 
 Items may include an **observations block** representing evidence.
 
@@ -141,7 +150,7 @@ Principle:
 
 ---
 
-### 4.3.3 Contributions (NEW)
+### 4.3.3 Contributions
 
 Items may record contributor interactions:
 
@@ -162,7 +171,7 @@ Principle:
 
 ---
 
-## 4.4 Participants (NEW)
+## 4.4 Participants
 
 A deliberate instance may include participants.
 
@@ -176,6 +185,11 @@ Properties:
 - descriptive only  
 - mutable during runtime  
 - not tied to authority  
+
+Function:
+
+- can contribute 
+- can be selected for voting in DDR
 
 Principle:
 
@@ -198,7 +212,18 @@ Contains Items in:
 
 ## 4.6 Breakout
 
-Unchanged (short-lived focused exploration).
+Breakouts are isolated by design. They are short-lived focused exploration.
+
+They do not:
+
+- compete for legitimacy  
+- race for acceptance  
+- alter engine state  
+
+Their purpose is exploration, not convergence.
+
+During the breakout the item state is IN_PROGRESS.
+After a breakout and Item becomes READY, BLOCKED, or DEFERRED.
 
 ---
 
@@ -213,13 +238,15 @@ Synthesis may:
 - return Items to Board  
 - prepare Items for Review  
 
+> **Receipt Note:** Freezing a synthesis artifact emits an **Exploration Receipt** capturing artifact IDs, lineage, and end-state (e.g., SYNTHESIZED).
+
 Principle:
 
 > Synthesis shapes thinking without enforcing finality.
 
 ---
 
-## 4.8 Drafts (NEW)
+## 4.8 Drafts
 
 Drafts are **reusable bundles of candidate material**.
 
@@ -284,7 +311,7 @@ Application may result in:
 
 ---
 
-## 5.5 SETTLED (NEW)
+## 5.5 SETTLED
 
 Item has reached a stable conclusion within CDS.
 
@@ -300,7 +327,7 @@ Principle:
 
 ---
 
-## 5.6 Partial Application (NEW)
+## 5.6 Partial Application 
 
 Items may be:
 
