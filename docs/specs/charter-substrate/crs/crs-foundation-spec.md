@@ -1,9 +1,9 @@
-# Charter Relay System (CRS) — Foundation Specification
+# Charter Relay System (CRS) — Foundation Specification (Revised)
 
 Status: FOUNDATIONAL  
 Intent: Define append-only, opaque transport and foreign archival of commit artifacts  
-Scope: Relay namespaces, transport operations, storage neutrality, and federation-safe exchange  
-Does NOT Define: legitimacy, review workflows, alignment, identity semantics, commit meaning, or storage implementation details beyond relay behavior  
+Scope: Relay namespaces, transport operations, storage neutrality, federation-safe exchange, and transport boundaries  
+Does NOT Define: legitimacy, review workflows, alignment, identity semantics, commit meaning, signal processing, or storage implementation details beyond relay behavior  
 
 ---
 
@@ -52,6 +52,16 @@ Presence in a relay does not imply:
 - alignment  
 - authorship  
 - completeness  
+
+CRS operates only on **durable CCS artifacts**.
+
+CRS does not:
+
+- process transient data  
+- interpret signal flows  
+- perform aggregation or shaping  
+
+> Signal shaping, aggregation, or emission control must occur outside CRS.
 
 ---
 
@@ -160,6 +170,27 @@ Artifacts within a namespace:
 
 ---
 
+## 4.5 Relay-Facing Workspace Segregation
+
+Relay namespaces correspond to **physically segregated foreign workspaces**.
+
+These workspaces:
+
+- are non-authoritative  
+- are isolated from local runtime state  
+- are visible to relay transport operations  
+- may serve as staging areas for ingestion or export  
+
+Artifacts in relay-facing workspaces:
+
+- remain foreign  
+- must not be treated as locally trusted  
+- may be processed externally before local adoption  
+
+> Segregation ensures that foreign artifacts do not implicitly merge with local truth.
+
+---
+
 # 5. Transport Operations
 
 CRS defines explicit transport operations.
@@ -221,6 +252,20 @@ All transport is explicit.
 
 ---
 
+## 5.5 Transport Boundary
+
+CRS operates strictly at the boundary of **durable artifact transport**.
+
+CRS:
+
+- transports only CCS-compliant artifacts  
+- does not accept or process transient data  
+- does not participate in signal shaping, aggregation, or emission control  
+
+> Any preprocessing or shaping of artifacts prior to transport must occur outside CRS.
+
+---
+
 # 6. Artifact Handling
 
 ## 6.1 Opaque Artifacts
@@ -247,7 +292,8 @@ CRS transports any valid CCS commit:
 - Annotation commits  
 - Import commits  
 - Review / Exploration receipts  
-- export or archive bundles  
+- Deliberate commits  
+- Host artifact commits (generic, non-Charter specific)  
 
 All are treated uniformly.
 
@@ -317,6 +363,55 @@ CRS does not perform admission.
 
 ---
 
+## 7.4 Interaction with Signal Processing (CSP)
+
+CRS may operate alongside the Charter Signal Processing Substrate (CSP), but remains strictly independent.
+
+---
+
+### 7.4.1 Direct Relay Path
+
+CCare-compatible artifacts are transported directly:
+
+CCS → CRS
+
+Properties:
+
+- no preprocessing  
+- direct transport  
+- suitable for low-volume or intentional emission  
+
+---
+
+### 7.4.2 CSP-Mediated Relay Path
+
+Signal candidates or artifacts may be processed before transport:
+
+Signal candidates / foreign artifacts  
+→ CSP pipeline  
+→ CCS durable emission  
+→ CRS transport  
+
+Properties:
+
+- aggregation and noise reduction may occur externally  
+- emission cadence may be controlled externally  
+- only resulting CCS artifacts are transported  
+
+---
+
+### 7.4.3 Constraint
+
+CRS must not:
+
+- interpret CSP pipelines  
+- depend on pipeline configuration  
+- process transient pipeline state  
+
+> CRS interacts only with durable outputs, never with pipeline execution.
+
+---
+
 # 8. Federation Model
 
 ## 8.1 Federation as Transport
@@ -355,6 +450,47 @@ CRS does not define:
 - aggregation rules  
 
 These are external concerns.
+
+---
+
+## 8.4 Ingress and Egress Flow Model
+
+CRS participates in both inbound and outbound artifact movement.
+
+---
+
+### 8.4.1 Ingress Flow (Inbound)
+
+CRS fetch  
+→ relay-facing workspace (foreign)  
+→ optional external processing (e.g., CSP)  
+→ optional local admission via review  
+
+Properties:
+
+- fetched artifacts remain foreign  
+- no automatic integration occurs  
+- preprocessing is external to CRS  
+
+---
+
+### 8.4.2 Egress Flow (Outbound)
+
+Local durable artifacts  
+→ optional external processing (e.g., CSP)  
+→ CRS push  
+
+Properties:
+
+- CRS only transports final CCS artifacts  
+- preprocessing must complete before push  
+- CRS does not control emission timing  
+
+---
+
+### 8.4.3 Principle
+
+> CRS defines transport boundaries, not processing pipelines.
 
 ---
 
@@ -446,6 +582,9 @@ The following must always hold:
 - no relationships are inferred  
 - partial data is valid  
 - history is never rewritten  
+- CRS operates only on durable CCS artifacts  
+- CRS does not process transient or pipeline-managed data  
+- CRS does not interpret or depend on CSP pipelines  
 
 ---
 
@@ -464,6 +603,7 @@ CRS is not:
 - a governance system  
 - a semantic graph  
 - a trust system  
+- a signal processing system  
 
 ---
 
