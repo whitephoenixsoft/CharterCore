@@ -1,7 +1,7 @@
-# Charter Runtime — Cross-Area Discoverability Specification
+# Charter Runtime — Cross-Area Discoverability Specification (Revised)
 
 Status: FOUNDATIONAL  
-Applies to: Runtime Layer, Charter Commit System (CCS), Commit Store, Baseline Review, Federation  
+Applies to: Runtime Layer, Charter Commit System (CCS), Commit Store, Reconciliation Review, Federation  
 Does NOT define: transport protocols (CRS), legitimacy semantics, alignment computation, or guidance behavior  
 
 ---
@@ -14,12 +14,14 @@ Discoverability exists to:
 
 - make external Areas **identifiable**
 - enable **query and acquisition** of foreign partial graphs
-- support **review and integration workflows**
+- support **reconciliation workflows** (forward and reverse)
 - allow **safe cross-area referencing**
+- enable **investigation and simulation over foreign structure**
 
-Discoverability is a **precondition for structural integrity**.
+Discoverability is a **precondition for structural modeling and simulation**.
 
-If relationships cannot be discovered, they cannot be modeled.
+If relationships cannot be discovered, they cannot be modeled.  
+If they cannot be modeled, they cannot be simulated or reconciled.
 
 ---
 
@@ -40,6 +42,7 @@ It is not:
 - locally valid  
 - up-to-date  
 - structurally integrated  
+- authoritative  
 
 ---
 
@@ -69,7 +72,7 @@ Across a federated system:
 - snapshots may be stale  
 
 > Global consistency is not required.  
-> Cohesion is achieved through explicit review and integration.
+> Cohesion is achieved through explicit reconciliation.
 
 ---
 
@@ -112,6 +115,9 @@ The Runtime must support acquiring a **foreign partial graph**:
 
 Acquisition produces a **foreign, read-only graph representation**.
 
+Only **durable CCS commits** are discoverable and fetchable.  
+Transient systems (e.g., CSP feeds) are not part of discoverability unless materialized.
+
 ---
 
 ## 4.4 Local Availability
@@ -120,7 +126,8 @@ Once acquired, the foreign graph becomes:
 
 - locally accessible  
 - referenceable within controlled contexts  
-- available for review workflows  
+- available for reconciliation workflows  
+- usable for investigation and simulation  
 
 ---
 
@@ -161,44 +168,54 @@ Isolation ensures:
 
 ---
 
-# 6. Relationship to Review
+# 6. Relationship to Reconciliation
 
-## 6.1 Review as Integration Boundary
+## 6.1 Reconciliation as Integration and Simulation Boundary
 
-All integration of foreign graph data MUST occur through a **review construct**.
+All interaction with foreign graph data MUST occur through **Reconciliation Review**.
 
-This includes:
+Reconciliation is a **unified model** supporting:
 
-- Baseline Review  
-- Federation Review  
-- Archive Review  
-- Deliberate Review  
-
----
-
-## 6.2 Unified Review Model
-
-All reviews share:
-
-- a **workflow decision rule**  
-- a **workflow scope**  
-
-Examples:
-
-| Review Type | Governing Rule | Governing Scope |
-|-------------|--------------|----------------|
-| Baseline Review | Area authority | Area scope |
-| Federation Review | Federation-defined | Cross-area scope |
-| Deliberate Review | Deliberate rules | Epic boundary |
+- forward integration (toward legitimacy)  
+- reverse integration (toward CDS simulation)  
+- federation ingestion  
 
 ---
 
-## 6.3 Discoverability Does Not Bypass Review
+## 6.2 Forward Reconciliation (Legitimacy Path)
 
-Discovered or fetched artifacts:
+Foreign artifacts are:
 
-- must not become locally integrated automatically  
-- must pass through review before structural adoption  
+→ evaluated  
+→ accepted or rejected  
+→ admitted through session  
+
+Result:
+
+- durable resolutions  
+- durable structural relationships  
+
+---
+
+## 6.3 Reverse Reconciliation (Simulation Path)
+
+Foreign artifacts may be:
+
+→ transformed into CDS Items  
+→ used for investigation and simulation  
+
+Properties:
+
+- produces **non-legitimate Items**  
+- preserves lineage via `derived_from`  
+- does not create or modify resolutions  
+
+---
+
+## 6.4 Core Rule
+
+> Discoverability enables access.  
+> Reconciliation determines how that access is used.
 
 ---
 
@@ -209,7 +226,8 @@ Discovered or fetched artifacts:
 Cross-area references may target:
 
 - **Areas** (boundary-level reference)  
-- **Resolutions** (artifact-level reference)  
+- **Resolutions** (legitimate artifacts)  
+- **Items** (investigative artifacts via CDS)  
 
 ---
 
@@ -219,7 +237,7 @@ An Area reference indicates:
 
 - structural relevance of another Area  
 - dependency, coordination, or relationship at the boundary level  
-- **acknowledgment of incomplete or evolving knowledge**
+- acknowledgment of incomplete or evolving knowledge  
 
 Area references:
 
@@ -227,9 +245,6 @@ Area references:
 - do NOT imply adoption  
 - do NOT imply trust  
 - do NOT imply completeness or freshness  
-
-> Area references model that “this boundary matters,”  
-> even when its internal state is not yet known.
 
 ---
 
@@ -239,57 +254,88 @@ A Resolution reference indicates:
 
 - relevance of a specific accepted artifact  
 - a concrete decision anchor  
-- a precise dependency  
 
-Resolution references:
+Properties:
 
-- are precise  
-- are stronger than area references  
-- require higher confidence  
+- precise  
+- durable (after reconciliation)  
 
 ---
 
-## 7.4 Provisional vs Integrated References
+## 7.4 Item References (Investigative)
+
+Item references indicate:
+
+- exploratory or simulated relationships  
+- pre-legitimacy structure  
+
+Properties:
+
+- non-authoritative  
+- may evolve or be discarded  
+- may later produce structural relationships via reconciliation  
+
+---
+
+## 7.5 Provisional vs Integrated References
 
 ### A. Provisional References
 
 - created against isolated foreign graphs  
-- exist **only within review contexts**  
-- may target Areas or Resolutions  
+- exist only within reconciliation contexts or CDS  
 - non-authoritative  
 - non-durable  
-
-> Provisional references are scoped to review and must not escape it.
 
 ---
 
 ### B. Integrated References
 
-- created after successful review  
+- created after successful reconciliation  
 - durable within the local graph  
-- visible to lineage and alignment systems  
+- visible to CSG and CAS  
 
 ---
 
-## 7.5 Core Rule
+## 7.6 Core Rule
 
 > Unreviewed foreign artifacts may be referenced provisionally,  
 > but must not become durable structural anchors.
 
 ---
 
-## 7.6 Strength of References
+# 8. Structural Scope of Discovery
 
-- Area references → structural / boundary-level  
-- Resolution references → decision-level  
+Discovered graphs may include:
 
-Area references must never be treated as implicit resolution references.
+- resolution nodes (legitimate structure)  
+- item nodes (investigative structure, if exported)  
+
+CSG must preserve:
+
+- node class distinction  
+- origin of structure  
+- non-authoritative nature of items  
 
 ---
 
-# 8. Staleness and Supersession
+# 9. CDS Interaction
 
-## 8.1 No Freshness Guarantee
+Discoverability enables CDS to:
+
+- seed Items from foreign signals or resolutions  
+- observe foreign structure  
+- surface candidate relationships  
+
+These relationships:
+
+- are non-authoritative  
+- must pass through reconciliation to become structural  
+
+---
+
+# 10. Staleness and Supersession
+
+## 10.1 No Freshness Guarantee
 
 Discovered or fetched Areas may be:
 
@@ -297,39 +343,34 @@ Discovered or fetched Areas may be:
 - incomplete  
 - superseded  
 
-The system must not assume freshness.
-
 ---
 
-## 8.2 Stale Reference Handling
+## 10.2 Stale Handling
 
-Staleness is resolved through:
+Handled through:
 
 - re-fetching  
-- review workflows  
-- explicit reconciliation  
+- reconciliation  
+- explicit investigation  
 
 No automatic rebasing or mutation occurs.
 
 ---
 
-## 8.3 Convergence Model
+## 10.3 Convergence Model
 
-Different runtimes may hold different histories.
-
-> Convergence occurs through explicit review and integration,  
-> not synchronization.
+> Convergence occurs through explicit reconciliation, not synchronization.
 
 ---
 
-# 9. Relationship to Federation
+# 11. Relationship to Federation
 
-## 9.1 Federation as Extension of Review
+## 11.1 Federation as Structured Discoverability
 
 Federation is:
 
-- structured or repeated acquisition  
-- governed by review principles  
+- repeated acquisition of foreign graphs  
+- governed by reconciliation  
 
 It is not:
 
@@ -339,37 +380,33 @@ It is not:
 
 ---
 
-## 9.2 Federation References
+## 11.2 Federation Flow
 
-Federation may:
-
-- create provisional references during review  
-- create durable references only after review  
+CRS → Discoverability → Reconciliation → Local Structure or CDS
 
 ---
 
-# 10. Relationship to CCS and Commit Store
+# 12. Relationship to CCS and Commit Store
 
-## 10.1 CCS
+## 12.1 CCS
 
 - defines commit structure  
-- preserves identity and integrity  
+- ensures identity and integrity  
 
-## 10.2 Commit Store
+## 12.2 Commit Store
 
-- stores local and imported commits  
-- guarantees immutability  
-- does not enforce discoverability  
+- persists local and foreign commits  
+- does not define discoverability behavior  
 
 ---
 
-# 11. Invariants
+# 13. Invariants
 
 - Discoverability must not imply legitimacy  
 - Discoverability must not imply freshness  
 - Discoverability must not imply completeness  
 - Foreign graphs must remain immutable in isolation  
-- Integration must occur only through review  
+- All integration must occur through reconciliation  
 - Provisional and durable references must remain distinct  
 - Area references must not imply resolution adoption  
 - No automatic synchronization may occur  
@@ -378,25 +415,24 @@ Federation may:
 **Critical Structural Invariant:**
 
 - If a dependency cannot be discovered, it cannot be modeled  
-- If it cannot be modeled, alignment cannot be computed  
+- If it cannot be modeled, it cannot be simulated or aligned  
 
 ---
 
-# 12. Mental Model
+# 14. Mental Model
 
 - Areas are **partial graph holders**  
-- Discoverability is **visibility + optional acquisition**  
+- Discoverability is **visibility + acquisition**  
 - Query precedes fetch  
 - Imported graphs are **foreign and isolated**  
-- Review is **the gateway to integration**  
-- References are **provisional until accepted**  
-- Area references express **structural awareness under uncertainty**  
-- Resolution references express **explicit decision alignment**  
-- Cohesion is **achieved explicitly, not assumed**  
+- Reconciliation is **the gateway to use**  
+- CDS enables **investigation and simulation**  
+- References are **provisional until admitted**  
+- Structure evolves through **explicit decisions**  
 
 ---
 
-# 13. Final Principle
+# 15. Final Principle
 
 Charter does not assume shared reality.
 
@@ -404,7 +440,7 @@ It enables systems to:
 
 - discover each other  
 - observe partial truth  
-- model relationships under uncertainty  
+- investigate and simulate possibilities  
 - and reconcile explicitly  
 
 without requiring:

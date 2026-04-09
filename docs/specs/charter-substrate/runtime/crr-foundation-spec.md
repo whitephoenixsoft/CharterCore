@@ -1,30 +1,27 @@
-# Charter Resolution Recontextualization (CRR) — Foundation Specification
+# Charter Resolution Recontextualization (CRR) — Foundation Specification (Revised vNext)
 
 Status: FOUNDATIONAL  
-Intent: Define how resolutions are recontextualized across scopes without rewriting history  
-Scope: Promotion, demotion, copy, move, and derivation relationships between resolutions  
-Depends On: Charter Commit System (CCS), Charter Structural Graph (CSG)  
+Intent: Define how structural artifacts are recontextualized across scopes and abstraction tiers without rewriting history  
+Scope: Promotion, demotion, decomposition, synthesis, copy, move, and derivation relationships across resolutions and pre-legitimacy artifacts  
+Depends On: Charter Commit System (CCS), Charter Structural Graph (CSG), Charter Deliberate Substrate (CDS)  
 Does NOT Define: legitimacy, workflow orchestration, identity (CIS), alignment (CAS), or guidance (CGL)  
 
 ---
 
 # 1. Purpose
 
-The Charter Resolution Recontextualization (CRR) defines how resolutions may be:
+The Charter Resolution Recontextualization (CRR) defines how structural artifacts may be recontextualized across:
 
-- promoted to higher-order scopes  
-- demoted to lower-order scopes  
-- copied across areas  
-- moved across areas  
-
-without mutating or rewriting existing artifacts.
+- scopes (areas, contexts)  
+- abstraction tiers (breadth vs granularity of meaning)  
 
 It exists to:
 
-- enable late discovery of correct scope  
+- enable late discovery of correct abstraction and scope  
 - support structural evolution over time  
-- preserve full historical lineage  
-- allow flexible reorganization of decision hierarchies  
+- preserve full lineage across investigation and legitimacy  
+- allow decomposition and synthesis of decisions  
+- connect investigative structure (CDS) with legitimate structure  
 
 CRR is a **structural lineage model**, not a workflow system.
 
@@ -32,107 +29,169 @@ CRR is a **structural lineage model**, not a workflow system.
 
 # 2. Core Principle
 
-> Recontextualization creates new resolutions. It never mutates existing ones.
+> Recontextualization creates new artifacts. It never mutates existing ones.
 
-All changes in scope or context must be expressed as:
+All changes in:
 
-- new resolution artifacts  
+- scope  
+- abstraction tier  
+- structural interpretation  
+
+must be expressed as:
+
+- new artifacts (typically resolutions)  
 - explicit lineage relationships  
 
 ---
 
-# 3. Core Concept
+# 3. Core Concepts
 
 ## 3.1 Recontextualization
 
 Recontextualization is the act of:
 
-> creating a new resolution in a different scope based on one or more existing resolutions.
+> creating a new artifact in a different scope or abstraction tier based on one or more existing artifacts.
 
-This includes:
+Artifacts may include:
 
-- promotion (lower → higher scope)  
-- demotion (higher → lower scope)  
-- lateral transfer (area-to-area)  
+- resolutions (legitimate structure)  
+- items (investigative structure via CDS)  
 
 ---
 
-## 3.2 Derivation Relationship
+## 3.2 Abstraction Tier (NEW)
 
-CRR defines a canonical structural relationship:
+Abstraction tier describes:
+
+> the breadth or granularity of a resolution’s meaning and decomposition scope.
+
+- higher abstraction → broader, more general  
+- lower abstraction → narrower, more specific  
+
+### Properties
+
+- not related to authority  
+- not related to identity  
+- not inferred by CSG  
+- declared or implied through artifact creation and lineage  
+
+### Principle
+
+> Abstraction tier reflects how meaning is structured, not who controls it.
+
+---
+
+## 3.3 Derivation Relationship
+
+CRR relies on:
 
 ### `derives_from`
 
-A resolution may declare that it derives from one or more prior resolutions.
+An artifact may declare lineage from one or more prior artifacts.
 
 Properties:
 
 - explicit  
 - directional  
 - non-destructive  
-- may cross areas  
+- cross-area allowed  
+- cross-artifact-class allowed (item ↔ resolution)  
 
 ---
 
-# 4. Recontextualization Types (Derived Semantics)
+## 3.4 Legitimacy Boundary
 
-CRR does not enforce semantic interpretation, but common patterns include:
+CRR distinguishes:
+
+### A. Pre-Legitimacy Recontextualization (CDS)
+
+- operates on Items  
+- supports simulation and restructuring  
+- non-authoritative  
+
+### B. Post-Legitimacy Recontextualization (CRR)
+
+- produces resolution commits  
+- preserves lineage from Items and/or Resolutions  
+- requires Review + Session for legitimacy  
+
+Principle:
+
+> CRR preserves structure across the legitimacy boundary without defining it.
 
 ---
 
-## 4.1 Promotion
+# 4. Recontextualization Types
 
-- lower-scope resolution → higher-scope resolution  
+CRR does not enforce semantics, but common structural patterns include:
+
+---
+
+## 4.1 Promotion (Abstraction Increase)
+
+- narrower → broader abstraction tier  
 
 Example:
 
-- design decision → mission principle  
+- implementation detail → guiding principle  
 
 ---
 
-## 4.2 Demotion
+## 4.2 Demotion (Abstraction Decrease)
 
-- higher-scope resolution → lower-scope resolution  
+- broader → narrower abstraction tier  
 
 Example:
 
-- mission principle → team-level implementation  
+- principle → specific implementation  
 
 ---
 
-## 4.3 Copy
+## 4.3 Decomposition (NEW)
 
-- resolution duplicated across contexts  
+- one higher-tier resolution → multiple lower-tier resolutions  
+
+Properties:
+
+- preserves lineage from source to all derived artifacts  
+- enables structural expansion  
+
+---
+
+## 4.4 Synthesis (NEW)
+
+- multiple lower-tier artifacts → one higher-tier resolution  
+
+Properties:
+
+- may derive from multiple sources  
+- enables consolidation of meaning  
+
+---
+
+## 4.5 Copy
+
+- artifact duplicated across contexts  
 - source remains active  
 
 ---
 
-## 4.4 Move
+## 4.6 Move
 
-- resolution recontextualized  
-- source is retired  
+- artifact recontextualized  
+- source optionally retired  
 
 ---
 
 # 5. Source Lifecycle Handling
 
-Recontextualization may optionally affect the source resolution.
-
----
-
 ## 5.1 Retain Source
 
-- original resolution remains active  
-- both source and derived resolution coexist  
-
----
+- original artifact remains active  
 
 ## 5.2 Retire Source
 
-- original resolution is explicitly retired  
-- derived resolution becomes the active representation  
-
----
+- original artifact explicitly retired  
 
 ## 5.3 Principle
 
@@ -140,140 +199,138 @@ Recontextualization may optionally affect the source resolution.
 
 ---
 
-# 6. Multi-Resolution Derivation
+# 6. Multi-Artifact Derivation
 
-A resolution may derive from multiple sources.
+A resolution may derive from:
 
-This supports:
+- one or more resolutions  
+- one or more Items  
+- a mixture of both  
 
-- consolidation (many → one)  
-- synthesis of ideas  
-- structural merging  
+Supports:
 
----
-
-# 7. Annotation
-
-Annotations are supported for all recontextualization actions.
+- decomposition  
+- synthesis  
+- CDS-to-resolution transitions  
 
 ---
 
-## 7.1 Annotation Scope
+# 7. Relationship to CDS
 
-Annotations may be attached to:
+CDS may:
 
-- derivation relationships  
-- new resolutions  
-- source resolutions (if updated via workflow context)  
+- simulate recontextualization using Items  
+- explore abstraction changes  
+- decompose or synthesize candidate structure  
+
+CRR:
+
+- consumes this lineage when producing resolutions  
+- does not interpret CDS semantics  
+
+Principle:
+
+> CDS explores structure. CRR preserves it in legitimacy.
 
 ---
 
-## 7.2 Annotation Properties
+# 8. Relationship to Reconciliation
 
-Annotations are:
+Reconciliation provides:
+
+- mapping between Items and Resolutions  
+- traceability across the legitimacy boundary  
+
+CRR depends on:
+
+- `derives_from` relationships  
+- reconciliation linkage  
+
+Principle:
+
+> Reconciliation connects artifacts. CRR preserves their lineage.
+
+---
+
+# 9. Annotation
+
+Annotations may describe:
+
+- rationale for abstraction change  
+- reasoning for decomposition or synthesis  
+- contextual decisions  
+
+They are:
 
 - optional  
 - non-authoritative  
-- descriptive  
-
-They may include:
-
-- rationale for recontextualization  
-- explanation of scope change  
-- notes on consolidation or decomposition  
-- contextual reasoning  
 
 ---
 
-## 7.3 Principle
+# 10. Relationship to Other Modules
 
-> Annotation preserves intent without affecting structural correctness.
+## Runtime
+- orchestrates workflows  
 
----
+## CDS
+- performs pre-legitimacy structure formation  
 
-# 8. Relationship to Other Modules
+## Review
+- evaluates and admits recontextualized artifacts  
 
----
+## CCS
+- records artifacts and lineage  
 
-## 8.1 Runtime Layer
+## CSG
+- materializes structural graph  
 
-- orchestrates promotion, demotion, copy, and move workflows  
-- determines whether to retain or retire source  
-
----
-
-## 8.2 Deliberate (CDS)
-
-- may reshape or synthesize resolutions prior to recontextualization  
-
----
-
-## 8.3 Review Workflow
-
-- evaluates and admits recontextualized resolutions  
-- ensures authority boundaries are respected  
+## CIS
+- binds identity independently of abstraction tier  
 
 ---
 
-## 8.4 CCS
+# 11. Invariants
 
-- records new resolution commits  
-- preserves derivation references  
-
----
-
-## 8.5 CSG
-
-- materializes derivation edges as part of the structural graph  
-
----
-
-## 8.6 CIS
-
-- may rebind identity and scope based on new structure  
-
----
-
-## 9. Invariants
-
-The following must always hold:
-
-- recontextualization creates new resolution artifacts  
-- original resolutions are never mutated  
+- recontextualization creates new artifacts  
+- original artifacts are never mutated  
 - derivation relationships are explicit  
 - derivation does not imply legitimacy  
-- source retirement is explicit and separate  
-- multiple derivation sources are allowed  
-- cross-area derivation is allowed  
-- annotations do not alter structural meaning  
-
-Violation of these breaks CRR correctness.
+- abstraction tier is not authority  
+- abstraction tier is not identity  
+- decomposition and synthesis must preserve lineage  
+- source retirement is explicit  
+- cross-artifact derivation is allowed  
+- Items never become legitimate without Review + Session  
+- annotations do not affect structure  
 
 ---
 
-# 10. Mental Model
+# 12. Mental Model
 
 CRR is:
 
-- a system of structural lineage  
-- a mechanism for evolving decision hierarchy  
-- a record of how meaning shifts across scope  
+- a lineage system across abstraction and scope  
+- a mechanism for decomposition and synthesis of meaning  
+- a bridge between investigation and legitimacy  
 
 It is not:
 
+- a hierarchy engine  
+- an authority model  
+- an identity system  
 - a workflow engine  
-- a legitimacy system  
-- an interpretation layer  
 
 ---
 
-# 11. Final Principle
+# 13. Final Principle
 
-The Charter Resolution Recontextualization model ensures that:
+CRR ensures that:
 
-- decisions can move across scopes  
-- structure can evolve over time  
-- meaning can be refined without rewriting history  
+- structure can evolve across abstraction tiers  
+- decisions can decompose and recombine  
+- investigation can inform legitimacy  
+- lineage is preserved across all transformations  
 
-Every change in context is preserved as new structure —  
-never as mutation of the past.
+Every structural change is recorded as new artifacts —  
+linked explicitly to what came before —  
+without rewriting history or implying authority.

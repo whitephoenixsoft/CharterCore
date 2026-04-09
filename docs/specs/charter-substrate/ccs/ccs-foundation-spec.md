@@ -1,4 +1,4 @@
-# Charter Commit System (CCS) — Foundation Specification (Revised)
+# Charter Commit System (CCS) — Foundation Specification (Revised vNext)
 
 Status: FOUNDATIONAL  
 Intent: Define the commit as Charter’s core immutable artifact envelope  
@@ -13,20 +13,20 @@ The Charter Commit System (CCS) defines the **commit** as the fundamental, durab
 
 It exists to:
 
-- provide a stable, immutable envelope for recorded artifacts
-- preserve declared or observed semantic truth without rewriting history
-- support independent storage, transport, and interpretation
-- provide a common structural substrate for multiple Charter modules and downstream systems
+- provide a stable, immutable envelope for recorded artifacts  
+- preserve declared or observed semantic truth without rewriting history  
+- support independent storage, transport, and interpretation  
+- provide a common structural substrate for multiple Charter modules and downstream systems  
 
 CCS is a **protocol and structural layer**.
 
 It is not:
 
-- a storage system
-- a workflow engine
-- a legitimacy engine
-- a state machine
-- an interpretation layer
+- a storage system  
+- a workflow engine  
+- a legitimacy engine  
+- a state machine  
+- an interpretation layer  
 
 ---
 
@@ -34,15 +34,22 @@ It is not:
 
 > Commits preserve recorded artifacts. They do not interpret them.
 
-A commit records that something was declared, observed, packaged, preserved, or derived.
+A commit records that something was:
+
+- declared  
+- observed  
+- packaged  
+- preserved  
+- derived  
+- reconciled  
 
 A commit does not determine:
 
-- whether the artifact is correct
-- whether it is legitimate
-- whether it is aligned
-- whether it should be acted upon
-- whether it is current
+- correctness  
+- legitimacy  
+- alignment  
+- authority  
+- currentness  
 
 Meaning emerges only through interpretation by systems outside CCS.
 
@@ -52,11 +59,11 @@ Meaning emerges only through interpretation by systems outside CCS.
 
 A **commit** is:
 
-- immutable
-- append-only
-- independently identifiable
-- structurally self-describing
-- optionally related to other artifacts through explicit references
+- immutable  
+- append-only  
+- independently identifiable  
+- structurally self-describing  
+- optionally related to other artifacts through explicit references  
 
 A commit is an **artifact envelope**, not mutable state.
 
@@ -64,25 +71,23 @@ A commit is an **artifact envelope**, not mutable state.
 
 ## 3.1 Required Properties
 
-All commits must satisfy the following:
-
 ### Immutability
 Once created, a commit must never be modified.
 
 ### Append-Only Existence
-Commits may be added, copied, archived, transported, or removed from a local store under explicit lifecycle rules, but the commit itself must never be altered in place.
+Commits may be added, copied, archived, transported, or removed from a local store under explicit lifecycle rules, but the commit itself must never be altered.
 
 ### Stable Identity
 Each commit has a globally unique `commit_id`.
 
 ### Deterministic Integrity
-Each commit includes an `integrity_hash` computed over the canonical commit envelope.
+Each commit includes an `integrity_hash`.
 
 ### Structural Self-Description
-Each commit declares its own `commit_type` and schema version explicitly.
+Each commit declares its own `commit_type` and schema version.
 
 ### Explicit References Only
-Any relationship to another artifact must be declared explicitly. No relationship may be inferred from time, storage order, co-location, or naming.
+All relationships must be explicitly declared.
 
 ---
 
@@ -90,610 +95,458 @@ Any relationship to another artifact must be declared explicitly. No relationshi
 
 A commit is not:
 
-- a source of authority
-- a unit of legitimacy by default
-- a computed state
-- a mutable object
-- a current-state projection
-- a database row
-- a guarantee of relational completeness
+- a source of authority  
+- a unit of legitimacy by default  
+- a computed state  
+- a mutable object  
+- a current-state projection  
+- a guarantee of relational completeness  
+
+---
+
+## 3.3 Node-Class Neutrality
+
+CCS does not define or interpret node classes.
+
+However:
+
+- commits may represent different artifact classes (e.g., resolutions, items)  
+- CCS must preserve all references required for downstream systems (e.g., CSG) to construct node-class-aware graphs  
+
+> CCS preserves structure. It does not classify it.
 
 ---
 
 # 4. Identity and Integrity
 
-CCS distinguishes strictly between **identity** and **integrity**.
-
----
-
 ## 4.1 Commit Identity
 
-`commit_id` defines commit identity.
+`commit_id`:
 
-Requirements:
-
-- identity must be globally unique
-- identity must remain stable across storage, export, relay, and import
-- identity must not be derived from storage location
-- identity must not be replaced by content hash
+- globally unique  
+- stable across systems  
+- independent of storage  
 
 ---
 
 ## 4.2 Commit Integrity
 
-`integrity_hash` defines commit integrity.
+`integrity_hash`:
 
-Requirements:
-
-- integrity hash must be deterministic
-- integrity hash must validate the canonical commit envelope
-- hash failure indicates corruption or mismatch, not identity change
+- deterministic  
+- validates full envelope  
+- signals corruption if invalid  
 
 ---
 
 ## 4.3 Nested Integrity
 
-A commit payload may contain artifacts that have their own integrity models, including hashes defined by other Charter modules.
+Payloads may include additional integrity mechanisms.
 
-Examples:
+These:
 
-- runtime object hashes
-- export bundle hashes
-- embedded provenance hashes
-
-These nested integrity fields:
-
-- do not replace `commit_id`
-- do not replace `integrity_hash`
-- do not redefine commit identity
+- do not replace commit identity  
+- do not redefine CCS guarantees  
 
 ---
 
 # 5. Commit Envelope
 
-All commits share a common structural envelope.
+Minimum fields:
 
-Minimum required fields:
+- `commit_id`  
+- `commit_type`  
+- `commit_schema_version`  
+- `created_at`  
+- `integrity_hash`  
+- `payload`  
 
-- `commit_id`
-- `commit_type`
-- `commit_schema_version`
-- `created_at`
-- `integrity_hash`
-- `payload`
+Optional:
 
-Optional structural fields:
-
-- `references`
-
-Additional fields are defined by commit type.
+- `references`  
 
 ---
 
 ## 5.1 Envelope Principle
 
-The commit envelope is the structural boundary of CCS.
+The envelope provides:
 
-It exists to provide:
+- identity  
+- integrity  
+- structural neutrality  
 
-- identity
-- integrity
-- type declaration
-- minimal structural reference data
-- transport and storage neutrality
-
-The payload carries domain-specific meaning.
-
-All domain semantics must reside in the payload or in higher-layer interpretation.  
-The envelope must remain structurally minimal and semantically neutral.
+All semantics reside in payload or external systems.
 
 ---
 
-## 5.2 Canonical Integrity Scope
-
-The `integrity_hash` must cover the canonical commit envelope according to the commit hashing rules defined for CCS.
-
-Those rules must be:
-
-- deterministic
-- versioned
-- stable per schema version
-
-Canonical serialization rules must define:
-
-- field ordering
-- encoding format
-- null and optional field handling
-- normalization requirements for hashing
-
----
-
-## 5.3 Timestamp Neutrality
+## 5.2 Timestamp Neutrality
 
 `created_at` is informational only.
 
-Timestamps must not be used by CCS to infer:
+It must not imply:
 
-- ordering semantics
-- causality
-- supersession
-- authority
-- currentness
+- causality  
+- ordering semantics  
+- authority  
 
 ---
 
 # 6. Commit Types
 
-All semantics in CCS are carried through **commit types**.
-
-CCS defines structural rules for commit typing, not full behavioral meaning.
-
----
-
 ## 6.1 Core Commit Type Families
 
-CCS recognizes core structural commit families including:
+- Resolution Commit  
+- Identity Commit  
+- Signal Commit  
+- Request Commit  
+- Annotation Commit  
+- Import Commit  
 
-- Resolution Commit
-- Identity Commit
-- Signal Commit
-- Request Commit
-- Review Receipt Commit
-- Exploration Receipt Commit
-- Deliberate Commit
-- Import Commit
-- Annotation Commit
+### Receipts
+- Review Receipt Commit  
+- Deliberate Receipt Commit  
+- Reconciliation Receipt Commit  
+- Legitimacy Receipt Commit  
 
-Additional commit types may be introduced under the extension rules.
+### Exploratory / Pre-Legitimacy
+- Deliberate Commit  
+
+### Generic / Extension
+- Host Artifact Commit (generic, non-Charter-specific)  
 
 ---
 
 ## 6.2 Resolution Commit
 
-Represents an accepted decision artifact.
+Represents a decision artifact.
 
-Properties:
-
-- may act as a legitimacy-bearing artifact when produced under the Legitimacy Engine and Runtime rules
-- may be consumed by downstream systems as a decision anchor
-- does not create legitimacy by existing alone
-
-Resolution commits may also preserve explicit structural lineage to other resolutions through references such as `supersedes` and `derives_from`.
+- may carry legitimacy when produced via sessions  
+- may include structural references:
+  - `supersedes`  
+  - `derives_from`  
 
 ---
 
 ## 6.3 Identity Commit
 
-Represents a declared identity artifact.
+Represents identity declaration.
 
-Properties:
-
-- declarative
-- non-legitimizing by default
-- may be consumed by CIS for identity continuity and boundary definition
-
-CCS does not interpret identity meaning.
+- non-legitimizing  
+- consumed by CIS  
 
 ---
 
 ## 6.4 Signal Commit
 
-Represents a recorded observational signal.
+Represents observation.
 
-Properties:
-
-- descriptive
-- non-authoritative
-- may be consumed by CCare and CAS
-
-CCS does not interpret signal meaning.
+- non-authoritative  
+- consumed by CCare and CAS  
 
 ---
 
 ## 6.5 Request Commit
 
-Represents a non-coercive request artifact.
-
-Properties:
-
-- descriptive
-- non-authoritative
-- does not create obligation by existing alone
+Represents non-coercive request.
 
 ---
 
-## 6.6 Review Receipt Commit
+## 6.6 Annotation Commit
 
-Represents the closure record of a review process.
-
-Properties:
-
-- structural
-- non-legitimizing by default
-- may reference accepted, rejected, abandoned, or derived artifacts
+Provides context or explanation.
 
 ---
 
-## 6.7 Exploration Receipt Commit
+## 6.7 Import Commit
 
-Represents closure or freezing of exploratory work.
-
-Properties:
-
-- structural
-- non-legitimizing
-- preserves exploratory lineage without implying acceptance
+Preserves foreign artifacts.
 
 ---
 
 ## 6.8 Deliberate Commit
 
-Represents exploratory, drafting, or pre-legitimacy artifacts.
+Represents exploratory or investigative artifacts.
 
-Properties:
-
-- non-authoritative
-- non-legitimizing
-- preserves exploratory work without implying acceptance
+- non-legitimizing  
+- may represent Items or drafts  
 
 ---
 
-## 6.9 Import Commit
+## 6.9 Review Receipt Commit
 
-Represents the preservation of foreign artifacts or foreign commit-derived content.
+Represents closure of a review process.
 
-Properties:
-
-- preserves provenance
-- does not confer local legitimacy automatically
-- must not silently normalize foreign meaning
+- non-legitimizing  
+- captures evaluation outcomes  
 
 ---
 
-## 6.10 Annotation Commit
+## 6.10 Deliberate Receipt Commit
 
-Represents contextual, explanatory, or documentary material.
+Represents closure of a deliberate instance.
 
-Properties:
-
-- append-only
-- does not modify prior commits
-- may provide rationale, commentary, explanatory attachment, or structural context
-
-Annotations remain descriptive and non-authoritative.
+- non-legitimizing  
+- captures:
+  - item sets  
+  - applied items  
+  - settled items  
 
 ---
 
-## 6.11 Extension Principle
+## 6.11 Reconciliation Receipt Commit
 
-Future commit types must:
+Represents synchronization between:
 
-- extend the common envelope
-- declare schema version explicitly
-- preserve CCS invariants
-- avoid parallel artifact mechanisms outside CCS
+- Items (CDS)  
+- Resolutions (legitimacy layer)  
+
+Properties:
+
+- non-legitimizing  
+- records mapping:
+  - item ↔ resolution  
+- may reference `derived_from` relationships  
+
+> Reconciliation records alignment between thinking and decision without creating authority.
+
+---
+
+## 6.12 Legitimacy Receipt Commit
+
+Represents session closure.
+
+- **only receipt type that records legitimacy**  
+- captures:
+  - authority  
+  - scope  
+  - participant set  
+  - stances  
+  - outcome  
+
+---
+
+## 6.13 Host Artifact Commit
+
+Represents generic, non-Charter-specific data.
+
+- used for external systems  
+- prevents misuse of CCare or CDS commits  
+- still follows CCS invariants  
+
+---
+
+## 6.14 Extension Principle
+
+New commit types must:
+
+- preserve envelope structure  
+- declare schema version  
+- avoid bypassing CCS  
 
 ---
 
 # 7. Commit Type Schema Authority
 
-Each `commit_type` defines its own payload schema.
+Each commit type defines:
 
-The schema for a commit type must specify:
+- required fields  
+- optional fields  
+- canonical form  
 
-- required fields
-- optional fields
-- canonical form for integrity purposes
-- compatibility and versioning rules
-
-CCS is responsible for structural commit validity, not full domain semantics.
+CCS validates structure, not meaning.
 
 ---
 
 # 8. Commit Versioning
 
-CCS must support explicit schema versioning.
+Every commit declares `commit_schema_version`.
 
----
-
-## 8.1 Schema Version Requirement
-
-Every commit must declare `commit_schema_version`.
-
-This version identifies the structural schema of the commit envelope and payload for that commit type.
-
----
-
-## 8.2 Version Stability
-
-A schema version, once published, must be immutable.
-
-Changes to structure require:
-
-- a new schema version
-- explicit compatibility handling
-- no retroactive reinterpretation of prior commits
-
----
-
-## 8.3 Version Independence from Identity
-
-Schema changes must not mutate existing `commit_id` values.
-
-Identity remains stable even when schema families evolve.
+- immutable per version  
+- no retroactive reinterpretation  
 
 ---
 
 # 9. Structural References
 
-Commits may optionally declare typed references to other artifacts.
-
-These references are **structural**, not semantic, at the CCS layer.
-
----
-
 ## 9.1 Reference Block
 
-`references` is an optional list of structural reference entries.
+Each reference includes:
 
-Each reference entry must declare:
-
-- `ref_type`
-- `target_kind`
-- `target_id`
-
-Optional fields may include:
-
-- `required`
-- `metadata`
-
-CCS defines the structure of references, not their higher-layer interpretation.
+- `ref_type`  
+- `target_kind`  
+- `target_id`  
 
 ---
 
 ## 9.2 Target Kinds
 
-Recognized target kinds may include:
-
-- `commit`
-- `area`
-- `bundle`
-- `export`
-
-Additional target kinds may be introduced through schema extension.
+- `commit`  
+- `area`  
+- `bundle`  
+- `export`  
 
 ---
 
-## 9.3 Standard Structural Reference Families
+## 9.3 Structural Reference Families
 
-Recognized structural reference families may include:
+### Generic
+- `references`  
+- `annotates`  
 
-### Generic Structural References
-- `references`
-- `annotates`
+### Packaging
+- `contains`  
+- `preserves`  
+- `originates_from`  
+- `produced_by_review`  
 
-### Packaging / Preservation References
-- `contains`
-- `preserves`
-- `originates_from`
-- `produced_by_review`
+### Structural Lineage
+- `supersedes`  
+- `derives_from`  
 
-### Structural Lineage References
-- `supersedes`
-- `derives_from`
-
-### Boundary References
-- `references_area`
-
-These are standard structural labels only.
+### Boundary
+- `references_area`  
 
 ---
 
 ## 9.4 Derivation Reference
 
-`derives_from` is the canonical structural reference for **artifact derivation and recontextualization lineage**.
+`derives_from` defines lineage.
 
 Properties:
 
-- explicit
-- directional
-- non-destructive
-- may cross areas
-- may reference one or more source artifacts
+- explicit  
+- directional  
+- non-destructive  
+- cross-area allowed  
+- **cross-artifact-class allowed (e.g., item ↔ resolution)**  
 
-`derives_from` does not imply:
+It does not imply:
 
-- supersession
-- retirement
-- dependency
-- legitimacy
-- authority
-
-Such meanings belong to workflow context or higher layers.
+- authority  
+- correctness  
+- supersession  
 
 ---
 
-## 9.5 Reference Neutrality
+## 9.5 Relationship Admission Rule
 
-A structural reference does not imply:
-
-- legitimacy
-- authority
-- causality
-- dependency meaning
-- alignment
-- completeness
-
-Such meanings, if they exist, belong to payload semantics or higher layers.
+Structural relationships admitted via review must be encoded explicitly as references in resulting commits.
 
 ---
 
 ## 9.6 No Inference Rule
 
-If a reference is not explicitly declared, CCS must not infer it from:
+No relationships may be inferred from:
 
-- timestamps
-- area overlap
-- similar payloads
-- storage order
-- import source
-- relay sequence
+- timestamps  
+- storage order  
+- similarity  
 
 ---
 
 # 10. Commit Independence and Graph Shape
 
-Commits are independently valid artifacts.
-
-The commit graph is therefore:
-
-- optional
-- additive
-- explicit
-- non-authoritative at the CCS layer
-
-Disconnected commit sets are valid.
-
-CCS does not require a complete graph.
+- commits are independently valid  
+- graph is optional and explicit  
+- incomplete graphs are valid  
 
 CCS does not guarantee:
 
-- reachability
-- closure
-- relational completeness
+- reachability  
+- completeness  
 
 ---
 
-# 11. Relationship to Other Charter Modules
+# 11. Relationship to Other Modules
 
-CCS is a shared substrate used by multiple independent modules.
+## 11.1 Runtime Layer
 
----
+Runtime may orchestrate:
 
-## 11.1 Legitimacy Engine
-
-The Legitimacy Engine may produce legitimacy-bearing artifacts packaged as commits.
-
-The Legitimacy Engine defines legitimacy semantics. CCS only provides the artifact envelope.
-
----
-
-## 11.2 Runtime Layer
-
-The Runtime Layer may orchestrate commit creation, import, review, archival, derivation, recontextualization, and other workflows.
-
-The Runtime Layer does not redefine CCS structure.
+- creation  
+- review  
+- reconciliation  
+- projection (resolution ↔ item)  
+- import/export  
 
 ---
 
-## 11.3 Commit Store
+## 11.2 CSG
 
-The Commit Store persists commits, indexes them, archives them, and manages local lifecycle operations.
-
-The Commit Store does not define commit meaning.
+Constructs graph from references.
 
 ---
 
-## 11.4 Charter Care Substrate (CCare)
+## 11.3 CDS
 
-CCare may package check-ins, requests, silence records, and supportability artifacts inside commits.
-
-CCS does not interpret caregiving meaning.
+Produces exploratory artifacts and Items.
 
 ---
 
-## 11.5 Charter Identity Substrate (CIS)
+## 11.4 CAS
 
-CIS may package identity, scope, purpose, boundary, and lineage artifacts inside commits, and may consume derivation lineage indirectly through structural graph materialization.
-
-CCS does not interpret identity meaning.
+Computes alignment over structure and signals.
 
 ---
 
-## 11.6 Charter Structural Graph (CSG)
+## 11.5 CIS
 
-CSG may consume explicit structural references from commits to construct graph relationships, including supersession, derivation, and area-boundary structure.
-
-CCS does not construct graph meaning.
+Defines identity over structure.
 
 ---
 
-## 11.7 Charter Alignment System (CAS)
+## 11.6 CCare
 
-CAS consumes commits and related substrate outputs to compute derived alignment state.
-
-CCS does not compute alignment.
+Provides observational signals.
 
 ---
 
-## 11.8 Charter Guidance Layer (CGL)
+## 11.7 CSP
 
-CGL interprets commits, annotations, and derived state for descriptive explanation.
+May emit CCS-compatible commits.
 
-CCS does not interpret meaning.
+- does not require new commit types  
+- may shape signals prior to emission  
 
 ---
 
-## 11.9 Charter Relay System (CRS)
+## 11.8 CRS
 
-CRS transports commits as opaque artifacts.
-
-CCS does not define transport policy.
+Transports commits as opaque artifacts.
 
 ---
 
 # 12. Imports and Foreign Commits
 
-Commits originating outside a local system are considered **foreign** until accepted or interpreted by appropriate higher layers.
+Foreign commits:
 
-Properties:
-
-- preserved with original identity
-- preserved with original integrity where applicable
-- not legitimized automatically
-- not normalized silently
-
-Import handling is external to CCS.
+- remain non-legitimate  
+- retain identity  
+- require explicit review  
 
 ---
 
 # 13. No Canonical State Rule
 
-CCS does not define canonical, active, or current state.
+CCS does not define:
 
-Any notion of:
-
-- current authority
-- active scope
-- latest valid identity
-- current alignment
-- active area head
-
-belongs to other modules.
-
-CCS preserves artifacts only.
+- current truth  
+- active state  
+- authority  
 
 ---
 
 # 14. Invariants
 
-The following must always hold:
-
-- commits are immutable
-- commits are append-only as artifacts
-- commit identity is stable
-- commit integrity is deterministic and verifiable
-- identity and integrity are distinct
-- all references are explicit
-- no references are inferred
-- commits do not interpret themselves
-- commits do not create authority implicitly
-- commits do not define canonical state
-- commit history is never rewritten
-- disconnected commit graphs are valid
-- relational completeness is not assumed
-
-Violation of these invariants invalidates CCS.
+- commits are immutable  
+- append-only  
+- identity is stable  
+- integrity is verifiable  
+- references are explicit  
+- no inference  
+- no authority implied  
+- no canonical state  
+- history is never rewritten  
 
 ---
 
@@ -701,18 +554,11 @@ Violation of these invariants invalidates CCS.
 
 CCS does not:
 
-- store commits
-- orchestrate workflows
-- create legitimacy
-- compute alignment
-- define identity truth
-- define caregiving truth
-- interpret meaning
-- transport commits
-- guarantee graph completeness
-- infer missing references
-
-CCS defines the artifact envelope, not the artifact lifecycle or its interpretation.
+- create legitimacy  
+- compute alignment  
+- interpret meaning  
+- enforce workflows  
+- define identity truth  
 
 ---
 
@@ -720,19 +566,15 @@ CCS defines the artifact envelope, not the artifact lifecycle or its interpretat
 
 A commit is:
 
-- a durable envelope
-- a recorded artifact
-- a stable identity
-- a verifiable structure
-- an optional node in a larger explicit graph
+- a durable envelope  
+- a recorded artifact  
+- a structural unit  
 
-A commit is not:
+It is not:
 
-- a decision engine
-- a legitimacy engine
-- a current-state store
-- a semantic graph engine
-- a source of authority by itself
+- authority  
+- decision logic  
+- current state  
 
 ---
 
@@ -740,10 +582,11 @@ A commit is not:
 
 The Charter Commit System exists so that:
 
-- artifacts can be recorded durably
-- identity remains stable
-- integrity remains verifiable
-- meaning may evolve without rewriting history
-- independent systems may exchange artifacts without collapsing semantics
+- artifacts can be recorded durably  
+- identity remains stable  
+- integrity remains verifiable  
+- structure can evolve without rewriting history  
+- multiple systems can interoperate without collapsing meaning  
 
-CCS preserves recorded artifacts without deciding what they mean.
+CCS preserves recorded artifacts  
+without deciding what they mean.

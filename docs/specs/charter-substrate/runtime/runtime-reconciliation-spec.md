@@ -1,4 +1,4 @@
-# Charter Runtime — Review Layer & Reconciliation Specification
+# Charter Runtime — Review Layer & Reconciliation Specification (Revised)
 
 Status: FOUNDATIONAL  
 Applies to: Runtime Layer, CLI Orchestration, Charter Commit System (CCS), Commit Store, Discoverability & Federation  
@@ -8,11 +8,12 @@ Does NOT define: legitimacy semantics, alignment computation, transport protocol
 
 # 1. Purpose
 
-This document defines the **Review Layer** as the set of workflows responsible for:
+This document defines the **Review Layer**, implemented as a unified **Reconciliation Review model**, responsible for:
 
-- integrating foreign or pre-legitimacy artifacts into legitimacy  
-- promoting deliberate outputs into legitimacy  
-- synchronizing deliberate state with legitimacy  
+- admitting candidate artifacts into legitimacy  
+- promoting deliberate outputs into durable structure  
+- synchronizing investigative state (CDS) with legitimacy  
+- projecting legitimacy into investigation for simulation  
 - admitting structural relationships into the graph  
 - preserving legitimacy boundaries while enabling controlled evolution  
 
@@ -27,88 +28,150 @@ The Review Layer exists to ensure that:
 
 # 2. Core Principle
 
-> Review is a legitimacy boundary and synchronization mechanism.
+> Reconciliation is the only bridge between investigation and legitimacy.
 
 The Review Layer allows systems to:
 
 - inspect candidate material  
 - model relationships provisionally  
 - prepare integration into legitimacy  
-- reconcile investigation with existing decisions  
+- project legitimacy into investigation  
+- maintain alignment between thinking and decisions  
 
 But it does not:
 
 - create legitimacy by itself  
-- evaluate authority  
-- mutate existing decisions directly  
+- evaluate authority independently  
+- mutate existing decisions  
 - bypass the engine  
 
 ---
 
-# 3. Review Types
+# 3. Reconciliation Review Model
 
-The Review Layer defines two primary workflows:
+The Review Layer defines a single unified workflow:
 
----
+→ **Reconciliation Review**
 
-## 3.1 Foreign Integration Review
-
-> “Bring candidate structure into legitimacy.”
-
-This is the evolution of Baseline Review.
-
-It is responsible for:
-
-- integrating foreign artifacts (federation/import)  
-- promoting deliberate outputs (CDS)  
-- admitting candidate structural relationships  
-- consolidating prior baselines  
-
-Direction:
-
-→ **toward legitimacy**
+Reconciliation Review operates in multiple modes:
 
 ---
 
-## 3.2 Reconciliation Review
+## 3.1 Forward Reconciliation (Toward Legitimacy)
 
-> “Align investigation with legitimacy.”
+> “Promote candidate structure into legitimacy.”
 
-This is a **non-legitimizing synchronization workflow**.
+Inputs:
 
-It is responsible for:
+- CDS LOCKED Items  
+- foreign artifacts (via discoverability/federation)  
+- imported bundles  
+- candidate structural relationships  
 
-- projecting legitimate structure into CDS  
-- updating CDS Items based on legitimacy changes  
-- maintaining alignment between investigation and decisions  
+Process:
 
-Direction:
+→ evaluation  
+→ acceptance/rejection  
+→ session execution  
+→ legitimacy receipt  
 
-↔ **bidirectional context synchronization**
+Result:
 
-Reconciliation Review does not create legitimacy.
+- new or updated **resolution commits (CCS)**  
+- admitted structural relationships (CSG)  
 
 ---
 
-# 4. Shared Review Properties
+## 3.2 Reverse Reconciliation (Legitimacy → CDS)
 
-All review workflows share:
+> “Project legitimacy into investigation for simulation.”
+
+Process:
+
+- select existing resolutions  
+- project them into CDS as Items  
+
+For each resolution:
+
+- create a **resolution-derived Item**  
+- assign `derived_from = resolution_id`  
+
+Properties:
+
+- Items remain non-legitimate  
+- source resolutions remain unchanged  
+- lineage is preserved  
+
+---
+
+## 3.3 Context Synchronization
+
+> “Keep investigation aligned with evolving legitimacy.”
+
+Reconciliation may:
+
+- evaluate CDS Items against current legitimacy  
+- update Item states  
+
+Examples:
+
+- APPLIED remains valid  
+- APPLIED becomes STALE  
+- unresolved Items become satisfied  
+- Items become SETTLED or DISCARDED  
+
+---
+
+## 3.4 Asymmetry Principle
+
+Reconciliation modes are not symmetric:
+
+- forward reconciliation produces **new durable artifacts (CCS)**  
+- reverse reconciliation produces **non-durable investigative structure (CDS)**  
+
+---
+
+# 4. Runtime Local Access Model
+
+CDS operates within the Runtime and has direct access to:
+
+- the local Commit Store  
+- structural projections (CSG)  
+- local resolution artifacts  
+
+Reconciliation Review operates directly on local state.
+
+### Principle
+
+> CCS is required for durability and interoperability, not for internal Runtime execution.
+
+### Implications
+
+- legitimacy → CDS projection does not require CCS transport  
+- CDS → legitimacy requires CCS when producing new resolution commits  
+- reconciliation reads from local structure and artifacts directly  
+
+---
+
+# 5. Shared Review Properties
+
+All reconciliation operations share:
 
 - isolation  
 - explicit workflow states  
 - auditability  
-- non-legitimizing behavior until session execution  
+- non-legitimizing behavior until session execution (forward mode)  
 - reversible operations until commitment  
 
 ---
 
-# 5. Isolated Review Store
+# 6. Isolated Review Store
 
-## 5.1 Isolation Requirement
+## 6.1 Isolation Requirement
 
-All reviews operate on a **dedicated, isolated review store**.
+Reconciliation operates on a **dedicated, isolated review workspace**.
 
-This store is:
+This workspace is:
 
 - read-only with respect to source artifacts  
 - non-legitimizing  
@@ -116,7 +179,7 @@ This store is:
 
 ---
 
-## 5.2 Purpose of Isolation
+## 6.2 Purpose of Isolation
 
 Isolation ensures:
 
@@ -126,106 +189,66 @@ Isolation ensures:
 
 ---
 
-# 6. Review Items
+# 7. Review Items
 
-## 6.1 Definition
+## 7.1 Definition
 
-Review workflows operate on **review items**.
+Reconciliation operates on **review items**.
 
 A review item may represent:
 
 - a proposal  
 - a foreign resolution  
-- a deliberate LOCKED Item  
-- a resolution-derived Item (from reconciliation)  
+- a CDS LOCKED Item  
+- a resolution-derived Item  
 - an imported commit  
 - a structural element of a graph  
 - a candidate relationship  
 
 ---
 
-## 6.2 Properties
+## 7.2 Properties
 
 All review items are:
 
 - non-legitimate  
 - mutable within the review workspace  
 - auditable  
-- reversible until committed through a session (if applicable)  
+- reversible until session commitment (forward mode)  
 
 ---
 
-## 6.3 States
-
-Review items may exist in:
+## 7.3 States
 
 - UNDER_REVIEW  
 - ACCEPTED  
 - REJECTED  
 - ABANDONED  
 
-These are **workflow states**, not legitimacy states.
+These are workflow states, not legitimacy states.
 
 ---
 
-# 7. Foreign Integration Review
+# 8. Structural Admission
 
-## 7.1 Inputs and Sources
+## 8.1 Relationship Admission
 
-May be created from:
-
-- foreign Areas (federation)  
-- imported bundles  
-- deliberate LOCKED Items  
-- candidate relationships  
-- prior baselines  
-
----
-
-## 7.2 Evaluation Phase
-
-During review:
-
-- items may be inspected, grouped, annotated  
-- candidate relationships may be explored and refined  
-- provisional structure may be created  
-
----
-
-## 7.3 Provisional References
-
-- exist only within review  
-- must not escape without successful session  
-
----
-
-## 7.4 Acceptance and Integration
-
-Accepted items must pass through:
-
-→ Session creation  
-→ Authority evaluation  
-→ Legitimacy receipt emission  
-
-Only then do they become:
-
-- resolutions  
-- structural relationships  
-
----
-
-## 7.5 Relationship Admission
-
-Review may accept:
+Reconciliation may admit:
 
 - resolution ↔ resolution references  
 - derivation relationships  
 - cross-area relationships  
-- investigation-derived structure  
+- investigation-surfaced structure  
+
+All relationships must be:
+
+- explicit  
+- reviewed  
+- admitted through forward reconciliation  
 
 ---
 
-## 7.6 Derivation Recording
+## 8.2 Derivation Recording
 
 Resulting resolution commits SHOULD include:
 
@@ -239,205 +262,116 @@ These:
 
 ---
 
-## 7.7 Reconciliation Linkage
+## 8.3 Node-Class Boundary
 
-Review must preserve:
+Reconciliation must preserve node-class distinctions:
 
-- traceability from Items → sessions → resolutions  
+- **resolution nodes** (legitimate)  
+- **item nodes** (investigative)  
 
-Runtime uses this to perform reconciliation.
+Mixed structures may exist in CDS or projections, but:
 
----
-
-# 8. Reconciliation Review
-
-## 8.1 Purpose
-
-Reconciliation Review synchronizes CDS with legitimacy without creating legitimacy.
+- legitimacy graph (CSG resolution projection) must remain clean  
+- item-derived structure must not become legitimate without review  
 
 ---
 
-## 8.2 Reverse Reconciliation (Legitimacy → CDS)
+# 9. CDS Interaction
 
-Reconciliation Review may:
+CDS:
 
-- select resolutions from legitimacy  
-- project them into CDS as Items  
+- produces LOCKED Items for forward reconciliation  
+- consumes resolution-derived Items from reverse reconciliation  
+- remains active during all reconciliation processes  
 
-For each resolution:
+Reconciliation enables CDS to:
 
-- create a **resolution-derived Item**  
-- assign `derived_from = resolution_id`  
-
----
-
-## 8.3 Properties of Resolution-Derived Items
-
-- remain Item nodes (not resolutions)  
-- carry lineage to source resolution  
-- may evolve independently within CDS  
-- do not modify the source resolution  
+- simulate structural changes  
+- explore alternative structures  
+- surface candidate relationships  
 
 ---
 
-## 8.4 Structural Preservation
+# 10. CSP Interaction (Optional)
 
-Reconciliation may preserve:
+If CSP is present:
 
-- structural context (references, derivation, supersession)  
+- signals may be shaped before becoming durable artifacts  
+- reconciliation operates only on **durable CCS artifacts**  
 
-But:
-
-- this context is investigative  
-- it does not become legitimate structure automatically  
+CSP does not alter reconciliation semantics.
 
 ---
 
-## 8.5 Investigative Evolution
-
-Within CDS:
-
-- resolution-derived Items may be:
-  - split  
-  - merged  
-  - extended  
-  - reorganized  
-
-This produces:
-
-- item → item structural relationships  
-
-These remain:
-
-- non-legitimate  
-- confined to CDS  
-
----
-
-## 8.6 Forward Reconciliation (CDS Context Update)
-
-Reconciliation Review may also:
-
-- evaluate existing Items against current legitimacy  
-- update Item states  
-
-Examples:
-
-- APPLIED remains valid  
-- APPLIED becomes STALE  
-- unresolved Items become satisfied  
-- Items become SETTLED or DISCARDED  
-
----
-
-## 8.7 Non-Legitimizing Guarantee
-
-Reconciliation Review must not:
-
-- create resolutions  
-- modify resolutions  
-- create structural graph entries  
-
-It only affects CDS state.
-
----
-
-## 8.8 Reconciliation Receipts
-
-Reconciliation Review SHOULD emit a **Reconciliation Receipt**.
-
-This may include:
-
-- source resolution_ids  
-- created item_ids  
-- updated item states  
-- timestamp  
-- annotations  
-
----
-
-# 9. Relationship to Deliberate (CDS)
-
-- CDS produces LOCKED Items for integration  
-- CDS may consume resolution-derived Items via reconciliation  
-- CDS remains active during all review processes  
-
-Deliberate must not be:
-
-- implicitly closed  
-- implicitly modified by review  
-
----
-
-# 10. Relationship to Legitimacy
+# 11. Relationship to Legitimacy
 
 - Only sessions create legitimacy  
-- Review prepares inputs  
-- Reconciliation aligns context  
+- Reconciliation prepares and aligns inputs  
+- No legitimacy is created outside session execution  
 
 ---
 
-# 11. Relationship to Federation
+# 12. Relationship to Federation
 
-- foreign artifacts enter through Foreign Integration Review  
-- reconciliation may operate after federation intake  
-- no federation bypasses review  
+- foreign artifacts enter via discoverability  
+- reconciliation evaluates and integrates them  
+- no federation bypasses reconciliation  
 
 ---
 
-# 12. Receipts and Audit
+# 13. Receipts and Audit
 
-## 12.1 Review Receipt
+## 13.1 Review Receipt (Forward)
 
-Foreign Integration Review emits:
+Forward reconciliation emits:
 
 - Review Receipt  
 
 ---
 
-## 12.2 Reconciliation Receipt
+## 13.2 Reconciliation Receipt (Reverse / Sync)
 
-Reconciliation Review emits:
+Reverse and synchronization modes may emit:
 
 - Reconciliation Receipt  
 
 ---
 
-## 12.3 Audit Guarantees
+## 13.3 Audit Guarantees
 
 System must preserve:
 
-- full review lineage  
 - item → review → session → resolution traceability  
 - resolution → reconciliation → item traceability  
-- relationship admission lineage  
+- structural relationship admission lineage  
 
 ---
 
-# 13. CLI Orchestration Policies
+# 14. CLI Orchestration Policies
 
-- one active review per Area (recommended)  
-- reviews may pause sessions  
-- reconciliation may run independently  
+- one active reconciliation per Area (recommended)  
+- reconciliation may pause sessions  
+- reverse reconciliation may run independently  
 
 ---
 
-# 14. Invariants
+# 15. Invariants
 
-- Review does not create legitimacy  
-- Reconciliation does not create legitimacy  
-- All integration passes through sessions  
+- Reconciliation does not create legitimacy by itself  
+- Only sessions create legitimacy  
+- All integration passes through forward reconciliation  
 - All review is isolated  
-- Structural relationships must be explicitly accepted  
+- Structural relationships must be explicitly admitted  
 - Node-class boundaries must be preserved  
 - Derivation links must be explicit  
+- CCS is required only for durable artifact creation  
 - History must never be rewritten  
 
 ---
 
-# 15. Mental Model
+# 16. Mental Model
 
-The Review Layer means:
+Reconciliation means:
 
 > “We decide what becomes real,  
 > and we keep our understanding aligned with what is real.”
@@ -445,7 +379,7 @@ The Review Layer means:
 It allows systems to:
 
 - admit structure safely  
-- explore structure safely  
+- simulate structure safely  
 - synchronize investigation with decisions  
 
 without ever:
@@ -456,21 +390,22 @@ without ever:
 
 ---
 
-# 16. Final Principle
+# 17. Final Principle
 
-The Review Layer creates **friction and symmetry by design**.
+The Review Layer creates **friction and asymmetry by design**.
 
 That ensures:
 
 - no silent trust  
 - no accidental legitimacy  
-- no divergence between thinking and decision  
+- no confusion between thinking and decision  
 
 Everything must be:
 
-- seen  
+- observed  
+- investigated  
 - evaluated  
 - decided  
-- and, when needed, reconciled  
+- and reconciled  
 
 before it becomes — or remains — part of the system.

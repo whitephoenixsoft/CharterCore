@@ -1,4 +1,4 @@
-# Charter Alignment System — Structural Detection Model
+# Charter Alignment System — Structural Detection Model (v4)
 
 Status: FOUNDATIONAL  
 Applies to: Charter Alignment System (CAS), Charter Alignment Engine (CAE)  
@@ -6,10 +6,11 @@ Depends On:
 - Structural Visibility & Relational Integrity Specification  
 - Cross-Area Discoverability Specification  
 - Charter Commit System (CCS)  
-- Charter Lineage Substrate (CLL)  
+- Charter Structural Graph (CSG)  
 - Charter Care Substrate (CCare)  
+- Optional: Charter Identity Substrate (CIS)  
 
-Does NOT define: legitimacy, structural correctness (CLL), workflow orchestration, or guidance interpretation  
+Does NOT define: legitimacy, structural correctness, workflow orchestration, or guidance interpretation  
 
 ---
 
@@ -20,12 +21,14 @@ This document defines the **detection capabilities of the Charter Alignment Syst
 CAS exists to:
 
 - derive alignment-related patterns from structure and signals  
-- summarize system state using the semantic lattice  
+- summarize system state using the **semantic lattice**  
 - expose categorized, queryable views of alignment dynamics  
-- surface structural-observational relationships without interpretation  
+- surface structural–observational relationships without interpretation  
 
 CAS does not determine truth, correctness, or action.  
-It describes **what is observable from declared structure and volunteered signals**.
+It describes:
+
+> **what is observable from declared structure (legitimate or investigative) and signals**
 
 ---
 
@@ -52,8 +55,8 @@ All CAS outputs must be:
 - deterministic  
 - reproducible from inputs  
 - derivable from:
-  - commit artifacts  
-  - lineage graph (CLL)  
+  - commit artifacts (CCS)  
+  - structural graph (CSG)  
   - signals (CCare)  
 
 The Alignment State Store is:
@@ -81,20 +84,20 @@ CAS must not:
 
 CAS:
 
-- consumes structure from CLL  
-- assumes structural correctness  
+- consumes declared structure from CSG  
+- operates over both complete and incomplete graphs  
 
 CAS must not:
 
-- validate DAG integrity  
-- enforce lineage rules  
-- correct structural errors  
+- validate graph correctness  
+- enforce structural rules  
+- repair missing relationships  
 
 ---
 
 ## 2.5 Visibility-Bound
 
-> CAS can only operate on visible and declared structure.
+> CAS operates only on visible, declared structure.
 
 CAS cannot:
 
@@ -108,79 +111,117 @@ It may only describe:
 
 ---
 
+## 2.6 Projection-Aware
+
+> CAS operates over explicit structural projections.
+
+CAS may analyze:
+
+- resolution-only projections  
+- item-only projections  
+- mixed projections  
+
+Projection selection affects:
+
+- propagation  
+- aggregation  
+- detection outcomes  
+
+CAS must not:
+
+- redefine structure across projections  
+
+---
+
 # 3. Inputs
 
 CAS operates on the following inputs:
 
 ---
 
-## 3.1 Structural Input (CLL)
+## 3.1 Structural Input (CSG)
 
-- global DAG of identities, areas, and resolutions  
-- supersession relationships  
-- scope and lineage structure  
+CAS consumes structural projections containing:
 
-This is the **structural backbone**.
+- resolution nodes (legitimate structure)  
+- item nodes (investigative structure)  
+- structural relationships:
+  - reference  
+  - derivation (`derived_from`)  
+  - supersession (resolution-only)  
+
+This is the **structural field** over which CAS operates.
 
 ---
 
 ## 3.2 Observational Input (CCare)
 
-- check-ins  
-- signals  
-- silence patterns  
-- supportability indicators  
+Signals include:
 
-These represent **volunteered or observed human signals**.
+- semantic states  
+- confidence  
+- timestamps  
+- silence patterns  
+
+These represent **observed conditions**, not authority.
 
 ---
 
-## 3.3 Commit Artifacts (CCS / Commit Store)
+## 3.3 Commit Artifacts (CCS)
 
-- resolution commits  
+Includes:
+
+- resolutions  
+- items (when materialized)  
 - receipts  
 - annotations  
-- imported artifacts  
 
 Used for:
 
 - reconstruction  
-- historical context  
+- lineage context  
+- auditability  
 
 ---
 
-## 3.4 Runtime-Derived Active Structure
+## 3.4 Structural Scope Input (Optional — CIS)
 
-- active area relationship graph  
-- derived from reviewed, active resolutions  
+CAS may operate over identity-defined scopes.
 
-Used for:
+These scopes:
 
-- current topology  
-- local and federated views  
+- define bounded regions of the structural graph  
+- may overlap  
+- are derived from CIS over CSG  
+
+CAS may compute:
+
+- identity-scoped alignment  
+- boundary pressure  
+- overlap tension  
+- cross-identity divergence  
 
 ---
 
-## 3.5 Provisional / Review Context (Optional)
+## 3.5 Bounded Contexts (Optional)
 
-CAS MAY include:
+CAS may operate over:
 
-- provisional graphs  
-- baseline review imports  
-- federation review contexts  
+- CDS (investigative contexts)  
+- review contexts (provisional structure)  
 
-These are:
+These contexts are:
 
 - visible  
 - analyzable  
-- not authoritative  
+- non-authoritative  
 
 ---
 
 ## 3.6 Alignment State Store
 
 - derived alignment states  
-- cached semantic lattice outputs  
+- cached semantic outputs  
 - query-optimized structures  
 
 Must remain:
@@ -190,19 +231,72 @@ Must remain:
 
 ---
 
-# 4. Detection Domains
+# 4. Computation Model
 
-CAS detects patterns across five primary domains.
+CAS operates in layered computation:
 
 ---
 
-## 4.1 Alignment Posture Detection
+## 4.1 Numeric Layer
+
+Computes raw metrics such as:
+
+- drift  
+- variance  
+- signal density  
+- recency  
+
+This layer is:
+
+- purely mathematical  
+- node-level  
+- projection-aware  
+
+---
+
+## 4.2 Semantic Lattice
+
+Maps numeric outputs into **human-readable states**.
+
+Examples:
+
+- aligned  
+- misaligned  
+- unstable  
+- reduced_capacity  
+- recovering  
+
+The semantic lattice:
+
+- compresses mathematical state  
+- preserves interpretability  
+- does not introduce meaning beyond classification  
+
+---
+
+## 4.3 View Layer
+
+Organizes semantic outputs into:
+
+- queryable perspectives  
+- structural lenses  
+- domain-specific interpretations  
+
+---
+
+# 5. Detection Domains
+
+CAS detects patterns across multiple domains:
+
+---
+
+## 5.1 Alignment Posture Detection
 
 Derived from:
 
-- CCare signals  
-- lineage structure  
-- resolution context  
+- signals  
+- structure  
+- propagation  
 
 Detects:
 
@@ -214,11 +308,9 @@ Detects:
 
 ---
 
-## 4.2 Volatility Detection
+## 5.2 Volatility Detection
 
-Describes temporal behavior of alignment states.
-
-Examples:
+Describes temporal dynamics:
 
 - stable  
 - unstable  
@@ -226,189 +318,153 @@ Examples:
 - decreasing  
 - oscillating  
 
-Volatility is always paired with a semantic state.
-
 ---
 
-## 4.3 Propagation Detection
+## 5.3 Propagation Detection
 
-Detects how decisions and signals propagate across structure.
-
-Examples:
+Detects how influence moves across structure:
 
 - limited propagation  
 - delayed propagation  
 - asymmetric propagation  
-- localized containment  
+- containment  
+
+Supports:
+
+- mixed-node propagation  
+- lineage-aware propagation  
 
 ---
 
-## 4.4 Observational Tension Detection
+## 5.4 Observational Tension Detection
 
 Derived from:
 
-- conflicting or dense signals  
+- signal density  
+- conflicting states  
 
 Detects:
 
 - tension zones  
 - instability clusters  
-- signal inconsistency  
 
 ---
 
-## 4.5 Structural–Observational Mismatch Detection
-
-Primary high-value domain.
+## 5.5 Structural–Observational Mismatch Detection
 
 Detects:
 
-> divergence between declared structure and observed signals.
+> divergence between structure and signals
 
 Examples:
 
 - stable structure with unstable signals  
-- disconnected areas with correlated signals  
-- highly connected areas with no propagation  
+- disconnected nodes with correlated signals  
+- highly connected structure with no propagation  
 
-This may indicate:
+Indicates:
 
-- incomplete structural representation  
+- missing structure  
 - hidden dependencies  
 - coordination gaps  
 
-CAS must describe these without asserting cause.
+---
+
+## 5.6 Simulation Detection (NEW)
+
+CAS may analyze **investigative (item-based) structure**.
+
+Detects:
+
+- simulated instability  
+- hypothetical cascades  
+- pre-legitimacy tension  
+
+These outputs are:
+
+- non-authoritative  
+- exploratory  
 
 ---
 
-# 5. Semantic Output Model
+## 5.7 Reconciliation Divergence Detection (NEW)
 
-CAS outputs are composed of three layers:
+Detects divergence between:
+
+- legitimate structure (resolutions)  
+- investigative structure (items)  
+
+Examples:
+
+- simulated changes not reflected in legitimacy  
+- outdated investigative assumptions  
 
 ---
 
-## 5.1 Semantic State (Lattice)
+## 5.8 Identity-Aware Detection (Optional)
 
-Represents the **qualitative condition**.
+When CIS is present, CAS may detect:
+
+- boundary pressure  
+- overlap tension  
+- cross-identity misalignment  
+- identity-scoped instability  
+
+---
+
+# 6. Semantic Output Model
+
+CAS outputs consist of:
+
+---
+
+## 6.1 Semantic State
 
 Examples:
 
 - aligned  
 - misaligned  
-- uncertain  
 - reduced_capacity  
-- recovery  
-- overloaded  
 
 ---
 
-## 5.2 Volatility Descriptor
-
-Represents **temporal dynamics**.
+## 6.2 Volatility Descriptor
 
 Examples:
 
 - stable  
-- unstable  
 - increasing  
-- decreasing  
 - oscillating  
 
 ---
 
-## 5.3 Category / View Classification
-
-Represents **interpretation context**.
+## 6.3 Category / View
 
 Examples:
 
-- alignment posture  
-- propagation behavior  
+- posture  
+- propagation  
 - tension  
 - mismatch  
-- stability  
+- simulation  
 
 ---
 
-## 5.4 Combined Output Example
+## 6.4 Example Output
 
-```
 State: reduced_capacity  
 Volatility: increasing  
 Category: propagation_constraint  
-```
-
-CAS may optionally include:
-
-- supporting metrics  
-- signal density indicators  
-- structural context references  
-
----
-
-# 6. View Model
-
-CAS exposes **queryable views**, not raw computations.
-
-Views are grouped into families:
-
----
-
-## 6.1 Local Posture Views
-
-- resolution-level  
-- session-level  
-- local area state  
-
----
-
-## 6.2 Area / Identity Views
-
-- aggregated alignment state  
-- volatility trends  
-- structural influence  
-
----
-
-## 6.3 Propagation Views
-
-- how changes move across graph  
-- propagation gaps  
-- propagation latency  
-
----
-
-## 6.4 Tension & Signal Views
-
-- signal density  
-- conflict zones  
-- instability regions  
-
----
-
-## 6.5 Mismatch Views
-
-- structure vs signal divergence  
-- unexplained coupling  
-- alignment inconsistencies  
-
----
-
-## 6.6 Global Landscape Views
-
-- system-wide alignment posture  
-- major clusters and boundaries  
-- overall system dynamics  
 
 ---
 
 # 7. Detection Semantics
 
-CAS outputs must be interpreted as:
+CAS outputs are:
 
-- **descriptions of observable patterns**  
-- not explanations of cause  
-- not prescriptions  
+- descriptive  
+- non-causal  
+- non-prescriptive  
 
 Example:
 
@@ -416,12 +472,10 @@ Example:
 
 Means:
 
-- signals correlate across areas  
-- no structural relationship exists  
+- correlation exists  
+- no structural edge exists  
 
-Does NOT mean:
-
-- a dependency definitively exists  
+It does not assert causation.
 
 ---
 
@@ -431,63 +485,40 @@ CAS cannot detect:
 
 - undeclared relationships as truth  
 - intent or motivation  
-- correctness of decisions  
+- correctness  
 - legitimacy  
 - authority  
 
-Absence of detection does not imply absence of reality.
+Absence of detection ≠ absence of reality.
 
 ---
 
 # 9. Failure Interpretation
 
-When CAS appears incorrect:
-
----
-
 ## 9.1 False Stability
-
-- structure incomplete  
-- missing relationships  
-
-Result:
-
-- CAS reports alignment  
-- real-world tension exists  
-
----
+Missing structure suppresses propagation.
 
 ## 9.2 Unexplained Tension
-
-- signals conflict  
-- structure insufficient  
-
-Result:
-
-- CAS flags instability without clear structure  
-
----
+Signals conflict without structural explanation.
 
 ## 9.3 Sudden Instability
+New structure reveals hidden dependencies.
 
-- new structure introduced  
-- previously hidden dependencies revealed  
-
-Result:
-
-- apparent “shock” in alignment  
+## 9.4 Simulation Drift
+Investigative structure diverges from legitimacy.
 
 ---
 
 # 10. Invariants
 
-- CAS is read-only and non-mutating  
+- CAS is read-only  
 - CAS is deterministic and rebuildable  
-- CAS is query-based and non-interruptive  
-- CAS does not validate structure (CLL responsibility)  
+- CAS is projection-aware  
+- CAS does not validate structure  
 - CAS does not infer undeclared relationships  
-- CAS outputs are descriptive, not normative  
-- Alignment State Store is derived, not authoritative  
+- CAS outputs are descriptive  
+- node-class distinctions must be preserved  
+- Alignment State Store is non-authoritative  
 
 ---
 
@@ -495,14 +526,19 @@ Result:
 
 CAS is:
 
-- a field analysis system  
-- operating over declared structure and volunteered signals  
+> a field analysis system over structure and signals
 
-It is:
+It operates over:
 
-- a mirror of observable dynamics  
-- not a judge of correctness  
-- not a source of authority  
+- structure (CSG)  
+- observation (CCare)  
+- optional scope (CIS)  
+
+Through:
+
+- math  
+- semantic lattice  
+- views  
 
 ---
 
@@ -511,10 +547,21 @@ It is:
 CAS reveals how the system behaves  
 based on what has been made visible.
 
-It cannot reveal what is hidden.  
-It does not decide what is right.
+It operates over:
 
-It provides a structured way to ask:
+- decisions  
+- investigations  
+- simulations  
 
-> “Given what we have declared and observed,  
-what does the system appear to be doing?”
+using:
+
+- mathematics  
+- semantic compression  
+- structural awareness  
+
+It does not decide what is true.
+
+It makes visible:
+
+> what the system appears to be doing  
+given what has been declared and observed.
