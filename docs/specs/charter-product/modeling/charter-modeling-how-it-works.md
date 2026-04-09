@@ -4,17 +4,26 @@
 
 Charter is a system for understanding and evolving decisions over time.
 
+You can think of it as a **structured journal for a system**—whether that system is:
+
+- a team  
+- a product  
+- a process  
+- or even yourself  
+
 It helps you:
 
 - observe what’s happening  
 - investigate why it’s happening  
-- make decisions  
+- decide what becomes real  
 - track how those decisions perform  
 - continuously improve  
 
-All without losing history or context.
+All without losing history, context, or perspective.
 
-At its core, Charter turns complex systems into something you can reason about clearly.
+Charter does not judge or prescribe.
+
+It helps you see clearly.
 
 ---
 
@@ -23,6 +32,11 @@ At its core, Charter turns complex systems into something you can reason about c
 Everything in Charter follows a simple loop:
 
 **Observe → Investigate → Decide → Monitor → Repeat**
+
+This loop is continuous.
+
+Nothing is thrown away.  
+Everything builds on what came before.
 
 ---
 
@@ -39,7 +53,9 @@ You collect signals from the real world:
 
 These signals are not interpreted automatically.
 
-They are simply recorded as **what is happening**.
+They are simply recorded as:
+
+> what is happening
 
 ---
 
@@ -63,7 +79,7 @@ A deliberate is a space where:
 Nothing here is final.  
 Nothing here creates authority.
 
-It’s a place to think.
+It’s a place to think—freely and safely.
 
 ---
 
@@ -95,16 +111,16 @@ They are:
 
 Only after this process do they become **decisions**.
 
-This step is explicit.
+This step is always explicit.
 
-Ideas do not automatically become decisions.  
-They are reviewed, evaluated, and intentionally accepted.
+Ideas do not become decisions automatically.  
+Nothing becomes “real” by accident.
 
-This ensures that:
+This ensures:
 
-- decisions are trustworthy  
+- decisions are intentional  
 - history is preserved  
-- nothing becomes “real” by accident  
+- trust is maintained  
 
 These decisions are:
 
@@ -118,8 +134,8 @@ These decisions are:
 
 Charter keeps thinking and decisions separate—but connected.
 
-- Ideas can be promoted into decisions  
-- Existing decisions can be brought back into investigation  
+- Ideas can become decisions  
+- Decisions can return to investigation  
 - You can compare what you thought with what actually happened  
 
 This allows you to:
@@ -136,7 +152,10 @@ Once decisions exist, they don’t just sit there.
 
 They are continuously observed through new signals.
 
-Over time, Charter can reveal patterns across both structure and signals.
+Over time, Charter reveals patterns across both:
+
+- structure (what was decided)  
+- signals (what is happening)  
 
 You can begin to see:
 
@@ -159,7 +178,7 @@ New observations lead to new investigation.
 The system evolves continuously.
 
 Nothing is lost.  
-Everything builds on what came before.
+Everything remains visible.
 
 ---
 
@@ -230,7 +249,7 @@ You can:
 Importantly:
 
 You don’t rewrite the past.  
-You build new structure on top of it.
+You build new structure from it.
 
 This allows systems to evolve naturally without losing history.
 
@@ -238,9 +257,9 @@ This allows systems to evolve naturally without losing history.
 
 # Seeing What’s Changing
 
-As you use Charter, something interesting happens:
+As you use Charter, something shifts.
 
-You start to see not just what exists—  
+You begin to see not just what exists—  
 but how things behave.
 
 You may notice:
@@ -248,11 +267,33 @@ You may notice:
 - decisions drifting away from reality  
 - pressure building in certain areas  
 - conflicting signals  
-- improving or stabilizing systems  
+- subtle differences between similar ideas  
+- patterns that were previously hidden  
 
 Charter doesn’t tell you what to do.
 
-It helps you see what would otherwise be hard to notice.
+It helps you:
+
+- understand what’s happening  
+- see differences clearly  
+- notice what might be missing  
+
+---
+
+# Understanding Without Judgment
+
+Charter is designed to support clear thinking without pressure.
+
+It:
+
+- preserves history without rewriting it  
+- allows conflicting ideas to exist  
+- makes differences visible instead of collapsing them  
+- helps you reflect without forcing conclusions  
+
+You are always in control of decisions.
+
+The system helps you understand—not decide for you.
 
 ---
 
@@ -266,8 +307,8 @@ You can subscribe to parts of your system:
 
 This allows you to:
 
-- monitor changes over time  
-- stay aware without constant manual checking  
+- monitor change over time  
+- stay aware without constant checking  
 - maintain long-running investigations  
 
 ---
@@ -344,20 +385,27 @@ Charter uses structured models under the hood.
 
 But everything it surfaces is meant to feel like common sense.
 
-The goal isn’t to replace intuition.
+It can help:
 
-It’s to make hidden patterns easier to see.
+- explain complex situations  
+- highlight differences and conflicts  
+- surface gaps in understanding  
+- make patterns easier to see  
+
+The goal is not to replace intuition.
+
+It is to support it.
 
 ---
 
 # Final Thought
 
-Charter is not a tool for storing decisions.
+Charter is not a system for storing decisions.
 
 It is a system for:
 
 - understanding change  
 - evolving structure  
-- and making better decisions over time  
+- and thinking clearly over time  
 
 without ever losing how you got there.

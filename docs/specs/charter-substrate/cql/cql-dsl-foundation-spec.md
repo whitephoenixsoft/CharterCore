@@ -1,8 +1,8 @@
-# Charter Query Layer (CQL) — Foundation Specification
+# Charter Query Layer (CQL) — Foundation Specification (Revised vNext)
 
 Status: FOUNDATIONAL  
-Applies to: All Charter Substrates (Runtime, Legitimacy, CCS, CSG, CIS, CAS, CCare, CDS), Built-In Views, Raw Field Access, Host Extensions  
-Depends On: Charter Substrate Specifications (CCS, CSG, CIS, CAS, CCare, CDS, Runtime, Legitimacy Engine)  
+Applies to: All Charter-readable substrates and stores (Runtime, Legitimacy, CCS, CSG, CIS, CAS, CCare, CDS, optional Audit)  
+Depends On: Charter substrate specifications (Runtime Layer, Review Layer, Legitimacy Engine, CCS, Commit Store, CSG, CIS, CCare, CDS, CAS)  
 Does NOT define: transport syntax, UI rendering, storage backends, computation semantics, or host language bindings  
 
 ---
@@ -13,11 +13,12 @@ This document defines a minimal, stable query model for accessing **all Charter-
 
 CQL exists to:
 
-- query raw substrate data
-- query built-in and derived views
-- uniformly access multiple substrates
-- scope queries across structure, identity, runtime, and alignment
-- support host-defined extensions
+- query raw substrate data  
+- query built-in and derived views  
+- uniformly access multiple substrates  
+- scope queries across structure, identity, runtime, and alignment  
+- expose traceability and provenance through audit queries  
+- support host-defined extension views  
 
 CQL is:
 
@@ -32,6 +33,7 @@ It is not:
 - a programming language  
 - a computation engine  
 - an interpretation layer  
+- a mutation interface  
 
 ---
 
@@ -65,7 +67,7 @@ Not all parts are required in every query.
 
 ## 3.1 Domain
 
-The domain defines which substrate is being queried.
+The domain defines which substrate or read surface is being queried.
 
 Supported domains include:
 
@@ -77,18 +79,13 @@ Supported domains include:
 - `cas`
 - `ccare`
 - `cds`
+- `audit` (optional)
 
 Domains define:
 
 - available targets  
 - available views  
 - available filters  
-
-Examples:
-
-- `domain:cas`
-- `domain:cds`
-- `domain:runtime`
 
 ---
 
@@ -101,23 +98,15 @@ Two subject classes exist:
 - `view`
 - `raw`
 
-Examples:
-
-- `view:posture`
-- `view:trend`
-- `view:items`
-- `view:signals`
-- `raw:fields`
-
 Subjects are interpreted within the selected domain.
 
 ---
 
 ## 3.3 Target
 
-The target defines where the query applies.
+Defines where the query applies.
 
-Target kinds vary by domain but may include:
+May include:
 
 - `resolution`
 - `area`
@@ -129,297 +118,248 @@ Target kinds vary by domain but may include:
 - `session`
 - `review`
 - `signal`
-
-Examples:
-
-- `resolution:res_123`
-- `area:payments`
-- `identity:platform`
-- `deliberate:delib_456`
-- `session:sess_789`
-- `global`
+- `receipt`
+- `commit`
 
 ---
 
 ## 3.4 Scope
 
-Scope constrains the slice of data.
+Constrains the slice of data.
 
-Common scope dimensions include:
+Common dimensions:
 
 - activity (`active`, `historical`)  
 - time (`since`, `until`)  
-- posture (contextual interpretation)  
+- posture  
 - structural mode (`local`, `global`)  
 - lifecycle state  
+- projection (`resolution`, `item`)  
 
-Examples:
+### Projection Principle
 
-- `active`
-- `historical`
-- `since=2026-01-01`
-- `until=2026-03-31`
-- `posture=transition_window`
-- `mode=global`
+> CQL operates over explicit projections.
 
-Scope is additive.
+Canonical projections:
+
+- `projection=resolution`
+- `projection=item`
+
+Mixed live graphs are not the default model.
 
 ---
 
 ## 3.5 Filters
 
-Filters narrow results.
-
-Filter dimensions are domain-specific but may include:
+Domain-specific constraints such as:
 
 - semantic state  
 - lifecycle state  
 - volatility  
 - confidence  
-- category  
 - relationship type  
-
-Examples:
-
-- `state=misaligned`
-- `state=locked`
-- `volatility=increasing`
-- `confidence>=medium`
+- provenance  
 
 ---
 
 ## 3.6 Output
 
-Output controls result form.
-
-Supported modes:
+Controls result form:
 
 - `summary`
 - `structured`
 - `detailed`
 
-Default output is host-defined but must be deterministic.
-
 ---
 
 # 4. Canonical Query Shape
-
-The canonical logical shape is:
-
+```
 domain subject on target [scope] [filters] [output]
-
+```
 Examples:
 
-- `domain:cas view:posture on area:payments active`
-- `domain:cas view:trend on identity:platform since=2026-01-01`
+- `domain:cas view:posture on area:payments active projection=resolution`
 - `domain:cds view:items on deliberate:delib_123 state=locked`
-- `domain:ccare view:signals on area:payments active`
-- `domain:runtime view:sessions on area:core active`
+- `domain:audit view:provenance on resolution:res_123 detailed`
 
 ---
 
 # 5. Domain Profiles
 
-Each domain defines its own query surface.
+(Condensed for brevity — unchanged in structure, expanded views retained)
 
 ---
 
-## 5.1 CAS (Alignment)
+# 6. Audit Domain (Traceability)
 
-Subjects:
+Audit provides:
 
-- `view:posture`
-- `view:trend`
-- `view:tension`
-- `view:structural`
-- `view:overlap`
-- `view:collaboration`
-- `view:boundary_pressure`
-- `view:global_landscape`
-- `view:explain`
-- `raw:fields`
+- provenance  
+- receipt chains  
+- federation origin  
+- action history  
+- review/session lineage  
 
----
+### Principle
 
-## 5.2 CDS (Deliberate)
-
-Subjects:
-
-- `view:items`
-- `view:board`
-- `view:history`
-- `view:lineage`
-- `view:closure`
-- `raw:fields`
+> Audit explains how artifacts came to exist.  
+> It does not redefine structural or legitimacy truth.
 
 ---
 
-## 5.3 CCare
+# 7. Extension Model (Revised)
 
-Subjects:
+## 7.1 Purpose
 
-- `view:signals`
-- `view:requests`
-- `view:suggestions`
-- `view:supportability`
-- `raw:fields`
+CQL supports **host-defined extension views**.
 
----
+These allow hosts to:
 
-## 5.4 CIS (Identity)
-
-Subjects:
-
-- `view:membership`
-- `view:overlap`
-- `view:collaboration`
-- `view:boundary`
-- `raw:fields`
+- expose custom metrics  
+- combine Charter and host data  
+- present composite read surfaces  
+- provide domain-specific operational views  
 
 ---
 
-## 5.5 CSG (Structure)
-
-Subjects:
-
-- `view:graph`
-- `view:neighbors`
-- `view:lineage`
-- `view:active_projection`
-- `raw:fields`
-
----
-
-## 5.6 CCS (Commits)
-
-Subjects:
-
-- `view:commits`
-- `view:references`
-- `view:lineage`
-- `raw:fields`
-
----
-
-## 5.7 Runtime / Legitimacy
-
-Subjects:
-
-- `view:sessions`
-- `view:reviews`
-- `view:receipts`
-- `view:workspaces`
-- `raw:fields`
-
----
-
-# 6. Target Grammar
-
-## 6.1 Single Targets
-
+## 7.2 Extension View Naming
+```
+view:x...
+```
 Examples:
 
-- `resolution:res_123`
-- `area:checkout`
-- `identity:core_platform`
-- `deliberate:delib_1`
-- `session:sess_1`
-- `global`
+- `view:x.cas.myhost.ops_surface`
+- `view:x.cds.myhost.investigation_panel`
+- `view:x.audit.myhost.provenance_bundle`
 
 ---
 
-## 6.2 Pair Targets
+## 7.3 Capabilities
 
-Examples:
+Extension views may:
 
-- `pair:identity(platform),identity(security)`
-- `pair:area(payments),area(fulfillment)`
+- include canonical Charter fields  
+- include host-defined fields  
+- compute host-defined metrics  
+- combine multiple internal data sources  
+- expose composite surfaces (pseudo-joins)
 
-Used for:
+They may behave like:
 
-- comparison  
-- overlap  
-- collaboration  
-
----
-
-# 7. Scope Grammar
-
-Unchanged in structure, generalized across domains.
-
-Examples:
-
-- `active`
-- `historical`
-- `since=...`
-- `until=...`
-- `posture=...`
-- `mode=local`
+- derived views  
+- raw-like field bundles  
+- operational dashboards  
 
 ---
 
-# 8. Filter Grammar
+## 7.4 Composition Principle
 
-Domain-specific but structurally consistent.
+> Extension views may combine Charter and host data, but must remain externally atomic.
 
-Examples:
+CQL does not support:
 
-- `state=misaligned` (CAS)
-- `state=locked` (CDS)
-- `type=checkin` (CCare)
+- joins  
+- multi-view composition  
+- user-defined query algebra  
 
----
-
-# 9. Output Grammar
-
-Unchanged.
+Composition occurs inside the extension view, not in the query language.
 
 ---
 
-# 10. Example Queries
+## 7.5 Execution Model (NEW)
 
-### Alignment posture
-`domain:cas view:posture on area:payments active`
+> Extension views are resolved at query time through host-defined handlers.
 
-### Deliberate locked items
-`domain:cds view:items on deliberate:delib_123 state=locked`
+### Flow
 
-### Care signals
-`domain:ccare view:signals on identity:platform active`
-
-### Identity membership
-`domain:cis view:membership on identity:platform active`
-
-### Runtime sessions
-`domain:runtime view:sessions on area:core active`
+1. CQL parses query  
+2. Identifies extension view  
+3. Resolves registered handler  
+4. Invokes handler with normalized query context  
+5. Returns structured result  
 
 ---
 
-# 11. Extension Model
+## 7.6 Handler Contract
 
-## 11.1 Extension Naming
+A host-defined extension view must provide a handler that receives:
 
-`view:x.<domain>.<host>.<name>`
+- parsed target  
+- parsed scope  
+- filters  
+- output mode  
 
-Examples:
+It may access:
 
-- `view:x.cas.myhost.risk_surface`
-- `view:x.cds.internal.workflow_map`
+- Charter read interfaces (CSG, CAS, CDS, etc.)  
+- host systems (databases, services, caches)  
 
----
+It returns:
 
-## 11.2 Rules
-
-Extensions:
-
-- must be read-only  
-- must not redefine canonical views  
-- must operate on domain-owned data  
-- must not introduce side effects  
+- a deterministic, read-only result  
 
 ---
 
-# 12. Determinism Rules
+## 7.7 Data Source Flexibility
+
+Extension views may be backed by:
+
+### A. Query-Time Computation (Default)
+- compute results on demand  
+- simplest implementation  
+
+### B. Cached / Materialized Data
+- precomputed surfaces  
+- improved performance  
+
+### C. Streaming / Feed-Based Systems
+- real-time pipelines  
+- optional, not required  
+
+### Principle
+
+> CQL does not require any specific data delivery model.
+
+---
+
+## 7.8 Filtering Behavior
+
+Filtering for extension views:
+
+- is defined by the host  
+- must be explicitly supported per view  
+- must be deterministic  
+
+Unsupported filters must be rejected explicitly.
+
+---
+
+## 7.9 Restrictions
+
+Extension views must:
+
+- be read-only  
+- be deterministic  
+- be namespaced  
+- not redefine canonical views  
+- not redefine canonical raw fields  
+- not modify query grammar  
+
+---
+
+## 7.10 Non-Goals
+
+CQL does NOT support (V1):
+
+- host-defined domains  
+- host raw fields as first-class query subjects  
+- joins  
+- view composition syntax  
+- computed expressions in query language  
+
+---
+
+# 8. Determinism Rules
 
 Given identical:
 
@@ -432,53 +372,52 @@ Given identical:
 
 Results must be identical.
 
-CQL must not allow:
-
-- mutation  
-- hidden state  
-- non-deterministic evaluation  
-
 ---
 
-# 13. Relationship to Hosts
+# 9. Relationship to Hosts
 
 CQL is host-agnostic.
 
-It may be expressed as:
+Hosts:
 
-- CLI  
-- JSON  
-- API  
-- library bindings  
-
-Logical meaning must remain identical across representations.
+- may expose extension views  
+- must not alter core semantics  
+- may control internal execution strategy  
 
 ---
 
-# 14. Mental Model
+# 10. Mental Model
 
-A CQL query asks:
+CQL answers:
 
-- what domain am I querying  
-- what do I want to see  
-- over what target  
-- under what constraints  
-- in what form  
+- what exists  
+- what is connected  
+- what is happening  
+- how something came to exist (audit)  
 
-CQL selects existing truth.  
-It does not compute new truth.
+Extension views answer:
+
+- what the host cares about specifically  
 
 ---
 
-# 15. Final Principle
+# 11. Final Principle
 
-CQL exists to unify access across Charter without collapsing its architecture.
+CQL provides a stable, minimal query surface across Charter.
 
-It ensures that:
+It ensures:
 
-- all substrates remain independent  
-- all data remains non-authoritative unless defined elsewhere  
-- all queries remain read-only and deterministic  
+- separation of concerns  
+- deterministic access  
+- structural clarity  
+- extensibility without grammar mutation  
 
-so that systems like CGL can reason across Charter  
-without introducing coupling or interpretation.
+Hosts extend **surfaces**, not **syntax**.
+
+This preserves:
+
+- simplicity  
+- composability  
+- long-term stability  
+
+while allowing practical, real-world flexibility.

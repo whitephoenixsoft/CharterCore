@@ -1,8 +1,8 @@
-# Charter Guidance Layer (CGL) — Foundation Specification
+# Charter Guidance Layer (CGL) — Foundation Specification (Revised)
 
 Status: FOUNDATIONAL  
-Intent: Provide read-only exegesis over Charter substrates  
-Scope: Explanation, reflection, synthesis support, and cross-substrate interpretation  
+Intent: Provide read-only exegesis and optional assistance over Charter substrates  
+Scope: Explanation, reflection, comparative analysis, synthesis support, and optional user-invoked guidance  
 Depends On: CQL, CCS, CSG, CIS, CAS, CCare, CDS, Runtime  
 Does NOT Define: legitimacy, alignment computation, identity semantics, workflow execution, or authority  
 
@@ -10,28 +10,31 @@ Does NOT Define: legitimacy, alignment computation, identity semantics, workflow
 
 # 1. Purpose
 
-The Charter Guidance Layer (CGL) provides a unified, read-only system for explaining Charter state.
+The Charter Guidance Layer (CGL) provides a unified, read-only system for explaining and exploring Charter state.
 
 It exists to:
 
 - explain recorded artifacts across all substrates  
 - surface gaps, inconsistencies, and ambiguity  
-- support reflection, synthesis, and understanding  
-- provide cross-substrate interpretation without coupling  
+- help users understand differences, nuance, and conflict  
+- support reflection and synthesis  
+- optionally assist users in navigating complex systems  
 
 CGL is:
 
 - non-authoritative  
 - read-only  
-- deterministic (given same inputs)  
-- optional  
+- deterministic (given identical inputs)  
+- explicitly invoked when providing assistance  
+
+CGL makes Charter legible, without changing what Charter is.
 
 ---
 
 # 2. Core Principle
 
-> CGL explains Charter state.  
-> It does not decide, enforce, or create meaning beyond recorded facts.
+CGL explains and assists understanding of Charter state.  
+It does not decide, enforce, or create authority.
 
 CGL must:
 
@@ -39,6 +42,7 @@ CGL must:
 - remain subordinate to all substrates  
 - treat absence as unknown  
 - preserve ambiguity  
+- never collapse multiple valid interpretations into a single truth  
 
 ---
 
@@ -66,12 +70,12 @@ CGL consumes only:
 
 All data access must occur through CQL:
 
-- structural queries (CSG)
-- identity queries (CIS)
-- alignment queries (CAS)
-- deliberate queries (CDS)
-- care signals (CCare)
-- runtime artifacts (sessions, reviews)
+- structural queries (CSG)  
+- identity queries (CIS)  
+- alignment queries (CAS)  
+- deliberate queries (CDS)  
+- care signals (CCare)  
+- runtime artifacts (sessions, reviews, receipts)  
 
 ---
 
@@ -79,10 +83,10 @@ All data access must occur through CQL:
 
 Annotations are primary meaning sources:
 
-- rationale
-- assumptions
-- context
-- external references
+- rationale  
+- assumptions  
+- context  
+- external references  
 
 CGL must prefer annotations over inference.
 
@@ -92,40 +96,188 @@ CGL must prefer annotations over inference.
 
 Includes:
 
-- session receipts
-- review receipts
-- deliberate closure artifacts
-- supersession chains
+- legitimacy receipts  
+- review receipts  
+- reconciliation artifacts  
+- derivation lineage  
+- commit history  
 
 ---
 
 # 5. Core Function: Exegesis
 
-CGL performs **exegesis**, not reasoning.
+CGL performs exegesis, not reasoning.
 
 Exegesis includes:
 
-- explanation of structure
-- summarization of history
-- surfacing divergence
-- highlighting absence
-- contextual framing
+- explanation of structure  
+- summarization of history  
+- surfacing divergence  
+- highlighting absence  
+- contextual framing  
 
 CGL must not:
 
 - infer intent  
 - evaluate correctness  
-- recommend actions  
+- recommend decisions as authoritative outcomes  
 
 ---
 
-# 6. Phases
+# 6. Assistance Model
+
+CGL supports optional assistance capabilities layered on top of exegesis.
+
+These capabilities are:
+
+- explicitly invoked  
+- non-authoritative  
+- non-binding  
+- clearly distinguishable from system state  
+
+---
+
+## 6.1 Assistance Principle
+
+Assistance helps users understand and navigate the system.  
+It must never alter structure, legitimacy, or truth.
+
+---
+
+## 6.2 Assistance Modes
+
+### A. Presentation Assistance
+
+Transforms system outputs into more human-readable forms.
+
+Examples:
+
+- simplifying CLI output  
+- summarizing complex data  
+- rephrasing technical content  
+
+Properties:
+
+- preserves meaning  
+- does not alter structure  
+- does not introduce interpretation beyond formatting  
+
+---
+
+### B. Comparative & Analytical Assistance
+
+Surfaces differences, conflicts, and nuance across artifacts, regardless of substrate.
+
+Examples:
+
+- distinguishing similar resolutions  
+- identifying semantic conflicts across sessions  
+- comparing CDS Items with subtle differences  
+- highlighting divergence in assumptions or scope  
+- identifying overlapping or duplicate structures  
+
+Applies across:
+
+- Legitimacy (resolutions, sessions)  
+- CDS (items, investigations)  
+- Review workflows (candidates, imports)  
+- Cross-substrate relationships  
+
+Capabilities:
+
+- similarity detection  
+- contrast explanation  
+- semantic differentiation  
+- conflict surfacing  
+- ambiguity highlighting  
+
+Key Property:
+
+This mode helps users see distinctions and tensions, not resolve them.
+
+Constraints:
+
+- must not determine correctness  
+- must not rank alternatives  
+- must not collapse multiple artifacts into one interpretation  
+
+---
+
+### C. Suggestive Guidance
+
+Provides optional, non-binding next-step ideas.
+
+Examples:
+
+- “These items may be duplicates worth reviewing together”  
+- “This structure could be decomposed further”  
+- “There may be missing relationships between these areas”  
+
+Constraints:
+
+- must be clearly labeled as suggestions  
+- must not imply obligation  
+- must not override user intent  
+- must not create legitimacy  
+
+---
+
+### D. Interactive Consultation
+
+User explicitly invokes assistance.
+
+Examples:
+
+- “Explain what’s happening here”  
+- “What are the differences between these?”  
+- “Where are the gaps?”  
+- “What might I be missing?”  
+
+Properties:
+
+- opt-in only  
+- scoped to user query  
+- produces bounded responses  
+
+---
+
+## 6.3 Non-Authority Guarantee
+
+All assistance must:
+
+- not create legitimacy  
+- not modify artifacts  
+- not alter alignment state  
+- not introduce structural relationships  
+
+---
+
+## 6.4 Visibility Requirement
+
+Assistance output must be clearly distinguishable from:
+
+- canonical data  
+- structural truth  
+- recorded artifacts  
+
+---
+
+## 6.5 Failure Mode
+
+If assistance is removed:
+
+- system correctness remains intact  
+- only usability is reduced  
+
+---
+
+# 7. Phases
 
 CGL operates in structured phases.
 
 ---
 
-## 6.1 Phase Model
+## 7.1 Phase Model
 
 - Expansion  
 - Structuring  
@@ -136,32 +288,32 @@ CGL operates in structured phases.
 
 ---
 
-## 6.2 Phase Behavior
+## 7.2 Phase Behavior
 
 Phases:
 
 - affect presentation, not truth  
 - may be system-assigned or user-selected  
-- must be explicitly announced  
+- must be explicitly identifiable  
 
 ---
 
-## 6.3 Phase Constraints
+## 7.3 Phase Constraints
 
 - Expansion allows ambiguity  
 - Divergence normalizes conflict  
-- Synthesis prepares for review (without deciding)  
+- Synthesis prepares understanding (not decisions)  
 - Temporal preserves acceptance-time truth  
 
 ---
 
-# 7. Heuristics
+# 8. Heuristics
 
-Heuristics define **how explanations are presented**, not what is true.
+Heuristics define how explanations are presented.
 
 ---
 
-## 7.1 Heuristic Properties
+## 8.1 Heuristic Properties
 
 Heuristics:
 
@@ -172,35 +324,36 @@ Heuristics:
 
 ---
 
-## 7.2 Heuristic Categories
+## 8.2 Heuristic Categories
 
 - structural  
 - temporal  
 - consistency  
 - annotation-aware  
 - ambiguity-aware  
+- comparative  
 - query-intent  
 - domain framing  
 - voice  
 
 ---
 
-## 7.3 Heuristic Principle
+## 8.3 Heuristic Principle
 
-> Heuristics are lenses, not levers.
+Heuristics are lenses, not levers.
 
 ---
 
-# 8. Cross-Substrate Interpretation
+# 9. Cross-Substrate Interpretation
 
 CGL may combine data across domains.
 
 Examples:
 
-- CDS + CAS → “alignment of thinking”  
-- CCare + CSG → “signals over structure”  
-- CIS + CAS → “alignment across identities”  
-- Runtime + CDS → “decision evolution”  
+- CDS + CAS → alignment of investigation  
+- CCare + CSG → signals over structure  
+- CIS + CAS → identity-level alignment  
+- Runtime + CDS → evolution of decisions  
 
 CGL must not:
 
@@ -210,22 +363,19 @@ CGL must not:
 
 ---
 
-# 9. Next-Step Guidance
+# 10. Next-Step Guidance
 
-CGL may surface:
-
-- available actions  
-- workflow affordances  
+CGL may surface available actions and affordances.
 
 These must be:
 
-- non-prescriptive  
 - optional  
+- non-prescriptive  
 - non-authoritative  
 
 ---
 
-# 10. Personality & Voice
+# 11. Personality & Voice
 
 Personality:
 
@@ -235,49 +385,54 @@ Personality:
 
 ---
 
-# 11. Invariants
+# 12. Invariants
 
 CGL must never:
 
 - create legitimacy  
 - modify state  
 - infer intent  
-- recommend decisions  
+- enforce decisions  
 - override authority  
-- interpret silence as meaning  
+- interpret silence as definitive meaning  
 
 All explanations must:
 
 - be time-bound  
 - respect recorded facts  
 - preserve ambiguity  
+- allow multiple interpretations  
 
 ---
 
-# 12. Mental Model
+# 13. Mental Model
 
 CGL is:
 
-- a mirror over Charter  
-- a narrator of recorded history  
-- a cross-substrate explainer  
+- a reflective layer over Charter  
+- a narrator of recorded structure and history  
+- an optional assistant for understanding complexity  
 
 It is not:
 
 - a decision system  
 - an optimizer  
 - an authority  
-- a reasoning engine  
+- a controller  
 
 ---
 
-# 13. Final Principle
+# 14. Final Principle
 
 CGL exists so that:
 
 - users can understand their system  
-- systems can explain themselves  
-- history remains visible without distortion  
+- complexity becomes navigable  
+- differences and tensions become visible  
+- reflection is supported without pressure  
 
-CGL makes Charter legible  
-without ever changing what Charter is.
+It makes Charter:
+
+understandable without judgment,  
+explorable without risk,  
+and usable without losing truth.
