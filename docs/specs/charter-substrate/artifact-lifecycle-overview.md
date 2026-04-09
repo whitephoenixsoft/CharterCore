@@ -1,39 +1,44 @@
-# Charter — Artifact Lifecycle Overview
+# Charter — Artifact Lifecycle Overview (Revised vNext)
 
 Status: FOUNDATIONAL (Canonical Overview)  
 Applies to: All Charter Modules  
-Purpose: Provide a unified, end-to-end view of how artifacts are created, transformed, preserved, interpreted, and optionally removed  
+Purpose: Provide a unified, end-to-end view of how artifacts are created, transformed, preserved, interpreted, exchanged, and optionally removed  
 
 ---
 
 # 1. Purpose
 
-This document describes the **full lifecycle of artifacts in Charter**.
+This document describes the **full lifecycle of artifacts in Charter** across:
+
+- investigation (CDS)  
+- legitimacy (Runtime + Engine)  
+- structure (CSG)  
+- identity (CIS)  
+- alignment (CAS)  
+- exchange (Federation)  
 
 It answers:
 
-- Where does data originate?
-- How does it become legitimate?
-- How is it preserved?
-- How is meaning derived?
-- How is it transported?
-- How is local data safely removed?
+- Where does structure originate?  
+- How does investigation become legitimacy?  
+- How is structure preserved and evolved?  
+- How is meaning derived without authority?  
+- How does structure move across systems?  
+- How is local state safely removed?  
 
 This document is **descriptive**, not prescriptive.
 
-It does not define module internals.  
 It defines how modules **connect without collapsing boundaries**.
 
 ---
 
 # 2. Core Principle
 
-> Artifacts move forward through layers.  
-> Authority does not.
+> Artifacts move forward. Authority is created only once. Meaning is always derived.
 
 Each stage:
 
-- transforms **representation**, not meaning  
+- transforms **representation**, not truth  
 - preserves **identity and lineage**  
 - does not inherit authority from other layers  
 
@@ -41,390 +46,574 @@ Each stage:
 
 # 3. Lifecycle Overview (High-Level)
 
-## 3.1 Primary Flow
-
-Runtime (Object State)  
-↓  
-Legitimacy Engine (Resolution Creation)  
-↓  
-Charter Commit System (CCS)  
-↓  
-Commit Store (Preservation)  
-↓  
-Derived Meaning Substrates (CCare / CLL / CAE)  
-↓  
-Guidance Layer (CGL)  
-↓  
-Relay (CRS) [optional transport]  
+Charter operates as **interconnected flows**, not a single pipeline.
 
 ---
 
-## 3.2 Archival & Purge Flow
+## 3.1 Primary Structural Flow (Legitimacy Path)
 
-Runtime (Object State)  
+Runtime / CDS  
 ↓  
-Archival Review & Packaging  
+Review Layer (Foreign Integration)  
 ↓  
-CCS (Archive Artifacts)  
+Legitimacy Engine (Session)  
+↓  
+CCS (Commit Formation)  
 ↓  
 Commit Store (Preservation)  
 ↓  
-Purge Eligibility (Runtime Only)  
+CSG (Structural Graph)  
 ↓  
-Manual Purge (Runtime Only)  
+CIS (Identity Overlay, optional)  
+↓  
+CAS (Alignment Computation)  
+↓  
+CGL (Interpretation)  
 
 ---
 
-# 4. Stage 1 — Runtime (Object State)
+## 3.2 Investigative Flow (CDS Loop)
 
-**Module:** Runtime Layer  
-**Storage:** Runtime Store (local object store)  
+Signals / Structure  
+↓  
+CDS (Deliberate: Items, Observations, Simulation)  
+↓  
+Synthesis (LOCKED Items)  
+↓  
+Review Layer (integration path)  
+
+---
+
+## 3.3 Reconciliation Flow (Bidirectional)
+
+Legitimacy → CDS  
+CDS → Legitimacy (via Review + Session)  
+
+---
+
+## 3.4 Federation Flow
+
+External Systems  
+↓  
+Discover → Query → Acquire  
+↓  
+Isolated Foreign Graph  
+↓  
+Review Layer  
+↓  
+Local Integration  
+
+and:
+
+Local Artifacts  
+↓  
+Emission Policy  
+↓  
+CRS Transport  
+
+---
+
+## 3.5 Archival & Purge Flow
+
+Runtime / CDS State  
+↓  
+Archival Packaging  
+↓  
+CCS (Archive Commits)  
+↓  
+Commit Store  
+↓  
+Runtime Purge (optional)  
+
+---
+
+# 4. Stage 1 — Runtime & Deliberate (CDS)
+
+**Modules:** Runtime Layer + CDS  
+**Storage:** Runtime Store + CDS Workspace  
+
+---
 
 ## 4.1 What Exists Here
 
 - sessions  
-- deliberates  
-- breakouts  
-- synthesis artifacts  
-- baseline review workspaces  
-- candidates  
+- deliberate instances (Epics)  
+- Items (questions, hypotheses, proposals)  
+- observations (signals, evidence)  
+- review workspaces  
 - workflow state  
+
+---
 
 ## 4.2 Characteristics
 
-- mutable (within workflow constraints)  
-- context-isolated  
-- not yet canonical artifact truth  
+- mutable  
+- exploratory  
+- non-authoritative  
+- simulation-capable  
+
+---
 
 ## 4.3 Key Property
 
-> Runtime holds working state, not preserved truth.
+> This is where thinking happens.
+
+It may:
+
+- reference existing structure  
+- simulate new structure  
+- operate without legitimacy  
 
 ---
 
-# 5. Stage 2 — Legitimacy Creation
+# 5. Stage 2 — Review Layer (Integration Boundary)
 
-**Module:** Legitimacy Engine  
-**Invoked by:** Runtime Layer  
+**Module:** Runtime (Review Layer)
 
-## 5.1 What Happens
+---
 
-- sessions evaluate candidates  
-- authority rules are applied  
-- resolutions are accepted or rejected  
+## 5.1 Review Types
 
-## 5.2 Output
+### Foreign Integration Review
 
-- **Resolutions** (legitimacy artifacts)  
-- **Legitimacy receipts**  
+- CDS → legitimacy  
+- foreign → local  
+- candidate structure → admitted structure  
+
+### Reconciliation Review
+
+- legitimacy → CDS  
+- CDS state ←→ legitimacy state  
+
+---
+
+## 5.2 What Happens
+
+- candidate artifacts are evaluated  
+- provisional structure is explored  
+- relationships are surfaced and refined  
+
+---
 
 ## 5.3 Key Property
 
-> This is the only stage where legitimacy is created.
-
-No other layer may:
-- create legitimacy  
-- reinterpret legitimacy  
+> Review prepares structure. It does not create legitimacy.
 
 ---
 
-# 6. Stage 3 — Artifact Formation (CCS)
+# 6. Stage 3 — Legitimacy Creation
 
-**Module:** Charter Commit System (CCS)  
+**Module:** Legitimacy Engine  
+
+---
 
 ## 6.1 What Happens
 
-Runtime outputs are transformed into **commit artifacts**.
-
-Examples:
-
-- resolution commits  
-- receipt commits  
-- exploration/review artifacts  
-- archival artifacts  
-- check-in artifacts (from CCare)  
-- lineage artifacts (from CLL)  
-
-## 6.2 Responsibilities
-
-- assign artifact identity (UUID)  
-- enforce commit structure  
-- preserve lineage references  
-
-## 6.3 Key Property
-
-> CCS defines artifact shape, not meaning.
-
-CCS does NOT:
-- interpret artifacts  
-- validate alignment  
-- enforce workflows  
+- sessions evaluate accepted candidates  
+- authority rules are applied  
+- decisions are accepted or rejected  
 
 ---
 
-# 7. Stage 4 — Preservation (Commit Store)
+## 6.2 Output
 
-**Module:** Commit Store  
+- resolutions  
+- legitimacy receipts  
+
+---
+
+## 6.3 Key Property
+
+> This is the only place legitimacy is created.
+
+---
+
+# 7. Stage 4 — Artifact Formation (CCS)
+
+**Module:** CCS  
+
+---
 
 ## 7.1 What Happens
 
-- commit artifacts are stored immutably  
-- append-only history is preserved  
+All outputs become **immutable commit artifacts**:
 
-## 7.2 Characteristics
+- resolution commits  
+- identity commits  
+- signal commits  
+- receipt commits  
+- deliberate artifacts (optional packaging)  
+
+---
+
+## 7.2 Responsibilities
+
+- assign identity (`commit_id`)  
+- enforce structure  
+- preserve explicit references (`derives_from`, etc.)  
+
+---
+
+## 7.3 Key Property
+
+> CCS defines structure, not meaning.
+
+---
+
+# 8. Stage 5 — Preservation (Commit Store)
+
+**Module:** Commit Store  
+
+---
+
+## 8.1 What Happens
+
+- commits stored immutably  
+- append-only history preserved  
+
+---
+
+## 8.2 Characteristics
 
 - immutable  
 - append-only  
 - identity-preserving  
 - lineage-preserving  
 
-## 7.3 Key Property
+---
 
-> The Commit Store is the source of preserved artifact truth.
+## 8.3 Key Property
 
-It does NOT:
-- interpret meaning  
-- compute alignment  
-- enforce behavior  
+> This is the durable record of all artifacts.
 
 ---
 
-# 8. Stage 5 — Derived Meaning Substrates
+# 9. Stage 6 — Structural Materialization (CSG)
 
-These modules consume preserved artifacts without creating authority.
-
----
-
-## 8.1 Charter Care Substrate (CCare)
-
-**Role:** VDS (human-first)
-
-Consumes:
-
-- decisions (resolutions)  
-- historical artifacts  
-
-Produces:
-
-- check-ins  
-- requests  
-- supportability signals  
-- silence records  
-
-Key Property:
-
-> Observes behavior relative to declared decisions.
-
-Does NOT:
-
-- create legitimacy  
-- mutate identity  
-- enforce action  
+**Module:** Charter Structural Graph (CSG)  
 
 ---
-
-## 8.2 Charter Lineage Substrate (CLL)
-
-**Role:** VLS (human-first)
-
-Consumes:
-
-- declared identity  
-- purpose  
-- scope changes  
-
-Produces:
-
-- identity records  
-- version lineage  
-- deprecation / abandonment states  
-- sunset declarations  
-
-Key Property:
-
-> Preserves identity evolution over time.
-
-Does NOT:
-
-- observe runtime behavior  
-- interpret performance  
-- enforce alignment  
-
----
-
-## 8.3 Charter Alignment Engine (CAE)
-
-Consumes:
-
-- CCare signals  
-- CLL lineage  
-- commit artifacts  
-
-Produces:
-
-- derived alignment state  
-- structural and predictive indicators  
-
-Key Property:
-
-> Alignment is computed, not declared.
-
-Does NOT:
-
-- create authority  
-- enforce behavior  
-- modify artifacts  
-
----
-
-# 9. Stage 6 — Guidance Layer (CGL)
-
-**Module:** Charter Guidance Layer  
 
 ## 9.1 What Happens
 
-- artifacts and alignment state are interpreted  
-- explanations and summaries are produced  
+- commits are transformed into graph structure  
+- nodes:
+  - resolutions  
+  - items (if admitted)  
+- edges:
+  - supersession  
+  - reference  
+  - derivation  
 
-## 9.2 Outputs
+---
 
-- narrative summaries  
-- drift explanations  
-- identity evolution descriptions  
-- tension and conflict visibility  
+## 9.2 Projections
+
+- resolution-only  
+- item-only  
+- mixed  
+
+---
 
 ## 9.3 Key Property
 
-> Guidance is interpretation, not instruction.
-
-Does NOT:
-
-- mutate state  
-- create legitimacy  
-- enforce action  
+> Structure is explicit, projection-aware, and non-interpreting.
 
 ---
 
-# 10. Stage 7 — Transport (Relay)
+# 10. Stage 7 — Identity Overlay (CIS, Optional)
 
-**Module:** Charter Relay System (CRS)  
+**Module:** CIS  
+
+---
 
 ## 10.1 What Happens
 
-- commit artifacts are pushed/fetched  
-- archives are stored remotely  
-
-## 10.2 Characteristics
-
-- append-only  
-- opaque  
-- non-interpreting  
-
-## 10.3 Key Property
-
-> Relay transports artifacts. It does not understand them.
+- identities define scope over structure  
+- membership derived via bounded traversal  
 
 ---
 
-# 11. Archival Lifecycle
+## 10.2 Key Property
 
-Archival is a parallel flow originating from Runtime.
-
----
-
-## 11.1 Source
-
-Runtime artifacts (non-legitimate or historical)
+> Identity is declared and bounded, not inferred.
 
 ---
 
-## 11.2 Process
+# 11. Stage 8 — Observational Signals (CCare + CSP)
 
-1. Candidate selection  
-2. Archival review  
-3. Packaging (temporary area or bundle)  
-4. Conversion to commit artifacts (CCS)  
-5. Storage in Commit Store  
+**Modules:** CCare (+ optional CSP)
 
 ---
 
-## 11.3 Outcome
+## 11.1 What Happens
 
-- artifacts preserved immutably  
-- runtime originals marked as purge-eligible  
+- signals are recorded:
+  - state  
+  - confidence  
+  - time  
 
----
-
-# 12. Purge Lifecycle
-
-Purge is strictly limited to Runtime.
-
----
-
-## 12.1 Preconditions
-
-- archival completed  
-- preservation verified  
+- CSP may:
+  - shape  
+  - filter  
+  - aggregate signals  
 
 ---
 
-## 12.2 Operation
+## 11.2 Key Property
 
-- explicit user action  
-- removes runtime artifacts only  
-
----
-
-## 12.3 Guarantees
-
-- no loss of preserved truth  
-- no impact on Commit Store  
-- no change to legitimacy  
+> Signals describe reality. They do not enforce it.
 
 ---
 
-# 13. Invariants Across Lifecycle
+# 12. Stage 9 — Alignment Computation (CAS)
 
-- Legitimacy is created only by the Legitimacy Engine  
+**Module:** CAS  
+
+---
+
+## 12.1 What Happens
+
+- computes alignment over:
+  - structure (CSG projections)  
+  - signals (CCare/CSP)  
+  - identity (optional CIS)  
+
+---
+
+## 12.2 Outputs
+
+- semantic states  
+- propagation patterns  
+- tension and drift  
+- predictive dynamics  
+
+---
+
+## 12.3 Key Property
+
+> Alignment is computed, not declared.
+
+---
+
+# 13. Stage 10 — Interpretation (CGL)
+
+**Module:** CGL  
+
+---
+
+## 13.1 What Happens
+
+- transforms outputs into human-readable explanations  
+
+---
+
+## 13.2 Outputs
+
+- summaries  
+- explanations  
+- narratives  
+
+---
+
+## 13.3 Key Property
+
+> Interpretation adds clarity, not authority.
+
+## 13.4 — Charter Query Language (CQL)
+
+**Module:** Cross-Substrate Query Layer  
+
+---
+
+## 13.4.1 Purpose
+
+CQL provides a **unified query interface across Charter substrates**.
+
+It allows systems and users to:
+
+- query structural data (CSG)  
+- query identity-scoped views (CIS)  
+- query investigative state (CDS)  
+- query alignment state (CAS)  
+- compose cross-substrate views  
+
+---
+
+## 13.4.2 Position in Lifecycle
+
+CQL is not a transformation stage.
+
+It operates:
+
+> across preserved, structural, and derived state
+
+It sits between:
+
+- stored / computed artifacts  
+and  
+- interpretation (CGL) or external consumption  
+
+---
+
+## 13.4.3 Capabilities
+
+CQL supports:
+
+- projection selection (resolution, item, mixed)  
+- structural traversal (graph queries)  
+- identity scoping (CIS overlays)  
+- alignment queries (CAS views)  
+- cross-substrate composition  
+
+---
+
+## 13.4.4 Key Property
+
+> CQL reveals structure and state. It does not modify them.
+
+It is:
+
+- read-only  
+- deterministic  
+- non-authoritative  
+
+---
+
+## 13.4.5 Relationship to CGL
+
+- CQL → structured query results  
+- CGL → human-readable interpretation  
+
+CQL answers:
+
+> “What is the state?”
+
+CGL answers:
+
+> “What does it mean?”
+
+---
+
+# 14. Stage 11 — Federation & Transport
+
+**Modules:** Runtime + CRS  
+
+---
+
+## 14.1 Ingress
+
+- discover → query → acquire  
+- isolate foreign structure  
+- review before integration  
+
+---
+
+## 14.2 Egress
+
+- select artifacts  
+- emit via policy  
+- transport via CRS  
+
+---
+
+## 14.3 Key Property
+
+> Structure moves. Authority does not.
+
+---
+
+# 15. Archival Lifecycle
+
+---
+
+## 15.1 Process
+
+1. select runtime/CDS artifacts  
+2. review and package  
+3. convert to commits  
+4. store immutably  
+
+---
+
+## 15.2 Outcome
+
+- preserved artifacts  
+- runtime state becomes purge-eligible  
+
+---
+
+# 16. Purge Lifecycle
+
+---
+
+## 16.1 Scope
+
+- runtime-only  
+- CDS workspace-only  
+
+---
+
+## 16.2 Guarantees
+
+- no loss of preserved artifacts  
+- no impact on legitimacy  
+- no mutation of commit history  
+
+---
+
+# 17. Invariants Across Lifecycle
+
+- legitimacy is created only by the Legitimacy Engine  
+- review never creates legitimacy  
 - CCS defines structure, not meaning  
-- Commit Store is append-only and immutable  
-- CCare and CLL do not create authority  
-- CAE is deterministic and non-authoritative  
-- CGL is read-only  
-- CRS is non-interpreting  
-- Archival preserves before purge  
-- Purge affects only Runtime  
+- commit store is immutable and append-only  
+- CSG never infers structure  
+- CIS never infers identity  
+- CAS never infers authority  
+- CGL never enforces action  
+- federation never implies synchronization  
+- archival precedes purge  
+- history is never rewritten  
 
 ---
 
-# 14. Mental Model
+# 18. Mental Model
 
-Think of the system as layers of responsibility:
+Charter is a layered system:
 
-- Runtime → working state  
+- CDS → thinking and simulation  
+- Review → boundary and preparation  
 - Engine → legitimacy creation  
 - CCS → artifact formation  
-- Commit Store → truth preservation  
-- CCare / CLL → meaning surfaces  
-- CAE → alignment computation  
-- CGL → interpretation  
-- CRS → transport  
-
-Nothing flows backward as authority.  
-Everything flows forward as artifacts.
+- Store → preservation  
+- CSG → structure  
+- CIS → identity  
+- CCare/CSP → observation  
+- CAS → alignment  
+- CGL → explanation  
+- Federation → exchange  
 
 ---
 
-# 15. Final Principle
+# 19. Final Principle
 
-Charter does not collapse layers.
+Charter separates:
 
-It allows:
+- thinking  
+- deciding  
+- recording  
+- structuring  
+- observing  
+- analyzing  
+- explaining  
+- exchanging  
 
-- truth to be created deliberately  
-- preserved immutably  
-- interpreted safely  
-- transported without mutation  
-- and removed locally without loss  
+So that:
 
-The lifecycle exists to ensure that **nothing meaningful is ever lost — only relocated, interpreted, or released with proof**.
+- nothing is conflated  
+- nothing is assumed  
+- nothing is lost  
+
+> Everything becomes visible, traceable, and reconstructable  
+without ever collapsing authority, structure, or meaning.

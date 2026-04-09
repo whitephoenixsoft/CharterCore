@@ -1,7 +1,7 @@
-# Charter Platform — Dependency Map & Implementation Sequence
+# Charter Platform — Dependency Map & Implementation Sequence (Revised vNext)
 
-Status: DRAFT (Planning Canon)  
-Depends On: Canonical Naming Specification, Module Boundaries & Non-Responsibilities Specification  
+Status: FOUNDATIONAL (Planning Canon)  
+Depends On: Canonical Naming Specification  
 Purpose: Define dependency direction, composition rules, and phased implementation order for the Charter platform ecosystem  
 
 ---
@@ -10,210 +10,261 @@ Purpose: Define dependency direction, composition rules, and phased implementati
 
 This document defines:
 
-- the dependency structure of the Charter platform
-- which modules may depend on which other modules
-- the required implementation order
-- how substrate modules compose into higher-level systems
+- dependency structure across Charter modules  
+- allowable dependency directions  
+- implementation sequencing  
+- composition rules across substrates  
 
-It exists to ensure the platform evolves by:
+It ensures the platform evolves through:
 
-- layering
-- composition
-- explicit contracts
+- layering  
+- composition  
+- explicit contracts  
 
-and not by:
+and not:
 
-- hidden coupling
-- responsibility collapse
-- premature product fusion
+- hidden coupling  
+- responsibility collapse  
+- implicit synchronization  
 
 ---
 
 # 2. Architectural Goal
 
-The Charter platform is a **modular substrate ecosystem**.
+Charter is a **modular, composable substrate ecosystem**.
 
-It is not a monolith.
+It is not a monolith or strict stack.
 
-Its design goal is to make each major module:
+Each module must be:
 
-- independently useful
-- independently testable
-- independently embeddable
-- composable into larger systems
-
-The platform is organized into three domains:
-
-1. Charter Substrate  
-2. Charter-Derived Meaning Substrates  
-3. System-Level Products  
+- independently useful  
+- independently testable  
+- independently deployable  
+- composable into larger systems  
 
 ---
 
 # 3. Domain Model
 
-## 3.1 Charter Substrate
+---
 
-The Charter Substrate is the foundation of explicit truth.
+## 3.1 Core Substrate Domain (Authority + Artifacts)
 
-It includes:
+Includes:
 
-- Legitimacy Engine  
-- Persistence Layer (Runtime Store)  
 - Runtime Layer  
+- Review Layer  
+- Legitimacy Engine  
 - Charter Commit System (CCS)  
 - Charter Commit Store  
 - Charter Relay System (CRS)  
 
-This domain owns:
+Owns:
 
-- legitimacy  
-- runtime operational state  
-- append-only artifact storage  
+- legitimacy creation  
 - orchestration  
-- commit artifact structure  
-- local artifact persistence  
-- transport of opaque artifacts  
-
-### Critical Distinction
-
-The Charter Substrate contains **two distinct storage systems**:
-
-#### Runtime Store (Persistence Layer)
-- authoritative for live operational legitimacy state  
-- mutable within controlled boundaries  
-- optimized for active workflows  
-
-#### Commit Store
-- authoritative for append-only artifact history  
-- immutable  
-- optimized for durability, retrieval, and transport  
-
-These stores MUST remain separate.
+- artifact definition  
+- artifact preservation  
+- transport  
 
 ---
 
-## 3.2 Charter-Derived Meaning Substrates
+## 3.2 Investigation & Signal Domain
 
-These modules compute or preserve meaning without creating authority.
+Includes:
 
-They include:
+- Charter Deliberate Substrate (CDS)  
+- Charter Care Substrate (CCare)  
+- Charter Signal Processing Substrate (CSP)  
+
+Owns:
+
+- thinking and simulation  
+- observation  
+- signal shaping  
+
+---
+
+## 3.3 Structural & Analytical Domain
+
+Includes:
 
 - Charter Structural Graph (CSG)  
 - Charter Identity Substrate (CIS)  
-- Charter Care Substrate (CCare)  
 - Charter Alignment System (CAS)  
+- Charter Query Language (CQL)  
 - Charter Guidance Layer (CGL)  
 
-This domain owns:
+Owns:
 
-- structural graph reconstruction  
-- identity, scope, and version lineage  
-- human-first check-ins and requests  
-- alignment computation  
-- read-only interpretation  
+- structure  
+- identity  
+- computation  
+- query  
+- interpretation  
 
 ---
 
-## 3.3 System-Level Products
+## 3.4 Structural Evolution Model
 
-These are software-facing products built on the substrate libraries.
+Includes:
 
-They include:
+- Charter Resolution Recontextualization (CRR)  
 
-- system-level VDS  
-- system-level VLS  
-- telemetry adapters  
-- deployment/posture integrations  
-- product-facing CLIs, services, or agents  
+Owns:
 
-This domain owns:
+- promotion / demotion patterns  
+- decomposition / synthesis lineage  
+- abstraction transitions  
 
-- external telemetry integration  
-- software-system monitoring workflows  
-- product-specific orchestration  
-- deployment and environment adapters  
-
-This domain does not redefine substrate semantics.
+CRR is cross-cutting (not a standalone substrate).
 
 ---
 
 # 4. Dependency Law
 
-## DM-01 — Dependencies Flow Upward
+---
 
-Modules may depend only on modules beneath them in the dependency graph.
+## DM-01 — Directional, Not Strictly Vertical
 
-Lower modules must never depend on higher modules.
+Dependencies must follow allowed directions:
+
+- forward (creation → preservation → computation)  
+- reverse (reconciliation)  
+- lateral (federation)  
+
+No cyclic authority dependencies are allowed.
 
 ---
 
-## DM-02 — Authority Never Flows Upward
+## DM-02 — Authority Is Isolated
 
-No higher module may modify the legitimacy semantics of a lower module.
+Only the **Legitimacy Engine** may create legitimacy.
 
-No derived module may create legitimacy, identity truth, or obligation.
+No other module may:
 
----
-
-## DM-03 — Transport Is Orthogonal
-
-The Charter Relay System operates orthogonally to local storage and computation.
-
-It may transport artifacts created elsewhere, but it does not participate in their meaning.
+- create legitimacy  
+- reinterpret authority  
+- enforce decisions  
 
 ---
 
-## DM-04 — Product Layers Must Use Substrate Contracts
+## DM-03 — Structure Is Explicit
 
-System-level products may extend substrate behavior through adapters and integrations.
+CSG depends only on:
 
-They must not fork or silently redefine substrate invariants.
+- CCS  
+- Commit Store  
+
+It must never depend on:
+
+- CIS  
+- CAS  
+- CDS  
+
+---
+
+## DM-04 — Query Is Read-Only
+
+CQL may depend on:
+
+- CSG  
+- CDS  
+- CAS  
+- CIS  
+
+It must not:
+
+- mutate any substrate  
+- introduce semantics  
+
+---
+
+## DM-05 — Transport Is Orthogonal
+
+CRS:
+
+- depends on CCS  
+- transports commits  
+
+It does not:
+
+- interpret  
+- compute  
+- integrate  
+
+---
+
+## DM-06 — Runtime Is the Integration Point
+
+Runtime may depend on:
+
+- Legitimacy Engine  
+- CDS  
+- Review Layer  
+- CCS  
+
+Runtime orchestrates:
+
+- federation  
+- reconciliation  
+- review  
 
 ---
 
 # 5. Canonical Dependency Map
 
-## 5.1 Logical Order
+---
 
-The platform dependency order is:
+## 5.1 Core Dependencies
 
-Persistence Layer (Runtime Store)  
-→ Legitimacy Engine  
-→ Runtime Layer  
-→ Charter Commit System (CCS)  
-→ Charter Commit Store  
-→ Charter Structural Graph (CSG)  
-→ Charter Identity Substrate (CIS) / Charter Care Substrate (CCare)  
-→ Charter Alignment System (CAS)  
-→ Charter Guidance Layer (CGL)  
-
-Charter Relay System (CRS) is orthogonal and depends on:
-
-- CCS  
-- Persistence primitives  
+| Module | Depends On |
+|--------|------------|
+| Legitimacy Engine | none |
+| Runtime Layer | Legitimacy Engine |
+| Review Layer | Runtime |
+| CCS | Runtime outputs |
+| Commit Store | CCS |
+| CRS | CCS |
 
 ---
 
-## 5.2 Dependency Table
+## 5.2 Investigation & Signal
 
-| Module | May Depend On | Must NOT Depend On |
-|--------|----------------|--------------------|
-| Persistence Layer | none | all higher modules |
-| Legitimacy Engine | none (or abstract persistence contracts only) | Runtime, CCS, CSG, CIS, CCare, CAS, CGL, CRS |
-| Runtime Layer | Legitimacy Engine, Persistence Layer | CSG, CIS, CCare, CAS, CGL |
-| CCS | Runtime outputs, Persistence abstractions | CSG, CIS, CCare, CAS, CGL |
-| Commit Store | CCS, Persistence Layer | Runtime semantics, CAS, CGL |
-| CSG | CCS, Commit Store | CIS, CCare, CAS, CGL |
-| CIS | CSG, CCS, Commit Store | CCare, CAS, CGL |
-| CCare | CCS, Commit Store, Runtime artifacts | CSG mutation, CIS, CAS, CGL |
-| CAS | CSG, CCS, Commit Store, CCare, (optional CIS) | CGL, CRS |
-| CGL | CAS, CCare, CIS, CSG, CCS, Commit Store | CRS execution semantics |
-| CRS | CCS, Persistence primitives | Runtime, CSG, CIS, CCare, CAS, CGL |
+| Module | Depends On |
+|--------|------------|
+| CDS | Runtime |
+| CCare | CCS |
+| CSP | CCare |
+
+---
+
+## 5.3 Structure & Analysis
+
+| Module | Depends On |
+|--------|------------|
+| CSG | CCS + Commit Store |
+| CIS | CSG |
+| CAS | CSG + CCare (+ optional CIS, CSP-shaped signals) |
+| CQL | CSG + CDS + CAS + CIS |
+| CGL | CQL (or CAS directly) |
+
+---
+
+## 5.4 CRR (Cross-Cutting)
+
+CRR spans:
+
+- Runtime (orchestration)  
+- CCS (`derives_from`)  
+- CSG (derivation edges)  
+- CDS (simulation)  
 
 ---
 
 # 6. Composition Rules
+
+---
 
 ## 6.1 Legitimacy Composition
 
@@ -224,26 +275,17 @@ Legitimacy is produced only by:
 
 ---
 
-## 6.2 Runtime ↔ Commit Boundary
+## 6.2 CDS ↔ Legitimacy Boundary
 
-The Runtime does NOT sync bidirectionally with the Commit Store.
+Flow to legitimacy:
 
-Instead:
+CDS → Review → Session → Resolution  
 
-### Runtime → Commit Store
-- Runtime publishes artifacts via CCS  
-- CCS produces commit artifacts  
-- Commit Store appends them  
+Reverse flow:
 
-### Commit Store → Runtime
-Only through explicit, bounded paths:
+Resolution → Reconciliation → CDS Item  
 
-- restore  
-- review workflows (Baseline, Federation, Archive, etc.)  
-- import  
-- archive inspection  
-
-No implicit synchronization is allowed.
+No implicit synchronization.
 
 ---
 
@@ -255,158 +297,93 @@ Commits are:
 - stored by Commit Store  
 - transported by CRS  
 
-They are:
-
-- immutable  
-- append-only  
-- not equivalent to runtime state  
-
 ---
 
-## 6.4 Archive Composition
-
-Archive is a **Commit Store responsibility**, not Runtime.
-
-Archive:
-
-- changes storage posture, not meaning  
-- preserves artifacts durably  
-- reduces active runtime surface without deleting truth  
-
-Archive may:
-
-- package artifacts into archive bundles  
-- mark artifacts as archived  
-- support retrieval without reactivating runtime state  
-- be exported or relayed  
-
-Archive must NOT:
-
-- delete legitimacy history  
-- rewrite lineage  
-- imply semantic removal  
-
----
-
-## 6.5 Export Composition
-
-Exports are:
-
-- explicit packages of commit artifacts  
-- derived from Commit Store  
-
-Exports may:
-
-- be stored as commit artifacts  
-- be archived  
-- be pushed to Relay  
-- be re-imported through review workflows  
-
-Exports must not bypass:
-
-- legitimacy boundaries  
-- review boundaries  
-- authority validation  
-
----
-
-## 6.6 Graph Composition (NEW)
+## 6.4 Graph Composition
 
 CSG produces:
 
-- the admitted local DAG  
-- structural relationships  
-- supersession paths  
-- cross-area references  
-
-It is:
-
-- purely structural  
-- independent of identity and alignment  
+- resolution nodes  
+- item nodes  
+- explicit edges  
+- projection views  
 
 ---
 
-## 6.7 Identity Composition (NEW)
+## 6.5 Identity Composition
 
-CIS produces:
+CIS:
 
-- identity declarations  
-- scope bindings  
-- version transitions  
-- deprecation and sunset states  
-
-It consumes:
-
-- structural graph (CSG)  
-- commit artifacts  
-
-Identity is:
-
-- human-declared  
-- structurally grounded  
-- independent of runtime behavior  
+- overlays identity onto structure  
+- does not modify structure  
 
 ---
 
-## 6.8 Care Composition
+## 6.6 Signal Composition
 
-CCare produces:
+CCare:
 
-- check-ins  
-- requests  
-- supportability signals  
-- silence records  
+- produces signals  
 
-Stored as commit artifacts.
+CSP:
 
----
-
-## 6.9 Alignment Composition
-
-CAS consumes:
-
-- structural graph (CSG)  
-- care signals (CCare)  
-- commit artifacts  
-- optionally identity partitions (CIS)  
-
-Produces:
-
-- derived alignment state (rebuildable)  
+- shapes signal flow  
 
 ---
 
-## 6.10 Guidance Composition
+## 6.7 Alignment Composition
 
-CGL is read-only.
+CAS:
 
-Produces:
+- computes alignment over:
+  - structure  
+  - signals  
+  - identity (optional)  
 
-- explanations  
-- summaries  
-- interpretation  
+---
+
+## 6.8 Query Composition
+
+CQL:
+
+- composes cross-substrate queries  
+- enables projection-aware access  
+
+---
+
+## 6.9 Interpretation Composition
+
+CGL:
+
+- interprets query results  
+- produces narratives  
 
 ---
 
 # 7. Storage Model Summary
 
-| Store | Role | Authority |
-|------|------|----------|
-| Runtime Store | live operational state | legitimacy execution |
-| Commit Store | immutable artifact history | artifact truth |
-| Relay | remote artifact transport | none |
+| Store | Role |
+|------|------|
+| Runtime Store | working state |
+| CDS Workspace | investigative state |
+| Commit Store | immutable artifacts |
+| Relay | transport |
 
 ---
 
 # 8. Implementation Strategy
 
+---
+
 ## 8.1 Principle
 
-Build by **module completion**, not version labels.
+Build by **capability layers**, not versions.
 
 ---
 
 # 9. Phased Implementation Sequence
+
+---
 
 ## Phase 1 — Legitimacy Core
 
@@ -414,123 +391,78 @@ Build by **module completion**, not version labels.
 
 ---
 
-## Phase 2 — Runtime + Persistence
+## Phase 2 — Runtime + CDS
 
 - Runtime Layer  
-- Runtime Store  
+- CDS  
+- Review Layer  
 
 ---
 
-## Phase 3 — Commit Substrate + Archive
+## Phase 3 — Commit System
 
 - CCS  
 - Commit Store  
-- Archive model  
-- Export model  
-
-Focus:
-
-- commit taxonomy  
-- artifact identity  
-- append-only storage  
-- archive posture  
-- export packaging  
-- runtime → commit publishing  
 
 ---
 
-## Phase 4 — Relay
+## Phase 4 — Federation
 
 - CRS  
-
-Includes:
-
-- commit transport  
-- archive bundle transport  
-- export transport  
+- discover / query / acquire  
 
 ---
 
-## Phase 5 — Structural Graph
+## Phase 5 — Structure
 
-- Charter Structural Graph (CSG)  
-
----
-
-## Phase 6 — Identity Substrate
-
-- Charter Identity Substrate (CIS)  
+- CSG  
 
 ---
 
-## Phase 7 — Care Substrate
+## Phase 6 — Identity
 
-- Charter Care Substrate (CCare)  
-
----
-
-## Phase 8 — Alignment System
-
-- Charter Alignment System (CAS)  
+- CIS  
 
 ---
 
-## Phase 9 — Guidance Layer
+## Phase 7 — Signals
 
-- Charter Guidance Layer (CGL)  
-
----
-
-# 10. Milestones
-
-## Milestone B — Charter Artifact System Exists
-
-Includes:
-
-- CCS  
-- Commit Store  
-- Archive capability  
-- Export capability  
-- CRS  
-
-Outcome:
-
-- full artifact lifecycle exists:
-  - creation  
-  - storage  
-  - archiving  
-  - transport  
-  - retrieval  
+- CCare  
+- CSP  
 
 ---
 
-# 11. Build Order Guidance
+## Phase 8 — Alignment
 
-## IM-04 — Do Not Collapse Runtime and Commit Store
-
-Runtime Store and Commit Store must remain:
-
-- physically separable  
-- logically distinct  
-- independently evolvable  
+- CAS  
 
 ---
 
-# 12. Final Principle
+## Phase 9 — Query
 
-The platform must be built in the same order that meaning emerges:
+- CQL  
 
-- legitimacy  
-- orchestration  
-- artifact truth  
-- structural graph  
-- identity  
-- care  
-- alignment  
-- interpretation  
-- product integration  
+---
 
-Truth is created once,  
-stored immutably,  
-interpreted later,  
-and never rewritten.
+## Phase 10 — Interpretation
+
+- CGL  
+
+---
+
+# 10. Final Principle
+
+Charter must be built in the order that **understanding emerges**:
+
+- thinking  
+- deciding  
+- recording  
+- structuring  
+- observing  
+- computing  
+- querying  
+- explaining  
+
+> Truth is created once,  
+> explored continuously,  
+> and never rewritten.

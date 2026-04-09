@@ -1,4 +1,4 @@
-# Charter — Canonical Naming Specification (Revised)
+# Charter — Canonical Naming Specification (Revised vNext)
 
 Status: FOUNDATIONAL (LOCKED)  
 Applies to: All Charter layers, specifications, libraries, and documentation  
@@ -12,30 +12,30 @@ This document defines the canonical naming system for Charter.
 
 It exists to:
 
-- eliminate ambiguity across evolving versions (V1–V7+)
-- prevent architectural drift caused by renaming
-- decouple version history from system structure
+- eliminate ambiguity across evolving versions  
+- prevent architectural drift caused by renaming  
+- decouple version history from system structure  
 - ensure consistent terminology across:
-  - specifications
-  - codebases
-  - CLI
-  - documentation
-  - future integrations
+  - specifications  
+  - codebases  
+  - CLI  
+  - documentation  
+  - integrations  
 
 ---
 
-# 2. Core Rule
+# 2. Core Rules
 
 ## CN-01 — Architecture Names Are Stable
 
-Architecture names describe what the system is.  
+Architecture names describe what the system *is*.  
 They MUST remain stable across versions.
 
 ---
 
-## CN-02 — Version Numbers Are Historical
+## CN-02 — Versions Are Historical Only
 
-Version numbers (V1, V2, …) describe when capabilities were introduced, not what they are.
+Version numbers describe *when* capabilities were introduced, not *what they are*.
 
 They MUST NOT be used as architectural identifiers.
 
@@ -43,69 +43,68 @@ They MUST NOT be used as architectural identifiers.
 
 ## CN-03 — No Cross-Substitution
 
-Architecture names and version numbers MUST NOT be used interchangeably.
-
-Example (invalid):
-
-- “V6 handles commits”
-
-Example (valid):
-
-- “The Charter Commit System handles commits (introduced in V6)”
+Architecture names and versions MUST NOT be interchangeable.
 
 ---
 
 # 3. Canonical Architecture Modules
 
-The following names are authoritative and permanent.
-
 ---
 
-## 3.1 Legitimacy Engine
-
-Canonical Name: **Legitimacy Engine**
-
-Responsibility:
-- Sessions
-- Authority evaluation
-- Candidate evaluation
-- Resolution creation
-- Legitimacy receipts
-
-Key Property:
-- Only component that creates legitimacy
-
----
-
-## 3.2 Persistence Layer
-
-Canonical Name: **Persistence Layer**
-
-Responsibility:
-- Object store (immutable)
-- Ref store
-- Audit store
-- Low-level storage primitives (including commit persistence)
-
-Key Property:
-- Append-only storage substrate
-- Does not define artifact semantics
-
----
-
-## 3.3 Runtime Layer
+## 3.1 Runtime Layer
 
 Canonical Name: **Runtime Layer**
 
 Responsibility:
-- Context isolation
-- Session orchestration
-- Review orchestration (Baseline, Federation, Archive, etc.)
-- Import/export coordination
-- Engine invocation
+
+- orchestration of all workflows  
+- CDS lifecycle management  
+- Review Layer orchestration  
+- federation (discover, acquire, integrate, emit)  
+- session invocation  
 
 Key Property:
-- Orchestrates workflows but does not create legitimacy
+
+> Orchestrates everything. Creates nothing authoritative.
+
+---
+
+## 3.2 Review Layer (Runtime Subsystem)
+
+Canonical Name: **Review Layer**
+
+Variants:
+
+- **Foreign Integration Review**  
+- **Reconciliation Review**
+
+Responsibility:
+
+- integration boundary to legitimacy  
+- synchronization between CDS and legitimacy  
+- admission of structure  
+
+Key Property:
+
+> Legitimacy firewall and synchronization layer.
+
+---
+
+## 3.3 Legitimacy Engine
+
+Canonical Name: **Legitimacy Engine**
+
+Responsibility:
+
+- sessions  
+- authority evaluation  
+- candidate evaluation  
+- resolution creation  
+- legitimacy receipts  
+
+Key Property:
+
+> The only component that creates legitimacy.
 
 ---
 
@@ -114,12 +113,14 @@ Key Property:
 Canonical Name: **Charter Commit System (CCS)**
 
 Responsibility:
-- Definition of commit artifacts
-- Commit taxonomy (Resolution, Receipt, Review, Exploration, Signal, etc.)
-- Artifact identity (UUID-based)
+
+- commit envelope definition  
+- commit taxonomy (resolution, receipt, signal, etc.)  
+- identity + integrity  
 
 Key Property:
-- Defines what a commit is, not where it is stored
+
+> Defines artifact structure, not meaning.
 
 ---
 
@@ -128,11 +129,13 @@ Key Property:
 Canonical Name: **Charter Commit Store**
 
 Responsibility:
-- Local append-only storage of commits
-- Commit indexing and retrieval
+
+- append-only commit storage  
+- indexing and retrieval  
 
 Key Property:
-- Source of local truth artifacts
+
+> Durable artifact preservation.
 
 ---
 
@@ -141,20 +144,23 @@ Key Property:
 Canonical Name: **Charter Structural Graph (CSG)**
 
 Responsibility:
-- Construction of the local admitted DAG
-- Node and edge representation
-- Supersession relationships
-- Cross-area and cross-resolution references
-- Historical and active graph views
+
+- structural DAG construction  
+- node types:
+  - resolution nodes  
+  - item nodes  
+- edges:
+  - supersession  
+  - reference  
+  - derivation  
+- projection system:
+  - resolution  
+  - item  
+  - mixed  
 
 Key Property:
-- Pure structural representation of commit relationships
 
-Constraints:
-- Does NOT define identity
-- Does NOT define scope or purpose
-- Does NOT interpret meaning
-- Does NOT compute alignment
+> Explicit structure only. No inference.
 
 ---
 
@@ -163,225 +169,273 @@ Constraints:
 Canonical Name: **Charter Identity Substrate (CIS)**
 
 Responsibility:
-- Identity declaration (human-defined)
-- Scope binding via resolutions
-- Identity versioning
-- Deprecation and sunset states
-- Identity continuity over time
+
+- identity declaration  
+- scope definition  
+- bounded membership over CSG  
+- identity versioning  
 
 Key Property:
-- Preserves identity and scope evolution over the graph
 
-Notes:
-- Consumes CSG
-- Does not modify graph structure
-- Does not compute alignment
+> Identity is declared and bounded.
 
 ---
 
-## 3.8 Charter Care Substrate (CCare)
+## 3.8 Charter Deliberate Substrate (CDS)
+
+Canonical Name: **Charter Deliberate Substrate (CDS)**
+
+Responsibility:
+
+- investigation and thinking  
+- Items (universal unit of thought)  
+- observations and synthesis  
+- simulation over structure  
+- subscriptions to signals  
+
+Key Property:
+
+> Thinking without authority.
+
+---
+
+## 3.9 Charter Care Substrate (CCare)
 
 Canonical Name: **Charter Care Substrate (CCare)**
 
 Responsibility:
-- Check-ins (alignment observations)
-- Requests (non-coercive invitations)
-- Supportability signals
-- Silence as a first-class state
+
+- signals (state, confidence, time)  
+- requests  
+- supportability  
+- silence  
 
 Key Property:
-- Observational, descriptive, non-authoritative
+
+> Observational, non-authoritative.
 
 ---
 
-## 3.9 Charter Alignment System (CAS)
+## 3.10 Charter Signal Processing Substrate (CSP)
+
+Canonical Name: **Charter Signal Processing Substrate (CSP)**
+
+Responsibility:
+
+- signal shaping  
+- clustering and aggregation  
+- feed generation  
+- emission policy control  
+
+Key Property:
+
+> Shapes signal flow without creating meaning.
+
+---
+
+## 3.11 Charter Alignment System (CAS)
 
 Canonical Name: **Charter Alignment System (CAS)**
 
 Responsibility:
-- Derived alignment computation over:
-  - structural graph (CSG)
-  - signals (CCare)
-  - optionally identity partitions (CIS)
-- Alignment state modeling
-- Drift, tension, and capacity analysis
-- Semantic lattice evaluation
+
+- alignment computation over:
+  - CSG projections  
+  - CCare signals (optionally CSP-shaped)  
+  - CIS scopes (optional)  
+- drift, tension, propagation  
+- semantic lattice  
 
 Key Property:
-- Query-based, descriptive, non-authoritative
-- Produces derived state only
 
-Notes:
-- Does not create legitimacy
-- Does not enforce behavior
-- Identity is optional for core computation
+> Computes alignment. Does not interpret or enforce.
 
 ---
 
-## 3.10 Charter Guidance Layer (CGL)
+## 3.12 Charter Query Language (CQL)
+
+Canonical Name: **Charter Query Language (CQL)**
+
+Responsibility:
+
+- unified query interface across:
+  - CSG  
+  - CDS  
+  - CAS  
+  - CIS  
+- projection-aware queries  
+- cross-substrate composition  
+
+Key Property:
+
+> Reveals system state without modifying it.
+
+---
+
+## 3.13 Charter Guidance Layer (CGL)
 
 Canonical Name: **Charter Guidance Layer (CGL)**
 
 Responsibility:
-- Interpretation (exegesis)
-- Summaries and narratives
-- Alignment explanation
-- Structural and semantic translation for humans
+
+- interpretation  
+- explanation  
+- narrative generation  
 
 Key Property:
-- Read-only, non-authoritative
+
+> Explains. Does not decide.
 
 ---
 
-## 3.11 Charter Relay System (CRS)
+## 3.14 Charter Relay System (CRS)
 
 Canonical Name: **Charter Relay System (CRS)**
 
 Responsibility:
-- Transport of commit artifacts
-- Append-only archival endpoints
-- Push/fetch operations
+
+- transport of commits  
+- push/fetch operations  
 
 Key Property:
-- Opaque transport layer
-- No interpretation, no legitimacy, no reconstruction
+
+> Opaque transport only.
+
+## 3.15 Charter Resolution Recontextualization (CRR)
+
+Canonical Name: **Charter Resolution Recontextualization (CRR)**
+
+Responsibility:
+
+- defines structural recontextualization patterns:
+  - promotion (abstract → broader scope)  
+  - demotion (abstract → more specific decomposition)  
+  - copy (parallel reuse)  
+  - move (recontextualized replacement)  
+
+- ensures all recontextualization is expressed as:
+  - new resolution artifacts  
+  - explicit `derives_from` relationships  
+
+Key Property:
+
+> Recontextualization creates new structure without mutating existing artifacts.
+
+---
+
+## CRR Positioning
+
+CRR is not a standalone substrate.
+
+It operates across:
+
+- Runtime (orchestration)  
+- CCS (derivation recording)  
+- CSG (structural lineage)  
+- CDS (simulation of decomposition and restructuring)  
+
+CRR defines how structure evolves across abstraction levels without rewriting history.
 
 ---
 
 # 4. Cross-Layer Relationships
 
-## CN-04 — Directionality
+## CN-04 — Non-Linear Architecture
 
-Dependencies flow upward:
+Charter is NOT a strict vertical stack.
 
-Legitimacy Engine  
-↑  
-Persistence Layer  
-↑  
-Runtime Layer  
-↑  
-CCS  
-↑  
-Commit Store  
-↑  
-CSG  
-↑  
-CIS / CCare  
-↑  
-CAS  
-↑  
-CGL  
+It consists of:
 
-CRS operates orthogonally as a transport layer.
+- forward flows (creation → preservation → analysis)  
+- reverse flows (reconciliation)  
+- lateral flows (federation)  
+- observational loops (signals → CDS → decisions → signals)  
 
 ---
 
-## CN-05 — Separation of Concerns
+## CN-05 — Separation of Responsibilities
 
-- Legitimacy Engine → creates legitimacy  
-- Runtime → orchestrates workflows  
-- CCS → defines commit structure  
-- Commit Store → stores commits  
-- CSG → defines structural relationships  
-- CIS → defines identity and scope  
-- CCare → records observational signals  
-- CAS → computes alignment  
-- CGL → interprets  
-- CRS → transports  
+- Runtime → orchestration  
+- Review → boundary + synchronization  
+- Engine → legitimacy creation  
+- CCS → artifact definition  
+- Store → persistence  
+- CSG → structure  
+- CIS → identity  
+- CDS → thinking  
+- CCare → observation  
+- CSP → signal shaping  
+- CAS → computation  
+- CQL → query  
+- CGL → interpretation  
+- CRS → transport  
 
-No layer may assume another layer’s responsibility.
+No module may assume another’s responsibility.
 
 ---
 
-# 5. Mapping Legacy Concepts
+# 5. Legacy Mapping
 
 | Legacy Concept | Canonical Module |
 |----------------|------------------|
-| CLL (Lineage Substrate) | CSG + CIS |
-| VLS concepts | CIS |
-| VDS concepts | CCare + CAS |
+| CLL | CSG + CIS |
 | CAE | CAS |
-
-This table is informational only.  
-Future documents MUST use canonical names.
+| VLS | CIS |
+| VDS | CCare + CAS |
+| Baseline Review | Foreign Integration Review |
 
 ---
 
 # 6. Naming Rules
 
-## CN-06 — Use Canonical Names in All Specs
+## CN-06 — Canonical Names Required
 
-All new documents MUST use:
-
-- Legitimacy Engine  
-- Runtime Layer  
-- Persistence Layer  
-- Charter Commit System (CCS)  
-- Charter Commit Store  
-- Charter Structural Graph (CSG)  
-- Charter Identity Substrate (CIS)  
-- Charter Care Substrate (CCare)  
-- Charter Alignment System (CAS)  
-- Charter Guidance Layer (CGL)  
-- Charter Relay System (CRS)  
+All specs MUST use canonical names.
 
 ---
 
-## CN-07 — Avoid Abbreviations in First Use
+## CN-07 — First Use Must Be Expanded
 
-First reference must use full name.
+Example:
+
+Charter Structural Graph (CSG)
 
 ---
 
-## CN-08 — Do Not Reintroduce Version Labels
+## CN-08 — No Version-Based Naming
 
-Prohibited patterns:
+Prohibited:
 
-- “V6 commits”
-- “V5 alignment”
-- “V7 relay layer”
-
-Allowed pattern:
-
-- “CCS (introduced in V6)”
+- “V6 commits”  
+- “V7 alignment”  
 
 ---
 
 # 7. Mental Model
 
-Charter is a layered system composed of:
+Charter is a system of:
 
-- a legitimacy kernel  
-- a storage substrate  
-- a workflow orchestrator  
-- a commit definition layer  
-- a local truth store  
-- a structural graph layer  
-- an identity substrate  
-- a care substrate  
-- a derived alignment system  
-- a read-only interpretation layer  
-- an external transport system  
-
-Each module is:
-
-- independent  
-- composable  
-- auditable  
-
-Version numbers describe evolution.  
-Canonical names describe structure.
+- thinking (CDS)  
+- deciding (Legitimacy Engine)  
+- recording (CCS + Store)  
+- structuring (CSG)  
+- scoping (CIS)  
+- observing (CCare + CSP)  
+- computing (CAS)  
+- querying (CQL)  
+- explaining (CGL)  
+- exchanging (CRS)  
 
 ---
 
 # 8. Final Principle
 
-If naming becomes ambiguous, architecture will drift.
+If naming drifts, architecture collapses.
 
-This document exists to ensure:
+Canonical names ensure:
 
 - clarity across time  
-- consistency across implementations  
-- survivability across forks  
+- consistency across systems  
+- survivability across evolution  
 
-Canonical names are part of Charter’s long-term integrity.
+> Names are part of the system’s integrity.
