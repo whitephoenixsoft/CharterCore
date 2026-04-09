@@ -1,9 +1,9 @@
-# Charter Deliberate Substrate (CDS) — Foundation Specification (Revised v3)
+# Charter Deliberate Substrate (CDS) — Foundation Specification (Revised v4)
 
 Status: FOUNDATIONAL  
-Intent: Define structured pre-legitimacy thinking, investigation, synthesis, and care continuity  
-Scope: Deliberate workflows, item lifecycle, observations, collaboration, drafts, application, reconciliation, and storage  
-Depends On: Runtime Layer, Charter Commit System (CCS) (for artifact packaging only)  
+Intent: Define structured pre-legitimacy thinking, investigation, synthesis, simulation, and care continuity  
+Scope: Deliberate workflows, item lifecycle, observations, collaboration, subscriptions, drafts, application, reconciliation, and storage  
+Depends On: Runtime Layer, Charter Commit System (CCS) (for artifact packaging only), Charter Signal Processing Substrate (CSP)  
 Does NOT Define: legitimacy, alignment (CAS), identity (CIS), graph structure (CSG), or guidance (CGL)  
 
 ---
@@ -20,6 +20,7 @@ It exists to:
 - support synthesis without enforcing outcomes  
 - preserve the full pre-history and context of decisions  
 - maintain ongoing care context even after decisions are made  
+- enable simulation of structure prior to legitimacy  
 
 CDS is a **non-authoritative investigation and thinking substrate**.
 
@@ -36,6 +37,7 @@ CDS:
 - supports convergence without enforcing outcomes  
 - produces candidates for review, not decisions  
 - may persist beyond decision-making as contextual memory  
+- may operate over both existing structure and newly created Items  
 
 ---
 
@@ -50,13 +52,25 @@ CDS interacts with:
 
 - Review workflows (via Runtime)  
 - CCS (for artifact packaging of outputs)  
-- CCare (as input signals)  
+- CCare (as signal input)  
+- CSP (as feed input)  
 
 CDS does not:
 
 - create legitimacy  
 - enforce decisions  
 - modify external substrates  
+
+CDS operates over both:
+
+- Items (investigative structure)  
+- referenced resolutions (legitimate structure)  
+
+These must remain structurally distinct.
+
+Principle:
+
+> CDS may simulate over structure, but must not collapse investigative and legitimate nodes.
 
 ---
 
@@ -65,6 +79,16 @@ CDS does not:
 ## 4.1 Epic (Scope)
 
 An Epic defines the **bounded scope of investigation or thinking**.
+
+Properties:
+
+- required before investigation begins  
+- defines semantic framing of the deliberate  
+- may be derived from signals, goals, or external context  
+
+Principle:
+
+> All deliberate activity must be scoped.
 
 ---
 
@@ -78,14 +102,26 @@ Properties:
 - non-authoritative  
 - local to the deliberate instance  
 
-Process:
+### Timing
 
-- a deliberate a decision rule is must selected:
-    - SOLE_ACTOR (default)
-    - UNANIMOUS_PRESENT
-    - MAJORITY_PRESENT
-- participants are selected to be part of the voting for synthesis
-- during synthesis the participants vote to allow the Item to become LOCKED
+- a deliberate may begin **without a DDR**
+- no Item may transition to LOCKED without an active DDR
+
+### Supported Rules
+
+- SOLE_ACTOR (default)  
+- UNANIMOUS_PRESENT  
+- MAJORITY_PRESENT  
+
+### Process
+
+- participants are selected for synthesis voting  
+- selected participants evaluate Items  
+- voting determines transition to LOCKED  
+
+Principle:
+
+> DDR governs convergence, not authority.
 
 ---
 
@@ -111,7 +147,7 @@ Items may include an **observations block** representing evidence.
 
 Observations may include:
 
-- metric references (internal or external)  
+- metric references  
 - data snapshots  
 - logs or telemetry  
 - qualitative notes  
@@ -119,9 +155,9 @@ Observations may include:
 
 Properties:
 
-- observational only (non-authoritative)  
-- may be incomplete or inconsistent  
-- may evolve over time  
+- observational only  
+- incomplete or inconsistent allowed  
+- evolves over time  
 
 Principle:
 
@@ -129,9 +165,9 @@ Principle:
 
 ---
 
-### 4.3.2 External References (Expanded)
+### 4.3.2 External References
 
-Items may reference multiple external artifacts:
+Items may reference:
 
 - resolution_ids  
 - signal_ids (CCare)  
@@ -140,9 +176,9 @@ Items may reference multiple external artifacts:
 
 Properties:
 
-- many-to-many relationships allowed  
-- references do not imply causality  
-- references may evolve during investigation  
+- many-to-many  
+- no implied causality  
+- may evolve  
 
 Principle:
 
@@ -152,18 +188,18 @@ Principle:
 
 ### 4.3.3 Contributions
 
-Items may record contributor interactions:
+Items may record:
 
 - creation  
 - modification  
 - annotation  
-- synthesis actions  
+- synthesis participation  
 
 Properties:
 
 - descriptive only  
-- non-authoritative  
-- does not imply ownership  
+- includes contribution type  
+- may include ordering  
 
 Principle:
 
@@ -171,35 +207,61 @@ Principle:
 
 ---
 
+### 4.3.4 Relationship Surfacing (NEW)
+
+Items may **implicitly or explicitly surface relationships** between referenced artifacts.
+
+Examples:
+
+- multiple resolutions referenced by one Item  
+- grouped Items suggesting dependency or tension  
+- derived hypotheses connecting artifacts  
+
+Properties:
+
+- non-authoritative  
+- may be incomplete or conflicting  
+- not part of CSG unless admitted through Review  
+
+Principle:
+
+> CDS may surface candidate structure without creating structure.
+
+### 4.3.5 Resolution-Derived Items (NEW)
+
+Items may be derived from existing resolutions via Reconciliation Review.
+
+These Items:
+
+- represent investigative projections of legitimate structure  
+- carry `derived_from` lineage  
+- may participate in simulation and synthesis  
+- do not modify the source resolution  
+
+Principle:
+
+> A resolution-derived Item is a working counterpart, not a copy of legitimacy.
+
+---
+
 ## 4.4 Participants
 
 A deliberate instance may include participants.
 
-Participants may be:
+Participants:
 
-- individuals (by name)  
-- participant groups  
+- may contribute  
+- may be selected for DDR voting  
 
 Properties:
 
 - descriptive only  
-- mutable during runtime  
-- not tied to authority  
-
-Function:
-
-- can contribute 
-- can be selected for voting in DDR
-
-Principle:
-
-> Participation does not imply authority.
+- mutable  
+- not authoritative  
 
 ---
 
 ## 4.5 Board
-
-The Board represents active thinking.
 
 Contains Items in:
 
@@ -212,60 +274,57 @@ Contains Items in:
 
 ## 4.6 Breakout
 
-Breakouts are isolated by design. They are short-lived focused exploration.
+Short-lived, isolated exploration.
 
-They do not:
+Properties:
 
-- compete for legitimacy  
-- race for acceptance  
-- alter engine state  
-
-Their purpose is exploration, not convergence.
-
-During the breakout the item state is IN_PROGRESS.
-After a breakout and Item becomes READY, BLOCKED, or DEFERRED.
+- does not persist as structure  
+- does not create authority  
+- may produce Items  
 
 ---
 
 ## 4.7 Synthesis
 
-Synthesis is a **continuous convergence process**.
+Continuous convergence process.
 
 Synthesis may:
 
-- refine, merge, split, or create Items  
+- refine, merge, split, create Items  
 - produce LOCKED Items  
 - return Items to Board  
-- prepare Items for Review  
 
-> **Receipt Note:** Freezing a synthesis artifact emits an **Exploration Receipt** capturing artifact IDs, lineage, and end-state (e.g., SYNTHESIZED).
+Receipt:
 
-Principle:
-
-> Synthesis shapes thinking without enforcing finality.
+- Exploration Receipt emitted upon freeze  
 
 ---
 
 ## 4.8 Drafts
 
-Drafts are **reusable bundles of candidate material**.
+Reusable bundles of Items and context.
 
-A draft may include:
+---
 
-- Items  
-- observations  
-- annotations  
-- candidate outputs  
+## 4.9 Subscriptions (NEW)
 
-Properties:
+Deliberates may subscribe to **CSP feeds**.
 
-- reusable across workflows  
+### Properties
+
+- references feed_id  
+- optional local filters  
 - non-authoritative  
-- may be exported or shared  
+- does not create Items automatically  
+
+### Behavior
+
+- provides ongoing observational context  
+- enables monitoring of referenced resolutions or scopes  
 
 Principle:
 
-> Drafts package thinking without finalizing it.
+> Subscriptions provide visibility, not automation.
 
 ---
 
@@ -284,17 +343,22 @@ Principle:
 
 ---
 
-## 5.2 State Principles
+## 5.2 SETTLED Clarification
 
-- all transitions are explicit  
-- no state implies legitimacy  
-- lifecycle reflects investigation → stabilization → integration  
+SETTLED includes:
+
+- confirmed valid conclusions  
+- confirmed invalid (false) conclusions  
+
+DISCARDED is used for:
+
+- abandoned or irrelevant Items  
 
 ---
 
 ## 5.3 LOCKED
 
-Stable output of deliberate.
+Stable output, eligible for Review.
 
 ---
 
@@ -302,65 +366,71 @@ Stable output of deliberate.
 
 Item has been integrated into legitimacy outcomes.
 
-Application may result in:
+---
 
-- new resolution(s)  
-- modified/superseded resolution(s)  
-- parameter/annotation updates  
-- no structural change (confirmed validity)  
+## 5.5 Partial Application
+
+- many-to-many mapping  
+- may apply subset of Item content  
 
 ---
 
-## 5.5 SETTLED
+# 6. Item Seeding Model (NEW)
 
-Item has reached a stable conclusion within CDS.
+Items may originate from:
 
-Properties:
+### A. Direct Creation
+- questions  
+- hypotheses  
+- tasks  
 
-- no further active work required  
-- may or may not be applied  
-- remains part of history  
+### B. CCare Intake
+- signals become observations  
+- may seed Items or enrich existing Items  
+
+### C. CSP Feeds
+- feed data informs observation context  
+- may inspire Item creation  
 
 Principle:
 
-> Settled means understood, not enforced.
+> CDS does not automatically convert signals into decisions.
 
----
+### D. Reconciliation Seeding (NEW)
 
-## 5.6 Partial Application 
+Items may be created through **Reconciliation Review** from existing resolutions.
 
-Items may be:
+For each selected resolution:
 
-- fully applied  
-- partially applied  
-- not applied  
+- a new Item is created in CDS  
+- the Item is assigned `derived_from = resolution_id`  
+
+These Items are referred to as:
+
+> **resolution-derived Items**
 
 Properties:
 
-- many-to-many mapping allowed  
-- must preserve traceability  
+- remain Item nodes (not resolutions)  
+- preserve lineage to source resolution  
+- may include observational or structural context  
+- may evolve independently within CDS  
 
 Principle:
 
-> Application is not one-to-one.
+> Reconciliation allows CDS to project legitimate structure into investigation without importing authority.
 
 ---
 
-# 6. Synthesis Model
+# 7. Synthesis Model
 
 Application does not occur in CDS.
 
-It occurs through:
+Occurs through:
 
 → Review  
 → Session  
 → Resolution  
-
----
-
-# 7. Forking Model
-
-Unchanged (new deliberate instance, no shared mutability).
 
 ---
 
@@ -374,26 +444,38 @@ Append-only.
 
 Stores:
 
-- LOCKED Items  
-- APPLIED Items  
-- SETTLED Items  
-- Deliberate Receipts  
+- LOCKED  
+- APPLIED  
+- SETTLED  
+- Receipts  
 
 ---
 
 # 9. Application & Reconciliation
 
-## 9.1 Application Boundary
+## 9.1 Boundary
 
-Occurs only via Review + Session.
+Application occurs via:
+
+→ Review  
+→ Session  
+→ Resolution  
+
+Reconciliation occurs via:
+
+→ Reconciliation Review  
 
 ---
 
-## 9.2 Reconciliation
+## 9.2 Forward Reconciliation (CDS → Legitimacy)
 
 Runtime maps:
 
-- resolution(s) ↔ Items  
+- Items → resulting resolution(s)  
+
+May use:
+
+- `derived_from` relationships in resulting resolutions  
 
 Transitions:
 
@@ -401,66 +483,55 @@ Transitions:
 
 ---
 
-## 9.3 Properties
+## 9.3 Reverse Reconciliation (Legitimacy → CDS)
 
-- explicit  
-- auditable  
-- does not require closure  
+Through Reconciliation Review, CDS may:
 
----
+- project existing resolutions into Items  
+- create resolution-derived Items  
 
-## 9.4 Principle
+This enables:
 
-> Reconciliation connects thought to decision without collapsing either.
-
----
-
-# 10. Closure
-
-Closure records a snapshot.
+- simulation over existing structure  
+- investigation starting from legitimate context  
 
 ---
 
-## 10.1 Types
+## 9.4 Reconciliation Properties
 
-- SYNTHESIZED  
-- ABANDONED  
-- FORKED  
-- ARCHIVED  
-
----
-
-## 10.2 Deliberate Receipt
-
-Includes:
-
-- deliberate_id  
-- closure_type  
-- item_ids  
-- applied_item_ids  
-- settled_item_ids  
-- resolution_ids  
-- review_receipt_ids  
-- timestamp  
-- annotations  
+- explicit and auditable  
+- bidirectional  
+- supports partial mapping  
+- does not require deliberate closure  
+- does not mutate legitimacy  
 
 ---
 
-## 10.3 Living Deliberates (NEW)
+## 9.5 Principle
 
-Deliberate instances may remain active across:
+> Reconciliation synchronizes investigation and decision without collapsing either.
 
-- multiple application cycles  
-- ongoing monitoring  
-- extended investigations  
+---
+
+# 10. Care Loop (NEW)
+
+CDS participates in continuous cycles:
+
+observation → investigation → synthesis → application → observation  
+
+Sources:
+
+- CCare  
+- CSP  
+- existing resolutions  
 
 Principle:
 
-> Deliberate may persist as living context.
+> CDS maintains continuity between observation and decision.
 
 ---
 
-# 11. Annotation
+# 11. Closure
 
 Unchanged.
 
@@ -472,22 +543,16 @@ Unchanged.
 Orchestrates + reconciliation.
 
 ## 12.2 Review
-Consumes LOCKED Items.
+Consumes LOCKED Items and surfaced relationships.
 
 ## 12.3 CCS
 May include `derived_from`.
 
 ## 12.4 CCare
+Signals seed observations.
 
-### CCare Intake (NEW)
-
-- signals become Items or Item inputs  
-- original context preserved  
-- no automatic interpretation  
-
-Principle:
-
-> Signals are hosted, not redefined.
+## 12.5 CSP
+Feeds provide ongoing context.
 
 ---
 
@@ -495,11 +560,11 @@ Principle:
 
 - CDS does not create legitimacy  
 - Items mutable until stabilized  
-- APPLIED requires external legitimacy outcome  
-- SETTLED requires explicit stabilization  
+- DDR required for LOCKED  
+- APPLIED requires external legitimacy  
+- subscriptions do not create Items  
 - reconciliation is explicit  
-- drafts are non-authoritative  
-- participants do not imply authority  
+- relationships surfaced are non-authoritative  
 - deliberate may remain active indefinitely  
 
 ---
@@ -508,9 +573,9 @@ Principle:
 
 CDS is:
 
-- an investigation space  
-- a problem reconstruction system  
-- a collaborative thinking environment  
+- an investigation system  
+- a simulation layer over structure  
+- a collaborative reasoning environment  
 - a bridge between observation and decision  
 
 ---
@@ -521,8 +586,9 @@ CDS exists so that:
 
 - problems can be explored before being defined  
 - evidence can be gathered without pressure  
-- thinking can evolve without authority  
+- structure can be simulated before commitment  
 - decisions can emerge without rewriting history  
 
 Deliberate preserves how we investigate —  
-and records how understanding becomes action without ever becoming authority itself.
+and enables understanding to evolve into structure  
+without ever becoming authority itself.

@@ -1,7 +1,7 @@
-# Charter Structural Graph (CSG) — Foundation Specification (Revised)
+# Charter Structural Graph (CSG) — Foundation Specification (Revised vNext)
 
 Status: FOUNDATIONAL  
-Intent: Define the structural graph model derived from admitted commits  
+Intent: Define the generic structural DAG substrate derived from admitted artifacts  
 Scope: Graph construction, node/edge definitions, structural projections, and graph materialization  
 Does NOT Define: identity (CIS), alignment (CAS/CAE), guidance (CGL), legitimacy, or storage of commits  
 
@@ -9,17 +9,17 @@ Does NOT Define: identity (CIS), alignment (CAS/CAE), guidance (CGL), legitimacy
 
 # 1. Purpose
 
-The Charter Structural Graph (CSG) defines how admitted commits are transformed into a **deterministic structural graph**.
+The Charter Structural Graph (CSG) defines how admitted artifacts are transformed into a **deterministic structural graph**.
 
 It exists to:
 
-- materialize structural relationships between resolutions  
+- materialize explicit structural relationships between artifacts  
 - preserve full historical lineage without mutation  
-- support structural evolution across scopes (via derivation)  
+- support both legitimate and investigative structures  
 - provide a stable foundation for higher-order systems (CIS, CAS, CGL)  
 - enable structural queries without introducing interpretation  
 
-CSG is a **pure structural layer**.
+CSG is a **generic structural DAG substrate**.
 
 ---
 
@@ -29,7 +29,7 @@ CSG is a **pure structural layer**.
 
 CSG:
 
-- uses only admitted local commits  
+- uses only admitted artifacts  
 - uses only explicitly declared relationships  
 - never invents or infers edges  
 - preserves incompleteness as truth  
@@ -40,30 +40,61 @@ CSG:
 
 ## 3.1 Node Definition
 
-CSG nodes are derived from:
+CSG nodes are derived from **admitted artifacts**.
 
-- **Resolution commits only**
+Node classes include:
 
-Each node represents:
+- **Resolution Nodes** (from resolution commits)  
+- **Item Nodes** (from CDS artifact materialization or equivalent admission)
 
-- a single accepted resolution artifact  
-- immutable, uniquely identifiable  
+Each node:
+
+- represents a single immutable artifact  
+- has a unique identifier  
+- carries a declared node class  
+
+### 3.1.1 Item Node Admission (NEW)
+
+Item nodes may be admitted into CSG only when:
+
+- explicitly materialized through Runtime processes  
+- in a stable state (e.g., LOCKED, APPLIED, or SETTLED)  
+
+In-progress Items must not be admitted.
+
+Principle:
+
+> CSG contains stable investigative structure, not active thought.
 
 ---
 
-## 3.2 Non-Node Artifacts
+## 3.2 Node Class Principle
+
+> Node class must remain explicit and must not be inferred.
+
+CSG must preserve:
+
+- distinction between resolution and item nodes  
+- the origin of each node  
+- the non-authoritative nature of item nodes  
+
+CSG does not assign meaning to node classes.
+
+---
+
+## 3.3 Non-Node Artifacts
 
 The following are NOT graph nodes:
 
 - Areas  
 - Annotations  
-- Receipts (Review, Exploration, etc.)  
+- Receipts (Review, Exploration, Deliberate, etc.)  
 - Signals (CCare)  
 - Identity artifacts (CIS)  
 
 ---
 
-## 3.3 Boundary Model (Areas)
+## 3.4 Boundary Model (Areas)
 
 Areas are:
 
@@ -80,14 +111,23 @@ In CSG:
 
 CSG defines a minimal, explicit edge set.
 
+Edges may connect:
+
+- resolution → resolution  
+- item → item  
+- item → resolution  
+- resolution → item  
+
+All edges must be explicitly declared.
+
 ---
 
 ## 4.1 Supersession Edge
 
 Represents replacement over time.
 
-- Type: node → node  
-- Meaning: “this resolution supersedes another”  
+- Type: resolution → resolution  
+- Meaning: “this resolution supersedes another”
 
 Properties:
 
@@ -95,29 +135,37 @@ Properties:
 - acyclic  
 - preserves lineage  
 
+Supersession applies only to resolution nodes.
+
+Item nodes must not participate in supersession relationships.
+
+Principle:
+
+> Supersession represents legitimate replacement, not investigative evolution.
+
 ---
 
-## 4.2 Resolution Reference Edge
+## 4.2 Reference Edge
 
-Represents dependency or relevance.
+Represents declared relevance or dependency.
 
 - Type: node → node  
-- Meaning: “this resolution references another resolution”  
+- Meaning: “this node references another node”
 
 Properties:
 
 - directional  
 - non-destructive  
-- arbitrary graph structures allowed  
+- may form arbitrary graph structures  
 
 ---
 
-## 4.3 Derivation Edge (NEW)
+## 4.3 Derivation Edge
 
-Represents structural lineage across scopes.
+Represents structural lineage across scopes or contexts.
 
 - Type: node → node  
-- Meaning: “this resolution is derived from another resolution”  
+- Meaning: “this node is derived from another node”
 
 Properties:
 
@@ -134,9 +182,9 @@ Properties:
 
 > Derivation captures recontextualization without replacement.
 
-- source resolution remains valid unless separately retired  
-- derivation preserves lineage across scope changes  
-- no semantic interpretation (promotion/demotion) is performed in CSG  
+- source remains valid unless separately retired  
+- derivation preserves lineage across contexts  
+- no semantic interpretation is performed in CSG  
 
 ---
 
@@ -149,9 +197,29 @@ Properties:
 
 ## 4.5 Edge Principles
 
-- All edges must originate from explicit commit declarations  
-- No inferred edges  
-- Missing relationships remain missing  
+- all edges must originate from explicit declarations  
+- no inferred edges  
+- missing relationships remain missing  
+
+## 4.6 Cross-Class Edge Constraint (NEW)
+
+Edges between node classes (item ↔ resolution) are allowed.
+
+However:
+
+- such edges must not imply legitimacy transfer  
+- must not imply authority equivalence  
+- must not collapse node-class distinction  
+
+These edges exist to:
+
+- support simulation  
+- preserve investigative lineage  
+- enable reconciliation workflows  
+
+Principle:
+
+> Cross-class edges connect structure without transferring authority.
 
 ---
 
@@ -159,21 +227,29 @@ Properties:
 
 ## 5.1 Input
 
-- admitted commits only  
+CSG operates only on:
+
+- admitted artifacts (via CCS and Runtime processes)
 
 ---
 
 ## 5.2 Determinism
 
-- fully deterministic  
+Graph construction must be:
+
+- deterministic  
 - reproducible  
+- independent of runtime state  
 
 ---
 
 ## 5.3 Full Graph
 
+The full graph is:
+
 - append-only  
-- historical  
+- immutable in history  
+- inclusive of all nodes and edges ever admitted  
 
 ---
 
@@ -181,36 +257,43 @@ Properties:
 
 ## 6.1 Purpose
 
-- adjacency  
-- lookup  
-- projections  
+The Graph Store exists to:
+
+- accelerate structural queries  
+- provide adjacency lookup  
+- support projection efficiently  
 
 ---
 
 ## 6.2 Properties
 
+The Graph Store is:
+
 - derived  
-- rebuildable  
+- fully rebuildable  
 - non-authoritative  
 
 ---
 
 ## 6.3 Contents
 
-- node index  
+- node index (with node class)  
 - adjacency:
   - supersession  
   - reference  
-  - **derivation (NEW)**  
+  - derivation  
   - boundary references  
-- active flags  
+- active/inactive flags  
 - reachability  
 
 ---
 
 ## 6.4 Rebuild Principle
 
+The Graph Store must be:
+
 - fully reconstructable  
+- deterministic  
 
 ---
 
@@ -218,111 +301,188 @@ Properties:
 
 CSG must not:
 
-- interpret derivation as promotion or demotion  
+- interpret node class meaning  
+- interpret derivation semantics  
 - infer hierarchy  
 - compute identity  
+- compute alignment  
 
 ---
 
-# 7. Active Graph Projection
+# 7. Structural Projections (NEW)
 
-## 7.1 Active Node
-
-- not superseded  
-- not retired  
+CSG provides **explicit structural projections**.
 
 ---
 
-## 7.2 Supersession
+## 7.1 Projection Definition
 
-- excludes from active  
+A projection is a:
 
----
+> filtered view of the graph based on node and edge constraints
 
-## 7.3 Retirement
-
-- excludes from active  
+Projections do not mutate the graph.
 
 ---
 
-## 7.4 Projection Principle
+## 7.2 Canonical Projections
 
-- projection only  
+### A. Resolution Projection
+
+- includes resolution nodes only  
+- excludes item nodes  
+
+Used for:
+
+- legitimacy-aware structure  
+- downstream systems requiring authoritative context  
 
 ---
 
-# 8. Structural Incompleteness
+### B. Item Projection
 
-- sparse graphs valid  
-- disconnected valid  
+- includes item nodes only  
+
+Used for:
+
+- investigation  
+- simulation  
+- exploratory analysis  
 
 ---
 
-# 9. Structural Queries
+### C. Mixed Projection
 
-Must support:
+- includes both node classes  
+
+Used for:
+
+- simulation with real structure  
+- reconciliation-aware analysis  
+
+### D. Lineage Projection (NEW)
+
+- includes nodes connected through derivation relationships  
+- may span both resolution and item nodes  
+- emphasizes structural lineage over node class  
+
+Used for:
+
+- reconciliation workflows  
+- simulation continuity  
+- investigative tracing  
+
+Principle:
+
+> Lineage projections reveal how structure evolves across contexts.
+
+---
+
+## 7.3 Projection Principle
+
+> Projections expose structure without redefining it.
+
+---
+
+# 8. Active Graph Projection
+
+## 8.1 Active Node Definition
+
+A node is active if:
+
+- not superseded (if applicable)  
+- not retired (if applicable)  
+
+---
+
+## 8.2 Projection Principle
+
+> Activity is a projection, not a mutation.
+
+---
+
+# 9. Structural Incompleteness
+
+CSG must preserve incomplete structure.
+
+Valid cases include:
+
+- disconnected subgraphs  
+- mixed node-class graphs  
+- sparse relationships  
+
+---
+
+# 10. Structural Queries
+
+CSG must support:
 
 - predecessors / successors  
 - supersession chains  
-- **derivation lineage (NEW)**  
+- derivation lineage  
 - reachability  
-- neighborhoods  
+- dependency neighborhoods  
+- projection-aware queries  
 
 ---
 
-# 10. Relationship to Other Modules
+# 11. Relationship to Other Modules
 
-## 10.1 CIS
+## 11.1 CIS
 
-Consumes structure including derivation.
-
----
-
-## 10.2 CAS
-
-May use derivation for propagation modeling.
+Consumes projections of CSG.
 
 ---
 
-## 10.3 CGL
+## 11.2 CAS
 
-Explains derivation history.
+Operates over CSG projections.
 
 ---
 
-## 10.4 Runtime
+## 11.3 CGL
+
+Interprets structure across projections.
+
+---
+
+## 11.4 Runtime
 
 Controls admission.
 
 ---
 
-# 11. Invariants
+# 12. Invariants
 
-- explicit edges only  
-- derivation is non-destructive  
-- no inferred hierarchy  
-- append-only graph  
-- store is rebuildable  
+- nodes are immutable  
+- node class is explicit  
+- edges are explicit  
+- no inferred structure  
+- graph is append-only  
+- projections do not mutate history  
+- graph store is derived and rebuildable  
 
 ---
 
-# 12. Mental Model
+# 13. Mental Model
 
 CSG is:
 
-- structural truth  
-- lineage-preserving graph  
-- scope-agnostic  
+- a generic structural DAG  
+- a shared substrate for legitimate and investigative structure  
+- a lineage-preserving system  
 
 ---
 
-# 13. Final Principle
+# 14. Final Principle
 
 CSG ensures that:
 
-- structure evolves without mutation  
-- lineage is preserved across scopes  
-- meaning can shift without rewriting history  
+- structure is explicit  
+- lineage is preserved  
+- multiple forms of structure may coexist  
+- meaning is never imposed  
 
-Derivation enables structure to grow —  
-without assuming what that growth means.
+It provides a single structural foundation  
+for both decision and investigation  
+without collapsing the distinction between them.

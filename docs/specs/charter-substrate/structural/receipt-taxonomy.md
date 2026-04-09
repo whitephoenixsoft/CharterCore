@@ -1,27 +1,29 @@
-# Receipt Taxonomy  
-Status: FOUNDATIONAL (Proposed)  
-Scope: CLI Interaction Layer (V3+)
+# Charter Receipt Taxonomy — Foundation Specification (Revised)
+
+Status: FOUNDATIONAL  
+Applies to: Runtime Layer, Review Workflows, CDS, Legitimacy Engine, CCS  
+Does NOT Define: legitimacy semantics, alignment computation, transport (CRS), or guidance behavior  
 
 ---
 
 # I. Purpose
 
-This document defines the structural taxonomy for receipts within the Charter CLI (V3+).
+This document defines the structural taxonomy for **receipts** within the Charter system.
 
 It establishes:
 
 - Receipt categories  
-- Required receipt fields  
+- Required receipt properties  
 - Lifecycle triggers  
 - Lineage rules  
 - Audit guarantees  
 
 The objective is to:
 
-- Prevent semantic ambiguity  
-- Prevent accidental legitimacy inference  
-- Ensure full audit reconstructability  
-- Make structural closure explicit and machine-verifiable  
+- prevent semantic ambiguity  
+- prevent accidental legitimacy inference  
+- ensure full audit reconstructability  
+- make structural closure explicit and machine-verifiable  
 
 Receipts formalize closure.  
 They do not create authority unless explicitly defined as legitimacy receipts.
@@ -36,12 +38,12 @@ A receipt is:
 
 Receipts:
 
-- Are append-only  
-- Have canonical engine IDs  
-- Are audit-visible  
-- Do not mutate legitimacy  
-- May reference prior receipts (lineage)  
-- Are commit-level artifacts  
+- are append-only  
+- have canonical engine IDs  
+- are audit-visible  
+- do not mutate legitimacy  
+- may reference prior receipts (lineage)  
+- are commit-level artifacts  
 
 Receipts represent structural finalization, not agreement.
 
@@ -52,47 +54,55 @@ Receipts represent structural finalization, not agreement.
 Receipts are strictly categorized.  
 Category must be explicit and machine-readable.
 
-There are three types:
+The canonical categories are:
 
-- EXPLORATION  
+- DELIBERATE  
 - REVIEW  
+- RECONCILIATION  
 - LEGITIMACY  
+- EXPLORATION (specialized, non-primary)
 
 No additional categories are permitted without explicit version governance.
 
 ---
 
-## A. Exploration Receipts
+## A. Deliberate Receipts
 
 ### Trigger
 
-Emitted upon closure of:
+Emitted upon closure of a **deliberate instance**.
 
-- Deliberate  
-- Breakout  
-- Synthesis artifact finalization  
+Closure types include:
+
+- SYNTHESIZED  
+- ABANDONED  
+- FORKED  
+- ARCHIVED  
 
 ### Captures
 
-- Receipt type: EXPLORATION  
-- Engine ID  
-- Lifecycle object ID (deliberate / breakout / synthesis)  
-- Participants (if recorded)  
-- Artifact IDs produced  
-- Lineage links (prior artifacts or receipts)  
-- Explicit end-state (e.g., SYNTHESIZED, ABANDONED)  
-- Timestamp  
-- semantic_summary (optional, non-authoritative)
+- receipt_type: DELIBERATE  
+- engine_id  
+- deliberate_id  
+- closure_type  
+- item_ids  
+- applied_item_ids  
+- settled_item_ids  
+- participant snapshot (if present)  
+- referenced review_receipt_ids (if applicable)  
+- referenced resolution_ids (optional)  
+- timestamp  
+- annotations (optional, non-authoritative)  
 
 ### Does NOT Capture
 
-- Authority  
-- Scope  
-- Stances  
-- Acceptance  
-- Legitimacy evaluation  
+- authority  
+- legitimacy outcomes  
+- stance evaluation  
 
-Exploration receipts record thinking closure, not decisions.
+### Principle
+
+> Deliberate receipts record the closure of structured thinking, not decisions.
 
 ---
 
@@ -100,120 +110,201 @@ Exploration receipts record thinking closure, not decisions.
 
 ### Trigger
 
-Emitted upon:
-
-- Baseline Review closure  
+Emitted upon closure of a **Review workflow**.
 
 Applies to:
 
-- Flat file import  
-- V1/V2 import  
-- Deliberate import  
-- Consolidation  
-- Foreign baseline merge  
+- Foreign Integration Review  
+- import workflows  
+- consolidation workflows  
+- deliberate output evaluation  
+- candidate relationship evaluation  
 
 ### Captures
 
-- Receipt type: REVIEW  
-- Engine ID  
-- Baseline ID  
-- Source type (flat import, consolidation, deliberate import, etc.)  
-- Proposal IDs reviewed  
-- Accepted IDs  
-- Rejected IDs  
-- Abandoned IDs  
-- Session IDs (if sessions were initiated following review)
-- Lineage links (e.g., exploration receipts referenced)  
-- Timestamp  
+- receipt_type: REVIEW  
+- engine_id  
+- review_id  
+- source type (import, deliberate, federation, etc.)  
+- review item IDs  
+- accepted IDs  
+- rejected IDs  
+- abandoned IDs  
+- accepted relationship definitions (if any)  
+- resulting session_ids (if initiated)  
+- referenced prior receipts (optional)  
+- timestamp  
 
 ### Does NOT Capture
 
-- Authority evaluation results  
-- Stances  
-- Legitimacy conclusions  
+- authority evaluation results  
+- legitimacy outcomes  
+- stances  
 
-Review receipts summarize structural review outcomes.  
-They do not create legitimacy.
+### Principle
+
+> Review receipts record selection and preparation, not legitimacy.
 
 ---
 
-## C. Legitimacy Receipts
+## C. Reconciliation Receipts (NEW)
 
 ### Trigger
 
-Emitted upon:
+Emitted upon closure of a **Reconciliation workflow**.
 
-- Session closure
+Applies to:
 
-A session that closes without acceptance also emits a legitimacy receipt.
+- legitimacy → deliberate synchronization  
+- resolution → item projection workflows  
+- deliberate state updates based on legitimacy outcomes  
 
 ### Captures
 
-- Receipt type: LEGITIMACY  
-- Engine ID  
-- Session ID  
-- Authority ID  
-- Scope ID  
-- Participant set (immutable snapshot)  
-- Candidate set (immutable snapshot)  
-- Stances (ACCEPT / REJECT / ABSTAIN)  
-- Topic  
-- Annotations  
-- Timestamp  
-- Acceptance or cancellation result
+- receipt_type: RECONCILIATION  
+- engine_id  
+- reconciliation_id  
+- source artifact IDs (e.g., resolution_ids)  
+- resulting item_ids created or updated  
+- affected deliberate_id(s)  
+- linkage references:
+  - resolution ↔ item mappings  
+  - derived_from relationships (if used)  
+- reconciliation actions performed:
+  - created  
+  - updated  
+  - mapped  
+- timestamp  
 
-This is the only receipt type that records legitimacy.
+### Does NOT Capture
 
-Legitimacy receipts represent canonical, auditable authority evaluation.
+- authority  
+- legitimacy evaluation  
+- structural admission  
+
+### Principle
+
+> Reconciliation receipts record synchronization between thinking and decision without creating authority.
+
+---
+
+## D. Legitimacy Receipts
+
+### Trigger
+
+Emitted upon closure of a **Session**.
+
+This includes:
+
+- accepted outcomes  
+- rejected outcomes  
+- canceled sessions  
+
+### Captures
+
+- receipt_type: LEGITIMACY  
+- engine_id  
+- session_id  
+- authority_id  
+- scope_id  
+- participant set (immutable snapshot)  
+- candidate set (immutable snapshot)  
+- stances (ACCEPT / REJECT / ABSTAIN)  
+- topic  
+- annotations  
+- timestamp  
+- final outcome (accepted / rejected / canceled)  
+
+### Principle
+
+> This is the only receipt category that records legitimacy.
+
+---
+
+## E. Exploration Receipts (Specialized)
+
+### Trigger
+
+Emitted upon explicit closure of **exploratory artifacts** that do not result in legitimacy.
+
+Examples:
+
+- synthesis artifacts frozen without review  
+- abandoned exploratory outputs  
+- non-legitimizing investigation endpoints  
+
+### Captures
+
+- receipt_type: EXPLORATION  
+- engine_id  
+- artifact_id  
+- originating deliberate_id (if applicable)  
+- artifact IDs  
+- end-state (e.g., SYNTHESIZED, ABANDONED)  
+- timestamp  
+- optional annotations  
+
+### Does NOT Capture
+
+- authority  
+- legitimacy  
+- review outcomes  
+
+### Principle
+
+> Exploration receipts record non-legitimizing closure of investigation artifacts.
 
 ---
 
 # IV. Receipt Invariants
 
-The following are non-negotiable:
+The following must always hold:
 
-1. Every session acceptance MUST produce a LEGITIMACY receipt.  
-2. Every baseline closure MUST produce a REVIEW receipt.  
-3. Every deliberate closure MUST produce an EXPLORATION receipt.  
-4. Every breakout closure MUST produce an EXPLORATION receipt.  
+1. Every session closure MUST produce a LEGITIMACY receipt.  
+2. Every review closure MUST produce a REVIEW receipt.  
+3. Every reconciliation closure MUST produce a RECONCILIATION receipt.  
+4. Every deliberate closure MUST produce a DELIBERATE receipt.  
 5. Receipts are immutable.  
-6. Receipts are the canonical proof artifacts for structural closure.
-7. Audit logs are the underlying event stream from which receipts can be deterministically reconstructed.
-8. If a receipt and audit diverge, the system is invalid.
+6. Receipts are the canonical proof artifacts for structural closure.  
+7. Audit logs must allow deterministic reconstruction of receipts.  
+8. If a receipt and audit diverge, the system is invalid.  
 9. Receipt presence never implies correctness.  
-10. Receipt presence never implies consensus beyond what is recorded.  
+10. Receipt presence never implies consensus beyond recorded stances.  
 11. Receipt absence means structural closure did not occur.  
 
-Violation of these invariants indicates CLI correctness failure.
+Violation of these invariants indicates system correctness failure.
 
 ---
 
 # V. Receipt Lineage Model
 
-Receipts form a traceable lineage chain.
+Receipts form a **directed, auditable lineage graph**.
 
-Standard progression:
+Common patterns include:
 
-Exploration Receipt  
-→ referenced by Review Receipt  
-→ referenced by Legitimacy Receipt  
+- Deliberate → Review → Legitimacy  
+- Legitimacy → Reconciliation → Deliberate  
+- Deliberate ↔ Reconciliation ↔ Legitimacy  
 
-Lineage requirements:
+### Lineage Requirements
 
-- References must be machine-traceable  
-- References must use canonical engine IDs  
-- Lineage must be directional and immutable  
-- No implicit inference of lineage is allowed  
+- references must be machine-traceable  
+- references must use canonical engine IDs  
+- lineage must be explicit and directional  
+- no implicit inference is allowed  
 
 Receipts may reference multiple prior receipts.
 
+### Reconstruction Goals
+
 Lineage must allow reconstruction of:
 
-- Idea origin  
-- Review path  
-- Legitimacy path  
+- idea origin (CDS)  
+- review path  
+- legitimacy path  
+- reconciliation cycles  
 
-Without interpreting content meaning.
+without interpreting semantic meaning.
 
 ---
 
@@ -221,35 +312,56 @@ Without interpreting content meaning.
 
 Audit output must:
 
-- Render receipts one per line  
-- Include receipt type  
-- Include canonical engine IDs  
-- Preserve stable ordering  
-- Allow grep by receipt type  
-- Preserve lineage references  
-- Never interpret intent  
+- render receipts as discrete events  
+- include receipt type  
+- include canonical engine IDs  
+- preserve stable ordering  
+- preserve lineage references  
+- allow filtering by receipt type  
+- avoid interpreting intent  
 
-Receipt events must be distinguishable from:
+Receipts must be distinguishable from:
 
-- SESSION  
-- BASELINE  
-- DELIBERATE  
-- BREAKOUT  
+- sessions  
+- deliberates  
+- reviews  
+- reconciliation processes  
 
 Audit is the system of record.
 
-If receipt lineage cannot be reconstructed from audit,
+If receipt lineage cannot be reconstructed from audit,  
 the system has failed determinism.
 
 ---
 
-# Final Constraint
+# VII. Scope and Extensibility
+
+Receipts apply to:
+
+- Runtime workflows  
+- CDS  
+- Review systems  
+- Legitimacy engine  
+
+Future extensions MAY include:
+
+- CSP processing receipts (aggregation, window closure)  
+- CRS operational receipts (transport events)  
+
+Such extensions must:
+
+- not violate core invariants  
+- not introduce implicit authority  
+- remain explicitly categorized  
+
+---
+
+# Final Principle
 
 Receipts formalize structural closure.
 
 Only LEGITIMACY receipts record legitimacy.
 
-Exploration and Review receipts preserve process integrity,
-but never imply authority.
-
-This taxonomy is foundational for V3+.
+All other receipt types preserve process integrity,  
+traceability, and system determinism  
+without ever implying authority.
