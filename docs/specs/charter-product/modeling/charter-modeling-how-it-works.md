@@ -95,11 +95,38 @@ They are:
 
 Only after this process do they become **decisions**.
 
+This step is explicit.
+
+Ideas do not automatically become decisions.  
+They are reviewed, evaluated, and intentionally accepted.
+
+This ensures that:
+
+- decisions are trustworthy  
+- history is preserved  
+- nothing becomes “real” by accident  
+
 These decisions are:
 
 - explicit  
 - traceable  
 - never rewritten  
+
+---
+
+## The Bridge Between Thinking and Decisions
+
+Charter keeps thinking and decisions separate—but connected.
+
+- Ideas can be promoted into decisions  
+- Existing decisions can be brought back into investigation  
+- You can compare what you thought with what actually happened  
+
+This allows you to:
+
+- refine decisions over time  
+- revisit assumptions  
+- evolve structure without losing history  
 
 ---
 
@@ -109,12 +136,19 @@ Once decisions exist, they don’t just sit there.
 
 They are continuously observed through new signals.
 
-Over time, you can see:
+Over time, Charter can reveal patterns across both structure and signals.
+
+You can begin to see:
 
 - what’s working  
 - what’s drifting  
-- what’s under pressure  
-- what needs attention  
+- where pressure is building  
+- where signals conflict  
+- what is stabilizing or improving  
+
+Some of these patterns feel intuitive.
+
+Others would be difficult to see without the system.
 
 ---
 
@@ -185,15 +219,20 @@ Nothing is inferred automatically.
 
 At first, everything is flat.
 
-Over time, structure emerges.
+Over time, structure emerges—and can be reshaped.
 
 You can:
 
-- break big decisions into smaller ones  
-- combine smaller ideas into larger ones  
-- reorganize structure without rewriting history  
+- break large decisions into smaller ones  
+- combine smaller ideas into broader decisions  
+- reorganize structure as understanding improves  
 
-This allows systems to evolve naturally.
+Importantly:
+
+You don’t rewrite the past.  
+You build new structure on top of it.
+
+This allows systems to evolve naturally without losing history.
 
 ---
 

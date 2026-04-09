@@ -23,7 +23,7 @@ It exists to:
 - allow decomposition and synthesis of decisions  
 - connect investigative structure (CDS) with legitimate structure  
 
-CRR is a **structural lineage model**, not a workflow system.
+CRR is a **structural lineage and transformation specification model**, not a workflow system.
 
 ---
 
@@ -50,7 +50,7 @@ must be expressed as:
 
 Recontextualization is the act of:
 
-> creating a new artifact in a different scope or abstraction tier based on one or more existing artifacts.
+> defining how a new artifact should be created in a different scope or abstraction tier based on one or more existing artifacts.
 
 Artifacts may include:
 
@@ -59,7 +59,7 @@ Artifacts may include:
 
 ---
 
-## 3.2 Abstraction Tier (NEW)
+## 3.2 Abstraction Tier
 
 Abstraction tier describes:
 
@@ -73,7 +73,7 @@ Abstraction tier describes:
 - not related to authority  
 - not related to identity  
 - not inferred by CSG  
-- declared or implied through artifact creation and lineage  
+- expressed only through artifact creation and lineage  
 
 ### Principle
 
@@ -99,31 +99,66 @@ Properties:
 
 ---
 
-## 3.4 Legitimacy Boundary
+## 3.4 Recontextualization Plans (NEW — CRITICAL)
 
-CRR distinguishes:
+CRR does not create artifacts directly.
 
-### A. Pre-Legitimacy Recontextualization (CDS)
+CRR produces:
+
+> **recontextualization plans**
+
+A plan defines:
+
+- candidate artifacts to be created  
+- their intended abstraction tier  
+- their scope or area  
+- their `derives_from` lineage relationships  
+- their structural transformation type (promotion, decomposition, etc.)
+
+These plans:
+
+- are non-authoritative  
+- are not commits  
+- do not create legitimacy  
+- must be evaluated through Review  
+
+Principle:
+
+> CRR defines how structure should change.  
+> Review and Sessions decide whether it becomes real.
+
+---
+
+## 3.5 Legitimacy Boundary
+
+CRR operates across the legitimacy boundary but does not cross it directly.
+
+### A. Pre-Legitimacy (CDS)
 
 - operates on Items  
 - supports simulation and restructuring  
 - non-authoritative  
 
-### B. Post-Legitimacy Recontextualization (CRR)
+### B. CRR Plans
 
-- produces resolution commits  
-- preserves lineage from Items and/or Resolutions  
-- requires Review + Session for legitimacy  
+- may originate from CDS or existing resolutions  
+- define candidate transformations  
+
+### C. Post-Legitimacy (via Review + Session)
+
+- plans become Review Items  
+- accepted items proceed to Sessions  
+- Sessions produce resolution commits  
 
 Principle:
 
-> CRR preserves structure across the legitimacy boundary without defining it.
+> CRR preserves structure across the legitimacy boundary without executing it.
 
 ---
 
 # 4. Recontextualization Types
 
-CRR does not enforce semantics, but common structural patterns include:
+CRR defines structural transformation patterns, including:
 
 ---
 
@@ -131,87 +166,47 @@ CRR does not enforce semantics, but common structural patterns include:
 
 - narrower → broader abstraction tier  
 
-Example:
-
-- implementation detail → guiding principle  
-
 ---
 
 ## 4.2 Demotion (Abstraction Decrease)
 
 - broader → narrower abstraction tier  
 
-Example:
+---
 
-- principle → specific implementation  
+## 4.3 Decomposition
+
+- one higher-tier artifact → multiple lower-tier artifacts  
 
 ---
 
-## 4.3 Decomposition (NEW)
+## 4.4 Synthesis
 
-- one higher-tier resolution → multiple lower-tier resolutions  
-
-Properties:
-
-- preserves lineage from source to all derived artifacts  
-- enables structural expansion  
-
----
-
-## 4.4 Synthesis (NEW)
-
-- multiple lower-tier artifacts → one higher-tier resolution  
-
-Properties:
-
-- may derive from multiple sources  
-- enables consolidation of meaning  
+- multiple artifacts → one higher-tier artifact  
 
 ---
 
 ## 4.5 Copy
 
 - artifact duplicated across contexts  
-- source remains active  
 
 ---
 
 ## 4.6 Move
 
-- artifact recontextualized  
-- source optionally retired  
+- artifact recontextualized with optional source retirement  
 
 ---
 
 # 5. Source Lifecycle Handling
 
-## 5.1 Retain Source
-
-- original artifact remains active  
-
-## 5.2 Retire Source
-
-- original artifact explicitly retired  
-
-## 5.3 Principle
-
-> Retirement is independent from derivation and must be explicit.
+Unchanged.
 
 ---
 
 # 6. Multi-Artifact Derivation
 
-A resolution may derive from:
-
-- one or more resolutions  
-- one or more Items  
-- a mixture of both  
-
-Supports:
-
-- decomposition  
-- synthesis  
-- CDS-to-resolution transitions  
+Unchanged.
 
 ---
 
@@ -221,71 +216,43 @@ CDS may:
 
 - simulate recontextualization using Items  
 - explore abstraction changes  
-- decompose or synthesize candidate structure  
+- generate candidate structure  
 
 CRR:
 
-- consumes this lineage when producing resolutions  
-- does not interpret CDS semantics  
+- formalizes these into recontextualization plans  
+- preserves lineage for potential legitimacy  
 
 Principle:
 
-> CDS explores structure. CRR preserves it in legitimacy.
+> CDS explores structure. CRR formalizes it. Review decides it.
 
 ---
 
 # 8. Relationship to Reconciliation
 
-Reconciliation provides:
-
-- mapping between Items and Resolutions  
-- traceability across the legitimacy boundary  
-
-CRR depends on:
-
-- `derives_from` relationships  
-- reconciliation linkage  
-
-Principle:
-
-> Reconciliation connects artifacts. CRR preserves their lineage.
+Unchanged but implicitly strengthened.
 
 ---
 
 # 9. Annotation
 
-Annotations may describe:
-
-- rationale for abstraction change  
-- reasoning for decomposition or synthesis  
-- contextual decisions  
-
-They are:
-
-- optional  
-- non-authoritative  
+Unchanged.
 
 ---
 
 # 10. Relationship to Other Modules
 
 ## Runtime
-- orchestrates workflows  
-
-## CDS
-- performs pre-legitimacy structure formation  
+- orchestrates execution of CRR plans through Review  
 
 ## Review
-- evaluates and admits recontextualized artifacts  
+- evaluates CRR plans as Review Items  
 
-## CCS
-- records artifacts and lineage  
+## Legitimacy Engine
+- produces resulting resolutions via Sessions  
 
-## CSG
-- materializes structural graph  
-
-## CIS
-- binds identity independently of abstraction tier  
+(others unchanged)
 
 ---
 
@@ -294,14 +261,19 @@ They are:
 - recontextualization creates new artifacts  
 - original artifacts are never mutated  
 - derivation relationships are explicit  
-- derivation does not imply legitimacy  
 - abstraction tier is not authority  
 - abstraction tier is not identity  
 - decomposition and synthesis must preserve lineage  
 - source retirement is explicit  
 - cross-artifact derivation is allowed  
-- Items never become legitimate without Review + Session  
 - annotations do not affect structure  
+
+**Critical Legitimacy Constraints:**
+
+- CRR MUST NOT produce committed resolutions  
+- CRR MUST NOT bypass Review  
+- CRR MUST NOT bypass Sessions  
+- All CRR plans MUST pass through Review + Session before becoming durable artifacts  
 
 ---
 
@@ -310,15 +282,15 @@ They are:
 CRR is:
 
 - a lineage system across abstraction and scope  
-- a mechanism for decomposition and synthesis of meaning  
+- a transformation specification layer  
+- a plan generator for structural evolution  
 - a bridge between investigation and legitimacy  
 
 It is not:
 
-- a hierarchy engine  
-- an authority model  
-- an identity system  
 - a workflow engine  
+- a legitimacy creator  
+- an authority system  
 
 ---
 
@@ -331,6 +303,7 @@ CRR ensures that:
 - investigation can inform legitimacy  
 - lineage is preserved across all transformations  
 
-Every structural change is recorded as new artifacts —  
-linked explicitly to what came before —  
-without rewriting history or implying authority.
+All change is first expressed as a plan,  
+then evaluated,  
+then decided,  
+and only then recorded as legitimate structure.

@@ -201,6 +201,7 @@ A review item may represent:
 - a foreign resolution  
 - a CDS LOCKED Item  
 - a resolution-derived Item  
+- a CRR recontextualization plan  
 - an imported commit  
 - a structural element of a graph  
 - a candidate relationship  
@@ -226,6 +227,37 @@ All review items are:
 - ABANDONED  
 
 These are workflow states, not legitimacy states.
+
+---
+
+# 7.4 CRR Integration (NEW)
+
+CRR (Charter Resolution Recontextualization) produces:
+
+- recontextualization plans  
+
+These plans:
+
+- are non-legitimate  
+- are not commits  
+- define candidate structural transformations  
+
+Within the Review Layer:
+
+- CRR plans MUST be treated as review items  
+- CRR plans MUST undergo forward reconciliation  
+- CRR plans MUST pass through session execution before producing resolution commits  
+
+CRR must not:
+
+- create resolution commits directly  
+- bypass reconciliation workflows  
+- introduce structure into legitimacy without review  
+
+Principle:
+
+> CRR defines how structure could change.  
+> Reconciliation determines whether it becomes legitimate.
 
 ---
 
@@ -359,7 +391,7 @@ System must preserve:
 
 - Reconciliation does not create legitimacy by itself  
 - Only sessions create legitimacy  
-- All integration passes through forward reconciliation  
+- All integration, including CRR-derived transformations, passes through forward reconciliation
 - All review is isolated  
 - Structural relationships must be explicitly admitted  
 - Node-class boundaries must be preserved  
