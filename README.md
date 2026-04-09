@@ -182,10 +182,10 @@ or apply the same thinking without software — see the guides in:
 
 The suggested starting point are the Orientation Guides in:
 
-  - /doc/guide/00-orientation
-  - /doc/guide/01-thinking-models 
-  - /doc/guide/02-practitioners
-  - /doc/guide/03-charter 
+  - /doc/guide/00-the-problem/00-orientation
+  - /doc/guide/00-the-problem/01-thinking-models 
+  - /doc/guide/00-the-problem/02-practitioners
+  - /doc/guide/00-the-problem/03-charter 
 
 And read them in order.
 
