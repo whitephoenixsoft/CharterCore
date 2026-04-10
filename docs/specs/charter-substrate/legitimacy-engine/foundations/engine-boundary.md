@@ -1,7 +1,7 @@
 # Charter Core — Engine Boundary Specification
-Status: FROZEN (V1/V2 Structural Boundary)
-Layer: Charter Core Engine
-Audience: Engine implementers, CLI maintainers, future contributors
+Status: FROZEN  
+Layer: Charter Core Engine  
+Audience: Engine implementers, CLI maintainers, future contributors  
 Purpose: Define the permanent structural boundary of the Charter Core engine to prevent architectural drift.
 
 ---
@@ -12,21 +12,19 @@ This document defines the immutable boundary of the Charter Core Engine.
 
 It specifies:
 
-- What responsibilities belong to the Engine
-- What responsibilities are explicitly excluded
-- The abstract storage contract
-- The event emission contract
-- The minimal query surface
-- Embedding invariants for external consumers
+- What responsibilities belong to the Engine  
+- What responsibilities are explicitly excluded  
+- The abstract storage contract  
+- The deterministic execution and output model  
+- The minimal query surface  
+- Embedding invariants for external consumers  
 
 This boundary ensures that:
 
-- The Engine remains lean and stable
-- Storage and deployment concerns remain application-level
-- Legitimacy mechanics remain mechanically correct
-- Future versions (V4+) do not expand the Engine improperly
-
-This document freezes the structural scope of V1/V2.
+- The Engine remains lean and stable  
+- Storage and deployment concerns remain application-level  
+- Legitimacy mechanics remain mechanically correct  
+- The Engine does not expand beyond its core responsibility  
 
 ---
 
@@ -36,19 +34,19 @@ The Engine is a deterministic legitimacy processor operating on a single Area na
 
 The Engine:
 
-- Enforces legitimacy rules
-- Validates invariants
-- Transitions state
-- Emits audit events
+- Enforces legitimacy rules  
+- Validates invariants  
+- Transitions state  
+- Produces deterministic outputs  
 
 The Engine does NOT:
 
-- Own persistence
-- Manage deployments
-- Implement federation
-- Perform guidance
-- Manage commit relays
-- Interpret meaning
+- Own persistence  
+- Manage deployments  
+- Implement federation  
+- Perform guidance  
+- Emit or manage audit systems  
+- Interpret meaning  
 
 The Engine is a legitimacy kernel — not an application framework.
 
@@ -62,21 +60,21 @@ An Area is a legitimacy boundary.
 
 An Area defines:
 
-- Authority context
-- Scope context
-- Session concurrency domain
-- Resolution namespace
-- Ref namespace
+- Authority context  
+- Scope governance context  
+- Session concurrency domain  
+- Resolution namespace  
+- Reference namespace  
 
 The Engine operates on exactly one Area context per invocation.
 
 The Engine does not:
 
-- Enumerate Areas
-- Coordinate multiple Areas
-- Perform cross-Area operations
+- Enumerate Areas  
+- Coordinate multiple Areas  
+- Perform cross-Area operations  
 
-Area selection and multi-Area orchestration are application responsibilities.
+Area selection and orchestration are application responsibilities.
 
 ---
 
@@ -86,16 +84,22 @@ Area selection and multi-Area orchestration are application responsibilities.
 
 The Engine defines and owns:
 
-- Resolution
-- Session
-- Authority enums
-- Scope semantics
-- Session constraints
-- Status enums (ACTIVE, SUPERSEDED, etc.)
-- Reversibility declarations
-- Supersession semantics
+- Resolution  
+- Session  
+- Candidate  
+- Authority rule definitions (via governance artifacts)  
+- Scope governance semantics  
+- Session constraints  
+- Status enums (ACTIVE, ON_HOLD, SUPERSEDED, RETIRED, etc.)  
+- Supersession semantics  
+- Informational metadata fields (e.g., annotation, reversibility_intent)
 
 These define mechanical legitimacy.
+
+Informational fields:
+
+- must be preserved  
+- must not influence legitimacy or structural evaluation  
 
 ---
 
@@ -103,15 +107,20 @@ These define mechanical legitimacy.
 
 The Engine must enforce:
 
-- Authority evaluation rules
-- Explicit acceptance requirement
-- Session phase separation (evaluation vs commitment)
-- Single active session per Area
-- UNDER_REVIEW blocking rules
-- Supersession directionality
-- Irreversibility invariants
-- Explicit transition requirements
-- Immutable object guarantees
+- Authority evaluation rules  
+- Explicit acceptance requirement  
+- Session phase separation (evaluation vs commitment)  
+- Deterministic round behavior  
+- Concurrent session conflict resolution  
+- ON_HOLD usability blocking rules  
+- Supersession directionality  
+- Explicit transition requirements  
+- Immutable object guarantees  
+
+Reversibility intent:
+
+- is informational only  
+- must not affect legitimacy or transitions  
 
 All legitimacy-creating transitions must be validated here.
 
@@ -121,46 +130,47 @@ All legitimacy-creating transitions must be validated here.
 
 The Engine exposes only queries required to:
 
-- Evaluate legitimacy
-- Confirm invariant compliance
-- Retrieve canonical state
+- Evaluate legitimacy  
+- Confirm invariant compliance  
+- Retrieve canonical state  
 
 Engine queries must:
 
-- Be pure
-- Be deterministic
-- Never mutate state
-- Never infer intent
-- Never create legitimacy
+- Be pure  
+- Be deterministic  
+- Never mutate state  
+- Never infer intent  
+- Never create legitimacy  
+
+Evaluation outputs must be consistent with the deterministic reporting model (e.g., EvaluationReport).
 
 Engine queries answer only:
 
-"What is mechanically true?"
+“What is mechanically true?”
 
 They do not summarize, interpret, or advise.
 
 ---
 
-### 4.4 Event Emission Contract
+### 4.4 Execution Output Model
 
-For every state transition, the Engine must emit structured audit events.
+The Engine produces deterministic outputs, including:
 
-Events must be:
+- Evaluation results  
+- Accepted artifacts (e.g., Resolutions)  
+- Receipts (terminal artifacts of sessions)  
 
-- Deterministic
-- Complete
-- Immutable
-- Sufficient for full reconstruction
+The Engine does not:
 
-The Engine guarantees:
+- Emit audit events  
+- Persist outputs  
+- Guarantee external observation  
 
-- Events correspond exactly to accepted transitions
-- No silent state mutations occur
-- All legitimacy actions are auditable
+External systems may observe Engine operations and record audit data, but:
 
-The Engine does not persist events.
-
-Event persistence is application responsibility.
+- audit is not required for correctness  
+- audit must not influence execution  
+- audit must not be used for reconstruction of legitimacy  
 
 ---
 
@@ -170,25 +180,28 @@ The Engine operates over an abstract storage adapter supplied by the embedding a
 
 The storage interface must support:
 
-- Retrieving immutable objects by ID
-- Storing immutable objects
-- Reading refs (named pointers)
-- Updating refs atomically
-- Listing objects by type (if required)
+- Retrieving immutable objects by ID  
+- Storing immutable objects  
+- Reading references (named pointers)  
+- Updating references atomically  
+
+Optional capabilities (if provided):
+
+- Deterministic listing of objects  
 
 Storage must guarantee:
 
-- Atomicity per engine invocation
-- Deterministic reads
-- No hidden mutation
-- Append-only object semantics
+- Atomicity per Engine invocation  
+- Deterministic reads  
+- No hidden mutation  
+- Append-only object semantics  
 
 The Engine must not:
 
-- Open files
-- Connect to databases
-- Assume filesystem layout
-- Assume network topology
+- Open files  
+- Connect to databases  
+- Assume filesystem layout  
+- Assume network topology  
 
 Persistence lifecycle belongs entirely to the application layer.
 
@@ -200,13 +213,13 @@ Indexes are performance optimizations.
 
 Indexes:
 
-- May be used by the Engine internally
-- Must be derivable from objects + refs
-- Must never be a source of truth
+- May be used internally  
+- Must be derivable from objects and references  
+- Must never be a source of truth  
 
-Loss of indexes must not alter legitimacy.
+Loss of indexes must not alter legitimacy or evaluation outcomes.
 
-Index persistence format is not part of Engine stability guarantees.
+Index persistence format is not part of Engine guarantees.
 
 ---
 
@@ -214,15 +227,15 @@ Index persistence format is not part of Engine stability guarantees.
 
 The Engine must never include:
 
-- Commit abstraction (Commit is higher-layer concept)
-- Relay or synchronization logic
-- Federation aggregation
-- Guidance or interpretation
-- Cross-Area coordination
-- UX-level queries
-- Deployment topology awareness
-- External authority inference
-- Meaning interpretation
+- Commit abstraction (higher-layer concept)  
+- Relay or synchronization logic  
+- Federation or multi-Area coordination  
+- Guidance or interpretation  
+- UX-level queries  
+- Deployment topology awareness  
+- External authority inference  
+- Meaning interpretation  
+- Audit emission or audit persistence  
 
 If a feature does not affect mechanical legitimacy within a single Area, it does not belong in the Engine.
 
@@ -232,42 +245,42 @@ If a feature does not affect mechanical legitimacy within a single Area, it does
 
 Any application embedding the Engine must guarantee:
 
-- Only one Area context is provided per invocation
-- Storage adapter enforces atomic updates
-- Events are persisted immutably
-- No partial state is exposed to queries
-- Engine calls are treated as transactions
+- Only one Area context is provided per invocation  
+- Storage adapter enforces atomic updates  
+- No partial state is exposed to queries  
+- Engine calls are treated as atomic operations  
 
 Applications may:
 
-- Maintain multiple Areas
-- Coordinate multiple Engine instances
-- Implement relay or federation
-- Wrap resolutions into higher-level commit objects
-- Expose guidance systems
+- Maintain multiple Areas  
+- Coordinate multiple Engine instances  
+- Implement relay or federation  
+- Wrap resolutions into higher-level constructs  
+- Implement audit systems  
+- Provide guidance or UX layers  
 
-But these must remain outside the Engine boundary.
+These must remain outside the Engine boundary.
 
 ---
 
 ## 9. Stability Guarantee
 
-The Engine boundary defined in this document is frozen for V1/V2.
+The Engine boundary defined in this document is stable.
 
-Future versions may:
+Future changes may:
 
-- Add new domain primitives if required for legitimacy
-- Add new transitions consistent with invariants
-- Add new queries that observe canonical state
+- Add new domain primitives required for legitimacy  
+- Add new transitions consistent with invariants  
+- Add new deterministic queries  
 
-Future versions must not:
+Future changes must not:
 
-- Introduce storage coupling
-- Introduce federation logic
-- Introduce commit transport concerns
-- Introduce guidance logic
-- Blur Area boundaries
-- Blur legitimacy vs application concerns
+- Introduce storage coupling  
+- Introduce federation logic  
+- Introduce transport concerns  
+- Introduce guidance logic  
+- Blur Area boundaries  
+- Blur legitimacy vs application concerns  
 
 If a change affects application behavior but not mechanical legitimacy, it must occur outside the Engine.
 
@@ -275,22 +288,22 @@ If a change affects application behavior but not mechanical legitimacy, it must 
 
 ## 10. Mental Model
 
-The Engine is a deterministic legitimacy CPU.
+The Engine is a deterministic legitimacy processor.
 
 It:
 
-- Operates inside one Area namespace
-- Enforces legitimacy rules
-- Transitions state
-- Emits events
+- Operates within a single Area namespace  
+- Enforces legitimacy rules  
+- Evaluates and transitions state  
+- Produces deterministic outputs  
 
-Everything else — storage, transport, federation, guidance, user experience — belongs to higher layers.
+Everything else — storage, transport, federation, audit, guidance, and user experience — belongs to higher layers.
 
 This separation preserves:
 
-- Long-term freeze stability
-- Library independence
-- Mechanical clarity
-- Architectural integrity
+- Determinism  
+- Architectural clarity  
+- Long-term stability  
+- Mechanical correctness  
 
 Nothing beyond mechanical legitimacy lives here.

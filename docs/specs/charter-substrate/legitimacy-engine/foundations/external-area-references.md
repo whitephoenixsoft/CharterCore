@@ -1,19 +1,20 @@
-# Charter Core — External Area References (Foundation)
+# Charter Core — External References Foundation
 
 Status: FROZEN (Conceptual)  
-Applies to: Charter Core, Charter CLI, future interfaces  
-Does NOT define: storage schema, wire formats, or command syntax
+Applies to: Charter Core, CLI, and future interfaces  
+Does NOT define: storage schema, wire formats, or command syntax  
 
 ---
 
 ## Purpose
 
-This document defines the *conceptual model* for referencing external or non-local Areas.
+This document defines the conceptual model for **external (cross-Area) references**.
 
 Its purpose is to preserve:
-- historical intelligibility
-- legitimacy boundaries
-- audit clarity
+
+- historical intelligibility  
+- legitimacy boundaries  
+- audit clarity  
 
 while allowing humans to reference ideas that evolve over time.
 
@@ -21,45 +22,47 @@ while allowing humans to reference ideas that evolve over time.
 
 ## Core Principle
 
-> References identify *what was pointed to*, not *what it is called now*.
+> References identify what was pointed to, not what it is called now.
 
-A reference captures **intent at the moment of creation**, not live meaning.
+A reference captures the **recorded identity and human context at the moment of creation**, not live meaning.
 
 ---
 
-## What an Area Reference Is
+## What an External Reference Is
 
-An Area reference is:
+An external reference is:
 
-- a **pointer to an Area identity**
-- accompanied by **human-readable context**
-- immutable once created
-- non-legitimate by design
+- a **pointer to an external identity** (Area or Resolution)  
+- accompanied by **human-readable context**  
+- immutable once created  
+- non-legitimate by design  
 
 A reference exists to support:
-- understanding
-- traceability
-- audit reconstruction
+
+- understanding  
+- traceability  
+- audit reconstruction  
 
 It does **not** participate in authority, scope, or acceptance.
 
 ---
 
-## What an Area Reference Is Not
+## What an External Reference Is Not
 
-An Area reference is NOT:
+An external reference is NOT:
 
-- a legitimacy claim
-- an authority transfer
-- a dependency declaration
-- a live alias
-- a semantic guarantee
+- a legitimacy claim  
+- an authority transfer  
+- a dependency declaration  
+- a live alias  
+- a semantic guarantee  
 
 References never:
-- confer meaning
-- update automatically
-- rewrite history
-- participate in governance
+
+- confer meaning  
+- update automatically  
+- rewrite history  
+- participate in governance  
 
 ---
 
@@ -67,12 +70,16 @@ References never:
 
 Charter strictly separates:
 
-- **Identity** — immutable, authoritative
-- **Meaning** — human, contextual, time-bound
+- **Identity** — immutable, authoritative  
+- **Meaning** — human, contextual, time-bound  
 
-For Areas:
-- Identity is the Area ID
-- Meaning is conveyed through labels and descriptions
+For external references:
+
+- Identity is expressed through:
+  - external_area_id  
+  - external_resolution_id (optional)  
+
+- Meaning is conveyed through labels and descriptions  
 
 References bind to **identity**, not meaning.
 
@@ -82,103 +89,151 @@ References bind to **identity**, not meaning.
 
 A reference MUST conceptually contain:
 
-- **Target Area ID**  
-  The immutable identity being referenced.
+- **External Area ID**  
+  The immutable Area identity  
 
-- **Label Snapshot**  
-  The human-readable name known at the time of reference.
+- **External Resolution ID (optional)**  
+  The specific Resolution being referenced  
+
+- **Label Snapshot(s)**  
+  Human-readable names known at the time of reference  
 
 Optional (non-authoritative):
-- long name
-- short description
+
+- description  
+- additional labels  
 
 These fields are:
-- informational
-- historical
-- never normative
+
+- informational  
+- historical  
+- never normative  
+
+---
+
+## Relationship Declaration
+
+A reference may include a **relationship** describing how the author views the connection.
+
+Examples:
+
+- derived_from  
+- affects  
+- affected_by  
+- related  
+
+Relationship properties:
+
+- informational only  
+- local to the referencing artifact  
+- not required to be reciprocated  
+- not a dependency  
+- not interpreted by legitimacy logic  
+
+The Engine must not infer structure, causality, or requirements from relationship declarations.
 
 ---
 
 ## Renaming Semantics
 
-Renaming an Area:
+Renaming an Area or Resolution:
 
-- modifies metadata
-- emits an audit event
-- does NOT alter existing references
+- modifies metadata  
+- may emit audit events  
+- does NOT alter existing references  
 
 Existing references remain historically correct:
+
 > “This is what the author called it at the time.”
 
 Current names are discoverable through:
-- Area audit
-- metadata history
-- query layers
+
+- audit  
+- metadata history  
+- query layers  
 
 No back-patching occurs.
 
 ---
 
+## External Existence Independence
+
+External references:
+
+- do not require the external Area or Resolution to exist locally  
+- do not require validation of external targets  
+- must not block legitimacy if the external target is unavailable  
+
+They are opaque identifiers from the perspective of the local Engine.
+
+---
+
 ## Audit Philosophy
 
-Area references exist to support the question:
+External references exist to support the question:
 
 > “What did the author believe they were pointing to at that moment?”
 
-Audit must be able to show:
-- the referenced Area identity
-- the name known at the time
-- the evolution of the Area’s metadata afterward
+Audit may show:
 
-Audit never infers intent beyond what was recorded.
+- referenced identity  
+- label snapshot at time of reference  
+- evolution of metadata over time  
+
+Audit must not infer intent beyond what was recorded.
 
 ---
 
 ## Legitimacy Boundary
 
-Area references:
+External references:
 
-- do not create authority
-- do not create scope
-- do not activate Areas
-- do not imply agreement
+- do not create authority  
+- do not create scope  
+- do not activate Areas  
+- do not imply agreement  
 
 They are informational artifacts only.
 
-Any legitimacy involving Areas must occur through:
-- sessions
-- resolutions
-- baseline review
+Any legitimacy involving Areas or Resolutions must occur through:
+
+- sessions  
+- resolutions  
+- reconciliation review  
 
 ---
 
 ## Engine Responsibility
 
-The engine:
+The Engine:
 
-- stores references immutably
-- treats reference content as facts, not truth
-- never resolves or interprets meaning
+- preserves reference content immutably when included in immutable artifacts  
+- treats reference content as informational data  
+- never interprets or resolves external meaning  
 
-The engine does NOT:
-- validate label correctness
-- enforce naming consistency
-- infer relationships from references
+The Engine must not:
+
+- validate label correctness  
+- enforce naming consistency  
+- infer relationships from references  
+- require external resolution or Area presence  
 
 ---
 
 ## Interface Responsibility
 
-Interfaces (CLI, UI, reports) MAY:
+Interfaces (CLI, UI, reporting layers) MAY:
 
-- display both historical and current labels
-- annotate differences for humans
-- assist navigation and discovery
+- display both historical and current labels  
+- annotate differences for clarity  
+- assist navigation and discovery  
 
 Interfaces MUST NOT:
-- mutate references
-- infer authority
-- collapse identity and meaning
+
+- mutate references  
+- infer authority  
+- collapse identity and meaning  
+- treat references as structural dependencies  
 
 ---
 
@@ -186,10 +241,10 @@ Interfaces MUST NOT:
 
 This model exists to ensure that:
 
-- history never rewrites itself
-- names remain human, not authoritative
-- references stay safe across time
-- audit remains intelligible decades later
+- history never rewrites itself  
+- names remain human, not authoritative  
+- references remain safe across time and systems  
+- audit remains intelligible long-term  
 
-If references ever become authoritative,
+If references ever become authoritative or structural,
 then Charter has violated its core legitimacy discipline.

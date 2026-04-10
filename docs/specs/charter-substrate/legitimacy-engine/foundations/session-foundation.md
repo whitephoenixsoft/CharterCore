@@ -1,6 +1,6 @@
 # Charter Core — Session Foundation
 
-Version: 0.2  
+Version: 0.3  
 Status: FOUNDATIONAL  
 Layer: Conceptual / Human Interface (Engine-adjacent)  
 Applies to: Charter Core semantics, CLI behavior, and guidance layers  
@@ -38,6 +38,9 @@ Within a session:
 - Permanence is acknowledged
 - History is recorded without interpretation
 
+Outcomes are determined mechanically by explicit rules.  
+Sessions do not rely on interpretation, negotiation inference, or hidden logic.
+
 Sessions do **not**:
 
 - Decide automatically
@@ -65,7 +68,7 @@ Sessions ensure that:
 - Stances are recorded
 - Context is preserved
 
-Legitimacy is never inferred.
+Legitimacy is never inferred.  
 It is always **owned**.
 
 ---
@@ -76,7 +79,7 @@ Sessions evaluate **candidate resolutions**.
 
 Candidates:
 
-- May originate anywhere (drafting, deliberate, breakout, baseline review)
+- May originate anywhere (drafting, deliberate, breakout, reconciliation review)
 - Have no authority or meaning until accepted
 - Carry annotations and rationale that may later become permanent
 
@@ -94,16 +97,16 @@ Every session operates under an active:
 Sessions may exist when governance is under review, but:
 
 - No legitimacy may be created while required governance is unresolved
-- Such sessions are **BLOCKED**, not invalid
+- Such sessions are **BLOCKED**, meaning legitimacy cannot proceed due to unresolved governance or other required conditions
 
-Sessions never guess governance.
+Sessions never guess governance.  
 They record it.
 
 ---
 
 ### 4. Annotations and Rationale Are First-Class
 
-Annotations and rationale are **part of legitimacy**, not decoration.
+Annotations and rationale are **part of the record of legitimacy**, not the mechanism of legitimacy.
 
 They exist to explain:
 
@@ -117,7 +120,7 @@ Because annotations shape future interpretation:
 - They are immutable once acceptance occurs
 - Adding missing context later requires a new resolution
 
-Annotations reduce ambiguity.
+Annotations reduce ambiguity.  
 They do not reinterpret history.
 
 ---
@@ -153,12 +156,13 @@ A session may pass through these states:
 
 - **ACTIVE** — candidates and context may be developed
 - **PAUSED** — activity intentionally halted
-- **BLOCKED** — legitimacy cannot proceed due to unresolved dependency
-- **CLOSED** — history sealed; no further action allowed
+- **BLOCKED** — legitimacy cannot proceed due to unresolved conditions
+- **ACCEPTED** — legitimacy has been created
+- **CLOSED** — no legitimacy created; history preserved
 
 All state transitions are explicit and auditable.
 
-Closure preserves clarity.
+Closure preserves clarity.  
 Open-ended sessions are discouraged.
 
 ---
@@ -168,9 +172,9 @@ Open-ended sessions are discouraged.
 - **Resolutions**  
   Sessions are the only path to legitimacy.
 
-- **Baseline Review**  
-  Baselines are review workspaces. Sessions are commitment mechanisms.  
-  UNDER_REVIEW in baseline ≠ UNDER_REVIEW in canonical governance.
+- **Reconciliation Review**  
+  Reconciliations are review workspaces. Sessions are commitment mechanisms.  
+  UNDER_REVIEW in reconciliation ≠ UNDER_REVIEW in canonical governance.
 
 - **Deliberate & Breakouts**  
   These explore ideas. Sessions commit to them.
@@ -199,7 +203,7 @@ Over time, disciplined use of sessions cultivates:
 - Reduced fear of commitment
 - Increased trust in one’s own judgment
 
-Sessions do not moralize.
+Sessions do not moralize.  
 They illuminate.
 
 ---
@@ -208,10 +212,10 @@ They illuminate.
 
 Every session ends explicitly as one of:
 
-- **Accepted** — one or more resolutions become legitimate
-- **Abandoned** — no legitimacy created; history preserved
+- **ACCEPTED** — a selected candidate produces a legitimate outcome (which may affect one or more resolutions)
+- **CLOSED** — no legitimacy created; history preserved
 
-There is no implicit success or failure.
+There is no implicit success or failure.  
 Only recorded outcomes.
 
 ---
