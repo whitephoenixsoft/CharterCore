@@ -108,7 +108,7 @@ This mirrors real-world decision-making: exploration is safe; commitment is expl
    - Events are collected, timestamped, and indexed  
 
 3. **Visibility**  
-   - CLI and API may query audits to inspect history and outcomes  
+   - CLI and API may query audits to inspect history and outcomes 
 
 4. **Review**  
    - Users inspect sessions, decisions, and reconciliation activity  
