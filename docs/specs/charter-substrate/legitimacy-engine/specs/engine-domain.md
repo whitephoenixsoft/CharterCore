@@ -701,6 +701,9 @@ Resolution fields:
 - annotation (optional)
 - created_at
 - schema_version
+- **reversibility_intent** — enum("REVERSIBLE", "CONDITIONALLY_REVERSIBLE", "IRREVERSIBLE")
+
+Reversibility intent is a non-structural, informational field expressing the author’s intent regarding how the Resolution is expected to be treated over time. This field is advisory only and must not influence structural validation, decision evaluation, acceptance eligibility, supersession capability, or any form of legitimacy determination. All Resolutions remain mechanically supersedable regardless of this value.
 
 ENG-DOMAIN defines Resolution as the persisted governance artifact created by successful session acceptance.
 

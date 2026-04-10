@@ -1,6 +1,6 @@
-# Charter Core — Resolution Foundation (V1)
+# Charter Core — Resolution Foundation
 
-Status: FROZEN (V1 Perspective)  
+Status: FROZEN
 Scope: Conceptual foundation for resolutions, sessions, and legitimacy  
 Audience: Charter contributors, future maintainers, and engineers
 
@@ -10,7 +10,7 @@ Audience: Charter contributors, future maintainers, and engineers
 
 A **Resolution** is the fundamental unit of commitment in Charter. It represents a fact, decision, or proposal that is auditable, traceable, and owned by an explicit actor.  
 
-Resolutions are **immutable once created**, and their legitimacy is realized **only when accepted through sessions and baseline review**. They embody ownership and accountability and exist to maintain **coherent history**.
+Resolutions are **immutable once created**, and their legitimacy is realized **only when accepted through sessions and reconciliation review**. They embody ownership and accountability and exist to maintain **coherent history**.
 
 ---
 
@@ -41,25 +41,25 @@ Resolutions without sessions remain **pre-legitimacy artifacts**, auditable but 
 
 ---
 
-## 4. Core Resolution Fields (V1)
+## 4. Core Resolution Fields
 
-| Field | Description | Notes |
-|-------|------------|-------|
-| **Resolution ID** | Unique identifier for the resolution | Immutable |
-| **Author** | Explicit creator of the resolution | Required |
-| **Timestamp** | When the resolution was proposed | Required |
-| **Candidate / Content** | Text or structured proposal | Immutable |
-| **Authority** | Actor(s) whose acceptance is required | Evaluated via session |
-| **Scope** | Defines the boundary of applicability | Evaluated via session |
-| **Reversibility** | Declaration: REVERSIBLE / CONDITIONALLY_REVERSIBLE / IRREVERSIBLE | Explicit rationale required |
-| **Annotations / Rationale** | Optional field for context or explanation | Recommended for human reasoning, can describe irreversibility decisions |
-| **Parent / Superseded Resolutions** | References prior resolutions superseded | Immutable; preserves lineage |
+| Field                               | Description                                                       | Notes                                                                   |
+| ----------------------------------- | ----------------------------------------------------------------- | ----------------------------------------------------------------------- |
+| **Resolution ID**                   | Unique identifier for the resolution                              | Immutable                                                               |
+| **Author**                          | Explicit creator of the resolution                                | Required                                                                |
+| **Timestamp**                       | When the resolution was proposed                                  | Required                                                                |
+| **Candidate / Content**             | Text or structured proposal                                       | Immutable                                                               |
+| **Authority**                       | Actor(s) whose acceptance is required                             | Evaluated via session                                                   |
+| **Scope**                           | Defines the boundary of applicability                             | Evaluated via session                                                   |
+| **Reversibility Intent**            | Declaration: REVERSIBLE / CONDITIONALLY_REVERSIBLE / IRREVERSIBLE | Explicit rationale required                                             |
+| **Annotations / Rationale**         | Optional field for context or explanation                         | Recommended for human reasoning, can describe irreversibility decisions |
+| **Parent / Superseded Resolutions** | References prior resolutions superseded                           | Immutable; preserves lineage                                            |
 
 ---
 
-### 4.1 Reversibility & Rationale
+### 4.1 Reversibility Intent & Rationale
 
-The **Reversibility** field is essential for human understanding:
+The **Reversibility Intent** field is essential for human understanding:
 
 - **REVERSIBLE:** Can be undone via standard session and supersession mechanisms.
 - **CONDITIONALLY_REVERSIBLE:** Undo is possible but may require explicit approval, additional sessions, or contextual review.
@@ -82,7 +82,7 @@ Annotation: This resolution establishes the official area naming convention. Rev
 ## 5. Behavioral Philosophy
 
 - Resolutions are **immutable objects**.
-- Legitimacy flows **only through sessions and baseline review**.
+- Legitimacy flows **only through sessions and Reconciliation review**.
 - Supersession creates new objects; old objects remain for audit.
 - Resolutions **do not infer correctness** — only ownership and traceability.
 - Annotations allow humans to capture intent, context, or reasoning without affecting the engine’s legitimacy rules.
@@ -99,7 +99,7 @@ Annotation: This resolution establishes the official area naming convention. Rev
 
 ## 7. Relationship to Other Foundation Documents
 
-- **Baseline Review:** Resolutions imported from external areas remain UNDER_REVIEW until formally accepted.
+- **Reconciliation Review:** Resolutions imported from external areas remain UNDER_REVIEW until formally accepted.
 - **Deliberate / Breakouts:** Exploration spaces produce candidate resolutions without legitimacy.
 - **Audit:** Reconstructs the history of resolutions, authority, scope, and annotations.
 
