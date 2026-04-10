@@ -1,6 +1,6 @@
 # Charter Core — Session Foundation
 
-Version: 0.3  
+Version: 0.4  
 Status: FOUNDATIONAL  
 Layer: Conceptual / Human Interface (Engine-adjacent)  
 Applies to: Charter Core semantics, CLI behavior, and guidance layers  
@@ -16,10 +16,11 @@ They exist to transform **candidate resolutions** into **explicit, auditable com
 
 This document defines:
 
-- What a session *is* conceptually
-- How sessions relate to resolutions and legitimacy
-- Why annotations and rationale are first-class
-- How sessions support mature, confident decision-making over time
+- What a session *is* conceptually  
+- How sessions relate to resolutions and legitimacy  
+- How Authority and Scope shape decisions and blocking  
+- Why annotations and rationale are first-class  
+- How sessions support mature, confident decision-making over time  
 
 Sessions do not optimize outcomes.  
 They make ownership explicit.
@@ -32,25 +33,29 @@ A session is a **bounded workspace for legitimacy**, where humans choose to comm
 
 Within a session:
 
-- Authority is explicit
-- Scope is explicit
-- Participants are explicit
-- Permanence is acknowledged
-- History is recorded without interpretation
+- Authority is explicit  
+- Scope is explicit  
+- Participants are explicit  
+- Permanence is acknowledged  
+- History is recorded without interpretation  
 
-Outcomes are determined mechanically by explicit rules.  
+Outcomes are determined mechanically by explicit rules:
+
+- **Constraints determine whether acceptance is allowed**
+- **Authority determines whether acceptance succeeds**
+
 Sessions do not rely on interpretation, negotiation inference, or hidden logic.
 
 Sessions do **not**:
 
-- Decide automatically
-- Infer consensus
-- Interpret intent
-- Reduce ambiguity silently
+- Decide automatically  
+- Infer consensus  
+- Interpret intent  
+- Reduce ambiguity silently  
 
 A session exists so that a human can say:
 
-> “I am committing to this — under these rules — at this time.”
+“I am committing to this — under these rules — at this time.”
 
 ---
 
@@ -62,11 +67,11 @@ Only resolutions **accepted within a session** are legitimate.
 
 Sessions ensure that:
 
-- Authority at acceptance is recorded
-- Scope at acceptance is recorded
-- Participants at acceptance are recorded
-- Stances are recorded
-- Context is preserved
+- Authority at acceptance is recorded  
+- Scope at acceptance is recorded  
+- Participants at acceptance are recorded  
+- Stances are recorded  
+- Context is preserved  
 
 Legitimacy is never inferred.  
 It is always **owned**.
@@ -79,9 +84,9 @@ Sessions evaluate **candidate resolutions**.
 
 Candidates:
 
-- May originate anywhere (drafting, deliberate, breakout, reconciliation review)
-- Have no authority or meaning until accepted
-- Carry annotations and rationale that may later become permanent
+- May originate anywhere (drafting, deliberate, breakout, reconciliation review)  
+- Have no authority or meaning until accepted  
+- Carry annotations and rationale that may later become permanent  
 
 Acceptance is the *only* transition from candidate → resolution.
 
@@ -91,62 +96,128 @@ Acceptance is the *only* transition from candidate → resolution.
 
 Every session operates under an active:
 
-- **Authority** — how agreement is evaluated
-- **Scope** — what domain is affected
+- **Authority** — how agreement is evaluated  
+- **Scope** — what domain is affected  
 
-Sessions may exist when governance is under review, but:
+These are not optional context. They define whether legitimacy can proceed.
 
-- No legitimacy may be created while required governance is unresolved
-- Such sessions are **BLOCKED**, meaning legitimacy cannot proceed due to unresolved governance or other required conditions
+#### Governance Blocking (Conceptual)
+
+Sessions may become **BLOCKED** when governance conditions prevent valid acceptance.
+
+Examples:
+
+- Scope is placed **ON_HOLD** → legitimacy cannot proceed  
+- Required governance context is missing or invalid → legitimacy cannot proceed  
+- Governing context changes in a way that invalidates the session → session may no longer proceed  
+
+Key idea:
+
+> Blocking does not invalidate the session.  
+> It prevents forward legitimacy until conditions are resolved.
 
 Sessions never guess governance.  
 They record it.
 
 ---
 
-### 4. Annotations and Rationale Are First-Class
+### 4. Authority Determines Decisions
+
+Authority defines **how agreement is computed**.
+
+Conceptually, Authority answers:
+
+> “Given the recorded stances, does this pass?”
+
+Authority:
+
+- Is explicit and known at session creation  
+- Applies uniformly to all candidates in the session  
+- Evaluates only recorded stances (votes)  
+- Produces a deterministic outcome  
+
+Examples (conceptual):
+
+- A single actor decides  
+- All participants must agree  
+- A majority must agree  
+
+Authority does not:
+
+- interpret intent  
+- weigh rationale  
+- infer agreement  
+
+It is mechanical, explicit, and final within its rules.
+
+---
+
+### 5. Constraints Gate Acceptance (Conceptual)
+
+Before Authority is evaluated, sessions may define **explicit constraints**.
+
+Constraints answer:
+
+> “Are we allowed to attempt acceptance yet?”
+
+They:
+
+- must be satisfied before Authority is applied  
+- do not decide outcomes  
+- do not override Authority  
+- exist only within the session context  
+
+Together:
+
+- **Constraints gate eligibility**  
+- **Authority determines outcome**
+
+---
+
+### 6. Annotations and Rationale Are First-Class
 
 Annotations and rationale are **part of the record of legitimacy**, not the mechanism of legitimacy.
 
 They exist to explain:
 
-- Why a resolution exists
-- Why it was accepted
-- What context mattered at the time
-- Why permanence or irreversibility was chosen
+- Why a resolution exists  
+- Why it was accepted  
+- What context mattered at the time  
+- Why permanence or irreversibility was chosen  
 
 Because annotations shape future interpretation:
 
-- They are immutable once acceptance occurs
-- Adding missing context later requires a new resolution
+- They are immutable once acceptance occurs  
+- Adding missing context later requires a new resolution  
 
 Annotations reduce ambiguity.  
 They do not reinterpret history.
 
 ---
 
-### 5. Irreversibility Is Acknowledged, Not Punitive
+### 7. Irreversibility Is Acknowledged, Not Punitive
 
 Resolutions may be marked as:
 
-- Reversible
-- Conditionally reversible
-- Irreversible
+- Reversible  
+- Conditionally reversible  
+- Irreversible  
 
 These markers:
 
-- Do not judge correctness
-- Do not prohibit reflection
-- Exist to prevent silent revision
+- express intent, not enforcement  
+- do not judge correctness  
+- do not prohibit reflection  
+- exist to prevent silent revision  
 
 Rationale should explain permanence explicitly.
 
 Sessions normalize irreversible decisions as:
 
-- Auditable
-- Thoughtful
-- Non-shaming
-- Part of learning over time
+- Auditable  
+- Thoughtful  
+- Non-shaming  
+- Part of learning over time  
 
 ---
 
@@ -154,11 +225,11 @@ Sessions normalize irreversible decisions as:
 
 A session may pass through these states:
 
-- **ACTIVE** — candidates and context may be developed
-- **PAUSED** — activity intentionally halted
-- **BLOCKED** — legitimacy cannot proceed due to unresolved conditions
-- **ACCEPTED** — legitimacy has been created
-- **CLOSED** — no legitimacy created; history preserved
+- **ACTIVE** — candidates and context may be developed  
+- **PAUSED** — activity intentionally halted  
+- **BLOCKED** — legitimacy cannot proceed due to unresolved conditions  
+- **ACCEPTED** — legitimacy has been created  
+- **CLOSED** — no legitimacy created; history preserved  
 
 All state transitions are explicit and auditable.
 
@@ -173,8 +244,7 @@ Open-ended sessions are discouraged.
   Sessions are the only path to legitimacy.
 
 - **Reconciliation Review**  
-  Reconciliations are review workspaces. Sessions are commitment mechanisms.  
-  UNDER_REVIEW in reconciliation ≠ UNDER_REVIEW in canonical governance.
+  Reconciliation is a review workspace. Sessions are commitment mechanisms.  
 
 - **Deliberate & Breakouts**  
   These explore ideas. Sessions commit to them.
@@ -192,16 +262,16 @@ Sessions are designed to support human development, not pressure it.
 
 They encourage:
 
-- **Clarity** — decisions are explicit
-- **Confidence** — permanence is acknowledged, not hidden
-- **Learning** — history is preserved without shame
-- **Courage** — mistakes are survivable and traceable
+- **Clarity** — decisions are explicit  
+- **Confidence** — permanence is acknowledged, not hidden  
+- **Learning** — history is preserved without shame  
+- **Courage** — mistakes are survivable and traceable  
 
 Over time, disciplined use of sessions cultivates:
 
-- Mature decision-making
-- Reduced fear of commitment
-- Increased trust in one’s own judgment
+- Mature decision-making  
+- Reduced fear of commitment  
+- Increased trust in one’s own judgment  
 
 Sessions do not moralize.  
 They illuminate.
@@ -212,8 +282,8 @@ They illuminate.
 
 Every session ends explicitly as one of:
 
-- **ACCEPTED** — a selected candidate produces a legitimate outcome (which may affect one or more resolutions)
-- **CLOSED** — no legitimacy created; history preserved
+- **ACCEPTED** — a selected candidate produces a legitimate outcome  
+- **CLOSED** — no legitimacy created; history preserved  
 
 There is no implicit success or failure.  
 Only recorded outcomes.
@@ -222,11 +292,13 @@ Only recorded outcomes.
 
 ## Conceptual Invariants (Non-Mechanical)
 
-- Legitimacy requires explicit acceptance
-- Authority and Scope must be known at acceptance
-- Annotations that explain legitimacy are immutable
-- History must be reconstructible end-to-end
-- Sessions never infer intent or consensus
+- Legitimacy requires explicit acceptance  
+- Authority determines outcomes; constraints determine eligibility  
+- Authority and Scope must be known at acceptance  
+- Governance blocking prevents legitimacy but does not rewrite history  
+- Annotations that explain legitimacy are immutable  
+- History must be reconstructible end-to-end  
+- Sessions never infer intent or consensus  
 
 ---
 
@@ -236,11 +308,12 @@ Sessions are the bridge between **human intent** and **canonical legitimacy**.
 
 They:
 
-- Make ownership explicit
-- Preserve context
-- Protect against silent reinterpretation
-- Enable reflection without shame
-- Support growth over time
+- Make ownership explicit  
+- Separate eligibility from decision-making  
+- Preserve context  
+- Protect against silent reinterpretation  
+- Enable reflection without shame  
+- Support growth over time  
 
 A session is not just where a decision happens.
 

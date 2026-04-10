@@ -1,5 +1,6 @@
 # Charter Core — Specification Identity & Verification Foundation
-Status: FOUNDATIONAL (V1+ Structural Integrity Layer)  
+
+Status: FOUNDATIONAL  
 Layer: Engine-Level Rule Identity  
 Audience: Engine implementers, CLI maintainers, auditors, long-term stewards  
 
@@ -11,11 +12,11 @@ This document defines how Charter Core binds its executable to its governing spe
 
 The purpose of specification identity is to:
 
-- Anchor legitimacy rules to a specific binary
-- Prevent silent reinterpretation of history
-- Enable deterministic cross-version verification
-- Provide long-term institutional traceability
-- Distinguish forks without prohibiting them
+- Anchor legitimacy rules to a specific Engine implementation  
+- Prevent silent reinterpretation of history  
+- Enable deterministic cross-version verification  
+- Provide long-term institutional traceability  
+- Distinguish forks without prohibiting them  
 
 Specification identity does not create legitimacy.  
 It provides evidence of the rules under which legitimacy was enforced.
@@ -24,18 +25,18 @@ It provides evidence of the rules under which legitimacy was enforced.
 
 ## 2. Core Principle
 
-A Charter engine instance must be able to answer:
+A Charter Engine instance must be able to answer:
 
-**“What exact rule set does this binary claim to enforce?”**
+**“What exact rule set is this Engine deterministically enforcing?”**
 
 This answer must be:
 
-- Deterministic
-- Machine-verifiable
-- Immutable for that binary
-- Independent of external repositories
+- Deterministic  
+- Machine-verifiable  
+- Immutable for that Engine instance  
+- Independent of external repositories  
 
-The executable must be self-describing with respect to its rule set.
+The Engine must be self-describing with respect to its rule set.
 
 ---
 
@@ -43,17 +44,17 @@ The executable must be self-describing with respect to its rule set.
 
 This specification applies to:
 
-- Charter Core Engine binaries
-- Rule enforcement semantics
-- Embedded specification identity
+- Charter Core Engine implementations  
+- Rule enforcement semantics  
+- Embedded specification identity  
 
 This specification does not apply to:
 
-- CLI behavior
-- Relay transport
-- Guidance interpretation
-- Federation policy
-- Storage implementation
+- CLI behavior  
+- Relay transport  
+- Guidance interpretation  
+- Federation policy  
+- Storage implementation  
 
 It concerns only the identity of the rule set enforced by the Engine.
 
@@ -61,36 +62,35 @@ It concerns only the identity of the rule set enforced by the Engine.
 
 ## 4. Embedded Specification Identity
 
-Each Engine binary must embed a read-only specification manifest.
+Each Engine instance must embed a read-only specification manifest.
 
 The manifest must contain:
 
-- Engine version identifier
-- A complete list of enforced foundational specifications
-- A deterministic cryptographic hash of each specification
-- A deterministic aggregate hash of the full specification set
+- Engine version identifier  
+- A deterministic representation of the enforced specification set  
+- A canonical aggregate hash of the specification set (**spec_set_hash**)  
 
 The manifest must be:
 
-- Immutable at runtime
-- Deterministic across identical builds
-- Independent of external network state
-- Sufficient to uniquely identify the enforced rule set
+- Immutable at runtime  
+- Deterministic across identical builds  
+- Independent of external network state  
+- Sufficient to uniquely identify the enforced rule set  
 
-Specifications referenced by the manifest are normative for that binary.
+The **spec_set_hash** is the canonical identity of the rule set.
 
 ---
 
 ## 5. Specification Integrity Requirements
 
-For a specification to be considered valid within a given Engine version:
+For a specification set to be considered valid for an Engine instance:
 
-- The specification must exist in the embedded manifest.
-- The hash of the embedded specification must match the declared value.
-- Locked specifications must not change without a version increment.
-- The implementation must not claim enforcement of specifications that are not embedded.
+- The specification set must be represented in the embedded manifest  
+- The computed spec_set_hash must match the declared value  
+- Locked specifications must not change without a version increment  
+- The Engine must not enforce rules that are not represented in the manifest  
 
-A binary that violates these conditions must be considered inconsistent.
+An Engine that violates these conditions must be considered inconsistent.
 
 ---
 
@@ -100,136 +100,195 @@ Specification identity does not create legitimacy.
 
 Legitimacy is created by:
 
-- Sessions
-- Authority evaluation
-- Explicit acceptance
-- Immutable audit history
+- Sessions  
+- Authority evaluation  
+- Explicit acceptance  
+- Immutable history  
 
 Specification identity provides evidence of:
 
-- The rule set used to enforce those actions.
+- The rule set used to enforce those actions  
 
-In disputes, historical interpretation must consider:
+In disputes or audits, interpretation must consider:
 
-- The audit log
-- The binary’s specification manifest
-- The Engine version that executed transitions
+- The recorded artifacts (sessions, resolutions, receipts)  
+- The Engine’s specification identity  
+- The Engine version that executed transitions  
 
 Together, these allow reconstruction of:
 
-- What happened
-- Under which rules it happened
+- What happened  
+- Under which rules it happened  
 
 ---
 
-## 7. Forking and Divergence
+## 7. Receipt Binding
+
+Receipts must include the **spec_set_hash** under which they were produced.
+
+This ensures that:
+
+- Each legitimacy event is bound to a specific rule set  
+- Historical outcomes can be verified against the correct rules  
+- Cross-version verification remains deterministic  
+
+Receipts are the bridge between:
+
+- recorded outcomes  
+- and the rule set that produced them  
+
+---
+
+## 8. Deterministic Execution Requirement
+
+Specification identity is meaningful only if execution is deterministic.
+
+Given identical:
+
+- specification identity (spec_set_hash)  
+- domain state  
+- command inputs  
+
+the Engine must produce identical outcomes.
+
+The Engine must not depend on:
+
+- timestamps  
+- environment  
+- storage order  
+- external systems  
+
+Rule identity and deterministic execution are inseparable.
+
+---
+
+## 9. Verification Behavior
+
+When processing historical artifacts:
+
+- The Engine must verify the spec_set_hash recorded in receipts  
+- The Engine must detect mismatches between receipt identity and runtime identity  
+- The Engine must not silently reinterpret artifacts under a different rule set  
+
+If a mismatch occurs:
+
+- it must be explicitly surfaced  
+- no silent fallback or reinterpretation is allowed  
+
+Correctness is prioritized over convenience.
+
+---
+
+## 10. Forking and Divergence
 
 Forking is legitimate.
 
 Charter does not prohibit:
 
-- Alternative implementations
-- Modified specifications
-- Divergent rule sets
+- Alternative implementations  
+- Modified specifications  
+- Divergent rule sets  
 
 However:
 
-A modified binary must not silently represent itself as enforcing a different specification set.
+A modified Engine must not represent itself as enforcing a different specification set than it actually embeds.
 
-Specification identity allows:
+Specification identity enables:
 
-- Transparent divergence
-- Explicit fork recognition
-- Machine-verifiable differentiation
+- Transparent divergence  
+- Explicit fork recognition  
+- Machine-verifiable differentiation  
 
 It does not:
 
-- Centralize authority
-- Prevent modification
-- Enforce trust
-- Impose canonical ownership
+- Centralize authority  
+- Prevent modification  
+- Enforce trust  
+- Impose canonical ownership  
 
 It provides clarity, not control.
 
 ---
 
-## 8. Binary Authenticity (Optional Layer)
+## 11. Binary Authenticity (Optional Layer)
 
-Independent of specification identity, a binary may optionally support:
+Independent of specification identity, an Engine may optionally support:
 
-- Cryptographic signatures
-- Provenance metadata
-- Build attestations
+- Cryptographic signatures  
+- Provenance metadata  
+- Build attestations  
 
 These mechanisms may allow users to verify:
 
-- Authentic origin
-- Build integrity
-- Signature issuer
+- Authentic origin  
+- Build integrity  
+- Signature issuer  
 
 Authenticity is distinct from legitimacy.
 
-A signed binary is identifiable.
+A signed Engine is identifiable.  
 A legitimate decision is mechanically valid.
 
 These concerns must remain separate.
 
 ---
 
-## 9. Stability Guarantees
+## 12. Stability Guarantees
 
-The specification identity mechanism must remain:
+Specification identity must remain:
 
-- Deterministic across builds
-- Backwards-auditable
-- Resistant to silent mutation
-- Independent of runtime configuration
+- Deterministic across builds  
+- Backwards-auditable  
+- Resistant to silent mutation  
+- Independent of runtime configuration  
 
 Future versions may:
 
-- Add new specifications
-- Deprecate specifications with version change
-- Expand manifest detail
+- Add new specifications  
+- Deprecate specifications with version change  
+- Expand manifest detail  
 
 Future versions must not:
 
-- Allow runtime modification of embedded specs
-- Allow mutable rule identity
-- Permit undocumented rule enforcement
+- Allow runtime modification of specification identity  
+- Allow mutable rule identity  
+- Permit undocumented rule enforcement  
 
 ---
 
-## 10. Design Philosophy
+## 13. Design Philosophy
 
-Without embedded specification identity, Charter is a database.
+Without specification identity, Charter is a data system.
 
-With embedded specification identity, Charter becomes:
+With specification identity, Charter becomes:
 
-- A rule-bound institutional system
-- A time-stable legitimacy machine
-- A self-describing enforcement artifact
+- A rule-bound institutional system  
+- A time-stable legitimacy system  
+- A self-describing enforcement artifact  
 
 Specification identity ensures that:
 
-- History cannot be silently reinterpreted
-- Rule changes are visible and versioned
-- Enforcement claims are provable
-- The system can survive author turnover
-- Legitimacy remains reconstructible decades later
+- History cannot be silently reinterpreted  
+- Rule changes are visible and versioned  
+- Enforcement claims are provable  
+- The system can survive author turnover  
+- Legitimacy remains reconstructible over long time horizons  
 
 This layer exists for durability, not convenience.
 
 ---
 
-## 11. Mental Model
+## 14. Mental Model
 
 Audit answers:
+
 > “What happened?”
 
 Specification identity answers:
+
 > “Under which rules did it happen?”
 
-Both are required for long-term institutional integrity.
+Both are required for long-term integrity.
 
-Nothing in this mechanism grants authority.
+Nothing in this mechanism grants authority.  
 It only reveals it.

@@ -1,7 +1,7 @@
 # Charter Foundation — Voting & Acceptance  
 ## Explicit Evaluation, Explicit Commitment
 
-Status: FROZEN (V1 Foundation)  
+Status: FROZEN  
 Applies to: Charter Core, CLI, and all future interfaces  
 Scope: Any session that evaluates proposals  
 
@@ -34,7 +34,9 @@ Charter never conflates the two.
 
 A proposal is never accepted *because* votes exist.  
 A proposal is accepted only when a human **explicitly commits** to it —  
-and only if authority rules are satisfied **at that moment**.
+and only if all required conditions are satisfied **at that moment**.
+
+Before authority is evaluated, all explicit session constraints must be satisfied.
 
 This separation is intentional and non-negotiable.
 
@@ -72,8 +74,10 @@ Acceptance is:
 
 - explicit  
 - deliberate  
-- irreversible  
+- historically immutable  
 - legitimacy-creating  
+
+Once accepted, the outcome cannot be undone, only superseded through a new session.
 
 Acceptance is the moment when:
 
@@ -131,19 +135,20 @@ Acceptance is a **separate, explicit action**.
 
 When acceptance is attempted:
 
-- Authority is evaluated **once**
-- Based on votes as they exist at that moment
+1. All session constraints must be satisfied  
+2. Authority is evaluated once  
+3. Evaluation uses the vote state at that moment  
 
-If authority passes:
+If all conditions are satisfied:
 
 - acceptance succeeds  
 - outcome is frozen  
 - legitimacy is created  
 
-If authority fails:
+If any condition fails:
 
-- acceptance is blocked  
-- session remains open  
+- acceptance does not occur  
+- session remains non-terminal  
 - no legitimacy is created  
 
 Acceptance answers one question only:
@@ -170,7 +175,40 @@ Authority never acts on its own.
 Authority is evaluated **only** when a human explicitly asks to accept.
 
 Humans create legitimacy.  
-Mechanics merely verify it.
+Mechanics verify it.
+
+---
+
+### Constraints Gate Eligibility
+
+Constraints determine whether acceptance may be attempted.
+
+- They must be satisfied before authority is evaluated  
+- They do not decide outcomes  
+- They do not replace authority  
+
+Together:
+
+- **Constraints determine eligibility**  
+- **Authority determines outcome**
+
+---
+
+### Governance May Prevent Acceptance
+
+Acceptance may be prevented by governance conditions independent of voting.
+
+Examples include:
+
+- Scope being under review (ON_HOLD)  
+- Invalid or changing governance context  
+- Structural or eligibility conditions not being satisfied  
+
+These conditions:
+
+- prevent acceptance  
+- do not create legitimacy  
+- do not rewrite history  
 
 ---
 
@@ -197,13 +235,12 @@ This mirrors real human decision-making:
 
 ### Single Commitment Point
 
-Each proposal may be accepted **at most once**.  
-Each session produces either:
+Each candidate within a session may be accepted **at most once**.
 
-- acceptance  
-- or non-acceptance  
+Each session ends as either:
 
-Re-evaluation requires a **new session**.
+- **ACCEPTED** — legitimacy created  
+- **CLOSED** — no legitimacy created  
 
 There is:
 
@@ -222,19 +259,19 @@ Interfaces may assist, but never decide.
 Interfaces **may**:
 
 - display whether authority would pass  
-- explain why acceptance is blocked  
+- explain why acceptance is not eligible  
 - summarize current voting state  
 
-Interfaces **must still**:
+Interfaces **must**:
 
 - require an explicit accept action  
-- block acceptance when authority fails  
+- prevent acceptance when conditions are not satisfied  
 
 This preserves:
 
 - cognitive clarity  
 - mechanical legitimacy  
-- political neutrality  
+- neutrality  
 
 ---
 
