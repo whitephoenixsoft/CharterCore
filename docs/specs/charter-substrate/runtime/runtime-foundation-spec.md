@@ -1,6 +1,6 @@
 # Charter Runtime — Foundation Specification
 
-Status: FOUNDATIONAL (DRAFT)  
+Status: FOUNDATIONAL (DRAFT v3)  
 Applies to: All Runtime implementations, CLI orchestration, library integrations  
 Depends On: Legitimacy Engine, CQL, CCS, Provenance Model, Versioning & Identity Model, Non-Interpretation Principle  
 Does NOT define: legitimacy semantics, alignment computation, identity semantics, or transport protocols  
@@ -19,6 +19,7 @@ It exists to:
 - coordinate workflows and process execution  
 - mediate persistence across multiple managed surfaces when persistence is enabled  
 - invoke the Legitimacy Engine deterministically  
+- invoke the Legitimacy Engine in distinct interaction modes  
 - emit durable artifacts through CCS  
 - expose unified query access via CQL  
 
@@ -38,6 +39,7 @@ Runtime:
 - manages operational state  
 - prepares inputs for legitimacy  
 - coordinates persistence when enabled  
+- integrates engine outputs without reinterpreting them  
 
 It does not:
 
@@ -80,7 +82,7 @@ Runtime is responsible for:
 - Area management  
 - process orchestration  
 - persistence coordination when enabled  
-- engine invocation  
+- engine invocation and integration  
 - artifact emission  
 - query exposure  
 
@@ -149,7 +151,37 @@ Runtime manages:
 
 ---
 
-## 5.3 Mutable vs Immutable State
+## 5.3 Area Bootstrap
+
+A newly created Area begins as an empty legitimacy boundary.
+
+Runtime is responsible for bootstrapping that Area through ordered governance initialization.
+
+### Step 1 — Authority Definition
+
+Authority must be defined first.
+
+Authority provides:
+
+- the decision rule  
+- the participant/governance model  
+- legitimacy-enabling governance mechanics  
+
+No legitimacy creation may occur until Authority is defined.
+
+### Step 2 — Scope Definition
+
+Scope defines the semantic boundary of the Area.
+
+Scope:
+
+- describes intended domain and limits  
+- is used by Runtime and hosts to understand the boundary  
+- is not a decision rule in the same sense as Authority  
+
+---
+
+## 5.4 Mutable vs Immutable State
 
 Runtime manages:
 
@@ -160,7 +192,7 @@ Runtime does not redefine artifact semantics.
 
 ---
 
-## 5.4 Area Constraints
+## 5.5 Area Constraints
 
 - governance applies to all Area processes  
 - scope may block or invalidate processes  
@@ -168,7 +200,7 @@ Runtime does not redefine artifact semantics.
 
 ---
 
-## 5.5 Concurrency
+## 5.6 Concurrency
 
 Runtime may allow multiple processes per Area.
 
@@ -327,6 +359,7 @@ All cross-domain data movement must occur through:
 - explicit workflows  
 - explicit review processes  
 - explicit engine execution  
+- explicit compilation or restore paths  
 
 ---
 
@@ -336,7 +369,7 @@ Foreign artifacts:
 
 - must remain isolated  
 - must not be implicitly trusted  
-- must pass through reconciliation or explicit workflows  
+- must pass through reconciliation, compilation, or other explicit workflows  
 
 ---
 
@@ -359,11 +392,31 @@ Derived systems may be rebuilt as needed.
 
 Runtime uses the Legitimacy Engine as:
 
-> a deterministic legitimacy computation system
+> a deterministic legitimacy computation and compilation system
 
 ---
 
-## 8.2 Responsibilities
+## 8.2 Interaction Modes
+
+Runtime must distinguish engine interaction modes explicitly.
+
+### Execution Mode
+
+Used when new legitimacy is being created through session execution.
+
+### Evaluation Mode
+
+Used when legitimacy-related inputs are being validated or analyzed without creating legitimacy.
+
+### Incremental Compilation Mode
+
+Used when completed legitimacy artifacts created elsewhere are being integrated locally without re-deciding them.
+
+These modes must never be conflated.
+
+---
+
+## 8.3 Responsibilities
 
 Runtime:
 
@@ -371,16 +424,47 @@ Runtime:
 - provides candidates  
 - invokes the engine  
 - receives outputs  
+- integrates results according to interaction mode  
 
 ---
 
-## 8.3 Constraints
+## 8.4 Constraints
 
 Runtime must not:
 
 - alter engine rules  
 - reinterpret engine outcomes  
-- bypass session execution  
+- bypass session execution when new legitimacy is required  
+- treat compilation as execution  
+- treat evaluation as legitimacy creation  
+
+---
+
+## 8.5 Session Materialization
+
+When Runtime transforms approved workflow output into engine sessions:
+
+- session construction must be explicit  
+- proposal/candidate translation must be deterministic  
+- governance context must remain aligned  
+- structural ordering requirements must be respected  
+
+---
+
+## 8.6 Sandboxed Batch Execution
+
+When Runtime executes a derived batch of sessions:
+
+- execution must occur in an isolated sandbox  
+- outputs remain provisional until the full batch succeeds  
+- no commits are emitted during provisional execution  
+- no legitimacy-bearing outputs become externally visible before finalization  
+
+If any session in the batch fails:
+
+- the batch fails as a whole  
+- provisional outputs are discarded  
+- no partial legitimacy effect is allowed  
 
 ---
 
@@ -414,6 +498,7 @@ Runtime:
 - constructs commit artifacts  
 - passes them through CCS  
 - preserves identity and lineage  
+- may hold commit-ready artifacts provisionally until workflow or batch finalization succeeds  
 
 ---
 
@@ -442,7 +527,7 @@ Runtime must:
 
 - expose process and Area state through domain query surfaces  
 - support domain-based query resolution  
-- preserve deterministic query behavior whether data is in memory, persisted, derived, or isolated  
+- preserve deterministic query behavior whether data is in memory, persisted, derived, isolated, or untrusted  
 
 ---
 
@@ -463,6 +548,8 @@ Processes must be blocked when:
 - scope is ON_HOLD  
 - authority constraints are unmet  
 - structural conditions are invalid  
+- governance context changes materially  
+- sandboxed batch execution fails and requires resume/recovery  
 
 Blocked processes must:
 
@@ -514,6 +601,7 @@ Runtime must be deterministic given:
 - identical inputs  
 - identical rule identities  
 - identical operational state  
+- identical interaction mode selection  
 
 ---
 
@@ -532,7 +620,10 @@ All Runtime behavior must be:
 - Runtime is the host gateway to Charter  
 - Runtime orchestrates all workflows  
 - Runtime does not create legitimacy  
-- all legitimacy flows through the engine  
+- all new legitimacy flows through engine execution  
+- legitimacy created elsewhere is integrated through explicit compilation paths  
+- evaluation does not create legitimacy  
+- engine interaction modes must remain distinct  
 - all durable artifacts flow through CCS  
 - all queries flow through CQL  
 - persistence is optional  
@@ -540,6 +631,7 @@ All Runtime behavior must be:
 - no implicit cross-domain writes  
 - structural ambiguity must be explicit  
 - governance must be enforced  
+- sandboxed batch execution must not leak partial outputs  
 - rule identity must be preserved  
 - provenance must not be lost  
 
@@ -553,6 +645,7 @@ Runtime is:
 - the orchestrator of processes  
 - the manager of operational state  
 - the gateway to all substrates  
+- the caller and integrator of the Legitimacy Engine  
 
 It is not:
 
@@ -569,6 +662,7 @@ Runtime ensures that:
 - hosts interact with Charter safely  
 - workflows are explicit and auditable  
 - legitimacy is created only through the engine  
+- previously created legitimacy is integrated without reinterpretation  
 - structure is preserved across all layers  
 
 It is the system that turns:

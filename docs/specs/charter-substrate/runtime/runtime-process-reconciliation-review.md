@@ -1,6 +1,6 @@
-# Charter Runtime — Incoming Reconciliation Review Process (Draft v2)
+# Charter Runtime — Incoming Reconciliation Review Process
 
-Status: FOUNDATIONAL (DRAFT)  
+Status: FOUNDATIONAL (DRAFT v3)  
 Applies to: Runtime Layer, Legitimacy Engine (invocation only), CDS, CCS, Commit Store  
 Does NOT define: legitimacy semantics, engine decision rules, structural graph computation, or identity semantics  
 
@@ -49,7 +49,7 @@ It does not:
 
 # 3. Scope Boundary
 
-This document defines the **incoming** reconciliation path only:
+This document defines the incoming reconciliation path only:
 
 - imported graph → review → legitimacy  
 - imported flat file → review → legitimacy  
@@ -69,8 +69,8 @@ It does not define:
 
 Restore and incoming reconciliation review are distinct.
 
-- **Restore** attempts direct runtime/legitimacy re-entry from imported structure  
-- **Incoming Reconciliation Review** is the governed consolidation path when direct restore is not valid, not possible, or not desired  
+- Restore attempts direct runtime/legitimacy re-entry from imported structure  
+- Incoming Reconciliation Review is the governed consolidation path when direct restore is not valid, not possible, or not desired  
 
 If restore fails runtime or legitimacy validation, the user must reconcile through review.
 
@@ -87,7 +87,7 @@ Incoming reconciliation may operate on:
 
 All inputs are transformed into:
 
-→ **Proposals (non-legitimate resolution candidates)**
+→ Proposals (non-legitimate resolution candidates)
 
 ---
 
@@ -95,7 +95,7 @@ All inputs are transformed into:
 
 ## 6.1 Isolation
 
-All review activity occurs in an isolated **Review Workspace**.
+All review activity occurs in an isolated Review Workspace.
 
 Properties:
 
@@ -190,11 +190,11 @@ Terminal states:
 
 Proposals may carry structural classification flags:
 
-- MATCHING (equivalent to existing resolution)  
-- SIMILAR (semantically close, explicitly non-superseding)  
-- DIVERGENT (conflicts or differs materially)  
-- HISTORICAL (superseded within imported set)  
-- INVALID_TARGET (attempts to supersede already superseded resolution)  
+- MATCHING
+- SIMILAR
+- DIVERGENT
+- HISTORICAL
+- INVALID_TARGET  
 
 Flags:
 
@@ -205,7 +205,7 @@ Flags:
 
 ### Structural Flag Principle
 
-`SIMILAR` exists to prevent accidental supersession when a diverged graph contains artifacts that are mechanically close but semantically different.
+SIMILAR exists to prevent accidental supersession when a diverged graph contains artifacts that are mechanically close but semantically different.
 
 ---
 
@@ -254,7 +254,7 @@ Rules:
 - constraints immutable  
 - votes mutable (vacillation allowed)  
 
-Voting in this phase applies to the **review as a whole**.
+Voting in this phase applies to the review as a whole.
 
 What is being voted on is the overarching proposed change set, not individual proposals.
 
@@ -405,7 +405,19 @@ Review voting should follow session-style mechanics:
 
 ---
 
-## 11.4 Constraints
+## 11.4 Stance Reuse Principle
+
+Approved review stances are reused as session stances for all derived engine sessions in the accepted batch.
+
+Implications:
+
+- no second voting phase occurs per proposal  
+- users do not vote again during session materialization  
+- engine session acceptance becomes deterministic from the approved review round  
+
+---
+
+## 11.5 Constraints
 
 Constraints may include:
 
@@ -524,7 +536,46 @@ Upon successful review approval:
 
 ---
 
-## 15.3 Ordering Rules
+## 15.3 Proposal-to-Session Materialization
+
+Each ACCEPTED proposal produces:
+
+→ one single-candidate engine session
+
+Each derived session inherits from the approved review round:
+
+- participants  
+- decision rule alignment  
+- constraints  
+- final voting stances  
+
+Each proposal is transformed into a session candidate, including:
+
+- candidate payload  
+- informational references
+- lineage fields where applicable  
+- review/source annotations and provenance  
+
+---
+
+## 15.4 Structural Batch Constraints
+
+Before any session is executed:
+
+- no two accepted proposals may supersede the same resolution  
+- no circular legitimacy dependencies may exist  
+- dependency ordering must be computable  
+
+If any of these fail:
+
+- session batching must fail before engine invocation  
+- the review becomes BLOCKED  
+
+Derived_from relationships are not supersession and do not create legitimacy by themselves.
+
+---
+
+## 15.5 Ordering Rules
 
 Within the batch, ordering must be deterministic.
 
@@ -542,7 +593,20 @@ Because:
 
 ---
 
-## 15.4 Atomicity
+## 15.6 Sandboxed Execution
+
+Derived sessions must execute in an isolated sandbox.
+
+Properties:
+
+- engine state is isolated from live Area state  
+- outputs are provisional  
+- no commits are emitted during execution  
+- no legitimacy-bearing outputs become externally visible during execution  
+
+---
+
+## 15.7 Atomicity
 
 Session batching must succeed completely or have no legitimacy effect.
 
@@ -552,10 +616,23 @@ There is:
 - no partial accepted batch commit  
 - no partial review success  
 
-If session batching fails:
+If any derived session fails:
 
+- the full batch fails  
+- all provisional outputs are discarded  
 - the review becomes BLOCKED  
-- it must be resumed into PRE_STANCE through a new round  
+- the review must be resumed into PRE_STANCE through a new round  
+
+---
+
+## 15.8 Finalization
+
+If all derived sessions succeed:
+
+- resulting resolutions are finalized  
+- engine session receipts are finalized  
+- resulting artifacts become eligible for commit emission  
+- review closure proceeds  
 
 ---
 
@@ -598,10 +675,12 @@ Includes:
 Each proposal produces a review outcome record:
 
 - ACCEPTED → included in session batching  
-- REJECTED → explicit record  
-- ABANDONED → explicit or derivable closure record  
+- REJECTED → explicit review outcome  
+- ABANDONED → explicit or derivable review outcome  
 
 These are review artifacts, not legitimacy receipts.
+
+Rejected and abandoned proposals do not produce engine artifacts by default.
 
 ---
 
@@ -611,7 +690,19 @@ Engine session receipts produced during accepted batching retain engine rule ide
 
 ---
 
-## 17.4 Properties
+## 17.4 Closure Commit Rule
+
+All durable closure artifacts must be committed.
+
+This includes:
+
+- resulting legitimate resolutions  
+- resulting engine session receipts  
+- review closure artifact / receipt  
+
+---
+
+## 17.5 Properties
 
 Review receipts are:
 
@@ -668,17 +759,20 @@ Guidance remains:
 - PRE_STANCE is the only mutable phase  
 - freeze occurs on first vote  
 - voting is explicit and mutable until approval attempt  
+- approved review stances are reused for derived sessions  
 - rounds are deterministic and isolated  
 - review approval is required before session batching  
 - proposals must be explicitly accepted to be processed  
-- rejected and abandoned proposals are preserved  
+- rejected and abandoned proposals are preserved as review artifacts  
 - review artifacts are immutable after completion or cancellation  
 - provenance must be preserved  
 - structural flags do not create legitimacy  
 - structural blockers must be explicit  
 - no implicit relationships are created  
 - blocked reviews must resume through a new PRE_STANCE round  
-- accepted batch execution is atomic  
+- accepted batch execution is sandboxed and atomic  
+- no two accepted proposals may supersede the same resolution  
+- circular legitimacy dependencies are not allowed  
 - runtime review receipts and engine session receipts remain distinct  
 - concurrency interference must block affected reviews  
 
