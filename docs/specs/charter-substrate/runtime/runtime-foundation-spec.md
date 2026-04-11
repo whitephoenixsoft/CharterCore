@@ -9,30 +9,33 @@ Does NOT define: legitimacy semantics, alignment computation, identity semantics
 
 # 1. Purpose
 
-The Charter Runtime is the **orchestration layer** of the Charter platform.
+The Charter Runtime is the **host-facing operational gateway** to the Charter platform.
 
 It exists to:
 
-- coordinate workflows across substrates  
-- manage operational state for Areas  
+- allocate and manage context workspaces  
+- host Areas as operational legitimacy boundaries  
+- expose access to Charter substrates and components  
+- coordinate workflows and process execution  
+- mediate persistence across multiple managed stores  
 - invoke the Legitimacy Engine deterministically  
-- mediate between investigative and legitimate structures  
-- coordinate persistence across managed stores  
+- emit durable artifacts through CCS  
 - expose unified query access via CQL  
-- produce durable artifacts through CCS  
 
-Runtime is where **process becomes structure**.
+Runtime is where:
+
+> host interaction becomes structured system behavior.
 
 ---
 
 # 2. Core Principle
 
-> Runtime orchestrates. It does not decide.
+> Runtime orchestrates access, state, and process. It does not create legitimacy or meaning.
 
 Runtime:
 
-- executes workflows  
-- coordinates state transitions  
+- coordinates workflows  
+- manages operational state  
 - prepares inputs for legitimacy  
 - persists outcomes  
 
@@ -47,23 +50,25 @@ It does not:
 
 # 3. Architectural Role
 
-Runtime is the **local orchestration boundary** for Charter.
+Runtime is the **integration boundary** between the host and the Charter system.
 
-It sits between:
+It provides unified access to:
 
-- investigative systems (CDS)  
-- legitimacy creation (Legitimacy Engine)  
-- durable artifacts (CCS / Commit Store)  
-- derived systems (CSG, CAS, CCare, etc.)  
-- query interface (CQL)  
+- Legitimacy Engine  
+- CDS (Deliberate)  
+- CCS / Commit Store  
+- derived substrates (CSG, CAS, CIS, CCare)  
+- CSP pipelines and feeds  
+- CRS untrusted stores  
+- audit and metadata systems  
 
 ---
 
 ## 3.1 Flow Position
 
-Runtime participates in the lifecycle as:
+Runtime sits at the center of all operational flows:
 
-Investigation → Runtime → Legitimacy Engine → CCS → Commit Store → Derived Substrates
+Host → Runtime → Substrates → Runtime → CCS → Commit Store → Derived Systems
 
 ---
 
@@ -71,85 +76,99 @@ Investigation → Runtime → Legitimacy Engine → CCS → Commit Store → Der
 
 Runtime is responsible for:
 
-- workflow orchestration  
-- process state management  
+- workspace allocation and lifecycle  
+- Area management  
+- process orchestration  
 - persistence coordination  
 - engine invocation  
-- cross-substrate boundary enforcement  
-- artifact emission through CCS  
-- exposing query surfaces via CQL  
+- artifact emission  
+- query exposure  
 
 ---
 
-# 4. Process-Oriented Design
+# 4. Workspace Model
 
-## 4.1 Process Engine Model
+## 4.1 Context Workspaces
 
-Runtime operates as a **process-driven system**.
+Runtime allocates **context workspaces** as the physical and logical container for execution.
 
-Each workflow is represented as:
+A workspace defines:
 
-- a state machine  
-- with explicit states  
-- explicit transitions  
-- explicit commands  
-
----
-
-## 4.2 Process Isolation
-
-Each process:
-
-- operates within a scoped workspace  
-- maintains its own state  
-- does not implicitly affect other processes  
+- storage allocation boundaries  
+- process isolation  
+- local operational context  
+- access to managed stores  
 
 ---
 
-## 4.3 Process Types
+## 4.2 Workspace Properties
 
-Examples include:
+Workspaces are:
 
-- Incoming Reconciliation Review  
-- Session Orchestration  
-- Deliberate (CDS integration)  
-- Import / Intake  
-- Restore / Rehydration  
-- Commit Emission  
+- isolated  
+- recoverable  
+- host-scoped  
+- non-legitimizing  
 
-Each process must be:
+---
 
-- explicitly defined  
-- auditable  
-- resumable (if supported)  
-- deterministic in transitions  
+## 4.3 Workspace Responsibility
+
+Runtime is responsible for:
+
+- workspace creation  
+- workspace lifecycle  
+- mapping processes and Areas into workspaces  
 
 ---
 
 # 5. Area Model
 
-## 5.1 Area as Operational Boundary
+## 5.1 Area as Legitimacy Boundary
 
-Runtime organizes work around **Areas**.
+An Area represents a **local legitimacy boundary**.
 
-An Area defines:
+From the Legitimacy Engine perspective:
 
-- authority model  
-- scope  
-- active processes  
-- local operational context  
+- an Area may begin as an empty structure with only an identifier  
 
----
+From the Runtime perspective:
 
-## 5.2 Area Constraints
-
-- governance (authority + scope) applies to all processes  
-- processes must respect Area constraints  
-- Area changes may invalidate active processes  
+- an Area is an operational container with governance, state, and processes  
 
 ---
 
-## 5.3 Concurrency
+## 5.2 Area Responsibilities
+
+Runtime manages:
+
+- Area lifecycle  
+- governance context (authority + scope)  
+- active processes within the Area  
+- persistence surfaces associated with the Area  
+
+---
+
+## 5.3 Mutable vs Immutable State
+
+Runtime manages:
+
+- mutable operational state (workspaces, processes, sessions, reviews)  
+- coordination of immutable artifact formation (closure, commits)  
+
+Runtime does not redefine artifact semantics.
+
+---
+
+## 5.4 Area Constraints
+
+- governance applies to all Area processes  
+- scope may block or invalidate processes  
+- authority defines decision rules  
+
+---
+
+## 5.5 Concurrency
 
 Runtime may allow multiple processes per Area.
 
@@ -160,40 +179,90 @@ However:
 Interference includes:
 
 - overlapping structural targets  
-- conflicting supersession paths  
-- shared dependency mutations  
+- competing supersession paths  
+- dependency conflicts  
 - competing legitimacy inputs  
 
 ---
 
-# 6. Persistence Coordination
+# 6. Process-Oriented Execution
 
-## 6.1 Principle
+## 6.1 Process Model
 
-Runtime coordinates persistence across **multiple managed stores**.
+Runtime operates as a **process engine**.
 
-There is no single “Runtime Store.”
+Each workflow is represented as:
 
----
-
-## 6.2 Managed Store Types
-
-Runtime interacts with:
-
-- legitimacy object stores (engine-managed)  
-- review store  
-- import store  
-- CDS workspace stores  
-- commit store (via CCS)  
-- graph store (via CSG)  
-- alignment store (via CAS)  
-- audit store  
-- CSP pipeline/feed stores  
-- CRS untrusted stores  
+- a state machine  
+- explicit states  
+- explicit transitions  
+- explicit commands  
 
 ---
 
-## 6.3 Store Responsibility
+## 6.2 Process Types
+
+Examples:
+
+- Incoming Reconciliation Review  
+- Session Orchestration  
+- Deliberate (CDS integration)  
+- Import / Intake  
+- Restore / Rehydration  
+- Commit Emission  
+
+---
+
+## 6.3 Process Guarantees
+
+Processes must be:
+
+- explicit  
+- auditable  
+- deterministic in transitions  
+- resumable (if supported)  
+
+---
+
+# 7. Persistence Coordination Model
+
+## 7.1 Principle
+
+Runtime does not own a single persistence layer.
+
+Instead:
+
+> Runtime coordinates multiple **managed storage surfaces** across the platform.
+
+---
+
+## 7.2 Store Categories
+
+### Runtime-Managed Stores
+
+- Session Store (in-progress legitimacy execution)  
+- Review Workspace Store  
+- Deliberate Workspace Store  
+- Deliberate Artifact Store  
+- Ref Store (mutable pointers)  
+- Metadata Store (host + local configuration)  
+- Audit Store (append-only runtime memory)  
+
+---
+
+### Substrate-Owned Stores
+
+- Commit Store (CCS — immutable artifact truth)  
+- Graph Store (CSG)  
+- Alignment Store (CAS)  
+- Identity Store (CIS)  
+- Care Signal Stores (CCare)  
+- CSP Pipeline / Feed Stores  
+- CRS Untrusted Artifact Stores  
+
+---
+
+## 7.3 Store Responsibilities
 
 Each store:
 
@@ -204,39 +273,93 @@ Each store:
 Runtime:
 
 - coordinates writes  
-- does not redefine store semantics  
+- enforces workflow boundaries  
+- does not redefine semantics  
 
 ---
 
-## 6.4 Store Update Principle
+## 7.4 Mutability Model
+
+Charter storage follows strict categories:
+
+- mutable workspace state  
+- immutable local artifacts  
+- immutable committed artifacts (CCS)  
+- append-only audit  
+- mutable metadata  
+- derived indexes  
+
+---
+
+## 7.5 Store Update Rule
 
 > State changes must be written to managed stores immediately.
 
 This ensures:
 
 - deterministic querying via CQL  
-- no reliance on implicit in-memory state  
-- auditability of process evolution  
+- auditability  
+- recovery without hidden state  
 
 ---
 
-# 7. Legitimacy Engine Integration
+## 7.6 Cross-Domain Rule
 
-## 7.1 Invocation Model
+> No implicit cross-domain persistence is allowed.
+
+All cross-domain data movement must occur through:
+
+- explicit workflows  
+- explicit review processes  
+- explicit engine execution  
+
+---
+
+## 7.7 Foreign Artifact Boundary
+
+Foreign artifacts:
+
+- must remain isolated  
+- must not be implicitly trusted  
+- must pass through reconciliation or explicit workflows  
+
+---
+
+## 7.8 Recovery Model
+
+Runtime must support deterministic recovery:
+
+1. load stores  
+2. verify integrity  
+3. rebuild refs  
+4. rebuild indexes  
+
+Derived systems may be rebuilt as needed.
+
+---
+
+# 8. Legitimacy Engine Integration
+
+## 8.1 Invocation Model
 
 Runtime uses the Legitimacy Engine as:
 
-> a deterministic computation engine
-
-Runtime:
-
-- prepares inputs (sessions, candidates)  
-- invokes the engine  
-- receives outputs (resolutions, receipts)  
+> a deterministic computation system
 
 ---
 
-## 7.2 Boundary Rules
+## 8.2 Responsibilities
+
+Runtime:
+
+- constructs sessions  
+- provides candidates  
+- invokes the engine  
+- receives outputs  
+
+---
+
+## 8.3 Constraints
 
 Runtime must not:
 
@@ -246,229 +369,194 @@ Runtime must not:
 
 ---
 
-## 7.3 Session Discipline
+# 9. Commit Integration (CCS)
 
-All legitimacy creation must occur through:
-
-- session execution  
-- authority-aligned decision rules  
-- explicit candidate evaluation  
-
----
-
-# 8. Commit Integration (CCS)
-
-## 8.1 Principle
+## 9.1 Principle
 
 All durable artifacts must be emitted through CCS.
 
 ---
 
-## 8.2 Commit-Eligible Events
-
-Examples include:
-
-- resolution creation  
-- session receipts  
-- review closure  
-- deliberate closure  
-- signal creation (CCare)  
-- lineage artifacts (CIS)  
-
----
-
-## 8.3 Closure Rule
+## 9.2 Closure Rule
 
 > Artifacts that become part of durable history must be committed.
 
----
+Examples:
 
-## 8.4 Runtime Responsibility
-
-Runtime:
-
-- constructs commit artifacts  
-- passes them through CCS  
-- ensures identity and lineage are preserved  
-
----
-
-# 9. Query Integration (CQL)
-
-## 9.1 Role
-
-Runtime exposes query access through CQL.
-
----
-
-## 9.2 Query Model
-
-CQL:
-
-- queries managed read surfaces  
-- operates on store-backed data  
-- is deterministic and read-only  
+- resolutions  
+- session receipts  
+- review closure  
+- deliberate closure  
+- signals  
+- lineage artifacts  
 
 ---
 
 ## 9.3 Runtime Responsibility
 
+Runtime:
+
+- constructs commit artifacts  
+- passes them through CCS  
+- preserves identity and lineage  
+
+---
+
+# 10. Query Integration (CQL)
+
+## 10.1 Role
+
+Runtime exposes all queryable system state through CQL.
+
+---
+
+## 10.2 Query Model
+
+CQL:
+
+- queries managed read surfaces  
+- is store-backed  
+- is deterministic  
+- is read-only  
+
+---
+
+## 10.3 Runtime Responsibility
+
 Runtime must:
 
-- expose queryable surfaces for processes  
-- ensure process state is persisted for queryability  
-- support domain-based querying  
+- expose process and Area state  
+- ensure persistence for queryability  
+- support domain-based query resolution  
 
 ---
 
-# 10. Governance Enforcement
-
-## 10.1 Authority
-
-Runtime enforces that:
-
-- all legitimacy-related actions align with Area Authority  
-- decision rules match governance requirements  
-
----
-
-## 10.2 Scope
+# 11. Governance Enforcement
 
 Runtime enforces:
 
-- Area Scope constraints  
-- blocking when scope is ON_HOLD  
-- invalidation when scope changes materially  
+- Area Authority  
+- Area Scope  
+- decision rule alignment  
 
 ---
 
-## 10.3 Blocking Behavior
+## 11.1 Blocking
 
 Processes must be blocked when:
 
-- governance constraints are not met  
+- scope is ON_HOLD  
+- authority constraints are unmet  
 - structural conditions are invalid  
-- dependencies are unresolved  
 
 Blocked processes must:
 
-- remain auditable  
+- remain visible  
 - require explicit resume  
 
 ---
 
-# 11. Provenance & Rule Identity
+# 12. Provenance & Rule Identity
 
-## 11.1 Runtime Rule Identity
+## 12.1 Runtime Rule Identity
 
-Runtime must expose a deterministic **rule identity**.
+Runtime must expose a deterministic rule identity.
 
 ---
 
-## 11.2 Artifact Stamping
+## 12.2 Artifact Stamping
 
-Runtime-generated artifacts (e.g., review receipts) must include:
+Runtime artifacts must include:
 
 - runtime rule identity  
 - provenance metadata  
 
 ---
 
-## 11.3 Separation of Identities
+## 12.3 Separation
 
-- Runtime artifacts carry Runtime Rule Identity  
-- Engine artifacts carry Engine Rule Identity  
-
-These must remain distinct.
+- Runtime artifacts → Runtime Rule Identity  
+- Engine artifacts → Engine Rule Identity  
 
 ---
 
-# 12. Non-Interpretation
-
-Runtime must adhere to the Non-Interpretation Principle.
+# 13. Non-Interpretation
 
 Runtime must not:
 
-- infer meaning  
 - infer intent  
-- resolve ambiguity implicitly  
-- create relationships automatically  
+- infer meaning  
+- create relationships implicitly  
 
-All structure must be:
-
-- explicitly declared  
-- explicitly accepted  
-- explicitly recorded  
+All structure must be explicit.
 
 ---
 
-# 13. Determinism
+# 14. Determinism
 
-Runtime behavior must be deterministic given:
+Runtime must be deterministic given:
 
 - identical inputs  
 - identical rule identities  
-- identical process states  
-
-Runtime must not depend on:
-
-- execution timing  
-- implicit ordering  
-- hidden mutable state  
+- identical stored state  
 
 ---
 
-# 14. Auditability
+# 15. Auditability
 
-All Runtime processes must be:
+All Runtime behavior must be:
 
-- fully traceable  
-- reconstructible from stored state  
-- queryable via CQL  
+- traceable  
+- reconstructible  
+- queryable  
 
 ---
 
-# 15. Invariants
+# 16. Invariants
 
-- Runtime does not create legitimacy  
+- Runtime is the host gateway to Charter  
 - Runtime orchestrates all workflows  
+- Runtime does not create legitimacy  
 - all legitimacy flows through the engine  
 - all durable artifacts flow through CCS  
-- all query access flows through CQL  
-- process state must be persisted  
+- all queries flow through CQL  
+- all state changes must be persisted  
+- no implicit cross-domain writes  
 - structural ambiguity must be explicit  
-- governance constraints must be enforced  
-- blocking must be explicit  
-- no implicit mutation of structure  
+- governance must be enforced  
 - rule identity must be preserved  
 - provenance must not be lost  
 
 ---
 
-# 16. Mental Model
+# 17. Mental Model
 
 Runtime is:
 
-- the conductor of the system  
-- the coordinator of processes  
-- the boundary between thinking and decision  
-- the manager of operational truth  
+- the system boundary  
+- the orchestrator of processes  
+- the manager of operational state  
+- the gateway to all substrates  
 
 It is not:
 
-- a decision-maker  
-- an interpreter  
 - a source of authority  
+- a decision-maker  
+- a meaning engine  
 
 ---
 
-# 17. Final Principle
+# 18. Final Principle
 
 Runtime ensures that:
 
-- nothing becomes legitimate without process  
-- nothing is persisted without structure  
-- nothing is interpreted without being recorded  
+- hosts interact with Charter safely  
+- workflows are explicit and auditable  
+- legitimacy is created only through the engine  
+- structure is preserved across all layers  
 
-It is the system that turns **workflow into durable truth**  
+It is the system that turns:
+
+> interaction → process → structure → durable truth  
+
 without ever becoming the source of that truth.
