@@ -17,7 +17,7 @@ It exists to:
 - host Areas as operational legitimacy boundaries  
 - expose access to Charter substrates and components  
 - coordinate workflows and process execution  
-- mediate persistence across multiple managed stores  
+- mediate persistence across multiple managed surfaces when persistence is enabled  
 - invoke the Legitimacy Engine deterministically  
 - emit durable artifacts through CCS  
 - expose unified query access via CQL  
@@ -37,7 +37,7 @@ Runtime:
 - coordinates workflows  
 - manages operational state  
 - prepares inputs for legitimacy  
-- persists outcomes  
+- coordinates persistence when enabled  
 
 It does not:
 
@@ -79,7 +79,7 @@ Runtime is responsible for:
 - workspace allocation and lifecycle  
 - Area management  
 - process orchestration  
-- persistence coordination  
+- persistence coordination when enabled  
 - engine invocation  
 - artifact emission  
 - query exposure  
@@ -94,10 +94,10 @@ Runtime allocates **context workspaces** as the physical and logical container f
 
 A workspace defines:
 
-- storage allocation boundaries  
+- allocation boundaries  
 - process isolation  
 - local operational context  
-- access to managed stores  
+- access to managed surfaces  
 
 ---
 
@@ -106,7 +106,7 @@ A workspace defines:
 Workspaces are:
 
 - isolated  
-- recoverable  
+- recoverable when persistence is enabled  
 - host-scoped  
 - non-legitimizing  
 
@@ -145,7 +145,7 @@ Runtime manages:
 - Area lifecycle  
 - governance context (authority + scope)  
 - active processes within the Area  
-- persistence surfaces associated with the Area  
+- managed surfaces associated with the Area  
 
 ---
 
@@ -228,29 +228,38 @@ Processes must be:
 
 ## 7.1 Principle
 
+Persistence is optional at Runtime.
+
+Runtime may operate:
+
+- entirely in memory  
+- with local persisted state  
+- with durable artifact emission through CCS  
+- in mixed host-selected modes  
+
 Runtime does not own a single persistence layer.
 
 Instead:
 
-> Runtime coordinates multiple **managed storage surfaces** across the platform.
+> Runtime coordinates multiple managed surfaces across the platform when persistence is present.
 
 ---
 
-## 7.2 Store Categories
+## 7.2 Managed Surface Categories
 
-### Runtime-Managed Stores
+### Runtime-Managed Surfaces
 
-- Session Store (in-progress legitimacy execution)  
-- Review Workspace Store  
-- Deliberate Workspace Store  
+- Session Store or in-memory session surface  
+- Review Workspace Store or in-memory review surface  
+- Deliberate Workspace Store or in-memory deliberate surface  
 - Deliberate Artifact Store  
-- Ref Store (mutable pointers)  
+- Ref Store or ref surface  
 - Metadata Store (host + local configuration)  
-- Audit Store (append-only runtime memory)  
+- Audit Store or audit surface  
 
 ---
 
-### Substrate-Owned Stores
+### Substrate-Owned Surfaces
 
 - Commit Store (CCS — immutable artifact truth)  
 - Graph Store (CSG)  
@@ -262,17 +271,17 @@ Instead:
 
 ---
 
-## 7.3 Store Responsibilities
+## 7.3 Surface Responsibilities
 
-Each store:
+Each managed surface:
 
 - owns its data model  
 - enforces its invariants  
-- exposes a read surface for CQL  
+- may expose a query surface for CQL  
 
 Runtime:
 
-- coordinates writes  
+- coordinates writes and updates where applicable  
 - enforces workflow boundaries  
 - does not redefine semantics  
 
@@ -280,7 +289,7 @@ Runtime:
 
 ## 7.4 Mutability Model
 
-Charter storage follows strict categories:
+Charter operational storage/surfaces follow strict categories:
 
 - mutable workspace state  
 - immutable local artifacts  
@@ -291,15 +300,21 @@ Charter storage follows strict categories:
 
 ---
 
-## 7.5 Store Update Rule
+## 7.5 Persistence Rule
 
-> State changes must be written to managed stores immediately.
+When persistence is enabled:
+
+> State changes must be written to managed surfaces immediately.
 
 This ensures:
 
 - deterministic querying via CQL  
 - auditability  
 - recovery without hidden state  
+
+When persistence is not enabled:
+
+- runtime state must still remain deterministic within the active host context  
 
 ---
 
@@ -327,9 +342,9 @@ Foreign artifacts:
 
 ## 7.8 Recovery Model
 
-Runtime must support deterministic recovery:
+When persistence is enabled, Runtime should support deterministic recovery:
 
-1. load stores  
+1. load managed stores  
 2. verify integrity  
 3. rebuild refs  
 4. rebuild indexes  
@@ -344,7 +359,7 @@ Derived systems may be rebuilt as needed.
 
 Runtime uses the Legitimacy Engine as:
 
-> a deterministic computation system
+> a deterministic legitimacy computation system
 
 ---
 
@@ -406,7 +421,7 @@ Runtime:
 
 ## 10.1 Role
 
-Runtime exposes all queryable system state through CQL.
+Runtime exposes queryable system state through CQL.
 
 ---
 
@@ -414,10 +429,10 @@ Runtime exposes all queryable system state through CQL.
 
 CQL:
 
-- queries managed read surfaces  
-- is store-backed  
+- queries domain-owned read surfaces  
 - is deterministic  
 - is read-only  
+- is not limited to persisted storage  
 
 ---
 
@@ -425,9 +440,9 @@ CQL:
 
 Runtime must:
 
-- expose process and Area state  
-- ensure persistence for queryability  
+- expose process and Area state through domain query surfaces  
 - support domain-based query resolution  
+- preserve deterministic query behavior whether data is in memory, persisted, derived, or isolated  
 
 ---
 
@@ -498,7 +513,7 @@ Runtime must be deterministic given:
 
 - identical inputs  
 - identical rule identities  
-- identical stored state  
+- identical operational state  
 
 ---
 
@@ -507,7 +522,7 @@ Runtime must be deterministic given:
 All Runtime behavior must be:
 
 - traceable  
-- reconstructible  
+- reconstructible when persistence is enabled  
 - queryable  
 
 ---
@@ -520,7 +535,8 @@ All Runtime behavior must be:
 - all legitimacy flows through the engine  
 - all durable artifacts flow through CCS  
 - all queries flow through CQL  
-- all state changes must be persisted  
+- persistence is optional  
+- when persistence is enabled, state changes must be written explicitly  
 - no implicit cross-domain writes  
 - structural ambiguity must be explicit  
 - governance must be enforced  
