@@ -1,8 +1,8 @@
 use charter_legitimacy::compiler::CompiledState;
 use charter_legitimacy::domain::{
     AcceptanceResult, AreaGraph, AreaId, CandidateId, CandidatePayload, Receipt, ReceiptBody,
-    ReceiptId, ReceiptType, Resolution, ResolutionId, ResolutionKind, ResolutionState, SessionId,
-    SessionState,
+    ReceiptId, ReceiptType, Resolution, ResolutionId, ResolutionKind, ResolutionState,
+    ReversibilityIntent, SessionId, SessionState,
 };
 
 #[test]
@@ -109,6 +109,7 @@ fn compiled_state_builds_deterministic_successor_and_predecessor_indexes() {
         superseded_by: Some(ResolutionId::from("res-3")),
         internal_resolution_references: Vec::new(),
         cross_area_references: Vec::new(),
+        reversibility_intent: ReversibilityIntent::Reversible,
         annotation: None,
         created_at: None,
         schema_version: 1,
@@ -128,6 +129,7 @@ fn compiled_state_builds_deterministic_successor_and_predecessor_indexes() {
         superseded_by: Some(ResolutionId::from("res-3")),
         internal_resolution_references: Vec::new(),
         cross_area_references: Vec::new(),
+        reversibility_intent: ReversibilityIntent::Reversible,
         annotation: None,
         created_at: None,
         schema_version: 1,
@@ -147,6 +149,7 @@ fn compiled_state_builds_deterministic_successor_and_predecessor_indexes() {
         superseded_by: None,
         internal_resolution_references: Vec::new(),
         cross_area_references: Vec::new(),
+        reversibility_intent: ReversibilityIntent::Reversible,
         annotation: None,
         created_at: None,
         schema_version: 1,
@@ -192,4 +195,32 @@ fn compiled_state_builds_deterministic_successor_and_predecessor_indexes() {
         compiled.structural.active_resolution_ids,
         vec![ResolutionId::from("res-3")]
     );
+    
+    #[test]
+    fn resolution_can_store_reversibility_intent_without_affecting_shape() {
+        let resolution = Resolution {
+            resolution_id: ResolutionId::from("res-1"),
+            area_id: AreaId::from("area-1"),
+            originating_session_id: SessionId::from("s-1"),
+            authority_snapshot_id: None,
+            scope_snapshot_id: None,
+            accepted_candidate_id: CandidateId::from("c-1"),
+            kind: ResolutionKind::Regular,
+            engine_version: "0.1.0".into(),
+            spec_set_hash: "spec".into(),
+            state: ResolutionState::Active,
+            superseded_by: None,
+            internal_resolution_references: Vec::new(),
+            cross_area_references: Vec::new(),
+            reversibility_intent: ReversibilityIntent::ConditionallyReversible,
+            annotation: None,
+            created_at: None,
+            schema_version: 1,
+        };
+    
+        assert_eq!(
+            resolution.reversibility_intent,
+            ReversibilityIntent::ConditionallyReversible
+        );
+    }
 }

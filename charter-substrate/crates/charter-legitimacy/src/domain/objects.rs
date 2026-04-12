@@ -123,6 +123,7 @@ pub struct Resolution {
     pub superseded_by: Option<ResolutionId>,
     pub internal_resolution_references: Vec<ResolutionId>,
     pub cross_area_references: Vec<CrossAreaReference>,
+    pub reversibility_intent: ReversibilityIntent,
     pub annotation: Option<String>,
     pub created_at: Option<String>,
     pub schema_version: u32,

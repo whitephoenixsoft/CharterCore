@@ -83,3 +83,10 @@ pub enum CrossAreaRelationship {
     AffectedBy,
     Related,
 }
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
+pub enum ReversibilityIntent {
+    Reversible,
+    ConditionallyReversible,
+    Irreversible,
+}

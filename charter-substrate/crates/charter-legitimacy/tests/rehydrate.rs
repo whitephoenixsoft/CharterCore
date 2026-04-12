@@ -1,8 +1,8 @@
 use charter_legitimacy::api::engine::{Engine, RehydrateInput, RuntimeMode};
 use charter_legitimacy::domain::{
     AcceptanceResult, AreaGraph, AreaId, CandidateId, Receipt, ReceiptBody, ReceiptId, Resolution,
-    ResolutionId, ResolutionKind, ResolutionState, Session, SessionId, SessionPhase, SessionState,
-    SessionType,
+    ResolutionId, ResolutionKind, ResolutionState, ReversibilityIntent, Session, SessionId,
+    SessionPhase, SessionState, SessionType,
 };
 
 fn make_session(id: &str, area: &str) -> Session {
@@ -44,6 +44,7 @@ fn make_resolution(id: &str, area: &str, session_id: &str) -> Resolution {
         superseded_by: None,
         internal_resolution_references: Vec::new(),
         cross_area_references: Vec::new(),
+        reversibility_intent: ReversibilityIntent::Reversible,
         annotation: None,
         created_at: None,
         schema_version: 1,
