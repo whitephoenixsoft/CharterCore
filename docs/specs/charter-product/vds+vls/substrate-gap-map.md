@@ -369,37 +369,266 @@ Each system maintains distinct federation semantics, but all durable exchange us
 **Needed By:** VDS, VLS  
 **Priority:** IMPORTANT  
 
+### Current State
+
+- Systems may undergo periods where behavior is intentionally expected to deviate from normal conditions  
+- These periods may originate externally to the affected teams or identities  
+- Value-Directed Systems already support a signal type representing intentional pause  
+- There is currently no standardized mechanism to declare external conditions that should influence this signal posture across systems  
+
+---
+
 ### Gaps
 
-- There is no shared model for transition phases, rollout states, or identity evolution timing  
+- There is no standardized commit model for declaring external disturbances that affect system behavior across a defined scope  
+- There is no explicit distinction between:
+  - internally generated intentional pause conditions  
+  - externally declared disturbance conditions  
+
+- There is no defined mechanism for:
+  - scoping disturbances to specific Areas, identities, or structural regions  
+  - propagating disturbance effects across abstraction tiers within the Charter Structure Graph  
+
+- There is no standardized definition of time windows associated with disturbances, including:
+  - execution window during which disruption occurs  
+  - observation window during which heightened monitoring or altered interpretation is expected  
+
+- There is no defined integration between disturbance declarations and Value-Directed System signal interpretation behavior  
 
 ---
 
 ### Direction
 
-- Value Lineage Systems define identity lifecycle, version transitions, and sunset behavior  
-- Value-Directed Systems observe behavior during transitions and emit signals based on observed impact  
+- External disturbances must be declared as durable commit artifacts through the Charter Commit System  
+
+- These commits represent externally originated conditions that may impact system behavior and productivity  
+
+- Value-Directed Systems must interpret these commits as external sources of intentional pause conditions  
+
+- Internal intentional pause conditions remain distinct and originate from within the monitored system or team  
+
+---
+
+### Structural Scope and Propagation
+
+- Disturbance commits must explicitly define structural scope, which may include:
+  - Areas  
+  - identities  
+  - specific nodes or regions within the Charter Structure Graph  
+
+- Disturbance effects must propagate through structural relationships across abstraction tiers  
+
+- Higher-level disturbance declarations may affect all downstream resolutions, identities, or teams within the defined boundary  
+
+- Propagation must follow explicit structural containment rules and must not rely on implicit inference  
+
+---
+
+### Time Window Model
+
+Disturbance commits must define time-based context, including:
+
+- execution window during which the disturbance is active  
+- observation window during which systems should apply heightened monitoring or adjusted interpretation  
+
+These windows are defined by the host and are non-legitimizing  
+
+---
+
+### VDS Integration
+
+- Value-Directed Systems must:
+  - interpret disturbance commits as external context  
+  - map disturbance context to intentional pause signal behavior  
+  - adjust signal interpretation, aggregation, and threshold behavior accordingly  
+
+- CAS may continue to measure intentional pause signals without modification to its core model  
+
+---
+
+### VLS Integration
+
+- Value Lineage Systems may use disturbance commits to:
+  - contextualize identity behavior over time  
+  - explain anomalies in alignment or performance  
+  - correlate structural changes with periods of disruption  
+
+---
+
+### Constraints
+
+Disturbance commits must:
+
+- not create legitimacy  
+- not modify structural relationships  
+- not override identity definitions  
+- not enforce behavior directly  
+
+They provide contextual input for interpretation only  
+
+---
+
+### Principle
+
+External disturbance is declared explicitly.
+
+Interpretation of that disturbance is performed by Value-Directed Systems through existing signal semantics.
 
 ---
 
 ## 3.8 Persistence and Store Model Clarity
 
-**Needed By:** Runtime, CLI, All Substrates  
+**Needed By:** Runtime, CLI, All Substrates, VDS, VLS  
 **Priority:** IMPORTANT  
+
+### Current State
+
+- Charter defines multiple logical storage surfaces across substrates, including:
+  - commit store (Charter Commit System artifacts)  
+  - reference store (active pointers and mutable references)  
+  - metadata store  
+  - audit store  
+  - review and deliberate workspace stores  
+  - identity and derived data stores  
+
+- These stores are conceptually defined but often assumed to be implemented using object storage patterns  
+
+- Runtime may operate entirely in memory or with persistence enabled  
+
+- Durable artifacts are emitted through the Charter Commit System regardless of storage implementation  
+
+---
 
 ### Gaps
 
-- The distinction between authoritative stores, derived stores, and reference stores is not fully formalized  
+- There is no explicit separation between:
+  - logical substrate-defined stores  
+  - physical storage implementations  
+
+- There is no standardized persistence interface that allows hosts to provide alternative storage backends  
+
+- There is no formal adapter model for integrating:
+  - relational databases  
+  - document stores  
+  - key-value systems  
+  - graph databases  
+  - or hybrid storage systems  
+
+- There is no defined mechanism for hosts to:
+  - centrally manage or pool data across multiple substrates  
+  - override default storage implementations  
+  - unify access to runtime, commit, and derived data  
+
+- The role of default object stores and commit stores is not clearly defined as reference implementations rather than required architecture  
+
+- There is no explicit contract defining how persistence must preserve:
+  - determinism  
+  - provenance  
+  - rule identity  
+  - commit integrity  
 
 ---
 
 ### Direction
 
-Each storage surface must explicitly define:
+- All substrate storage must be defined in terms of **logical storage contracts**, not physical storage implementations  
 
-- ownership  
-- mutability  
-- authority level  
+- Physical storage must be **pluggable at the host boundary** through persistence adapters  
+
+- Hosts must be able to supply storage implementations for all logical stores, including:
+  - commit store  
+  - reference store  
+  - metadata store  
+  - audit store  
+  - workspace stores  
+  - identity and derived data stores  
+
+- Default object store and commit store implementations must be treated as **reference implementations only**, not required components  
+
+---
+
+### Persistence Model
+
+- Runtime may operate:
+  - fully in memory  
+  - with partial persistence  
+  - with full persistence  
+
+- When persistence is enabled:
+  - all state changes must be written to defined logical stores  
+  - durable artifacts must be emitted through the Charter Commit System  
+
+- When persistence is not enabled:
+  - runtime behavior must still remain deterministic within the execution context  
+
+---
+
+### CCS and Storage Independence
+
+- The Charter Commit System defines the **canonical protocol and structure for durable artifacts**  
+
+- Commit artifacts must remain:
+  - transportable  
+  - verifiable  
+  - immutable  
+
+regardless of how they are physically stored  
+
+- The commit store is a logical construct that may be implemented using any storage backend  
+
+---
+
+### Host Data Control and Pooling
+
+- Hosts must be able to:
+  - aggregate data across multiple substrate domains  
+  - maintain centralized or distributed storage models  
+  - expose unified access patterns across:
+    - runtime state  
+    - commit artifacts  
+    - derived data  
+    - external telemetry  
+
+- Hosts may choose to:
+  - bypass default storage implementations entirely  
+  - integrate Charter data into existing data platforms  
+
+---
+
+### VDS and VLS Considerations
+
+- Value-Directed Systems and Value Lineage Systems may require additional storage for:
+  - telemetry data  
+  - signal histories  
+  - derived summaries  
+  - lineage materializations  
+  - replay datasets  
+
+- These storage needs are external to core Charter substrate persistence and must be host-defined  
+
+- Substrates must not impose storage requirements on these systems beyond commit-based integration  
+
+---
+
+### Constraints
+
+Persistence implementations must:
+
+- preserve determinism of query and execution  
+- preserve provenance and rule identity  
+- preserve commit integrity and immutability  
+- not introduce implicit interpretation or mutation  
+- maintain explicit boundaries between logical store domains  
+
+---
+
+### Principle
+
+Persistence is a host-controlled concern.
+
+Substrates define what must be stored.
+
+Hosts define how and where it is stored.
 
 ---
 
@@ -408,26 +637,183 @@ Each storage surface must explicitly define:
 **Needed By:** VDS, VLS, software team workflows  
 **Priority:** IMPORTANT  
 
+### Current State
+
+- Simulation is conceptually supported through:
+  - Deliberate System items  
+  - Charter Structure Graph projections  
+  - relationship-driven structure  
+
+- Value-Directed Systems produce observation items representing meaningful conditions that require investigation  
+
+- Software systems may maintain event histories or telemetry streams external to Charter  
+
+- There is no formalized mechanism for replaying observation conditions against simulated structures  
+
+---
+
 ### Gaps
 
-- There is no mechanism to replay telemetry or feed data against simulated structures in the Deliberate System  
-- There is no standardized way to project historical signal data onto simulated Charter Structure Graph configurations  
-- There is no comparison model between live structures and simulated structures  
+- There is no standardized model for applying observation items to simulated Charter Structure Graph configurations  
+
+- There is no defined mechanism for:
+  - replaying historical observation conditions  
+  - evaluating their structural impact across a simulated hierarchy  
+  - capturing resulting alignment effects through CAS  
+
+- There is no formal structure defining replay-capable observation items, including:
+  - condition representation  
+  - structural target  
+  - threshold or relationship linkage  
+  - time window or persistence characteristics  
+
+- There is no defined process for combining:
+  - observation items from Value-Directed Systems  
+  - event history from software systems  
+
+into a unified investigation and simulation workflow  
+
+- There is no standardized method for comparing:
+  - current system behavior  
+  - simulated structure behavior  
+  - alternative threshold configurations  
 
 ---
 
 ### Direction
 
-- Simulation must allow structural experimentation using Deliberate System items and Charter Structure Graph projections  
-- Replay capability must allow historical or sampled feed data to be evaluated against simulated structures  
-- Replay must remain non-legitimizing  
-- Systems must support comparison between:
-  - current structure  
-  - simulated structure  
-  - resulting alignment and signal outcomes  
+Simulation and replay must operate as **structural and semantic replay**, not raw telemetry replay.
 
 ---
 
+### Semantic Replay Model
+
+Replay operates by:
+
+- taking observation items representing meaningful system conditions  
+- applying them to a simulated structure derived from Deliberate System items and Charter Structure Graph projections  
+- using threshold relationships and structural bindings to determine how signals would be emitted  
+- allowing CAS to calculate resulting alignment effects and cascade behavior across the structure  
+
+Replay is therefore:
+
+- not a reconstruction of all raw telemetry  
+- but a reapplication of meaningful, curated conditions  
+
+---
+
+### Observation-Driven Replay
+
+Observation items serve as the primary replay unit.
+
+Replay-capable observation items must include:
+
+- the condition being represented  
+- the structural target or scope  
+- linkage to threshold or relationship definitions  
+- signal semantic classification  
+- time window or persistence characteristics where applicable  
+
+These items represent:
+
+- conditions that were significant enough to be surfaced  
+- missing or problematic scenarios in the system  
+- opportunities for structural or behavioral improvement  
+
+---
+
+### Integration with Event History
+
+- Software systems may provide event history or telemetry streams  
+
+- Event history may be used to:
+  - enrich observation items  
+  - validate observed conditions  
+  - provide additional context for investigation  
+
+- Full telemetry replay is not required for the substrate model  
+
+- Observation-driven replay remains the primary mechanism for simulation  
+
+---
+
+### Simulation Execution Model
+
+Simulation is executed by:
+
+1. constructing a simulated structure using Deliberate System items  
+2. projecting that structure into the Charter Structure Graph  
+3. applying observation items to the simulated structure  
+4. resolving threshold and relationship bindings  
+5. emitting simulated signals locally within the deliberate context  
+6. invoking CAS to calculate alignment and cascade effects across the graph  
+
+---
+
+### CAS Role
+
+- CAS calculates how applied observation conditions affect alignment across the structure  
+
+- CAS must support:
+  - propagation of effects across structural relationships  
+  - evaluation of cascade behavior  
+  - comparison between different simulation configurations  
+
+- CAS outputs remain derived and non-authoritative  
+
+---
+
+### Software Team Workflow
+
+Simulation supports real-world problem solving by enabling teams to:
+
+- identify missing or unhandled scenarios through observation items  
+- determine whether issues originate from:
+  - software behavior  
+  - threshold definitions  
+  - structural relationships  
+
+- adjust thresholds to reflect realistic system behavior  
+- modify software to eliminate undesirable conditions  
+- evaluate how changes would affect alignment across the system  
+
+- use disturbance windows when deploying changes that intentionally alter behavior  
+
+---
+
+### Comparative Simulation
+
+Systems must support comparison between:
+
+- current structure and behavior  
+- simulated structure configurations  
+- alternative threshold definitions  
+
+Comparison must allow teams to evaluate:
+
+- alignment impact  
+- signal frequency and distribution  
+- cascade effects across dependent structures  
+
+---
+
+### Constraints
+
+Simulation and replay must:
+
+- remain non-legitimizing  
+- not modify committed structure or identity  
+- operate within isolated deliberate contexts  
+- preserve explicit structure and relationships  
+- avoid implicit inference or interpretation  
+
+---
+
+### Principle
+
+Replay is the reapplication of meaningful observation conditions to simulated structure in order to understand structural consequences and improve system behavior.
+
+---
 # 4. Non-Gaps (Confirmed Stable)
 
 The following areas are considered stable:
