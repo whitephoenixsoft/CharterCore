@@ -535,14 +535,13 @@ Rules:
 candidate_payload must contain:
 
 - resolution_content
-- supersedes_resolution_ids
+- supersedes_resolution_id
 
 Rules:
 
-- supersedes_resolution_ids must be a non-empty ordered list of Resolution IDs
-- all target Resolution IDs must resolve locally within the same Area
-- all target Resolution IDs must be unique
-- supersedes_resolution_ids must be lexicographically ordered
+- supersedes_resolution_ids must be a non-empty Resolution ID
+- target Resolution ID must resolve locally within the same Area
+- target Resolution ID must be unique
 - supersession targets are structural action targets, not informational references
 
 ### For RETIRE_RESOLUTION
