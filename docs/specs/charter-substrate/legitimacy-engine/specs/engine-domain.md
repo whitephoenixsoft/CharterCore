@@ -475,16 +475,24 @@ Candidate fields:
 - round_index
 - candidate_action_type
 - candidate_payload
+- reversibility_intent
 - annotation (optional)
 - created_at
 - schema_version
 
 Candidate is a structural round-scoped proposal object.
 
+reversibility_intent is informational only and can have only the following values:
+
+- REVERSIBLE
+- CONDITIONALLY_REVERSIBLE
+- IRREVERSIBLE
+
 ENG-DOMAIN defines that:
 
 - candidate_id must be unique within its round
 - candidate belongs to exactly one round
+- proposal_text is non-interpreted content
 - candidate_action_type is structural
 - candidate_payload is structural and must match candidate_action_type
 - annotation is informational only
@@ -698,10 +706,13 @@ Resolution fields:
 - superseded_by
 - internal_resolution_references (optional)
 - cross_area_references (optional)
+- resolution_content
 - annotation (optional)
 - created_at
 - schema_version
 - **reversibility_intent** — enum("REVERSIBLE", "CONDITIONALLY_REVERSIBLE", "IRREVERSIBLE")
+
+resolution_content is the substantive content of the resolution. It is considered structural but non-interpreted. It is free form text that contains the accepted result from the session candidate.
 
 Reversibility intent is a non-structural, informational field expressing the author’s intent regarding how the Resolution is expected to be treated over time. This field is advisory only and must not influence structural validation, decision evaluation, acceptance eligibility, supersession capability, or any form of legitimacy determination. All Resolutions remain mechanically supersedable regardless of this value.
 
@@ -768,7 +779,7 @@ Receipt fields:
 - rounds
 - final_round_index
 - session_state_at_close
-- acceptance_result
+- resolution_content
 - annotation (optional)
 - created_at
 - hash_algorithm
@@ -786,7 +797,7 @@ Receipt rules include:
 - rounds is a structural ordered snapshot sequence
 - final_round_index is structural
 - session_state_at_close is structural
-- acceptance_result is structural
+- resolution_content is structural
 - hash_algorithm and content_hash are structural integrity fields
 - annotation is informational only
 
