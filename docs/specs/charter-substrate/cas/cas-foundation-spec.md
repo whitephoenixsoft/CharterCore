@@ -115,8 +115,17 @@ Item-based analysis applies only to **admitted stable item nodes** present in CS
 
 Signals include:
 
-- semantic state  
-- confidence  
+- semantic state:
+    - alignment
+    - misalignment
+    - uncertainty
+    - reduced_capacity
+    - intentional_pause
+    - need_reassessment
+- confidence:
+    - low
+    - medium
+    - high
 - timestamp  
 
 Signals are:
@@ -230,11 +239,18 @@ Node class does not change the mathematical role of the layer, but may affect pr
 
 Maps numeric outputs into semantic states such as:
 
-- aligned  
-- misaligned  
+- alignment
+- neutral
+- uncertainty
+- reduced_capacity
+- need_reassessment
+- misalignment
+
+With variance: 
+- stable
 - unstable  
 - improving  
-- reduced capacity  
+- declining 
 
 This layer classifies. It does not interpret intent or legitimacy.
 
