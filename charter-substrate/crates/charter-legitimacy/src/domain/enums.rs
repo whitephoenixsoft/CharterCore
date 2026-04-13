@@ -39,7 +39,7 @@ pub enum SessionType {
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
 pub enum CandidateActionType {
     AdoptResolution,
-    SupersedeResolutions,
+    SupersedeResolution,
     RetireResolution,
 }
 
@@ -47,12 +47,6 @@ pub enum CandidateActionType {
 pub enum ReceiptType {
     Legitimacy,
     Exploration,
-}
-
-#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
-pub enum AcceptanceResult {
-    Success,
-    Abandoned,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
@@ -77,16 +71,16 @@ pub enum ResolutionKind {
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
+pub enum ReversibilityIntent {
+    Reversible,
+    ConditionallyReversible,
+    Irreversible,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
 pub enum CrossAreaRelationship {
     DerivedFrom,
     Affects,
     AffectedBy,
     Related,
-}
-
-#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
-pub enum ReversibilityIntent {
-    Reversible,
-    ConditionallyReversible,
-    Irreversible,
 }

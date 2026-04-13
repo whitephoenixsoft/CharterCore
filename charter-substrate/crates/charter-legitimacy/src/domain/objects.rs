@@ -27,9 +27,9 @@ pub enum CandidatePayload {
     AdoptResolution {
         resolution_content: String,
     },
-    SupersedeResolutions {
+    SupersedeResolution {
         resolution_content: String,
-        supersedes_resolution_ids: Vec<ResolutionId>,
+        supersedes_resolution_id: ResolutionId,
     },
     RetireResolution {
         target_resolution_id: ResolutionId,
@@ -40,7 +40,7 @@ impl CandidatePayload {
     pub fn action_type(&self) -> CandidateActionType {
         match self {
             Self::AdoptResolution { .. } => CandidateActionType::AdoptResolution,
-            Self::SupersedeResolutions { .. } => CandidateActionType::SupersedeResolutions,
+            Self::SupersedeResolution { .. } => CandidateActionType::SupersedeResolution,
             Self::RetireResolution { .. } => CandidateActionType::RetireResolution,
         }
     }
@@ -53,6 +53,7 @@ pub struct Candidate {
     pub area_id: AreaId,
     pub round_index: u32,
     pub candidate_payload: CandidatePayload,
+    pub reversibility_intent: ReversibilityIntent,
     pub annotation: Option<String>,
     pub created_at: Option<String>,
     pub schema_version: u32,
@@ -123,10 +124,11 @@ pub struct Resolution {
     pub superseded_by: Option<ResolutionId>,
     pub internal_resolution_references: Vec<ResolutionId>,
     pub cross_area_references: Vec<CrossAreaReference>,
-    pub reversibility_intent: ReversibilityIntent,
+    pub resolution_content: String,
     pub annotation: Option<String>,
     pub created_at: Option<String>,
     pub schema_version: u32,
+    pub reversibility_intent: ReversibilityIntent,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -142,16 +144,11 @@ pub struct RoundSnapshot {
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub enum ReceiptBody {
-    Legitimacy { resolution_id: ResolutionId },
-    Exploration,
-}
-
-#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Receipt {
     pub receipt_id: ReceiptId,
     pub session_id: SessionId,
-    pub body: ReceiptBody,
+    pub resolution_id: Option<ResolutionId>,
+    pub receipt_type: ReceiptType,
     pub area_id: AreaId,
     pub engine_version: String,
     pub spec_set_hash: String,
@@ -161,28 +158,12 @@ pub struct Receipt {
     pub rounds: Vec<RoundSnapshot>,
     pub final_round_index: u32,
     pub session_state_at_close: SessionState,
-    pub acceptance_result: AcceptanceResult,
+    pub resolution_content: Option<String>,
     pub annotation: Option<String>,
     pub created_at: Option<String>,
     pub hash_algorithm: String,
     pub content_hash: String,
     pub schema_version: u32,
-}
-
-impl Receipt {
-    pub fn receipt_type(&self) -> ReceiptType {
-        match self.body {
-            ReceiptBody::Legitimacy { .. } => ReceiptType::Legitimacy,
-            ReceiptBody::Exploration => ReceiptType::Exploration,
-        }
-    }
-
-    pub fn resolution_id(&self) -> Option<&ResolutionId> {
-        match &self.body {
-            ReceiptBody::Legitimacy { resolution_id } => Some(resolution_id),
-            ReceiptBody::Exploration => None,
-        }
-    }
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Default)]
