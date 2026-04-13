@@ -1,8 +1,8 @@
 use std::collections::{BTreeMap, BTreeSet};
 
 use crate::domain::{
-    AreaGraph, Receipt, ReceiptBody, ReceiptId, Resolution, ResolutionId, ResolutionKind, Session,
-    SessionId,
+    AreaGraph, Receipt, ReceiptId, Resolution, ResolutionId, ResolutionKind, Session,
+    SessionId, ReceiptType,
 };
 use crate::error::IntegrityError;
 
@@ -384,19 +384,19 @@ fn validate_receipt_references(graph: &AreaGraph, errors: &mut Vec<IntegrityErro
             });
         }
 
-        match &receipt.body {
-            ReceiptBody::Legitimacy { resolution_id } => {
-                if !resolution_ids.contains(resolution_id.as_str()) {
+        match &receipt.receipt_type {
+            ReceiptType::Legitimacy  => {
+                if !resolution_ids.contains(receipt.resolution_id.as_ref().unwrap().as_str()) {
                     errors.push(IntegrityError::InvalidReceiptResolutionBinding {
                         receipt_id: receipt.receipt_id.as_str().to_string(),
                         detail: format!(
                             "LEGITIMACY receipt references missing resolution {}",
-                            resolution_id.as_str()
+                            receipt.resolution_id.clone().unwrap().as_str().to_string()
                         ),
                     });
                 }
             }
-            ReceiptBody::Exploration => {}
+            ReceiptType::Exploration => {}
         }
 
         if let Some(authority_id) = &receipt.authority_snapshot_id {

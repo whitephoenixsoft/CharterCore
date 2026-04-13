@@ -1,8 +1,8 @@
 use charter_legitimacy::api::engine::{Engine, RehydrateInput, RuntimeMode};
 use charter_legitimacy::domain::{
-    AcceptanceResult, AreaGraph, AreaId, CandidateId, Receipt, ReceiptBody, ReceiptId, Resolution,
+    AreaGraph, AreaId, CandidateId, Receipt, ReceiptId, Resolution,
     ResolutionId, ResolutionKind, ResolutionState, ReversibilityIntent, Session, SessionId,
-    SessionPhase, SessionState, SessionType,
+    SessionPhase, SessionState, SessionType, ReceiptType
 };
 
 fn make_session(id: &str, area: &str) -> Session {
@@ -37,6 +37,7 @@ fn make_resolution(id: &str, area: &str, session_id: &str) -> Resolution {
         authority_snapshot_id: None,
         scope_snapshot_id: None,
         accepted_candidate_id: CandidateId::from("candidate-1"),
+        resolution_content: "some resolution".into(),
         kind: ResolutionKind::Regular,
         engine_version: "0.1.0".into(),
         spec_set_hash: "spec".into(),
@@ -117,9 +118,9 @@ fn rehydrate_rejects_legitimacy_receipt_with_missing_resolution() {
     let receipt = Receipt {
         receipt_id: ReceiptId::from("receipt-1"),
         session_id: SessionId::from("session-1"),
-        body: ReceiptBody::Legitimacy {
-            resolution_id: ResolutionId::from("missing-resolution"),
-        },
+        resolution_id: Some(ResolutionId::from("missing-resolution")),
+        receipt_type: ReceiptType::Legitimacy,
+        resolution_content: Some("example accepted content".into()),
         area_id: AreaId::from("area-1"),
         engine_version: "0.1.0".into(),
         spec_set_hash: "spec".into(),
@@ -129,7 +130,6 @@ fn rehydrate_rejects_legitimacy_receipt_with_missing_resolution() {
         rounds: Vec::new(),
         final_round_index: 1,
         session_state_at_close: SessionState::Accepted,
-        acceptance_result: AcceptanceResult::Success,
         annotation: None,
         created_at: None,
         hash_algorithm: "sha256".into(),

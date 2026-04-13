@@ -1,6 +1,6 @@
 use charter_legitimacy::compiler::CompiledState;
 use charter_legitimacy::domain::{
-    AcceptanceResult, AreaGraph, AreaId, CandidateId, CandidatePayload, Receipt, ReceiptBody,
+    AreaGraph, AreaId, CandidateId, CandidatePayload, Receipt,
     ReceiptId, ReceiptType, Resolution, ResolutionId, ResolutionKind, ResolutionState,
     ReversibilityIntent, SessionId, SessionState,
 };
@@ -10,7 +10,7 @@ fn receipt_body_legitimacy_exposes_type_and_resolution_id() {
     let receipt = Receipt {
         receipt_id: ReceiptId::from("r-1"),
         session_id: SessionId::from("s-1"),
-        resolution_id: Some(ResolutionId::from("resolution-1")),
+        resolution_id: Some(ResolutionId::from("res-1")),
         receipt_type: ReceiptType::Legitimacy,
         resolution_content: Some("example accepted content".into()),
         area_id: AreaId::from("area-1"),
@@ -22,7 +22,6 @@ fn receipt_body_legitimacy_exposes_type_and_resolution_id() {
         rounds: Vec::new(),
         final_round_index: 1,
         session_state_at_close: SessionState::Accepted,
-        acceptance_result: AcceptanceResult::Success,
         annotation: None,
         created_at: None,
         hash_algorithm: "sha256".into(),
@@ -30,9 +29,9 @@ fn receipt_body_legitimacy_exposes_type_and_resolution_id() {
         schema_version: 1,
     };
 
-    assert_eq!(receipt.receipt_type(), ReceiptType::Legitimacy);
+    assert_eq!(receipt.receipt_type, ReceiptType::Legitimacy);
     assert_eq!(
-        receipt.resolution_id(),
+        receipt.resolution_id.as_ref(),
         Some(&ResolutionId::from("res-1"))
     );
 }
@@ -54,7 +53,6 @@ fn receipt_body_exploration_exposes_type_and_no_resolution_id() {
         rounds: Vec::new(),
         final_round_index: 1,
         session_state_at_close: SessionState::Closed,
-        acceptance_result: AcceptanceResult::Abandoned,
         annotation: None,
         created_at: None,
         hash_algorithm: "sha256".into(),
@@ -62,8 +60,8 @@ fn receipt_body_exploration_exposes_type_and_no_resolution_id() {
         schema_version: 1,
     };
 
-    assert_eq!(receipt.receipt_type(), ReceiptType::Exploration);
-    assert_eq!(receipt.resolution_id(), None);
+    assert_eq!(receipt.receipt_type, ReceiptType::Exploration);
+    assert_eq!(receipt.resolution_id, None);
 }
 
 #[test]
@@ -72,9 +70,9 @@ fn candidate_payload_reports_correct_action_type() {
         resolution_content: "alpha".into(),
     };
 
-    let supersede = CandidatePayload::SupersedeResolutions {
+    let supersede = CandidatePayload::SupersedeResolution {
         resolution_content: "beta".into(),
-        supersedes_resolution_ids: vec![ResolutionId::from("res-1")],
+        supersedes_resolution_id: ResolutionId::from("res-1"),
     };
 
     let retire = CandidatePayload::RetireResolution {
@@ -87,7 +85,7 @@ fn candidate_payload_reports_correct_action_type() {
     );
     assert_eq!(
         supersede.action_type(),
-        charter_legitimacy::domain::CandidateActionType::SupersedeResolutions
+        charter_legitimacy::domain::CandidateActionType::SupersedeResolution
     );
     assert_eq!(
         retire.action_type(),
@@ -200,33 +198,33 @@ fn compiled_state_builds_deterministic_successor_and_predecessor_indexes() {
         compiled.structural.active_resolution_ids,
         vec![ResolutionId::from("res-3")]
     );
-    
-    #[test]
-    fn resolution_can_store_reversibility_intent_without_affecting_shape() {
-        let resolution = Resolution {
-            resolution_id: ResolutionId::from("res-1"),
-            area_id: AreaId::from("area-1"),
-            originating_session_id: SessionId::from("s-1"),
-            authority_snapshot_id: None,
-            scope_snapshot_id: None,
-            accepted_candidate_id: CandidateId::from("c-1"),
-            kind: ResolutionKind::Regular,
-            engine_version: "0.1.0".into(),
-            spec_set_hash: "spec".into(),
-            state: ResolutionState::Active,
-            superseded_by: None,
-            internal_resolution_references: Vec::new(),
-            cross_area_references: Vec::new(),
-            resolution_content: "example accepted content".into(),
-            reversibility_intent: ReversibilityIntent::ConditionallyReversible,
-            annotation: None,
-            created_at: None,
-            schema_version: 1,
-        };
-    
-        assert_eq!(
-            resolution.reversibility_intent,
-            ReversibilityIntent::ConditionallyReversible
-        );
-    }
+} 
+
+#[test]
+fn resolution_can_store_reversibility_intent_without_affecting_shape() {
+    let resolution = Resolution {
+        resolution_id: ResolutionId::from("res-1"),
+        area_id: AreaId::from("area-1"),
+        originating_session_id: SessionId::from("s-1"),
+        authority_snapshot_id: None,
+        scope_snapshot_id: None,
+        accepted_candidate_id: CandidateId::from("c-1"),
+        kind: ResolutionKind::Regular,
+        engine_version: "0.1.0".into(),
+        spec_set_hash: "spec".into(),
+        state: ResolutionState::Active,
+        superseded_by: None,
+        internal_resolution_references: Vec::new(),
+        cross_area_references: Vec::new(),
+        resolution_content: "example accepted content".into(),
+        reversibility_intent: ReversibilityIntent::ConditionallyReversible,
+        annotation: None,
+        created_at: None,
+        schema_version: 1,
+    };
+
+    assert_eq!(
+        resolution.reversibility_intent,
+        ReversibilityIntent::ConditionallyReversible
+    );
 }

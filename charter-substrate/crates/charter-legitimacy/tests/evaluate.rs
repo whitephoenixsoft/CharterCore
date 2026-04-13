@@ -1,7 +1,7 @@
 use charter_legitimacy::api::engine::{Engine, RehydrateInput};
 use charter_legitimacy::domain::{
     AreaGraph, AreaId, Candidate, CandidateId, CandidatePayload, Participant, ParticipantId,
-    Session, SessionId, SessionPhase, SessionState, SessionType, Stance, Vote, VoteId,
+    Session, SessionId, SessionPhase, SessionState, SessionType, Stance, Vote, VoteId, ReversibilityIntent, 
 };
 use charter_legitimacy::error::EvaluationOutcome;
 
@@ -34,6 +34,7 @@ fn make_session_with_ids() -> Session {
                 resolution_content: "example".into(),
             },
             annotation: None,
+            reversibility_intent: ReversibilityIntent::Reversible,
             created_at: None,
             schema_version: 1,
         }],
