@@ -85,4 +85,33 @@ impl Engine {
 ) -> Result<EvaluationReport, EngineError> {
         Ok(runtime::evaluate_session(&self.state, &session_id))
     }
+
+    pub fn list_session_candidates(
+        &self,
+        session_id: crate::domain::SessionId,
+    ) -> Result<Vec<crate::runtime::CandidateEvaluation>, EngineError> {
+        match crate::runtime::evaluate_candidates_for_session(&self.state, &session_id) {
+            Ok(v) => Ok(v),
+            Err(_) => Err(EngineError::NotFound {
+                object_type: "session".to_string(),
+                object_id: session_id.as_str().to_string(),
+            }),
+        }
+    }
+
+    pub fn get_candidate_status(
+        &self,
+        session_id: crate::domain::SessionId,
+        candidate_id: crate::domain::CandidateId,
+    ) -> Result<crate::runtime::CandidateEvaluation, EngineError> {
+        let candidates = self.list_session_candidates(session_id)?;
+    
+        candidates
+            .into_iter()
+            .find(|c| c.candidate_id == candidate_id)
+            .ok_or(EngineError::NotFound {
+                object_type: "candidate".to_string(),
+                object_id: candidate_id.as_str().to_string(),
+            })
+    }
 }

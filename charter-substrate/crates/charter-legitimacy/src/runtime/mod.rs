@@ -1,7 +1,7 @@
 use std::collections::BTreeSet;
 
 use crate::compiler::CompiledState;
-use crate::domain::{CandidateId, SessionId, SessionPhase, SessionState};
+use crate::domain::{CandidateId, SessionId, SessionPhase, SessionState, CandidatePayload};
 use crate::error::{EvaluationReport, EvaluationOutcome, ErrorEntry};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -146,4 +146,65 @@ pub fn evaluate_session(
             schema_version: 1,
         }
     }
+}
+
+pub fn evaluate_candidates_for_session(
+    state: &CompiledState,
+    session_id: &SessionId,
+) -> Result<Vec<CandidateEvaluation>, EvaluationReport> {
+    let Some(session) = state.sessions.get(session_id) else {
+        return Err(EvaluationReport::rejected(
+            "evaluate_candidates",
+            "session",
+            Some(session_id.as_str()),
+            "SESSION_NOT_FOUND",
+        ));
+    };
+
+    let mut results = Vec::new();
+
+    for candidate in &session.candidates {
+        let mut reasons = Vec::new();
+        let mut disposition = CandidateDisposition::Eligible;
+
+        if candidate.round_index != session.round_index {
+            disposition = CandidateDisposition::Invalid;
+            reasons.push("CANDIDATE_WRONG_ROUND".to_string());
+        }
+
+        match &candidate.candidate_payload {
+            CandidatePayload::SupersedeResolution {
+                supersedes_resolution_id,
+                ..
+            } => {
+                if !state
+                    .resolutions
+                    .contains_key(supersedes_resolution_id)
+                {
+                    disposition = CandidateDisposition::Invalid;
+                    reasons.push("MISSING_TARGET_RESOLUTION".to_string());
+                }
+            }
+            CandidatePayload::RetireResolution {
+                target_resolution_id,
+            } => {
+                if !state
+                    .resolutions
+                    .contains_key(target_resolution_id)
+                {
+                    disposition = CandidateDisposition::Invalid;
+                    reasons.push("MISSING_TARGET_RESOLUTION".to_string());
+                }
+            }
+            CandidatePayload::AdoptResolution { .. } => {}
+        }
+
+        results.push(CandidateEvaluation {
+            candidate_id: candidate.candidate_id.clone(),
+            disposition,
+            reasons,
+        });
+    }
+
+    Ok(results)
 }
