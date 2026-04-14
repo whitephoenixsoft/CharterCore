@@ -1,8 +1,8 @@
 use charter_legitimacy::api::engine::{Engine, RehydrateInput, RuntimeMode};
 use charter_legitimacy::domain::{
-    AreaGraph, AreaId, CandidateId, Receipt, ReceiptId, Resolution,
-    ResolutionId, ResolutionKind, ResolutionState, ReversibilityIntent, Session, SessionId,
-    SessionPhase, SessionState, SessionType, ReceiptType
+    AreaGraph, AreaId, CandidateId, Receipt, ReceiptId, ReceiptType, Resolution, ResolutionId,
+    ResolutionKind, ResolutionState, ReversibilityIntent, Session, SessionId, SessionPhase,
+    SessionState, SessionType,
 };
 
 fn make_session(id: &str, area: &str) -> Session {
@@ -37,7 +37,8 @@ fn make_resolution(id: &str, area: &str, session_id: &str) -> Resolution {
         authority_snapshot_id: None,
         scope_snapshot_id: None,
         accepted_candidate_id: CandidateId::from("candidate-1"),
-        resolution_content: "some resolution".into(),
+        resolution_content: "example accepted content".into(),
+        reversibility_intent: ReversibilityIntent::Reversible,
         kind: ResolutionKind::Regular,
         engine_version: "0.1.0".into(),
         spec_set_hash: "spec".into(),
@@ -45,7 +46,6 @@ fn make_resolution(id: &str, area: &str, session_id: &str) -> Resolution {
         superseded_by: None,
         internal_resolution_references: Vec::new(),
         cross_area_references: Vec::new(),
-        reversibility_intent: ReversibilityIntent::Reversible,
         annotation: None,
         created_at: None,
         schema_version: 1,
@@ -145,6 +145,90 @@ fn rehydrate_rejects_legitimacy_receipt_with_missing_resolution() {
     };
 
     let result = Engine::rehydrate(RehydrateInput { graph }).expect("rehydrate should return report");
+
+    assert!(result.engine.is_none());
+    assert_eq!(
+        result.report.primary_error_code.as_deref(),
+        Some("INVALID_RECEIPT_RESOLUTION_BINDING")
+    );
+}
+
+#[test]
+fn rehydrate_rejects_legitimacy_receipt_without_resolution_id() {
+    let session = make_session("session-1", "area-1");
+
+    let receipt = Receipt {
+        receipt_id: ReceiptId::from("receipt-1"),
+        session_id: SessionId::from("session-1"),
+        resolution_id: None,
+        receipt_type: ReceiptType::Legitimacy,
+        area_id: AreaId::from("area-1"),
+        engine_version: "0.1.0".into(),
+        spec_set_hash: "spec".into(),
+        authority_snapshot_id: None,
+        scope_snapshot_id: None,
+        problem_statement: None,
+        rounds: Vec::new(),
+        final_round_index: 1,
+        session_state_at_close: SessionState::Accepted,
+        resolution_content: Some("accepted content".into()),
+        annotation: None,
+        created_at: None,
+        hash_algorithm: "sha256".into(),
+        content_hash: "abc".into(),
+        schema_version: 1,
+    };
+
+    let graph = AreaGraph {
+        area_id: Some(AreaId::from("area-1")),
+        sessions: vec![session],
+        resolutions: Vec::new(),
+        receipts: vec![receipt],
+    };
+
+    let result = Engine::rehydrate(RehydrateInput { graph }).unwrap();
+
+    assert!(result.engine.is_none());
+    assert_eq!(
+        result.report.primary_error_code.as_deref(),
+        Some("INVALID_RECEIPT_RESOLUTION_BINDING")
+    );
+}
+
+#[test]
+fn rehydrate_rejects_exploration_receipt_with_resolution_id() {
+    let session = make_session("session-1", "area-1");
+
+    let receipt = Receipt {
+        receipt_id: ReceiptId::from("receipt-1"),
+        session_id: SessionId::from("session-1"),
+        resolution_id: Some(ResolutionId::from("resolution-1")),
+        receipt_type: ReceiptType::Exploration,
+        area_id: AreaId::from("area-1"),
+        engine_version: "0.1.0".into(),
+        spec_set_hash: "spec".into(),
+        authority_snapshot_id: None,
+        scope_snapshot_id: None,
+        problem_statement: None,
+        rounds: Vec::new(),
+        final_round_index: 1,
+        session_state_at_close: SessionState::Closed,
+        resolution_content: None,
+        annotation: None,
+        created_at: None,
+        hash_algorithm: "sha256".into(),
+        content_hash: "abc".into(),
+        schema_version: 1,
+    };
+
+    let graph = AreaGraph {
+        area_id: Some(AreaId::from("area-1")),
+        sessions: vec![session],
+        resolutions: Vec::new(),
+        receipts: vec![receipt],
+    };
+
+    let result = Engine::rehydrate(RehydrateInput { graph }).unwrap();
 
     assert!(result.engine.is_none());
     assert_eq!(
