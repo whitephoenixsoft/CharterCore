@@ -9,7 +9,7 @@ Does NOT define: DSL syntax, UI rendering, storage engine implementation, mutati
 
 # 1. Purpose
 
-This document defines the **JSON Intermediate Language (JSON IL)** for CQL.
+This document defines the JSON Intermediate Language for CQL.
 
 It exists to:
 
@@ -17,9 +17,9 @@ It exists to:
 - unify query behavior across libraries, hosts, and interfaces  
 - support deterministic read access over managed Charter surfaces  
 - provide a stable substrate-neutral query contract  
-- allow future DSLs and host adapters to compile into a common form  
+- allow DSLs and host adapters to compile into a common form  
 
-CQL JSON IL is the canonical structural representation of a query.
+CQL JSON Intermediate Language is the canonical structural representation of a query.
 
 The human DSL, if present, is an ergonomic layer that compiles into this form.
 
@@ -27,7 +27,7 @@ The human DSL, if present, is an ergonomic layer that compiles into this form.
 
 # 2. Core Principle
 
-> The JSON IL is the canonical CQL query form.
+The JSON Intermediate Language is the canonical CQL query form.
 
 All CQL queries must be representable as a deterministic JSON query object.
 
@@ -44,7 +44,7 @@ That object must be:
 
 # 3. Query Object Model
 
-A CQL JSON IL query is a structured object containing six conceptual parts:
+A CQL JSON Intermediate Language query is a structured object containing six conceptual parts:
 
 1. domain  
 2. subject  
@@ -59,19 +59,19 @@ Additional metadata may be attached where explicitly defined.
 
 # 4. Top-Level Query Shape
 
-A canonical JSON IL query object must support the following top-level fields:
+A canonical JSON Intermediate Language query object must support the following top-level fields:
 
-- `domain`
-- `subject`
-- `target`
-- `scope`
-- `filters`
-- `output`
+- domain  
+- subject  
+- target  
+- scope  
+- filters  
+- output  
 
 Optional top-level fields may include:
 
-- `context`
-- `metadata`
+- context  
+- metadata  
 
 No top-level field may imply mutation.
 
@@ -81,7 +81,7 @@ No top-level field may imply mutation.
 
 ## 5.1 Purpose
 
-`domain` identifies which Charter read domain is being queried.
+The domain field identifies which Charter read domain or domains are being queried.
 
 A domain corresponds to a managed read surface owned by or exposed through a Charter substrate.
 
@@ -92,28 +92,43 @@ A domain corresponds to a managed read surface owned by or exposed through a Cha
 A domain:
 
 - must be explicit  
-- must resolve to a deterministic read surface  
+- must resolve to deterministic read surfaces  
 - must not imply mutation  
 - must not imply interpretation beyond domain-defined query behavior  
 
 ---
 
-## 5.3 Canonical Domains
+## 5.3 Cardinality
+
+The domain field may be:
+
+- a single domain  
+- an explicit array of domains  
+
+When multiple domains are specified:
+
+- execution must remain explicit  
+- no implicit merging is allowed  
+- results must preserve domain attribution  
+
+---
+
+## 5.4 Canonical Domains
 
 Canonical domains may include:
 
-- `runtime`
-- `review`
-- `legitimacy`
-- `ccs`
-- `csg`
-- `cis`
-- `cas`
-- `ccare`
-- `cds`
-- `csp`
-- `crs`
-- `audit`
+- runtime  
+- review  
+- legitimacy  
+- ccs  
+- csg  
+- cis  
+- cas  
+- ccare  
+- cds  
+- csp  
+- crs  
+- audit  
 
 Additional domains may be introduced only through explicit versioned extension.
 
@@ -123,33 +138,33 @@ Additional domains may be introduced only through explicit versioned extension.
 
 ## 6.1 Purpose
 
-`subject` identifies what kind of thing is being requested from the chosen domain.
+The subject identifies what kind of data or view is being requested from the selected domain.
 
 Two subject classes exist:
 
-- `view`
-- `raw`
+- view  
+- raw  
 
 ---
 
 ## 6.2 View Subject
 
-A `view` requests a named domain-defined surface.
+A view requests a named domain-defined surface.
 
-Examples:
+Examples include:
 
-- posture
-- graph
-- items
-- provenance
-- reviews
-- proposals
+- posture  
+- graph  
+- items  
+- provenance  
+- reviews  
+- proposals  
 
 ---
 
 ## 6.3 Raw Subject
 
-A `raw` subject requests explicitly named fields or structurally direct domain data.
+A raw subject requests explicitly defined structural data or fields from a domain.
 
 Raw access must remain:
 
@@ -161,14 +176,27 @@ Raw access must remain:
 
 ## 6.4 Subject Shape
 
-`subject` must be an object with:
+The subject must be an object containing:
 
-- `kind`
-- `name`
+- kind  
+- name  
 
 Optional fields may include:
 
-- `fields`
+- fields  
+- args  
+
+---
+
+## 6.5 Arguments
+
+Arguments allow parameterization of subject behavior.
+
+Arguments must:
+
+- be explicitly defined by the domain  
+- be deterministic  
+- not introduce implicit semantics  
 
 ---
 
@@ -176,7 +204,7 @@ Optional fields may include:
 
 ## 7.1 Purpose
 
-`target` identifies the object, collection, or scope to which the query applies.
+The target identifies the object, collection, or scope to which the query applies.
 
 Targets must be explicit and domain-valid.
 
@@ -186,44 +214,54 @@ Targets must be explicit and domain-valid.
 
 Target kinds may include:
 
-- `resolution`
-- `area`
-- `identity`
-- `global`
-- `pair`
-- `deliberate`
-- `item`
-- `session`
-- `review`
-- `proposal`
-- `signal`
-- `receipt`
-- `commit`
-- `feed`
-- `pipeline`
+- resolution  
+- area  
+- identity  
+- global  
+- pair  
+- deliberate  
+- item  
+- session  
+- review  
+- proposal  
+- signal  
+- receipt  
+- commit  
+- feed  
+- pipeline  
 
 ---
 
 ## 7.3 Target Shape
 
-`target` must be an object containing:
+The target must be an object containing:
 
-- `kind`
+- kind  
 
 Optional fields may include:
 
-- `id`
-- `ids`
-- `left`
-- `right`
+- id  
+- ids  
+- left  
+- right  
 
 ---
 
-## 7.4 Pair Targets
+## 7.4 Collection Targets
 
-Pair targets are used for comparison-like queries.
+Targets may explicitly identify collections through ids.
 
-A pair target must explicitly identify both sides.
+Collection targets must be:
+
+- explicit  
+- finite  
+- deterministic  
+
+---
+
+## 7.5 Pair Targets
+
+Pair targets must explicitly identify both sides.
 
 No implicit pairing is allowed.
 
@@ -233,68 +271,73 @@ No implicit pairing is allowed.
 
 ## 8.1 Purpose
 
-`scope` constrains the slice of data examined by the query.
+Scope constrains the slice of data examined by the query.
 
-Scope does not change the meaning of the domain.  
-It narrows what part of that domain is visible to the query.
+Scope defines where data is visible within a domain.
 
 ---
 
-## 8.2 Common Scope Dimensions
+## 8.2 Scope Rule
+
+Scope must not reduce a result set based on value conditions.
+
+Scope must not introduce filtering logic.
+
+---
+
+## 8.3 Common Scope Dimensions
 
 Scope dimensions may include:
 
-- `activity`
-- `time`
-- `posture`
-- `mode`
-- `projection`
-- `round`
-- `history`
+- activity  
+- time  
+- posture  
+- mode  
+- projection  
+- round  
+- history  
 
 ---
 
-## 8.3 Activity
+## 8.4 Activity
 
-Examples:
+Examples include:
 
-- `active`
-- `historical`
+- active  
+- historical  
 
 ---
 
-## 8.4 Time
+## 8.5 Time
 
 Time is observational only and must not alter meaning.
 
-Examples:
+Examples include:
 
-- `since`
-- `until`
+- since  
+- until  
 
 ---
 
-## 8.5 Projection
+## 8.6 Projection
 
 Projection is explicit where supported.
 
-Examples:
+Examples include:
 
-- `resolution`
-- `item`
+- resolution  
+- item  
 
-Mixed projections are not the default unless explicitly defined by the target domain.
+Mixed projections must be explicitly supported by the domain.
 
 ---
 
-## 8.6 Round and History
+## 8.7 Round and History
 
-Domains that preserve rounds or historical snapshots may expose scope fields such as:
+Domains that preserve rounds or history may expose fields such as:
 
-- `current_round_only`
-- `include_round_history`
-
-These must remain explicit.
+- current_round_only  
+- include_round_history  
 
 ---
 
@@ -302,37 +345,47 @@ These must remain explicit.
 
 ## 9.1 Purpose
 
-`filters` constrain result sets within the selected domain and scope.
-
-Filters are domain-specific but structurally consistent.
+Filters constrain result sets within the selected domain and scope.
 
 ---
 
-## 9.2 Common Filter Dimensions
+## 9.2 Filter Rule
 
-Examples may include:
+Filters must not change visibility boundaries of a domain.
 
-- `state`
-- `status`
-- `volatility`
-- `confidence`
-- `relationship_type`
-- `provenance`
-- `blocking`
-- `rule_identity`
+Filters operate only on data already visible within scope.
 
 ---
 
-## 9.3 Filter Principle
+## 9.3 Common Filter Dimensions
+
+Examples include:
+
+- state  
+- status  
+- volatility  
+- confidence  
+- relationship_type  
+- provenance  
+- blocking  
+- rule_identity  
+
+---
+
+## 9.4 Constraints
 
 Filters must:
 
 - be explicit  
 - be deterministic  
 - be domain-valid  
-- not imply joins or query-time inference  
+- fail when unsupported  
 
-Unsupported filters must fail explicitly.
+Filters must not:
+
+- imply joins  
+- introduce inference  
+- cross domain boundaries implicitly  
 
 ---
 
@@ -340,51 +393,60 @@ Unsupported filters must fail explicitly.
 
 ## 10.1 Purpose
 
-`output` controls the structural presentation level of the query result.
-
-It does not alter truth.  
-It only alters how much structure is requested.
+Output controls the structural presentation level of the query result.
 
 ---
 
-## 10.2 Canonical Output Modes
+## 10.2 Principle
+
+Output does not alter truth.
+
+Output only controls representation depth.
+
+---
+
+## 10.3 Canonical Output Modes
 
 Supported output modes include:
 
-- `summary`
-- `structured`
-- `detailed`
+- summary  
+- structured  
+- detailed  
 
 ---
 
-## 10.3 Output Shape
+## 10.4 Output Shape
 
-`output` must be an object with at least:
+The output must be an object containing:
 
-- `mode`
+- mode  
 
-Optional fields may include host-neutral presentation hints that do not alter semantics.
+Optional fields may include host-neutral presentation hints.
 
 ---
 
-# 11. Context
+## 11. Context
 
 ## 11.1 Purpose
 
-`context` provides optional query-time modifiers that affect interpretation posture without mutating truth.
-
-This is distinct from filters and must remain non-authoritative.
+Context provides optional modifiers that affect query posture without mutating truth.
 
 ---
 
 ## 11.2 Constraints
+
+Context must:
+
+- be explicitly defined by the domain  
+- be non-default  
+- be visible in result metadata  
 
 Context must not:
 
 - mutate state  
 - redefine domain semantics  
 - create inferred relationships  
-- override explicit stored data  
+- override explicit data  
 
 ---
 
@@ -392,13 +454,19 @@ Context must not:
 
 ## 12.1 Purpose
 
-`metadata` may carry host-neutral query metadata such as:
+Metadata carries host-neutral query metadata.
 
-- query identifier
-- client correlation identifier
-- requested rule identity surface
+Examples include:
 
-Metadata must not affect deterministic result meaning unless explicitly standardized.
+- query identifier  
+- correlation identifier  
+- issued timestamp  
+
+---
+
+## 12.2 Constraint
+
+Metadata must not affect query meaning unless explicitly standardized.
 
 ---
 
@@ -408,43 +476,38 @@ Metadata must not affect deterministic result meaning unless explicitly standard
 
 CQL queries managed read surfaces.
 
-A managed read surface may be backed by:
+---
 
-- operational stores  
-- review stores  
-- durable stores  
+## 13.2 Surface Types
+
+Managed read surfaces may include:
+
+- operational surfaces  
+- review surfaces  
+- durable artifact stores  
 - derived stores  
 - isolated stores  
 - untrusted stores  
 
 ---
 
-## 13.2 Store-First Rule
+## 13.3 Store-First Rule
 
-CQL should query store-backed or materialized surfaces by default.
-
-Implicit in-memory live process inspection is not the default model.
+CQL queries store-backed or materialized surfaces by default.
 
 ---
 
-## 13.3 Domain Surface Mapping
+## 13.4 Runtime Surfaces
+
+Runtime may expose materialized operational views that behave as managed read surfaces.
+
+---
+
+## 13.5 Domain Surface Mapping
 
 Each domain must define its primary managed read surface.
 
-Examples:
-
-- `review` → Review Store
-- `runtime` → runtime-managed operational surface
-- `legitimacy` → legitimacy/session object surfaces
-- `ccs` → Commit Store
-- `csg` → Graph Store
-- `cas` → Alignment Store
-- `audit` → Audit Store
-- `cds` → deliberate workspace/artifact surfaces
-- `csp` → feed/pipeline surfaces
-- `crs` → untrusted relay/foreign artifact surfaces
-
-This mapping is domain-owned and versioned outside the JSON IL core.
+This mapping is domain-owned and versioned outside the JSON Intermediate Language.
 
 ---
 
@@ -452,38 +515,43 @@ This mapping is domain-owned and versioned outside the JSON IL core.
 
 Given identical:
 
-- domain
-- subject
-- target
-- scope
-- filters
-- output
-- context
+- domain  
+- subject  
+- target  
+- scope  
+- filters  
+- output  
+- context  
 
-the JSON IL query must resolve to identical meaning.
+the query must resolve to identical meaning.
 
 CQL must not depend on:
 
-- mutation timing
-- storage iteration order
-- hidden defaults
-- live process coincidence
-- inferred joins
-- ambient host state
+- mutation timing  
+- storage iteration order  
+- hidden defaults  
+- ambient host state  
+- implicit joins  
+
+---
+
+## 14.1 Ordering
+
+Result ordering must be explicitly defined by the domain or explicitly requested.
+
+No implicit ordering is allowed.
 
 ---
 
 # 15. Non-Interpretation Rules
 
-CQL JSON IL must not:
+CQL must not:
 
-- infer intent
-- infer missing relationships
-- infer missing data as false
-- reinterpret unknown provenance
-- synthesize joins not explicitly defined by a domain view
-
-It selects and constrains visible data only.
+- infer intent  
+- infer missing relationships  
+- infer missing data as false  
+- reinterpret unknown provenance  
+- synthesize joins not explicitly defined  
 
 ---
 
@@ -491,122 +559,123 @@ It selects and constrains visible data only.
 
 ## 16.1 Principle
 
-Hosts may expose extension views while preserving the canonical JSON IL object shape.
-
-Extensions must not alter the JSON IL grammar.
+Extensions may add new views while preserving the JSON Intermediate Language structure.
 
 ---
 
-## 16.2 Extension Subject Naming
+## 16.2 Naming
 
-Extension views must use namespaced naming consistent with the CQL foundation.
-
-Examples:
-
-- `x.cas.myhost.ops_surface`
-- `x.review.myhost.merge_panel`
+Extension views must be namespaced.
 
 ---
 
-## 16.3 Extension Constraints
+## 16.3 Constraints
 
 Extensions must:
 
 - be read-only  
 - be deterministic  
-- remain externally atomic  
-- not redefine canonical fields or grammar  
+- remain structurally compatible  
+
+Extensions must not:
+
+- modify grammar  
+- override canonical fields  
 
 ---
 
 # 17. Transport Neutrality
 
-The JSON IL is transport-neutral.
+The JSON Intermediate Language is transport-neutral.
 
 It may be used in:
 
-- library calls
-- CLI-compiled execution
-- APIs
-- FFI boundaries
-- test fixtures
+- library calls  
+- CLI execution  
+- APIs  
+- FFI boundaries  
+- testing  
 
-Its meaning must remain stable across all representations.
+Its meaning must remain stable across all transports.
 
 ---
 
 # 18. Relationship to DSL
 
-A human-facing CQL DSL may exist later.
+A DSL may exist as a human-facing layer.
 
 If present:
 
-- the DSL must compile into valid JSON IL  
-- the JSON IL remains canonical  
-- DSL convenience must not introduce new semantics unavailable in JSON IL  
+- it must compile into valid JSON Intermediate Language  
+- it must not introduce new semantics  
 
 ---
 
 # 19. Relationship to Results
 
-This specification defines only query representation.
+This document defines query structure only.
 
 It does not define:
 
-- result schema
-- domain response payload structure
-- host rendering
-- pagination rules
-- mutation hooks
+- result schema  
+- payload structure  
+- pagination  
+- rendering  
 
-Those belong to domain-specific or host-specific query result contracts.
+---
+
+## 19.1 Multi-Domain Results
+
+When multiple domains are queried:
+
+- results must preserve domain attribution  
+- results must not be implicitly merged  
+- ambiguity must remain visible  
 
 ---
 
 # 20. Invariants
 
-- JSON IL is the canonical CQL representation  
-- all query components must be explicit where required  
+- JSON Intermediate Language is canonical  
+- all query components are explicit  
 - domains map to managed read surfaces  
-- store-backed querying is the default model  
-- filters are deterministic and domain-bounded  
-- output affects presentation depth, not truth  
-- context must not mutate semantics beyond declared posture behavior  
-- JSON IL must remain transport-neutral  
-- extensions may extend surfaces, not grammar  
-- CQL remains read-only and non-interpreting  
-
-Violation of these invariants compromises query integrity.
+- scope defines visibility, not filtering  
+- filters constrain, not expose  
+- output affects structure, not truth  
+- context is explicit and non-authoritative  
+- ordering is explicit or domain-defined  
+- extensions do not alter grammar  
+- CQL is read-only and non-interpreting  
 
 ---
 
 # 21. Mental Model
 
-The JSON IL asks:
+The JSON Intermediate Language defines:
 
-- what domain am I querying?
-- what do I want from it?
-- what object or collection is the target?
-- what slice of that domain should be visible?
-- what filters narrow the result?
-- how much structure should be returned?
+- what domain is queried  
+- what data is requested  
+- what object or set is targeted  
+- what slice is visible  
+- what constraints apply  
+- how the result is shaped  
 
-It is the stable machine form of a Charter query.
+It is the canonical machine form of a Charter query.
 
 ---
 
 # 22. Final Principle
 
-CQL JSON IL exists so that all Charter systems can speak one read language internally.
+The JSON Intermediate Language allows all Charter systems to share one internal query language.
 
-It makes queries:
+It ensures queries are:
 
-- explicit
-- deterministic
-- substrate-neutral
-- transportable
-- safe to embed
+- explicit  
+- deterministic  
+- substrate-neutral  
+- transportable  
+- safe  
 
-The DSL may come later.
+The DSL may evolve.
 
-The JSON form is the foundation.
+The JSON form remains the foundation.
