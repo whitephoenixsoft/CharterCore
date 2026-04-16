@@ -2,7 +2,7 @@
 
 Status: FOUNDATIONAL (Planning Canon)  
 Depends On: Canonical Naming Specification  
-Purpose: Define dependency direction, composition rules, and phased implementation order for the Charter platform ecosystem  
+Purpose: Define dependency direction, composition rules for the Charter platform ecosystem  
 
 ---
 
@@ -381,76 +381,7 @@ Build by **capability layers**, not versions.
 
 ---
 
-# 9. Phased Implementation Sequence
-
----
-
-## Phase 1 — Legitimacy Core
-
-- Legitimacy Engine  
-
----
-
-## Phase 2 — Runtime + CDS
-
-- Runtime Layer  
-- CDS  
-- Review Layer  
-
----
-
-## Phase 3 — Commit System
-
-- CCS  
-- Commit Store  
-
----
-
-## Phase 4 — Federation
-
-- CRS  
-- discover / query / acquire  
-
----
-
-## Phase 5 — Structure
-
-- CSG  
-
----
-
-## Phase 6 — Identity
-
-- CIS  
-
----
-
-## Phase 7 — Signals
-
-- CCare  
-- CSP  
-
----
-
-## Phase 8 — Alignment
-
-- CAS  
-
----
-
-## Phase 9 — Query
-
-- CQL  
-
----
-
-## Phase 10 — Interpretation
-
-- CGL  
-
----
-
-# 10. Final Principle
+# 9. Final Principle
 
 Charter must be built in the order that **understanding emerges**:
 
