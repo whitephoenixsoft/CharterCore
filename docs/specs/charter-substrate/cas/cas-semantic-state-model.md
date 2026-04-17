@@ -47,6 +47,7 @@ It is computed from:
 - structural relationships  
 - identity boundaries  
 - observed system behavior  
+- temporal patterns  
 
 ---
 
@@ -88,7 +89,9 @@ Each signal includes a confidence level:
 - medium  
 - high  
 
-Confidence represents consistency and reliability of the signal.
+Confidence represents:
+
+> the consistency, stability, and reliability of observed conditions.
 
 ---
 
@@ -128,16 +131,83 @@ Capacity decreases when:
 - coordination overhead increases  
 - uncertainty increases  
 - signal volatility increases  
+- dependency flow is constrained  
 
 ---
 
-# 6. Projection Scopes
+# 6. Temporal Degradation
+
+Semantic States must account for time-based system behavior.
+
+---
+
+## 6.1 Flow Degradation
+
+Flow Degradation occurs when:
+
+- dependency traversal slows or stalls  
+- blockers persist  
+- coordination delays increase  
+
+Key indicators include:
+
+- blocker duration  
+- blocker density  
+- failure to restore flow  
+
+---
+
+## 6.2 Persistent Reduced Capacity
+
+Reduced capacity becomes structurally significant when:
+
+- it persists over time  
+- recovery does not occur  
+- flow remains degraded  
+
+Persistent reduced capacity is a primary precursor to:
+
+- need_reassessment  
+
+---
+
+## 6.3 Feedback Degradation (Stale Alignment)
+
+A system may remain structurally aligned while losing validation over time.
+
+Definition:
+
+> Feedback Degradation occurs when alignment is not reinforced through activity, signals, or observation.
+
+Characteristics:
+
+- lack of new decisions  
+- absence of signals  
+- absence of feedback loops  
+- stable but untested structure  
+
+---
+
+## 6.4 Confidence Decay
+
+In the absence of reinforcement:
+
+> Confidence in alignment must decrease over time.
+
+This ensures that:
+
+- silence is not mistaken for stability  
+- unvalidated systems are not over-trusted  
+
+---
+
+# 7. Projection Scopes
 
 Semantic States are always computed relative to a projection scope.
 
 ---
 
-## 6.1 Scope Types
+## 7.1 Scope Types
 
 ### Node Scope
 - single resolution or item  
@@ -171,7 +241,7 @@ Examples:
 
 ---
 
-## 6.2 Principle
+## 7.2 Principle
 
 > Projection scopes are different views over the same structure.
 
@@ -179,13 +249,13 @@ They are not hierarchical layers.
 
 ---
 
-# 7. Identity-Centric Interpretation
+# 8. Identity-Centric Interpretation
 
 Identity Scope is the primary human-facing aggregation.
 
 ---
 
-## 7.1 Properties
+## 8.1 Properties
 
 - defined by structural boundaries (CIS)  
 - may overlap with other identities  
@@ -193,7 +263,7 @@ Identity Scope is the primary human-facing aggregation.
 
 ---
 
-## 7.2 Rationale
+## 8.2 Rationale
 
 Humans reason about:
 
@@ -207,7 +277,7 @@ not:
 
 ---
 
-## 7.3 Constraint
+## 8.3 Constraint
 
 Semantic States must not infer identity boundaries.
 
@@ -215,13 +285,13 @@ They must use explicitly defined CIS identities.
 
 ---
 
-# 8. Semantic State Structure
+# 9. Semantic State Structure
 
 A Semantic State consists of:
 
 ---
 
-## 8.1 Core State
+## 9.1 Core State
 
 One or more dominant conditions:
 
@@ -234,7 +304,7 @@ One or more dominant conditions:
 
 ---
 
-## 8.2 Modifiers
+## 9.2 Modifiers
 
 Modifiers provide additional context.
 
@@ -270,7 +340,14 @@ Represents reliability of the state:
 
 ---
 
-## 8.3 Composition Example
+## 9.3 Interpretation Principle
+
+> Core State represents structural condition.  
+> Modifiers represent temporal and stability characteristics.
+
+---
+
+## 9.4 Composition Example
 
 Example Semantic State:
 
@@ -281,7 +358,7 @@ Example Semantic State:
 
 ---
 
-# 9. Aggregation Model (Conceptual)
+# 10. Aggregation Model (Conceptual)
 
 Semantic States are derived through:
 
@@ -289,7 +366,8 @@ Semantic States are derived through:
 2. aggregation by scope  
 3. conflict resolution  
 4. dominant condition identification  
-5. modifier derivation  
+5. temporal evaluation  
+6. modifier derivation  
 
 This process must remain:
 
@@ -299,7 +377,7 @@ This process must remain:
 
 ---
 
-# 10. Constraints
+# 11. Constraints
 
 Semantic States must not:
 
@@ -311,22 +389,23 @@ Semantic States must not:
 
 ---
 
-# 11. Relationship to CAS
+# 12. Relationship to CAS
 
 CAS is responsible for:
 
 - computing signals  
 - aggregating structure  
+- evaluating temporal behavior  
 - deriving Semantic States  
 
 CAS does not:
 
-- define their meaning beyond structure  
+- define meaning beyond structure  
 - prescribe responses  
 
 ---
 
-# 12. Relationship to Other Substrates
+# 13. Relationship to Other Substrates
 
 ---
 
@@ -350,13 +429,13 @@ CAS does not:
 
 ## CDS
 
-- provides observation items that may influence signals  
+- provides observation items (e.g., blockers, delays)  
 
 ---
 
 ## VDS
 
-- originates signals from monitored systems  
+- originates signals and threshold-triggered observations  
 
 ---
 
@@ -372,25 +451,27 @@ CAS does not:
 
 ---
 
-# 13. Determinism
+# 14. Determinism
 
 Given identical:
 
 - signals  
 - structure  
 - identity boundaries  
+- temporal inputs  
 
 Semantic States must resolve to identical outputs.
 
 ---
 
-# 14. Mental Model
+# 15. Mental Model
 
 Semantic States answer:
 
 - what is happening  
 - how stable the system is  
 - whether the system can operate effectively  
+- whether conditions are improving or degrading  
 
 They do not answer:
 
@@ -399,11 +480,11 @@ They do not answer:
 
 ---
 
-# 15. Final Principle
+# 16. Final Principle
 
 Semantic States make complex systems understandable without distorting their truth.
 
-They translate structure and signals into:
+They translate structure, signals, and time into:
 
 - clear  
 - consistent  
