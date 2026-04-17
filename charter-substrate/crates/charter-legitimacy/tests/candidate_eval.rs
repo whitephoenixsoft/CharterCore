@@ -90,3 +90,72 @@ fn candidate_is_invalid_if_superseded_target_missing() {
     assert_eq!(results.len(), 1);
     assert_eq!(results[0].disposition, CandidateDisposition::Invalid);
 }
+
+#[test]
+fn candidate_vote_counts_are_correct() {
+    let mut session = make_session_with_ids();
+
+    session.candidates = vec![Candidate {
+        candidate_id: CandidateId::from("c1"),
+        session_id: SessionId::from("session-1"),
+        area_id: AreaId::from("area-1"),
+        round_index: 1,
+        candidate_payload: CandidatePayload::AdoptResolution {
+            resolution_content: "test".into(),
+        },
+        reversibility_intent: ReversibilityIntent::Reversible,
+        annotation: None,
+        created_at: None,
+        schema_version: 1,
+    }];
+
+    session.votes = vec![
+        Vote {
+            vote_id: VoteId::from("v1"),
+            session_id: SessionId::from("session-1"),
+            area_id: AreaId::from("area-1"),
+            round_index: 1,
+            participant_id: ParticipantId::from("participant-1"),
+            candidate_id: CandidateId::from("c1"),
+            stance: Stance::Accept,
+            annotation: None,
+            created_at: None,
+            schema_version: 1,
+        },
+        Vote {
+            vote_id: VoteId::from("v2"),
+            session_id: SessionId::from("session-1"),
+            area_id: AreaId::from("area-1"),
+            round_index: 1,
+            participant_id: ParticipantId::from("participant-1"),
+            candidate_id: CandidateId::from("c1"),
+            stance: Stance::Reject,
+            annotation: None,
+            created_at: None,
+            schema_version: 1,
+        },
+    ];
+
+    let graph = AreaGraph {
+        area_id: Some(AreaId::from("area-1")),
+        sessions: vec![session],
+        resolutions: vec![],
+        receipts: vec![],
+    };
+
+    let engine = Engine::rehydrate(RehydrateInput { graph })
+        .unwrap()
+        .engine
+        .unwrap();
+
+    let result = engine
+        .get_candidate_status(
+            SessionId::from("session-1"),
+            CandidateId::from("c1"),
+        )
+        .unwrap();
+
+    assert_eq!(result.accept_votes, 1);
+    assert_eq!(result.reject_votes, 1);
+    assert_eq!(result.abstain_votes, 0);
+}
