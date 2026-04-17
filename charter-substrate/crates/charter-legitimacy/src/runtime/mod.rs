@@ -1,7 +1,7 @@
 use std::collections::BTreeSet;
 
 use crate::compiler::CompiledState;
-use crate::domain::{CandidateId, SessionId, SessionPhase, SessionState, CandidatePayload};
+use crate::domain::{CandidateId, SessionId, SessionPhase, SessionState, CandidatePayload, Stance};
 use crate::error::{EvaluationReport, EvaluationOutcome, ErrorEntry};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -17,6 +17,10 @@ pub struct CandidateEvaluation {
     pub candidate_id: CandidateId,
     pub disposition: CandidateDisposition,
     pub reasons: Vec<String>,
+
+    pub accept_votes: usize,
+    pub reject_votes: usize,
+    pub abstain_votes: usize,
 }
 
 pub fn evaluate_session(
@@ -199,10 +203,27 @@ pub fn evaluate_candidates_for_session(
             CandidatePayload::AdoptResolution { .. } => {}
         }
 
+        let mut accept_votes = 0;
+        let mut reject_votes = 0;
+        let mut abstain_votes = 0;
+
+        for vote in &session.votes {
+            if vote.candidate_id == candidate.candidate_id {
+                match vote.stance {
+                    Stance::Accept => accept_votes += 1,
+                    Stance::Reject => reject_votes += 1,
+                    Stance::Abstain => abstain_votes += 1,
+                }
+            }
+        }
+
         results.push(CandidateEvaluation {
             candidate_id: candidate.candidate_id.clone(),
             disposition,
             reasons,
+            accept_votes,
+            reject_votes,
+            abstain_votes,
         });
     }
 
