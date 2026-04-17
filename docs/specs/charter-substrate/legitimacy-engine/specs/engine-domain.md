@@ -939,7 +939,6 @@ The following enums are structural and schema-governed.
 
 - ACCEPT
 - REJECT
-- ABSTAIN
 
 ENG-DOMAIN defines the structural existence of these enums only.  
 Behavioral meanings belong to the relevant behavioral specifications.
