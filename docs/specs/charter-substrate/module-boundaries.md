@@ -1,438 +1,683 @@
-# Charter — Module Boundaries & Non-Responsibilities Specification
-
-Status: FOUNDATIONAL (LOCKED)  
-Depends On: Canonical Naming Specification  
-Purpose: Define strict boundaries for each Charter module and explicitly state what each module must never do  
+# Charter Platform — Module Boundaries Specification
+Status: FOUNDATIONAL (REVISED DRAFT)
+Applies to: Charter Platform Modules, CAS, CSG, CIS, CCare, CQL, Views, Integrations
+Depends On: Charter Legitimacy, CAS Foundation Specification, CSG Structure Model, CIS Identity Model, CCare Signal Model
+Does NOT define: implementation sequencing, storage backends, UI rendering, numeric formulas, or CQL language syntax
 
 ---
 
 # 1. Purpose
 
-This document establishes **hard boundaries** between Charter modules.
+This document defines the canonical module boundaries for the Charter platform.
 
 It exists to:
 
-- prevent responsibility drift  
-- eliminate implicit coupling  
-- preserve invariants across evolution  
-- ensure each module remains independently usable and composable  
+- separate platform responsibilities clearly
+- prevent concept drift across modules
+- define what each module owns
+- define what each module may consume but not redefine
+- prevent descriptive layers from becoming authoritative
+- preserve clean interfaces between legitimacy, structure, observation, analysis, and querying
 
-Each module is defined by:
+These boundaries are foundational.
 
-- what it **owns**
-- what it **does not own**
-- what it **must never do**
-
----
-
-# 2. Core Boundary Principle
-
-## MB-01 — Negative Definition Is Required
-
-Every module must be defined not only by what it does,  
-but by what it explicitly **does not do**.
-
-If a module begins to take on responsibilities outside its boundary,  
-it is no longer the same module.
+If they are violated, the platform becomes conceptually unstable even if the software still runs.
 
 ---
 
-## MB-02 — No Authority Leakage
+# 2. Core Principle
 
-No module may:
+> Each module owns one kind of truth or one kind of derived understanding.
 
-- infer authority  
-- create legitimacy outside the Legitimacy Engine  
-- convert observation into obligation  
+Modules may depend on one another.
 
----
+Modules must not absorb or redefine responsibilities that belong elsewhere.
 
-## MB-03 — No Layer Collapse
+The platform must preserve a hard distinction between:
 
-Modules must not:
-
-- merge responsibilities  
-- reinterpret artifacts outside their domain  
-- assume upstream or downstream roles  
+- authoritative truth
+- derived condition
+- human-readable explanation
+- read-only access
 
 ---
 
-# 3. Module Definitions
+# 3. Platform Modules
+
+The platform consists of the following primary modules:
+
+- Charter
+- CSG
+- CIS
+- CCare
+- CAS
+- CQL
+
+These modules interact, but they do not collapse into each other.
 
 ---
 
-## 3.1 Legitimacy Engine
+# 4. Charter Boundary
 
-### Owns
+Charter owns legitimacy.
 
-- Sessions  
-- Authority evaluation  
-- Candidate evaluation  
-- Resolution creation  
-- Legitimacy receipts  
+Charter is the authoritative source for:
 
-### Does NOT Own
+- resolutions
+- sessions
+- areas
+- legitimacy history
+- supersession lineage
+- authority and scope validation
 
-- Storage  
-- Contexts  
-- Identity  
-- Signals or check-ins  
-- Alignment  
-- Transport  
+Charter answers questions such as:
 
-### Must NOT
+- What was decided?
+- Who had authority?
+- What supersedes what?
+- What is the legitimacy history?
 
-- Persist data  
-- Observe runtime behavior  
-- Interpret outcomes  
-- Compute alignment  
-- Infer intent  
-- Modify identity or scope  
-- Execute workflows  
+Charter does not own:
 
----
+- graph analysis
+- identity overlays
+- observational input
+- semantic condition
+- structural detection
+- dynamic analysis
+- query federation
 
-## 3.2 Persistence Layer
+Charter may be consumed by other modules.
 
-### Owns
-
-- Immutable object storage  
-- Reference storage  
-- Audit logs  
-- Low-level append-only persistence  
-
-### Does NOT Own
-
-- Legitimacy  
-- Commit semantics  
-- Identity  
-- Alignment  
-- Interpretation  
-
-### Must NOT
-
-- Interpret stored data  
-- Enforce structure beyond storage rules  
-- Compute lineage meaning  
-- Merge or rewrite history  
-- Expose authority  
+Other modules must not change Charter truth.
 
 ---
 
-## 3.3 Runtime Layer
+# 5. CSG Boundary
 
-### Owns
+CSG owns structure.
 
-- Context isolation  
-- Session orchestration  
-- Review orchestration (Baseline, Federation, Archive, etc.)  
-- Import/export coordination  
-- Engine invocation  
+CSG is the authoritative source for:
 
-### Does NOT Own
+- graph shape
+- node relationships
+- directed edges
+- parent and child structure
+- graph partitions
+- graph-level topology
+- structural paths relevant to analysis
 
-- Legitimacy  
-- Commit structure  
-- Alignment computation  
-- Identity definition  
-- Signal semantics  
+CSG answers questions such as:
 
-### Must NOT
+- How are nodes related?
+- What is the graph shape?
+- What paths and boundaries exist?
+- What structural topology is present?
 
-- Create legitimacy  
-- Modify authority rules  
-- Infer intent  
-- Interpret alignment  
-- Collapse context boundaries  
-- Execute automatic decisions  
+CSG does not own:
 
----
+- legitimacy
+- authority
+- identity
+- observations
+- semantic condition
+- dynamic field behavior
+- read-only query federation
 
-## 3.4 Charter Commit System (CCS)
+CSG provides the structural truth consumed by CAS and other modules.
 
-### Owns
-
-- Commit definitions  
-- Commit taxonomy  
-- Artifact identity rules  
-
-### Does NOT Own
-
-- Storage  
-- Alignment computation  
-- Identity semantics  
-- Transport  
-- Legitimacy  
-
-### Must NOT
-
-- Store commits  
-- Interpret commit meaning  
-- Compute alignment  
-- Create authority  
-- Merge commits into canonical state  
+Other modules must not redefine graph truth.
 
 ---
 
-## 3.5 Charter Commit Store
+# 6. CIS Boundary
 
-### Owns
+CIS owns identity.
 
-- Local append-only commit storage  
-- Commit retrieval and indexing  
-- Local artifact availability  
+CIS is the authoritative source for:
 
-### Does NOT Own
+- identities
+- identity versions
+- identity boundaries
+- scope overlays
+- coexistence states
+- deprecation and sunset-related identity truth
 
-- Commit definitions  
-- Alignment computation  
-- Identity semantics  
-- Transport  
-- Legitimacy  
+CIS answers questions such as:
 
-### Must NOT
+- What identity does this region belong to?
+- What identity boundaries apply here?
+- What identity version is active?
+- Where are coexistence or transition regions?
 
-- Interpret commit meaning  
-- Modify commit content  
-- Merge histories  
-- Act as global source of truth  
-- Compute alignment  
+CIS does not own:
 
----
+- legitimacy
+- graph topology
+- observational input
+- semantic condition
+- dynamic analysis
+- query federation
 
-## 3.6 Charter Structural Graph (CSG)
+CIS overlays identity truth onto structure.
 
-### Owns
+Other modules may consume identity truth.
 
-- Construction of the local admitted DAG  
-- Node and edge relationships  
-- Supersession structure  
-- Cross-area and cross-resolution references  
-- Historical and active graph views  
-
-### Does NOT Own
-
-- Identity  
-- Scope or purpose  
-- Alignment computation  
-- Signals  
-- Legitimacy  
-
-### Must NOT
-
-- Interpret meaning  
-- Define identity boundaries  
-- Infer intent or purpose  
-- Compute alignment  
-- Modify commits  
-- Rewrite history  
+Other modules must not redefine identity truth.
 
 ---
 
-## 3.7 Charter Identity Substrate (CIS)
+# 7. CCare Boundary
 
-### Owns
+CCare owns observational input.
 
-- Identity declaration (human-defined)  
-- Scope binding via resolutions  
-- Identity versioning  
-- Deprecation states  
-- Sunset lifecycle  
-- Identity continuity over time  
+CCare is the authoritative source for:
 
-### Does NOT Own
+- check-ins
+- observational labels
+- confidence values
+- timestamps
+- optional observation context
+- silence-valid observation behavior
 
-- Graph construction  
-- Signals or observations  
-- Alignment computation  
-- Legitimacy  
-- Transport  
+CCare answers questions such as:
 
-### Must NOT
+- What was observed?
+- When was it observed?
+- With what confidence was it reported?
+- Was there silence or explicit input?
 
-- Modify underlying graph structure  
-- Infer identity implicitly  
-- Observe runtime behavior  
-- Trigger actions  
-- Rewrite history  
-- Collapse identity boundaries  
+CCare observations are:
 
----
+- descriptive
+- optional
+- non-authoritative
+- not legitimacy
 
-## 3.8 Charter Care Substrate (CCare)
+CCare does not own:
 
-### Owns
+- legitimacy
+- graph truth
+- identity truth
+- semantic projection
+- structural detection
+- dynamic analysis
+- cross-substrate querying
 
-- Check-ins  
-- Requests  
-- Supportability signals  
-- Silence as a state  
+CCare emits observational input.
 
-### Does NOT Own
+CAS consumes it.
 
-- Identity  
-- Versioning  
-- Alignment computation  
-- Telemetry ingestion (system-level concern)  
-- Legitimacy  
-
-### Must NOT
-
-- Trigger actions  
-- Enforce decisions  
-- Create obligations  
-- Interpret identity changes  
-- Diagnose root cause  
-- Optimize systems  
+CCare must not compute final semantic state for CAS.
 
 ---
 
-## 3.9 Charter Alignment System (CAS)
+# 8. CAS Boundary
 
-### Owns
+CAS owns condition derivation and explanation.
 
-- Derived alignment computation  
-- Drift and tension detection  
-- Structural propagation  
-- Alignment state modeling  
-- Semantic lattice evaluation  
+CAS is the derived substrate responsible for making the relationship between intent, observation, structure, and scope mechanically legible.
 
-### Does NOT Own
+CAS owns:
 
-- Legitimacy  
-- Commit storage  
-- Identity definition  
-- Signal creation  
-- Interpretation (narrative)  
+- intake and derivation of condition
+- scoped propagation
+- structural detection
+- alignment dynamics
+- semantic projection
+- CAS views
+- CAS read-only query exposure
 
-### Must NOT
+CAS answers questions such as:
 
-- Create or modify commits  
-- Create legitimacy  
-- Trigger actions  
-- Diagnose root cause  
-- Enforce decisions  
-- Convert signals into obligations  
+- What appears to be happening?
+- Is condition local or systemic?
+- What structural patterns matter here?
+- Is behavior stable or degrading?
+- How should current condition be described in plain language?
+- What read-only outputs should be queryable?
 
----
+CAS does not own:
 
-## 3.10 Charter Guidance Layer (CGL)
+- legitimacy truth
+- graph truth
+- identity truth
+- raw observation truth
+- cross-substrate query language definition
 
-### Owns
+CAS depends on:
 
-- Interpretation (exegesis)  
-- Summaries  
-- Narrative explanations  
-- Alignment descriptions  
+- Charter for legitimacy
+- CSG for structure
+- CIS for identity
+- CCare for observation
 
-### Does NOT Own
+CAS must remain:
 
-- Legitimacy  
-- Alignment computation  
-- Identity definition  
-- Signal generation  
-- Storage  
+- observational
+- derived
+- deterministic
+- rebuildable
+- non-authoritative
 
-### Must NOT
+CAS must never:
 
-- Modify any state  
-- Create authority  
-- Imply obligation  
-- Enforce action  
-- Replace human judgment  
-- Present suggestions as commands  
-
----
-
-## 3.11 Charter Relay System (CRS)
-
-### Owns
-
-- Commit transport  
-- Append-only archival endpoints  
-- Push/fetch operations  
-- Timestamp preservation  
-
-### Does NOT Own
-
-- Legitimacy  
-- Alignment  
-- Identity  
-- Canonical state  
-- Commit interpretation  
-
-### Must NOT
-
-- Interpret commits  
-- Merge histories  
-- Reconstruct state  
-- Create authority  
-- Enforce synchronization  
+- create legitimacy
+- change authority
+- mutate graph truth
+- mutate identity truth
+- reinterpret CCare as authority
+- convert description into obligation
 
 ---
 
-# 4. Cross-Module Constraints
+# 9. CQL Boundary
 
-## MB-04 — No Upward Mutation
+CQL owns common query access across substrates.
 
-Higher modules must not:
+CQL is the top-level query gateway.
 
-- mutate lower-layer artifacts  
-- redefine lower-layer semantics  
+CQL is responsible for:
 
----
+- providing a unified query surface
+- exposing cross-substrate read paths
+- enabling structured access to outputs from multiple modules
+- presenting substrate outputs through a common access model
 
-## MB-05 — No Downward Assumption
+CQL answers questions such as:
 
-Lower modules must not:
+- How do I query CAS, Charter, CSG, CIS, or CCare outputs consistently?
+- How are read-only results accessed across substrates?
+- How are structured queries expressed across modules?
 
-- assume how higher layers will interpret data  
-- encode meaning beyond their responsibility  
+CQL does not own:
 
----
+- legitimacy truth
+- graph truth
+- identity truth
+- observational truth
+- CAS computation
+- structural detection logic
+- semantic vocabulary
+- dynamic formulas
 
-## MB-06 — Composition Without Fusion
+CQL sits above substrates.
 
-Modules may be composed together,  
-but must remain:
+It provides access.
 
-- logically separable  
-- independently testable  
-- independently replaceable  
-
----
-
-# 5. Failure Modes This Prevents
-
-This structure prevents:
-
-- Legitimacy being influenced by alignment  
-- Alignment becoming authoritative  
-- Guidance becoming prescriptive  
-- Relay becoming a source of truth  
-- Storage becoming interpretation  
-- Care becoming control  
-- Identity being conflated with structure  
+It does not replace substrate semantics.
 
 ---
 
-# 6. Final Principle
+# 10. CAS Internal Boundaries
 
-Each module answers exactly one kind of question:
+CAS contains distinct internal parts.
 
-- Legitimacy Engine → “What is legitimate?”  
-- Runtime → “How do we orchestrate decisions?”  
-- Persistence → “What is stored?”  
-- CCS → “What is a commit?”  
-- Commit Store → “What do we have locally?”  
-- CSG → “What is the structure of relationships?”  
-- CIS → “What identities and scopes exist over that structure?”  
-- CCare → “What is being observed relative to decisions?”  
-- CAS → “What does structure + observation imply?”  
-- CGL → “How can this be understood?”  
-- CRS → “What can be transported or archived?”  
+These parts may be implemented together, but their conceptual responsibilities must remain separate.
 
-If a module starts answering another module’s question,  
-the architecture is drifting.
+## 10.1 Intake and Derivation
 
-This document exists to stop that from happening.
+Owns:
+
+- consumption of CCare observations
+- normalization
+- windowing
+- local aggregation
+- scoped derivation
+- derived condition materialization
+
+Does not own:
+
+- final semantic wording
+- structural pattern interpretation
+- dynamic field explanation
+- cross-substrate query language
+
+---
+
+## 10.2 Propagation
+
+Owns:
+
+- cones
+- horizons
+- scoped influence flow
+- node-to-identity rollup
+- node-to-area rollup
+- graph-level scoped aggregation
+
+Does not own:
+
+- semantic wording
+- structural truth itself
+- dynamic formulas by itself
+
+Propagation works on derived condition and scoped influence.
+
+It must not be understood as literal copying of human-readable labels.
+
+---
+
+## 10.3 Structural Detection
+
+Owns:
+
+- graph-based significance detection
+- lineage-related structural findings
+- supersession-related structural findings
+- identity-boundary structural findings
+- structural concentration, isolation, fragmentation, and exposure findings
+
+Does not own:
+
+- dynamic field behavior
+- final semantic bundle outputs
+- view rendering
+
+Structural Detection is an analytical dimension inside CAS.
+
+It is not merely a view.
+
+---
+
+## 10.4 Alignment Dynamics
+
+Owns:
+
+- drift
+- variance
+- stability-related measures
+- gravity
+- tension
+- shock
+- cascades
+- potential
+- equilibrium tendency
+- temporal and predictive condition analysis
+
+Does not own:
+
+- raw observation truth
+- graph truth
+- identity truth
+- semantic wording
+- display rendering
+
+Dynamics may consume derived condition and structural scope.
+
+Dynamics must not use final semantic projection as upstream truth.
+
+---
+
+## 10.5 Semantic Projection
+
+Owns:
+
+- semantic bundle generation
+- scope-aware human-readable condition
+- transition naming in plain language
+- concise descriptive summaries for humans
+
+Does not own:
+
+- legitimacy
+- structural truth
+- dynamic computation
+- observation truth
+- commands or recommendations
+
+Semantic Projection is a projection layer only.
+
+It explains.
+
+It does not compute underlying field behavior.
+
+---
+
+## 10.6 Views
+
+Owns:
+
+- read-only projections over CAS outputs
+- focus views
+- trend views
+- structural views
+- semantic views
+- dynamic views
+- explanation-oriented combinations of CAS outputs
+
+Does not own:
+
+- authoritative truth
+- base derivation
+- structural detection logic
+- dynamic formulas
+
+Views are derived projections.
+
+They do not mutate state.
+
+---
+
+## 10.7 CAS Query Exposure
+
+Owns:
+
+- read-only substrate-specific access to CAS outputs
+- structured result exposure to CQL and other consumers
+
+Does not own:
+
+- cross-substrate query language
+- upstream truth
+- computation logic itself
+
+CAS query exposure defines what CAS makes available.
+
+CQL defines how common cross-substrate access is expressed.
+
+---
+
+# 11. Boundary Rules Between Modules
+
+## 11.1 Charter to CAS
+
+Charter provides legitimacy truth.
+
+CAS may consume legitimacy truth.
+
+CAS must not modify or reinterpret legitimacy into authority.
+
+---
+
+## 11.2 CSG to CAS
+
+CSG provides graph truth.
+
+CAS may consume graph truth for propagation and structural analysis.
+
+CAS must not redefine graph topology.
+
+---
+
+## 11.3 CIS to CAS
+
+CIS provides identity truth.
+
+CAS may consume identity truth for scoped analysis.
+
+CAS must not redefine identity boundaries or versions.
+
+---
+
+## 11.4 CCare to CAS
+
+CCare provides observational input.
+
+CAS may derive condition from observations.
+
+CAS must not treat observations as authority.
+
+CCare must not be treated as the source of final semantic projection.
+
+---
+
+## 11.5 CAS to CQL
+
+CAS provides read-only derived outputs.
+
+CQL may expose them through common query access.
+
+CQL must not change CAS meaning.
+
+---
+
+# 12. Truth Class Distinction
+
+The platform must preserve distinct truth classes.
+
+## 12.1 Authoritative Truth
+
+Owned by:
+
+- Charter
+- CSG
+- CIS
+- CCare
+
+These are source truths.
+
+---
+
+## 12.2 Derived Condition
+
+Owned by:
+
+- CAS
+
+This is rebuildable and non-authoritative.
+
+---
+
+## 12.3 Human-Readable Explanation
+
+Owned by:
+
+- CAS semantic projection
+- CAS views
+
+This is descriptive and downstream of derivation.
+
+---
+
+## 12.4 Read-Only Access
+
+Owned by:
+
+- CQL
+- substrate query exposure layers
+
+This is access, not truth.
+
+---
+
+# 13. Prohibited Boundary Violations
+
+The following violations are forbidden.
+
+## 13.1 Charter Violation
+
+Any module other than Charter creating or mutating legitimacy.
+
+---
+
+## 13.2 Structure Violation
+
+Any module other than CSG redefining graph truth.
+
+---
+
+## 13.3 Identity Violation
+
+Any module other than CIS redefining identity truth.
+
+---
+
+## 13.4 Observation Violation
+
+Any module other than CCare redefining observational source truth.
+
+---
+
+## 13.5 Semantic Violation
+
+Any module treating semantic wording as upstream truth for dynamic computation.
+
+---
+
+## 13.6 Query Violation
+
+Any query layer redefining the meaning of substrate outputs.
+
+---
+
+## 13.7 Authority Violation
+
+Any descriptive or analytic module converting visibility into command, obligation, or authority.
+
+---
+
+# 14. Mental Model
+
+Charter defines what was legitimately decided.
+
+CSG defines how relevant entities are structurally related.
+
+CIS defines who or what structural regions claim to be.
+
+CCare defines what has been observed.
+
+CAS derives, propagates, detects, analyzes, and explains condition across those realities.
+
+CQL provides the common way to query the results.
+
+Each module has one job.
+
+The platform remains stable when those jobs remain separate.
+
+---
+
+# 15. Why This Matters
+
+Without strong module boundaries:
+
+- descriptive layers become authoritative
+- observations get confused with truth
+- structure and identity get redefined in downstream systems
+- query surfaces begin to distort semantics
+- implementation convenience replaces conceptual correctness
+
+With strong boundaries:
+
+- each module remains understandable
+- derived outputs remain trustworthy
+- explanations stay non-coercive
+- cross-substrate access stays clean
+- revisions remain possible without conceptual collapse
+
+---
+
+# 16. Final Constraint
+
+This document exists to answer:
+
+- What does each module own?
+- What may each module consume?
+- What must each module never redefine?
+- How do the platform modules remain conceptually stable together?
+
+It must never be used to justify:
+
+- collapsing module responsibilities
+- treating descriptive outputs as authority
+- replacing substrate truth with convenience abstractions

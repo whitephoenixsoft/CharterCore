@@ -1,778 +1,650 @@
-# Charter Alignment System (CAS) — Foundation Specification (Revised v4)
-
-Status: FOUNDATIONAL  
-Applies to: Charter Alignment System (CAS), Alignment Engine, Alignment State Store, Query Layer  
-Depends On: Charter Commit System (CCS), Commit Store, Charter Care Substrate (CCare), Charter Structural Graph (CSG), optional Charter Identity Substrate (CIS), optional Charter Signal Processing Substrate (CSP)  
-Does NOT define: legitimacy, workflow orchestration, storage backends, UI rendering  
+# CAS — Foundation Specification
+Status: FOUNDATIONAL (REVISED DRAFT)
+Applies to: CAS Substrate, CAS Semantic State Model, CAS Structural Detection, CAS Views, CQL Integration
+Depends On: Charter Legitimacy, CSG Structure Model, CIS Identity Model, CCare Signal Model
+Does NOT define: signal emission mechanics, numeric formulas, storage backend implementation, UI rendering, or CQL language design
 
 ---
 
 # 1. Purpose
 
-The Charter Alignment System (CAS) computes and exposes the relationship between:
+This document defines the foundation of CAS as a full substrate.
 
-- declared or admitted structural artifacts  
-- observed conditions (signals)  
-- structural relationships (graph)  
-- optional identity constructs  
+CAS exists to make the relationship between:
 
-CAS exists to make **alignment dynamics legible** without:
+- declared intent
+- observed condition
+- structural scope
 
-- creating legitimacy  
-- enforcing action  
-- inferring authority  
+mechanically legible without changing legitimacy, identity, or authority.
 
-CAS is:
+CAS is the substrate responsible for:
 
-- deterministic  
-- observational  
-- rebuildable  
-- query-driven  
+- consuming observational input
+- deriving alignment-related condition
+- propagating scoped influence
+- detecting structural patterns
+- computing alignment dynamics
+- projecting human-readable semantic condition
+- exposing queryable outputs
+
+CAS is observational, derived, deterministic, and non-authoritative.
 
 ---
 
 # 2. Core Principle
 
-> CAS computes alignment over declared structure and observed signals.  
-> It does not decide, enforce, or interpret intent beyond structure and signals.
+> CAS describes and analyzes condition. It does not create legitimacy, identity, authority, or obligation.
 
-CAS consumes declared structure and observed signals.
+All CAS outputs must remain:
 
-It may distinguish structural relationship classes, including:
-
-- supersession  
-- reference  
-- derivation  
-
-but it must not interpret derivation as:
-
-- promotion  
-- demotion  
-- correctness  
-- authority  
-
-Those meanings remain outside CAS.
-
-CAS may analyze mixed legitimate and investigative structure, but must never collapse their distinction.
+- descriptive
+- non-authoritative
+- deterministic given inputs
+- rebuildable from upstream truth
+- separate from enforcement and decision-making
 
 ---
 
-# 3. Position in Architecture
+# 3. Position in the Platform
 
-CAS operates strictly above:
+CAS is not Charter, CSG, CIS, or CCare.
 
-- CCS + Commit Store (artifact truth)  
-- CCare (observations)  
-- CSG (structure)  
-- CIS (optional identity layer)  
-- CSP (optional upstream shaping of signal flow)  
+CAS depends on them.
 
-CAS produces:
+## 3.1 Charter
+Charter defines explicit legitimacy.
 
-- derived alignment state  
-- queryable views  
-- descriptive outputs  
+It provides:
 
-CAS does not:
+- resolutions
+- sessions
+- areas
+- supersession lineage
+- legitimacy history
 
-- modify upstream artifacts  
-- participate in legitimacy  
-- alter identity  
-- redefine graph structure  
+CAS does not create or alter legitimacy.
 
 ---
 
-# 4. Inputs
+## 3.2 CSG
+CSG defines graph structure.
 
-## 4.1 Structural Input (CSG)
+It provides:
 
-CAS consumes structural projections from CSG.
+- node relationships
+- DAG structure
+- reference paths
+- graph-level topology needed for propagation and structural analysis
 
-CSG may include:
-
-- resolution nodes  
-- item nodes  
-- supersession edges  
-- reference edges  
-- derivation edges  
-- cross-class edges  
-- area boundary references  
-
-Graph properties:
-
-- directed  
-- structurally explicit  
-- potentially incomplete  
-- projection-aware  
-
-CAS must preserve node-class distinctions supplied by CSG.
-
-Item-based analysis applies only to **admitted stable item nodes** present in CSG, not mutable CDS workspace state.
+CAS does not define graph truth.
+CAS consumes graph truth.
 
 ---
 
-## 4.2 Observational Input (CCare)
+## 3.3 CIS
+CIS defines identity scope.
 
-Signals include:
+It provides:
 
-- semantic state:
-    - alignment
-    - misalignment
-    - uncertainty
-    - reduced_capacity
-    - intentional_pause
-    - need_reassessment
-- confidence:
-    - low
-    - medium
-    - high
-- timestamp  
+- identities
+- identity versions
+- identity boundaries
+- scoped identity overlays across graph regions
 
-Signals are:
-
-- descriptive  
-- non-authoritative  
-- optional  
-
-Silence is valid.
+CAS does not define identity.
+CAS consumes identity truth.
 
 ---
 
-## 4.3 Identity Input (Optional — CIS)
+## 3.4 CCare
+CCare provides observational input.
 
-If present:
+It emits check-ins and related observation records.
 
-- identity versions  
-- scope definitions  
-- identity relationships  
-- identity projections over CSG  
+These inputs are:
 
-If absent:
+- descriptive
+- optional
+- non-authoritative
+- silence-valid
 
-- CAS operates purely structurally  
-
----
-
-## 4.4 Context Input (Posture)
-
-Context includes:
-
-- transitions  
-- experiments  
-- identity version changes  
-- other declared posture modifiers  
-
-Context modifies interpretation, not truth.
+CAS does not emit CCare check-ins.
+CAS consumes them.
 
 ---
 
-## 4.5 Signal Shaping Input (Optional — CSP)
+## 3.5 CQL
+CQL is the common query gateway above substrates.
 
-If CSP is present, CAS may consume CCare artifacts that were:
+CAS exposes queryable outputs through CQL, but CQL is not part of CAS computational semantics.
 
-- directly emitted  
-- clustered before durable emission  
-- aggregated under explicit pipeline policy  
-
-CAS does not consume transient CSP feeds as authoritative inputs unless explicitly materialized into durable artifacts through accepted runtime policy.
-
-CSP affects signal cadence and shape, not CAS semantics.
+CAS defines what can be queried.
+CQL defines how cross-substrate querying is expressed.
 
 ---
 
-# 5. Structural Scope Model
+# 4. Primary Inputs
 
-CAS operates over **explicit structural projections**.
+CAS consumes three primary input classes.
+
+## 4.1 Observational Input (CCare)
+
+Observational input includes check-ins and related observation records.
 
 These may include:
 
-- resolution-only projection  
-- item-only projection  
-- mixed projection  
-- lineage projection  
+- observational state labels
+- confidence
+- timestamp
+- target reference
+- optional context
 
-Projection choice affects what structure CAS analyzes, but does not alter CAS semantics.
+Observational input is never legitimacy.
 
----
-
-## 5.1 Projection Principle
-
-> CAS analyzes the selected projection of declared structure. It does not redefine the graph.
+It is evidence of observed condition only.
 
 ---
 
-## 5.2 Node-Class Principle
+## 4.2 Structural Input (CSG)
 
-CAS must preserve distinction between:
+Structural input includes:
 
-- legitimate structural nodes (e.g., resolutions)  
-- investigative or exploratory structural nodes (e.g., items)  
+- graph topology
+- lineage relationships
+- supersession edges
+- node references
+- area membership
+- graph partitions
 
-Mixed analysis is allowed, but node-class distinctions must remain visible in outputs and views.
-
-Cross-class edges may participate in analysis, but must not imply legitimacy transfer or authority equivalence.
-
----
-
-# 6. Internal Computation Model
-
-CAS operates in deterministic layers.
+Structural input defines the shape within which CAS operates.
 
 ---
 
-## 6.1 Local Metrics Layer
+## 4.3 Identity Input (CIS)
 
-Per-node numeric computation may include:
+Identity input includes:
 
-- drift  
-- variance  
-- signal density  
-- recency  
+- identity boundaries
+- identity versions
+- identity-scoped regions
+- transition and coexistence context
 
-This layer is local and numeric only.
-
-Node class does not change the mathematical role of the layer, but may affect projection selection and interpretation.
+Identity input determines scope overlays used in analysis.
 
 ---
 
-## 6.2 Semantic State Layer
+# 5. Core Output Classes
 
-Maps numeric outputs into semantic states such as:
+CAS produces four distinct classes of output.
 
-- alignment
-- neutral
-- uncertainty
-- reduced_capacity
-- need_reassessment
-- misalignment
-
-With variance: 
-- stable
-- unstable  
-- improving  
-- declining 
-
-This layer classifies. It does not interpret intent or legitimacy.
-
----
-
-## 6.3 Propagation Layer
-
-Propagates across declared structural relationships, including:
-
-- supersession edges  
-- reference edges  
-- derivation edges  
-- cross-class edges  
-- area boundaries  
-- identity scopes (if present)  
-
-Computes:
-
-- influence  
-- propagation paths  
-- cones  
-- horizons  
-
-### 6.3.1 Relationship Distinction
-
-CAS may distinguish propagation behavior by relationship class.
+## 5.1 Derived Condition
+Derived condition includes normalized and aggregated condition produced from inputs.
 
 Examples:
 
-- supersession may affect active-state continuity for resolution nodes only  
-- reference may affect dependency-like influence  
-- derivation may affect lineage-aware propagation across scopes  
-- cross-class edges may affect simulation continuity across legitimate and investigative structure  
+- signal density
+- recency-aware counts
+- local aggregates
+- scoped aggregates
+- confidence-derived measures
 
-This distinction is structural only.
-
-CAS must not interpret derivation as authority or hierarchy.
-
-### 6.3.2 Mixed-Projection Propagation
-
-When item and resolution nodes coexist in the selected projection:
-
-- propagation may traverse both node classes  
-- node class must remain visible in results  
-- mixed traversal must not imply equivalence of legitimacy  
-
-### 6.3.3 Supersession Constraint
-
-Supersession applies only to resolution nodes.
-
-Item nodes must not participate in supersession semantics.
+This is intermediate derived state.
 
 ---
 
-## 6.4 Dynamics Layer
+## 5.2 Structural Findings
+Structural findings describe graph- and identity-based conditions.
 
-Computes system-level behavior:
+Examples:
 
-- tension  
-- cascades  
-- volatility  
-- equilibrium tendencies  
-- boundary pressure  
-- derivation-related continuity or divergence surfaces  
+- supersession-related regions
+- lineage bends
+- boundary crossings
+- structurally isolated regions
+- concentration or dependency patterns
 
-This layer models alignment as a field over structure and signals.
-
-Mixed-projection and lineage-projection analysis may be used for:
-
-- simulation  
-- exploratory investigation  
-- pre-legitimacy structural reasoning  
-- reconciliation-aware analysis  
-
-Such outputs remain non-authoritative.
+These findings are not dynamic field outputs.
 
 ---
 
-## 6.5 Materialization Layer
+## 5.3 Dynamic Findings
+Dynamic findings describe mathematical or field-like behavior over time and scope.
 
-Produces derived, queryable state.
+Examples:
 
----
+- drift
+- variance
+- gravity
+- tension
+- cascade emergence
+- shock propagation
+- potential
+- equilibrium tendency
 
-# 7. Alignment State Store (CAS Store)
-
-CAS may maintain a **materialized alignment store**.
-
----
-
-## 7.1 Purpose
-
-The Alignment State Store exists to:
-
-- accelerate queries  
-- persist derived alignment state  
-- avoid recomputation  
-- support multiple query views  
-- preserve projection-aware results  
+These belong to the dynamics dimension of CAS.
 
 ---
 
-## 7.2 Properties
+## 5.4 Semantic Projections
+Semantic projections are human-readable descriptions of condition.
 
-The Alignment State Store is:
+They are produced for:
 
-- **derived from CCS + CCare + CSG (+ CIS, optional CSP-shaped CCare inputs)**  
-- **fully rebuildable**  
-- **non-authoritative**  
-- **local to the system**  
+- node scope
+- identity scope
+- area scope
+- graph scope
 
----
+Semantic projections are descriptive outputs for human understanding.
 
-## 7.3 Contents
-
-### Node-Level
-
-Node-level state may exist for:
-
-- resolution nodes  
-- item nodes  
-
-Fields may include:
-
-- drift  
-- variance  
-- signal density  
-- semantic state  
-- confidence  
-- node class  
+They are not computational primitives.
 
 ---
 
-### Area-Level
+# 6. Internal CAS Decomposition
 
-- aggregated drift  
-- variance  
-- capacity pressure  
-- tension indicators  
+CAS contains distinct internal parts.
 
----
+These parts may be implemented together, but they must remain conceptually separate.
 
-### Identity-Level (if present)
+## 6.1 Intake and Derivation
+Consumes observational, structural, and identity inputs and derives base condition.
 
-- aggregated drift  
-- boundary pressure  
-- overlap tension  
-- transition volatility  
-- derivation-aware identity continuity surfaces  
+This part is responsible for:
 
----
+- intake of CCare observations
+- normalization
+- windowing
+- local aggregation
+- scoped derivation
+- derived state materialization
 
-### Global-Level
-
-- system drift  
-- variance  
-- active tension regions  
+This layer does not produce final semantic explanation by itself.
 
 ---
 
-### Structural Derivatives
+## 6.2 Propagation
+Propagates influence and derived condition through structure and scope.
 
-- cones  
-- propagation paths  
-- influence maps  
-- cascade indicators  
-- derivation lineage paths  
-- cross-scope continuity surfaces  
-- projection-aware neighborhoods  
-- lineage-aware projections  
+This part is responsible for:
 
----
+- alignment cones
+- alignment horizons
+- ancestor and descendant influence
+- node to identity rollup
+- node to area rollup
+- graph-level scoped aggregation
 
-## 7.4 Rebuild Principle
+Propagation must operate on derived condition and scoped influence.
 
-> The Alignment Store must be fully reconstructable.
-
-- loss is non-fatal  
-- rebuild must be deterministic  
-- incremental updates must match full rebuild  
+Propagation must not be understood as literal copying of human-readable labels through the graph.
 
 ---
 
-## 7.5 No Interpretation Rule
+## 6.3 Structural Detection
+Detects graph-based and identity-based patterns independent of field dynamics.
 
-The Alignment Store must not:
+This part is responsible for:
 
-- infer intent  
-- create authority  
-- enforce decisions  
-- reinterpret identity  
-- reinterpret derivation semantics beyond declared structure  
-- collapse node-class distinctions  
+- lineage pattern detection
+- supersession-related structure detection
+- boundary-aware structural findings
+- graph-shape interpretation relevant to alignment understanding
 
----
+Structural detection may use graph and identity truth.
 
-## 7.6 Separation from Other Stores
-
-The Alignment Store is not:
-
-- Commit Store  
-- Graph Store (CSG)  
-- Identity Store (CIS)  
-- Runtime Persistence  
-- CDS Workspace  
+Structural detection must not require dynamic field formulas.
 
 ---
 
-# 8. Present vs Predictive Outputs
+## 6.4 Alignment Dynamics
+Computes mathematical and field-like behavior.
 
-CAS separates:
+This part is responsible for:
 
-## Present
-Observed current state
+- drift
+- variance
+- stability-related measures
+- gravity
+- tension
+- cascades
+- shock
+- potential
+- equilibrium
+- predictive and temporal behavior
 
-## Predictive
-Emerging dynamics
+Dynamics may use:
 
-Predictive includes:
+- observational input
+- derived condition
+- propagation results
+- structural scope
 
-- drift velocity  
-- cascade likelihood  
-- transition risk  
-- cross-scope continuity risk  
-- derivation-related divergence risk  
-
-Predictive outputs are:
-
-- observational  
-- non-binding  
-- projection-aware  
+Dynamics must not depend on final human-readable semantic projection as upstream truth.
 
 ---
 
-# 9. Numeric vs Semantic Separation
+## 6.5 Semantic Projection
+Projects derived condition into human-readable system condition.
 
-CAS maintains:
+This part is responsible for:
 
-- numeric layer → computation  
-- semantic layer → classification  
+- semantic bundle generation
+- semantic transition naming
+- descriptive posture across scopes
+- operator-facing summary language
+
+Semantic projection is downstream of derivation.
+
+Semantic projection is not the basis for dynamic computation.
+
+Its purpose is explanation, not calculation.
+
+---
+
+## 6.6 Views
+Views organize CAS outputs for reading and interpretation.
+
+Views may combine:
+
+- semantic projection
+- structural findings
+- dynamic findings
+- scoped state
+
+Views are read-only derived projections.
+
+They do not mutate CAS state.
+
+---
+
+## 6.7 Query Exposure
+CAS exposes queryable outputs to CQL and other read-only consumers.
+
+Query exposure is not the same as computation.
+
+It provides access to derived and projected CAS results.
+
+---
+
+# 7. The Semantic Rule
+
+> Semantic output is a projection layer, not a computational primitive.
+
+This rule is foundational.
+
+It means:
+
+- semantic output describes what appears true
+- semantic output does not drive dynamic computation
+- semantic output does not create authority
+- semantic output does not prescribe action
+
+CAS may compute semantic projection from derived condition.
+
+CAS must not compute dynamics from semantic explanation text or semantic bundle outputs.
+
+---
+
+# 8. The Dynamics Rule
+
+> Dynamics is the mathematical and field-analysis dimension of CAS.
+
+Dynamics includes all formula-based or field-based analysis.
+
+Examples include:
+
+- drift
+- variance
+- trend measures
+- gravity
+- tension
+- shock
+- cascade
+- potential
+- equilibrium
+
+Anything that depends on arithmetic, weighting, thresholding, or temporal field analysis belongs to dynamics.
+
+Dynamics explains behavior more deeply than semantic projection.
+
+Dynamics is not the same thing as semantic status.
+
+---
+
+# 9. The Structural Rule
+
+> Structural detection is separate from dynamics.
+
+Structural detection answers:
+
+- how condition is organized in graph form
+- where structure itself introduces significance
+- how lineage, supersession, and identity boundaries shape interpretation
+
+Structural detection is not merely a view.
+
+It is a distinct analytical dimension inside CAS.
+
+Structural detection may inform semantic projection and views.
+
+Structural detection must remain conceptually separate from field math.
+
+---
+
+# 10. The Scope Rule
+
+CAS must support multiple projection scopes without changing core semantics.
+
+Required scopes:
+
+- node
+- identity
+- area
+- graph
+
+The same foundational rules apply at every scope.
+
+CAS may derive different scoped outputs from the same upstream truth, but scope must never change legitimacy semantics.
+
+---
+
+# 11. The Silence Rule
+
+Silence is valid.
+
+Absence of check-ins is not automatically equivalent to alignment, misalignment, or certainty.
+
+CAS may derive silence-related or inconclusive condition where appropriate, but must not treat missing observations as proof of correctness.
+
+---
+
+# 12. Present vs Predictive Distinction
+
+CAS must preserve a hard distinction between present description and predictive behavior.
+
+## 12.1 Present
+Present outputs answer:
+
+What appears true now?
+
+Examples:
+
+- current semantic posture
+- current scoped condition
+- current structural findings
+- current drift or variance
+
+---
+
+## 12.2 Predictive
+Predictive outputs answer:
+
+Where does this appear to be moving?
+
+Examples:
+
+- drift velocity
+- drift acceleration
+- cascade emergence
+- shock risk
+- transition risk
+- equilibrium tendency
+
+Predictive outputs are observational projections only.
+
+They are not commitments.
+
+---
+
+# 13. Numeric vs Semantic Distinction
+
+CAS uses both numeric and semantic forms, but they are not interchangeable.
+
+## 13.1 Numeric
+Used for:
+
+- arithmetic
+- weighting
+- rolling windows
+- aggregation
+- propagation math
+- thresholds
+- field analysis
+
+---
+
+## 13.2 Semantic
+Used for:
+
+- human-readable condition
+- semantic bundle outputs
+- transition phrases
+- descriptive explanation
+- operator-facing summary
+
+The numeric dimension computes.
+
+The semantic dimension explains.
 
 Neither replaces the other.
 
 ---
 
-# 10. Query Model
+# 14. Alignment State Store
 
-CAS is query-first.
+CAS maintains a derived state store for efficient query and projection.
 
----
+This store is:
 
-## 10.1 Query Components
+- derived
+- rebuildable
+- non-authoritative
+- query-oriented
+- append-aware
 
-### Target
-- resolution  
-- item  
-- area  
-- identity  
-- global  
+Loss of the store must not lose truth.
 
-### Projection
-Defines structural slice, such as:
-
-- resolution-only  
-- item-only  
-- mixed  
-- lineage  
-
-### View
-Interpretation lens
-
-### Scope (optional)
-Subset of graph, identity, lineage, or time
-
-### Filters (optional)
-Constraints such as:
-
-- semantic state  
-- volatility  
-- time window  
-- relationship class  
-- node class  
-
-### Context (optional)
-Posture modifiers
+Truth remains upstream in legitimacy, structure, identity, and observation sources.
 
 ---
 
-## 10.2 Query Principle
-
-> Queries reveal state. They do not modify it.
-
-Projection and target selection do not redefine the graph. They select analyzable structure.
-
----
-
-# 11. View System
-
----
-
-## 11.1 Canonical Views
-
-### Posture View
-- stability  
-- volatility  
-- contextual condition  
-
-### Trend View
-- direction  
-- velocity  
-- emerging shift  
-
-### Structural View
-- cones  
-- influence paths  
-- lineage-aware paths  
-- projection-aware paths  
-
-### Tension View
-- concentration zones  
-- boundary pressure  
-- systemic strain  
-
-### Identity View (optional)
-- overlap  
-- collaboration  
-- boundary pressure  
-- continuity across derivation paths  
-
-### Lineage View
-- derivation-aware continuity  
-- recontextualization surfaces  
-- cross-scope propagation  
-
-### Simulation View
-- exploratory propagation  
-- mixed-node tension  
-- item-to-resolution continuity  
-- delta-sensitive structural effects  
-
-Simulation outputs remain non-legitimate and non-authoritative.
-
----
-
-## 11.2 View Properties
-
-Views:
-
-- operate on Alignment Store  
-- are read-only  
-- do not recompute base metrics  
-- may expose derivation-aware projections where present  
-- must preserve node-class distinctions where relevant  
-
----
-
-## 11.3 Extensibility
-
-Custom views may:
-
-- combine fields  
-- derive projections  
-- specialize by structural relationship class  
-- specialize by node class or projection type  
-
----
-
-# 12. Identity Interaction Model
-
----
-
-## 12.1 Overlap
-
-Shared membership.
-
----
-
-## 12.2 Collaboration
-
-Directional influence.
-
-This may include influence that travels through:
-
-- direct references  
-- shared structure  
-- derivation-aware identity continuity  
-
----
-
-## 12.3 Boundary Pressure
-
-Misalignment across scopes.
-
-This may include pressure introduced when derived structure and identity boundaries diverge.
-
----
-
-## 12.4 Identity Optionality
-
-CAS must degrade cleanly without CIS.
-
-If CIS is present, identity scopes may be applied over whichever structural projection is explicitly selected.
-
----
-
-# 13. Posture Handling
-
-Posture is query-time only.
-
-It may:
-
-- adjust thresholds  
-- change sensitivity  
-- modify aggregation posture  
-
-It must not:
-
-- change underlying state  
-- rewrite structure  
-- alter identity definitions  
-- collapse projection boundaries  
-
----
-
-# 14. Structural Awareness
-
-CAS must handle:
-
-- incomplete graphs  
-- missing signals  
-- stale inputs  
-- disconnected structures  
-- cross-scope derivation lineage  
-- mixed node-class graphs  
-- cross-class structural continuity  
-
-Outputs must remain valid under incomplete information.
-
----
-
-# 15. Runtime Modes
-
-## 15.1 Full Rebuild
-- deterministic recomputation  
-
-## 15.2 Incremental Update
-- must match rebuild  
-
-Incremental update may be triggered by:
-
-- new signals  
-- structural changes  
-- derivation changes  
-- identity changes  
-- posture changes  
-- admitted item or resolution graph changes  
-
----
-
-# 16. Boundary Rules
+# 15. Boundary Guarantees
 
 CAS may:
 
-- compute  
-- aggregate  
-- classify  
-- expose derivation-aware structural effects  
-- analyze mixed legitimate and investigative projections  
+- consume observations
+- normalize
+- derive
+- propagate
+- detect structure
+- compute dynamics
+- project semantic condition
+- materialize derived state
+- expose read-only queries
 
-CAS must never:
+CAS may never:
 
-- create legitimacy  
-- enforce decisions  
-- trigger action  
-- infer authority  
-- reinterpret structural lineage as normative hierarchy  
-- imply that exploratory nodes are equivalent to legitimate nodes  
-- treat cross-class linkage as legitimacy transfer  
-
----
-
-# 17. Design Guarantees
-
-CAS is:
-
-- deterministic  
-- observational  
-- rebuildable  
-- non-authoritative  
-- structurally aware  
-- projection-aware  
-- query-first  
+- create legitimacy
+- modify resolutions
+- change authority
+- mutate identity truth
+- enforce action
+- infer obligation from visibility
+- suppress disagreement
+- convert description into command
 
 ---
 
-# 18. Mental Model
+# 16. Design Guarantees
 
-- CCS → durable artifacts  
-- CSG → explicit structure  
-- CCare → observation  
-- CIS → identity  
-- CSP → optional shaping of signal flow  
+CAS must remain:
 
-CAS computes:
+- observational
+- deterministic
+- derived
+- rebuildable
+- backend-agnostic
+- scope-aware
+- non-authoritative
 
-> how these interact over time
-
-across selected structural projections, including when structure mixes legitimate and investigative nodes.
+Given identical upstream truth and context, CAS outputs must be reproducible.
 
 ---
 
-# 19. Final Principle
+# 17. Mental Model
 
-CAS does not tell systems what to do.
+Charter defines what was explicitly decided.
 
-It makes visible:
+CSG defines how relevant things are structurally related.
 
-- alignment  
-- drift  
-- pressure  
-- emerging change  
-- continuity and divergence across structural lineage  
-- exploratory and legitimate dynamics across shared structure  
+CIS defines who or what the scoped structure claims to be.
 
-without coercion.
+CCare defines what is being observed.
+
+CAS derives, propagates, detects, analyzes, and explains how those realities relate.
+
+CQL provides the common way to query those results.
+
+---
+
+# 18. Why This Matters
+
+Without CAS:
+
+- declared intent remains disconnected from observed condition
+- graph structure remains underused for analysis
+- identity remains disconnected from condition
+- observations remain hard to interpret across scope
+- deeper instability remains difficult to detect
+
+With CAS:
+
+- condition becomes mechanically legible
+- semantic explanation becomes consistent
+- structural context becomes visible
+- dynamic behavior becomes analyzable
+- cross-scope understanding becomes queryable without coercion
+
+CAS exists to make condition understandable without taking agency away from humans.
+
+---
+
+# 19. Final Constraint
+
+CAS exists to answer questions such as:
+
+- What appears to be happening?
+- Where is condition concentrated?
+- Is instability local or systemic?
+- What structural patterns matter here?
+- How is this changing over time?
+- What descriptive summary best explains current condition?
+
+CAS must never answer:
+
+- Which decision is correct
+- What action is required
+- Who is authoritative
+- What humans must do next

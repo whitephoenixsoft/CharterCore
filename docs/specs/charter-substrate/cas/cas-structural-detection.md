@@ -1,567 +1,641 @@
-# Charter Alignment System — Structural Detection Model (v4)
-
-Status: FOUNDATIONAL  
-Applies to: Charter Alignment System (CAS), Charter Alignment Engine (CAE)  
-Depends On:  
-- Structural Visibility & Relational Integrity Specification  
-- Cross-Area Discoverability Specification  
-- Charter Commit System (CCS)  
-- Charter Structural Graph (CSG)  
-- Charter Care Substrate (CCare)  
-- Optional: Charter Identity Substrate (CIS)  
-
-Does NOT define: legitimacy, structural correctness, workflow orchestration, or guidance interpretation  
+# CAS — Structural Detection Specification
+Status: FOUNDATIONAL (REVISED DRAFT)
+Applies to: CAS Structural Detection, CAS Views, CAS Explanations, CQL Structural Outputs
+Depends On: CAS Foundation Specification, CSG Structure Model, CIS Identity Model, Charter Legitimacy
+Does NOT define: signal emission, numeric field formulas, dynamic propagation formulas, UI rendering, or CQL language design
 
 ---
 
 # 1. Purpose
 
-This document defines the **detection capabilities of the Charter Alignment System (CAS)**.
+This document defines Structural Detection within CAS.
 
-CAS exists to:
+Structural Detection exists to identify and describe graph-based and identity-based conditions that matter for understanding system condition.
 
-- derive alignment-related patterns from structure and signals  
-- summarize system state using the **semantic lattice**  
-- expose categorized, queryable views of alignment dynamics  
-- surface structural–observational relationships without interpretation  
+It exists to:
 
-CAS does not determine truth, correctness, or action.  
-It describes:
+- detect meaningful structural patterns in the graph
+- reveal how lineage, supersession, and scope shape interpretation
+- provide structural findings that support semantic explanation and deeper analysis
+- remain distinct from both semantic projection and alignment dynamics
 
-> **what is observable from declared structure (legitimate or investigative) and signals**
+Structural Detection is a first-class analytical dimension inside CAS.
 
----
+It is not merely a view.
 
-# 2. Core Principles
-
-## 2.1 Query-Based, Non-Interruptive
-
-> CAS produces output only when queried.
-
-CAS:
-
-- does not emit alerts by default  
-- does not monitor continuously  
-- does not generate unsolicited signals  
-
-It is a **read-oriented analytical system**.
+It is not the dynamics layer.
 
 ---
 
-## 2.2 Deterministic and Rebuildable
+# 2. Core Principle
 
-All CAS outputs must be:
+> Structural Detection identifies condition that arises from structure itself.
 
-- deterministic  
-- reproducible from inputs  
-- derivable from:
-  - commit artifacts (CCS)  
-  - structural graph (CSG)  
-  - signals (CCare)  
+Structural Detection must remain:
 
-The Alignment State Store is:
+- descriptive
+- deterministic given structural inputs
+- non-authoritative
+- scope-aware
+- separate from dynamic field computation
 
-- derived  
-- rebuildable  
-- non-authoritative  
+Structural Detection does not decide what should be done.
 
----
-
-## 2.3 Descriptive, Not Normative
-
-> CAS describes patterns. It does not judge them.
-
-CAS must not:
-
-- prescribe actions  
-- assign correctness  
-- infer intent  
-- convert observations into obligations  
+It reveals what is structurally significant.
 
 ---
 
-## 2.4 Structure-Aware, Not Structure-Validating
+# 3. Definition
 
-CAS:
+A structural finding is:
 
-- consumes declared structure from CSG  
-- operates over both complete and incomplete graphs  
+> a derived description of graph-based or identity-based significance detected from structure and scope.
 
-CAS must not:
+Structural findings are produced from:
 
-- validate graph correctness  
-- enforce structural rules  
-- repair missing relationships  
+- graph truth from CSG
+- legitimacy lineage from Charter
+- identity truth from CIS
+- scope-aware structural relationships
 
----
+Structural findings are not legitimacy.
 
-## 2.5 Visibility-Bound
-
-> CAS operates only on visible, declared structure.
-
-CAS cannot:
-
-- infer missing relationships as truth  
-- detect hidden dependencies directly  
-
-It may only describe:
-
-- patterns within visible structure  
-- anomalies between structure and signals  
+Structural findings do not create authority or obligation.
 
 ---
 
-## 2.6 Projection-Aware
+# 4. Position in CAS
 
-> CAS operates over explicit structural projections.
+Structural Detection is one distinct part of CAS.
 
-CAS may analyze:
+CAS includes:
 
-- resolution-only projections  
-- item-only projections  
-- mixed projections  
+- intake and derivation
+- propagation
+- structural detection
+- alignment dynamics
+- semantic projection
+- views
+- query exposure
 
-Projection selection affects:
+Structural Detection is separate from:
 
-- propagation  
-- aggregation  
-- detection outcomes  
+- semantic projection
+- alignment dynamics
+- read-only views
 
-CAS must not:
-
-- redefine structure across projections  
-
----
-
-# 3. Inputs
-
-CAS operates on the following inputs:
+It may inform them, but it is not reducible to them.
 
 ---
 
-## 3.1 Structural Input (CSG)
+# 5. Structural Detection Inputs
 
-CAS consumes structural projections containing:
+Structural Detection consumes structural and scope truth.
 
-- resolution nodes (legitimate structure)  
-- item nodes (investigative structure)  
-- structural relationships:
-  - reference  
-  - derivation (`derived_from`)  
-  - supersession (resolution-only)  
+## 5.1 Charter Inputs
 
-This is the **structural field** over which CAS operates.
+Charter provides legitimacy-related structure such as:
 
----
+- resolutions
+- lineage
+- supersession history
+- area membership
+- legitimacy boundaries
 
-## 3.2 Observational Input (CCare)
-
-Signals include:
-
-- semantic states  
-- confidence  
-- timestamps  
-- silence patterns  
-
-These represent **observed conditions**, not authority.
+These inputs provide the decision history within which structural significance is detected.
 
 ---
 
-## 3.3 Commit Artifacts (CCS)
+## 5.2 CSG Inputs
 
-Includes:
+CSG provides graph truth such as:
 
-- resolutions  
-- items (when materialized)  
-- receipts  
-- annotations  
+- node relationships
+- directed edges
+- parent and child structure
+- references
+- graph topology
+- partitions and subgraphs
 
-Used for:
-
-- reconstruction  
-- lineage context  
-- auditability  
+Structural Detection operates over this graph truth.
 
 ---
 
-## 3.4 Structural Scope Input (Optional — CIS)
+## 5.3 CIS Inputs
 
-CAS may operate over identity-defined scopes.
+CIS provides identity truth such as:
 
-These scopes:
+- identities
+- identity versions
+- scope boundaries
+- coexistence regions
+- identity transitions
 
-- define bounded regions of the structural graph  
-- may overlap  
-- are derived from CIS over CSG  
-
-CAS may compute:
-
-- identity-scoped alignment  
-- boundary pressure  
-- overlap tension  
-- cross-identity divergence  
+These inputs allow structure to be analyzed relative to claimed identity boundaries.
 
 ---
 
-## 3.5 Bounded Contexts (Optional)
+# 6. Structural Detection Scope
 
-CAS may operate over:
+Structural Detection must support multiple scopes.
 
-- CDS (investigative contexts)  
-- review contexts (provisional structure)  
+Required scopes:
 
-These contexts are:
+- node
+- identity
+- area
+- graph
 
-- visible  
-- analyzable  
-- non-authoritative  
+Structural findings must always be understood relative to a defined scope.
 
----
+The same structure may yield different findings at different scopes.
 
-## 3.6 Alignment State Store
-
-- derived alignment states  
-- cached semantic outputs  
-- query-optimized structures  
-
-Must remain:
-
-- rebuildable  
-- non-authoritative  
+This is expected.
 
 ---
 
-# 4. Computation Model
+# 7. Structural Detection Output Class
 
-CAS operates in layered computation:
+Structural Detection produces structural findings.
+
+These findings describe significance such as:
+
+- lineage shape
+- supersession-related shape
+- boundary crossing
+- isolation
+- concentration
+- dependency exposure
+- structural asymmetry
+- transition-sensitive structure
+
+Structural findings are descriptive.
+
+They are not commands.
+
+They are not dynamic field outputs.
 
 ---
 
-## 4.1 Numeric Layer
+# 8. What Structural Detection Is For
 
-Computes raw metrics such as:
+Structural Detection exists to answer questions such as:
 
-- drift  
-- variance  
-- signal density  
-- recency  
+- What in the graph shape matters here?
+- Is this condition structurally local or structurally exposed?
+- Is this region heavily dependent on a narrow path?
+- Is this area isolated from the rest of the graph?
+- Does supersession create a meaningful structural break?
+- Do identity boundaries align with graph behavior or cut across it?
+- Is this condition concentrated, distributed, or structurally constrained?
 
-This layer is:
+These are structural questions.
 
-- purely mathematical  
-- node-level  
-- projection-aware  
+They are not semantic or dynamic questions.
 
 ---
 
-## 4.2 Semantic Lattice
+# 9. What Structural Detection Is Not
 
-Maps numeric outputs into **human-readable states**.
+Structural Detection is not:
+
+- legitimacy
+- semantic projection
+- drift analysis
+- variance analysis
+- field dynamics
+- a dashboard view
+- an action recommendation layer
+
+Structural Detection may support those layers, but it is distinct from all of them.
+
+---
+
+# 10. Structural Detection Categories
+
+Structural Detection may identify several categories of findings.
+
+## 10.1 Lineage Findings
+
+Lineage findings describe significance arising from historical and hierarchical graph relationships.
+
+Examples include:
+
+- long lineage chains
+- shallow lineage
+- structurally narrow ancestry
+- structurally broad descent
+- concentrated path dependency
+
+These findings help explain how condition is situated in decision history.
+
+---
+
+## 10.2 Supersession Findings
+
+Supersession findings describe significance arising from replacement and revision structure.
+
+Examples include:
+
+- structurally recent supersession
+- dense supersession region
+- layered supersession history
+- unresolved supersession concentration
+- structurally significant break in lineage
+
+These findings help explain how replacement history affects present interpretation.
+
+---
+
+## 10.3 Boundary Findings
+
+Boundary findings describe significance arising from area or identity boundaries.
+
+Examples include:
+
+- identity boundary crossing
+- area boundary crossing
+- boundary-contained region
+- scope fragmentation
+- structural overlap between identity regions
+
+These findings help explain how structural condition relates to organizational or system boundaries.
+
+---
+
+## 10.4 Dependency Findings
+
+Dependency findings describe significance arising from concentration, exposure, and graph reliance.
+
+Examples include:
+
+- structurally central node
+- dependency bottleneck
+- narrow dependency region
+- structurally exposed region
+- concentrated upstream reliance
+- concentrated downstream reliance
+
+These findings help explain how graph shape creates structural sensitivity.
+
+---
+
+## 10.5 Isolation Findings
+
+Isolation findings describe significance arising from weak connectivity or containment.
+
+Examples include:
+
+- isolated node region
+- weakly connected region
+- structurally detached branch
+- contained subgraph
+- structurally local condition
+
+These findings help explain where condition is structurally limited or disconnected.
+
+---
+
+## 10.6 Transition Findings
+
+Transition findings describe significance arising from identity or structure change across time.
+
+Examples include:
+
+- identity transition region
+- coexistence boundary
+- deprecation-affected region
+- sunset-sensitive branch
+- structurally transitional zone
+
+These findings help explain where structure is shaped by ongoing change rather than stable arrangement.
+
+---
+
+# 11. Structural Detection and Propagation
+
+Propagation and Structural Detection are related but distinct.
+
+Propagation determines how derived condition and scoped influence move across structure.
+
+Structural Detection determines what the structure itself means.
+
+Structural Detection may use propagated scope-aware context where appropriate, but it must remain focused on structural significance rather than semantic labeling or dynamic field behavior.
+
+Propagation answers:
+
+- how condition reaches or affects scope
+
+Structural Detection answers:
+
+- what the shape of the structure means
+
+---
+
+# 12. Structural Detection and Semantic Projection
+
+Semantic projection may summarize structural findings in human-readable form.
 
 Examples:
 
-- aligned  
-- misaligned  
-- unstable  
-- reduced_capacity  
-- recovering  
+- structurally isolated
+- boundary-crossing
+- structurally concentrated
+- structurally exposed
 
-The semantic lattice:
+However:
 
-- compresses mathematical state  
-- preserves interpretability  
-- does not introduce meaning beyond classification  
+- structural findings are not themselves semantic bundles
+- semantic projection must not replace structural detection
+- structural detail should remain available as its own output class
 
----
+Structural Detection provides structural truth for explanation.
 
-## 4.3 View Layer
-
-Organizes semantic outputs into:
-
-- queryable perspectives  
-- structural lenses  
-- domain-specific interpretations  
+Semantic projection provides plain-language summary.
 
 ---
 
-# 5. Detection Domains
+# 13. Structural Detection and Dynamics
 
-CAS detects patterns across multiple domains:
+Structural Detection is distinct from dynamics.
 
----
+Dynamics answers questions such as:
 
-## 5.1 Alignment Posture Detection
+- how condition changes over time
+- where drift is increasing
+- whether tension is forming
+- whether a cascade is emerging
 
-Derived from:
+Structural Detection answers questions such as:
 
-- signals  
-- structure  
-- propagation  
+- how condition is organized in graph form
+- whether there is a bottleneck
+- whether there is isolation
+- whether supersession creates structural concentration
+- whether identity boundaries shape significance
 
-Detects:
+Structural Detection may inform dynamics.
 
-- alignment  
-- misalignment  
-- uncertainty  
-- reduced capacity  
-- stabilization  
+Dynamics may use structure as an input.
 
----
+But Structural Detection must not be collapsed into field math.
 
-## 5.2 Volatility Detection
-
-Describes temporal dynamics:
-
-- stable  
-- unstable  
-- increasing  
-- decreasing  
-- oscillating  
+This distinction is mandatory.
 
 ---
 
-## 5.3 Propagation Detection
+# 14. Time and Structural Detection
 
-Detects how influence moves across structure:
+Structural Detection is primarily shape-oriented rather than field-oriented.
 
-- limited propagation  
-- delayed propagation  
-- asymmetric propagation  
-- containment  
+It may consider structural history when the structure itself changes.
 
-Supports:
+Examples include:
 
-- mixed-node propagation  
-- lineage-aware propagation  
+- supersession history
+- identity version changes
+- deprecation and sunset structure
+- coexistence structure
 
----
+However:
 
-## 5.4 Observational Tension Detection
-
-Derived from:
-
-- signal density  
-- conflicting states  
-
-Detects:
-
-- tension zones  
-- instability clusters  
+- Structural Detection must not become a substitute for dynamic time-series analysis
+- structural time awareness is only used where the structure itself has changed
 
 ---
 
-## 5.5 Structural–Observational Mismatch Detection
+# 15. Structural Detection Rules
 
-Detects:
+## 15.1 Structure-First Rule
 
-> divergence between structure and signals
+Structural findings must arise from graph or identity truth.
 
-Examples:
-
-- stable structure with unstable signals  
-- disconnected nodes with correlated signals  
-- highly connected structure with no propagation  
-
-Indicates:
-
-- missing structure  
-- hidden dependencies  
-- coordination gaps  
+They must not be invented from semantic wording or dynamic labels.
 
 ---
 
-## 5.6 Simulation Detection (NEW)
+## 15.2 Scope Rule
 
-CAS may analyze **investigative (item-based) structure**.
+Every structural finding must be interpretable relative to a scope.
 
-Detects:
-
-- simulated instability  
-- hypothetical cascades  
-- pre-legitimacy tension  
-
-These outputs are:
-
-- non-authoritative  
-- exploratory  
+A finding without scope is incomplete.
 
 ---
 
-## 5.7 Reconciliation Divergence Detection (NEW)
+## 15.3 Non-Authority Rule
 
-Detects divergence between:
+Structural findings must never imply:
 
-- legitimate structure (resolutions)  
-- investigative structure (items)  
+- obligation
+- fault
+- correctness
+- command
 
-Examples:
-
-- simulated changes not reflected in legitimacy  
-- outdated investigative assumptions  
-
----
-
-## 5.8 Identity-Aware Detection (Optional)
-
-When CIS is present, CAS may detect:
-
-- boundary pressure  
-- overlap tension  
-- cross-identity misalignment  
-- identity-scoped instability  
+They describe significance only.
 
 ---
 
-# 6. Semantic Output Model
+## 15.4 Rebuild Rule
 
-CAS outputs consist of:
+Structural findings must be rebuildable from upstream truth.
 
----
-
-## 6.1 Semantic State
-
-Examples:
-
-- aligned  
-- misaligned  
-- reduced_capacity  
+Loss of cached findings must be non-fatal.
 
 ---
 
-## 6.2 Volatility Descriptor
+## 15.5 Distinction Rule
 
-Examples:
+Structural findings must remain distinct from:
 
-- stable  
-- increasing  
-- oscillating  
-
----
-
-## 6.3 Category / View
-
-Examples:
-
-- posture  
-- propagation  
-- tension  
-- mismatch  
-- simulation  
+- semantic bundle outputs
+- numeric field outputs
+- display-only views
 
 ---
 
-## 6.4 Example Output
+# 16. Structural Detection Patterns
 
-State: reduced_capacity  
-Volatility: increasing  
-Category: propagation_constraint  
+The following patterns are representative categories of structural significance.
 
----
+These are descriptive categories, not formulas.
 
-# 7. Detection Semantics
+## 16.1 Structural Bottleneck
 
-CAS outputs are:
+A narrow point through which much relevant dependency passes.
 
-- descriptive  
-- non-causal  
-- non-prescriptive  
+Why it matters:
 
-Example:
-
-“Observed coupling without structural linkage”
-
-Means:
-
-- correlation exists  
-- no structural edge exists  
-
-It does not assert causation.
+A bottleneck increases structural sensitivity and concentration of influence.
 
 ---
 
-# 8. Non-Detectable Conditions
+## 16.2 Structural Isolation
 
-CAS cannot detect:
+A node or region that is weakly connected, bounded, or detached relative to its scope.
 
-- undeclared relationships as truth  
-- intent or motivation  
-- correctness  
-- legitimacy  
-- authority  
+Why it matters:
 
-Absence of detection ≠ absence of reality.
+Isolation may contain condition locally or indicate fragmentation.
 
 ---
 
-# 9. Failure Interpretation
+## 16.3 Structural Concentration
 
-## 9.1 False Stability
-Missing structure suppresses propagation.
+A region where dependency, lineage significance, or supersession intensity is unusually concentrated.
 
-## 9.2 Unexplained Tension
-Signals conflict without structural explanation.
+Why it matters:
 
-## 9.3 Sudden Instability
-New structure reveals hidden dependencies.
-
-## 9.4 Simulation Drift
-Investigative structure diverges from legitimacy.
+Concentration may amplify the significance of local change.
 
 ---
 
-# 10. Invariants
+## 16.4 Structural Fragmentation
 
-- CAS is read-only  
-- CAS is deterministic and rebuildable  
-- CAS is projection-aware  
-- CAS does not validate structure  
-- CAS does not infer undeclared relationships  
-- CAS outputs are descriptive  
-- node-class distinctions must be preserved  
-- Alignment State Store is non-authoritative  
+A region where related structure is split across boundaries or weakly joined paths.
+
+Why it matters:
+
+Fragmentation may reduce coherence across scope.
 
 ---
 
-# 11. Mental Model
+## 16.5 Structural Break
 
-CAS is:
+A meaningful interruption or redirection in lineage or supersession shape.
 
-> a field analysis system over structure and signals
+Why it matters:
 
-It operates over:
-
-- structure (CSG)  
-- observation (CCare)  
-- optional scope (CIS)  
-
-Through:
-
-- math  
-- semantic lattice  
-- views  
+A break may explain why older context no longer cleanly governs the present region.
 
 ---
 
-# 12. Final Principle
+## 16.6 Structural Transition Zone
 
-CAS reveals how the system behaves  
-based on what has been made visible.
+A region shaped by identity version change, coexistence, deprecation, or sunset conditions.
 
-It operates over:
+Why it matters:
 
-- decisions  
-- investigations  
-- simulations  
+Transition zones often need to be interpreted differently from stable regions.
 
-using:
+---
 
-- mathematics  
-- semantic compression  
-- structural awareness  
+# 17. Structural Detection and Identity
 
-It does not decide what is true.
+Identity is not the same thing as graph structure.
 
-It makes visible:
+Identity overlays structure.
 
-> what the system appears to be doing  
-given what has been declared and observed.
+Structural Detection must therefore support findings such as:
+
+- identity-aligned region
+- identity-crossing region
+- mixed-identity branch
+- transition-sensitive identity region
+- structurally contained identity scope
+
+These findings help explain how structure and claimed ownership or responsibility relate.
+
+---
+
+# 18. Structural Detection and Areas
+
+Areas create legitimacy and organizational partitions relevant to interpretation.
+
+Structural Detection must support findings such as:
+
+- area-contained branch
+- cross-area dependency
+- area bottleneck
+- structurally concentrated area region
+- area-isolated region
+
+These findings help explain how structural condition is distributed across areas.
+
+---
+
+# 19. Output Expectations
+
+Structural outputs should be:
+
+- structured
+- machine-readable
+- scope-aware
+- explainable in plain language
+- available independently from semantic and dynamic outputs
+
+Structural outputs should support:
+
+- direct queries
+- explanation layers
+- views
+- CQL exposure
+
+---
+
+# 20. Example Structural Findings
+
+Examples of valid structural findings include:
+
+- structurally isolated node region
+- dense supersession branch
+- boundary-crossing dependency region
+- concentrated upstream bottleneck
+- identity transition region
+- structurally contained area branch
+- structurally exposed downstream path
+- structurally fragmented identity scope
+
+These are descriptive examples only.
+
+They do not prescribe action.
+
+---
+
+# 21. Design Guarantees
+
+Structural Detection must remain:
+
+- descriptive
+- deterministic
+- rebuildable
+- scope-aware
+- backend-agnostic
+- non-authoritative
+- distinct from dynamics
+- distinct from semantic projection
+
+Given identical graph, lineage, and identity truth, structural findings must be reproducible.
+
+---
+
+# 22. Mental Model
+
+CSG provides structure.
+
+CIS provides scope and identity overlays.
+
+Charter provides legitimacy lineage.
+
+Structural Detection is the CAS function that identifies what those shapes and boundaries mean for understanding condition.
+
+It is the structural explanation layer of CAS.
+
+It exists so graph form is not treated as passive storage, but as meaningful condition-bearing structure.
+
+---
+
+# 23. Final Constraint
+
+Structural Detection exists to answer:
+
+- What structural patterns matter here?
+- Where is this condition structurally concentrated or isolated?
+- How do lineage, supersession, and boundaries shape interpretation?
+- Is this region structurally stable, constrained, exposed, or transitional?
+
+Structural Detection must never answer:
+
+- What action is required
+- Which decision is correct
+- Who is authoritative
+- What humans must do next
