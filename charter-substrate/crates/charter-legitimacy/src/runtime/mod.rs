@@ -1,8 +1,11 @@
-use std::collections::BTreeSet;
+use std::collections::{BTreeMap, BTreeSet};
 
 use crate::compiler::CompiledState;
-use crate::domain::{CandidateId, SessionId, SessionPhase, SessionState, CandidatePayload, Stance};
-use crate::error::{EvaluationReport, EvaluationOutcome, ErrorEntry};
+use crate::domain::{
+    CandidateId, CandidatePayload, ParticipantId, SessionId, SessionPhase, SessionState, Stance,
+    Vote,
+};
+use crate::error::{ErrorEntry, EvaluationOutcome, EvaluationReport};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum CandidateDisposition {
@@ -17,16 +20,42 @@ pub struct CandidateEvaluation {
     pub candidate_id: CandidateId,
     pub disposition: CandidateDisposition,
     pub reasons: Vec<String>,
-
     pub accept_votes: usize,
     pub reject_votes: usize,
-    pub abstain_votes: usize,
 }
 
-pub fn evaluate_session(
-    state: &CompiledState,
-    session_id: &SessionId,
-) -> EvaluationReport {
+#[derive(Debug, Clone, PartialEq, Eq, Default)]
+struct EffectiveParticipantVotes {
+    effective_accept: Option<CandidateId>,
+    effective_rejects: BTreeSet<CandidateId>,
+}
+
+fn derive_effective_votes(votes: &[Vote]) -> BTreeMap<ParticipantId, EffectiveParticipantVotes> {
+    let mut by_participant: BTreeMap<ParticipantId, EffectiveParticipantVotes> = BTreeMap::new();
+
+    for vote in votes {
+        let entry = by_participant
+            .entry(vote.participant_id.clone())
+            .or_default();
+
+        match vote.stance {
+            Stance::Accept => {
+                entry.effective_accept = Some(vote.candidate_id.clone());
+                entry.effective_rejects.remove(&vote.candidate_id);
+            }
+            Stance::Reject => {
+                if entry.effective_accept.as_ref() == Some(&vote.candidate_id) {
+                    entry.effective_accept = None;
+                }
+                entry.effective_rejects.insert(vote.candidate_id.clone());
+            }
+        }
+    }
+
+    by_participant
+}
+
+pub fn evaluate_session(state: &CompiledState, session_id: &SessionId) -> EvaluationReport {
     let Some(session) = state.sessions.get(session_id) else {
         return EvaluationReport::rejected(
             "evaluate_session",
@@ -123,19 +152,13 @@ pub fn evaluate_session(
         }
     }
 
-    errors.sort_by(|a, b| {
-        match a.error_code.cmp(&b.error_code) {
-            std::cmp::Ordering::Equal => a.related_objects.cmp(&b.related_objects),
-            other => other,
-        }
+    errors.sort_by(|a, b| match a.error_code.cmp(&b.error_code) {
+        std::cmp::Ordering::Equal => a.related_objects.cmp(&b.related_objects),
+        other => other,
     });
 
     if errors.is_empty() {
-        EvaluationReport::success(
-            "evaluate_session",
-            "session",
-            Some(session_id.as_str()),
-        )
+        EvaluationReport::success("evaluate_session", "session", Some(session_id.as_str()))
     } else {
         EvaluationReport {
             evaluation_id: None,
@@ -165,6 +188,7 @@ pub fn evaluate_candidates_for_session(
         ));
     };
 
+    let effective_votes = derive_effective_votes(&session.votes);
     let mut results = Vec::new();
 
     for candidate in &session.candidates {
@@ -181,10 +205,7 @@ pub fn evaluate_candidates_for_session(
                 supersedes_resolution_id,
                 ..
             } => {
-                if !state
-                    .resolutions
-                    .contains_key(supersedes_resolution_id)
-                {
+                if !state.resolutions.contains_key(supersedes_resolution_id) {
                     disposition = CandidateDisposition::Invalid;
                     reasons.push("MISSING_TARGET_RESOLUTION".to_string());
                 }
@@ -192,10 +213,7 @@ pub fn evaluate_candidates_for_session(
             CandidatePayload::RetireResolution {
                 target_resolution_id,
             } => {
-                if !state
-                    .resolutions
-                    .contains_key(target_resolution_id)
-                {
+                if !state.resolutions.contains_key(target_resolution_id) {
                     disposition = CandidateDisposition::Invalid;
                     reasons.push("MISSING_TARGET_RESOLUTION".to_string());
                 }
@@ -205,15 +223,17 @@ pub fn evaluate_candidates_for_session(
 
         let mut accept_votes = 0;
         let mut reject_votes = 0;
-        let mut abstain_votes = 0;
 
-        for vote in &session.votes {
-            if vote.candidate_id == candidate.candidate_id {
-                match vote.stance {
-                    Stance::Accept => accept_votes += 1,
-                    Stance::Reject => reject_votes += 1,
-                    Stance::Abstain => abstain_votes += 1,
-                }
+        for participant_votes in effective_votes.values() {
+            if participant_votes.effective_accept.as_ref() == Some(&candidate.candidate_id) {
+                accept_votes += 1;
+            }
+
+            if participant_votes
+                .effective_rejects
+                .contains(&candidate.candidate_id)
+            {
+                reject_votes += 1;
             }
         }
 
@@ -223,7 +243,6 @@ pub fn evaluate_candidates_for_session(
             reasons,
             accept_votes,
             reject_votes,
-            abstain_votes,
         });
     }
 

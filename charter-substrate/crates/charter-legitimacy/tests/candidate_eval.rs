@@ -92,22 +92,37 @@ fn candidate_is_invalid_if_superseded_target_missing() {
 }
 
 #[test]
-fn candidate_vote_counts_are_correct() {
+fn candidate_vote_counts_use_effective_votes() {
     let mut session = make_session_with_ids();
 
-    session.candidates = vec![Candidate {
-        candidate_id: CandidateId::from("c1"),
-        session_id: SessionId::from("session-1"),
-        area_id: AreaId::from("area-1"),
-        round_index: 1,
-        candidate_payload: CandidatePayload::AdoptResolution {
-            resolution_content: "test".into(),
+    session.candidates = vec![
+        Candidate {
+            candidate_id: CandidateId::from("c1"),
+            session_id: SessionId::from("session-1"),
+            area_id: AreaId::from("area-1"),
+            round_index: 1,
+            candidate_payload: CandidatePayload::AdoptResolution {
+                resolution_content: "test".into(),
+            },
+            reversibility_intent: ReversibilityIntent::Reversible,
+            annotation: None,
+            created_at: None,
+            schema_version: 1,
         },
-        reversibility_intent: ReversibilityIntent::Reversible,
-        annotation: None,
-        created_at: None,
-        schema_version: 1,
-    }];
+        Candidate {
+            candidate_id: CandidateId::from("c2"),
+            session_id: SessionId::from("session-1"),
+            area_id: AreaId::from("area-1"),
+            round_index: 1,
+            candidate_payload: CandidatePayload::AdoptResolution {
+                resolution_content: "other".into(),
+            },
+            reversibility_intent: ReversibilityIntent::Reversible,
+            annotation: None,
+            created_at: None,
+            schema_version: 1,
+        },
+    ];
 
     session.votes = vec![
         Vote {
@@ -117,7 +132,7 @@ fn candidate_vote_counts_are_correct() {
             round_index: 1,
             participant_id: ParticipantId::from("participant-1"),
             candidate_id: CandidateId::from("c1"),
-            stance: Stance::Accept,
+            stance: Stance::Reject,
             annotation: None,
             created_at: None,
             schema_version: 1,
@@ -129,7 +144,19 @@ fn candidate_vote_counts_are_correct() {
             round_index: 1,
             participant_id: ParticipantId::from("participant-1"),
             candidate_id: CandidateId::from("c1"),
-            stance: Stance::Reject,
+            stance: Stance::Accept,
+            annotation: None,
+            created_at: None,
+            schema_version: 1,
+        },
+        Vote {
+            vote_id: VoteId::from("v3"),
+            session_id: SessionId::from("session-1"),
+            area_id: AreaId::from("area-1"),
+            round_index: 1,
+            participant_id: ParticipantId::from("participant-1"),
+            candidate_id: CandidateId::from("c2"),
+            stance: Stance::Accept,
             annotation: None,
             created_at: None,
             schema_version: 1,
@@ -148,14 +175,17 @@ fn candidate_vote_counts_are_correct() {
         .engine
         .unwrap();
 
-    let result = engine
-        .get_candidate_status(
-            SessionId::from("session-1"),
-            CandidateId::from("c1"),
-        )
+    let c1 = engine
+        .get_candidate_status(SessionId::from("session-1"), CandidateId::from("c1"))
         .unwrap();
 
-    assert_eq!(result.accept_votes, 1);
-    assert_eq!(result.reject_votes, 1);
-    assert_eq!(result.abstain_votes, 0);
+    let c2 = engine
+        .get_candidate_status(SessionId::from("session-1"), CandidateId::from("c2"))
+        .unwrap();
+
+    assert_eq!(c1.accept_votes, 0);
+    assert_eq!(c1.reject_votes, 0);
+
+    assert_eq!(c2.accept_votes, 1);
+    assert_eq!(c2.reject_votes, 0);
 }

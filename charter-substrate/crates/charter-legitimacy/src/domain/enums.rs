@@ -60,7 +60,6 @@ pub enum RoundState {
 pub enum Stance {
     Accept,
     Reject,
-    Abstain,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
