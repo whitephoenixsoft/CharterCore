@@ -114,4 +114,17 @@ impl Engine {
                 object_id: candidate_id.as_str().to_string(),
             })
     }
+
+    pub fn determine_decision_status(
+        &self,
+        session_id: crate::domain::SessionId,
+    ) -> Result<crate::runtime::DecisionStatus, EngineError> {
+        match crate::runtime::determine_decision_status(&self.state, &session_id) {
+            Ok(status) => Ok(status),
+            Err(_) => Err(EngineError::NotFound {
+                object_type: "session".to_string(),
+                object_id: session_id.as_str().to_string(),
+            }),
+        }
+    }
 }

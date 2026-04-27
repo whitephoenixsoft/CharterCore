@@ -248,3 +248,51 @@ pub fn evaluate_candidates_for_session(
 
     Ok(results)
 }
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum DecisionStatus {
+    NoEligibleCandidates,
+    NoAcceptedCandidate,
+    UniqueWinner { candidate_id: CandidateId },
+    MultipleAcceptedCandidates { candidate_ids: Vec<CandidateId> },
+}
+
+pub fn determine_decision_status(
+    state: &CompiledState,
+    session_id: &SessionId,
+) -> Result<DecisionStatus, EvaluationReport> {
+    let report = evaluate_session(state, session_id);
+
+    if report.outcome != EvaluationOutcome::Success {
+        return Err(report);
+    }
+    
+    let candidates = evaluate_candidates_for_session(state, session_id)?;
+
+    let eligible = candidates
+        .iter()
+        .filter(|c| c.disposition == CandidateDisposition::Eligible)
+        .collect::<Vec<_>>();
+
+    if eligible.is_empty() {
+        return Ok(DecisionStatus::NoEligibleCandidates);
+    }
+
+    let mut accepted = eligible
+        .into_iter()
+        .filter(|c| c.accept_votes > 0)
+        .map(|c| c.candidate_id.clone())
+        .collect::<Vec<_>>();
+
+    accepted.sort();
+
+    match accepted.len() {
+        0 => Ok(DecisionStatus::NoAcceptedCandidate),
+        1 => Ok(DecisionStatus::UniqueWinner {
+            candidate_id: accepted.remove(0),
+        }),
+        _ => Ok(DecisionStatus::MultipleAcceptedCandidates {
+            candidate_ids: accepted,
+        }),
+    }
+}

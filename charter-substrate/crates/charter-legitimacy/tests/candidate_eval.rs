@@ -5,7 +5,9 @@ use charter_legitimacy::domain::{
     Session, SessionId, SessionPhase, SessionState, SessionType, Stance, Vote, VoteId, ReversibilityIntent, ResolutionId, 
 };
 
-use charter_legitimacy::runtime::CandidateDisposition;
+use charter_legitimacy::runtime::{
+    CandidateDisposition, DecisionStatus
+};
 
 fn make_session_with_ids() -> Session {
     Session {
@@ -189,3 +191,154 @@ fn candidate_vote_counts_use_effective_votes() {
     assert_eq!(c2.accept_votes, 1);
     assert_eq!(c2.reject_votes, 0);
 }
+
+#[test]
+fn decision_status_finds_unique_winner() {
+    let mut session = make_session_with_ids();
+
+    session.candidates = vec![Candidate {
+        candidate_id: CandidateId::from("c1"),
+        session_id: SessionId::from("session-1"),
+        area_id: AreaId::from("area-1"),
+        round_index: 1,
+        candidate_payload: CandidatePayload::AdoptResolution {
+            resolution_content: "winner".into(),
+        },
+        reversibility_intent: ReversibilityIntent::Reversible,
+        annotation: None,
+        created_at: None,
+        schema_version: 1,
+    }];
+
+    session.votes = vec![Vote {
+        vote_id: VoteId::from("v1"),
+        session_id: SessionId::from("session-1"),
+        area_id: AreaId::from("area-1"),
+        round_index: 1,
+        participant_id: ParticipantId::from("participant-1"),
+        candidate_id: CandidateId::from("c1"),
+        stance: Stance::Accept,
+        annotation: None,
+        created_at: None,
+        schema_version: 1,
+    }];
+
+    let graph = AreaGraph {
+        area_id: Some(AreaId::from("area-1")),
+        sessions: vec![session],
+        resolutions: vec![],
+        receipts: vec![],
+    };
+
+    let engine = Engine::rehydrate(RehydrateInput { graph })
+        .unwrap()
+        .engine
+        .unwrap();
+
+    let status = engine
+        .determine_decision_status(SessionId::from("session-1"))
+        .unwrap();
+
+    assert_eq!(
+        status,
+        DecisionStatus::UniqueWinner {
+            candidate_id: CandidateId::from("c1")
+        }
+    );
+}
+
+#[test]
+fn decision_status_rejects_multiple_accepted_candidates() {
+    let mut session = make_session_with_ids();
+
+    session.candidates = vec![
+        Candidate {
+            candidate_id: CandidateId::from("c1"),
+            session_id: SessionId::from("session-1"),
+            area_id: AreaId::from("area-1"),
+            round_index: 1,
+            candidate_payload: CandidatePayload::AdoptResolution {
+                resolution_content: "one".into(),
+            },
+            reversibility_intent: ReversibilityIntent::Reversible,
+            annotation: None,
+            created_at: None,
+            schema_version: 1,
+        },
+        Candidate {
+            candidate_id: CandidateId::from("c2"),
+            session_id: SessionId::from("session-1"),
+            area_id: AreaId::from("area-1"),
+            round_index: 1,
+            candidate_payload: CandidatePayload::AdoptResolution {
+                resolution_content: "two".into(),
+            },
+            reversibility_intent: ReversibilityIntent::Reversible,
+            annotation: None,
+            created_at: None,
+            schema_version: 1,
+        },
+    ];
+
+    session.participants.push(Participant {
+        participant_id: ParticipantId::from("participant-2"),
+        session_id: SessionId::from("session-1"),
+        area_id: AreaId::from("area-1"),
+        round_index: 1,
+        display_name: "Bob".into(),
+        annotation: None,
+        created_at: None,
+        schema_version: 1,
+    });
+
+    session.votes = vec![
+        Vote {
+            vote_id: VoteId::from("v1"),
+            session_id: SessionId::from("session-1"),
+            area_id: AreaId::from("area-1"),
+            round_index: 1,
+            participant_id: ParticipantId::from("participant-1"),
+            candidate_id: CandidateId::from("c1"),
+            stance: Stance::Accept,
+            annotation: None,
+            created_at: None,
+            schema_version: 1,
+        },
+        Vote {
+            vote_id: VoteId::from("v2"),
+            session_id: SessionId::from("session-1"),
+            area_id: AreaId::from("area-1"),
+            round_index: 1,
+            participant_id: ParticipantId::from("participant-2"),
+            candidate_id: CandidateId::from("c2"),
+            stance: Stance::Accept,
+            annotation: None,
+            created_at: None,
+            schema_version: 1,
+        },
+    ];
+
+    let graph = AreaGraph {
+        area_id: Some(AreaId::from("area-1")),
+        sessions: vec![session],
+        resolutions: vec![],
+        receipts: vec![],
+    };
+
+    let engine = Engine::rehydrate(RehydrateInput { graph })
+        .unwrap()
+        .engine
+        .unwrap();
+
+    let status = engine
+        .determine_decision_status(SessionId::from("session-1"))
+        .unwrap();
+
+    assert_eq!(
+        status,
+        DecisionStatus::MultipleAcceptedCandidates {
+            candidate_ids: vec![CandidateId::from("c1"), CandidateId::from("c2")]
+        }
+    );
+}
+
