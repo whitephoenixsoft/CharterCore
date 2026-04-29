@@ -342,3 +342,64 @@ fn decision_status_rejects_multiple_accepted_candidates() {
     );
 }
 
+#[test]
+fn session_can_be_accepted_with_unique_winner() {
+    let mut session = make_session_with_ids();
+
+    session.candidates = vec![Candidate {
+        candidate_id: CandidateId::from("c1"),
+        session_id: SessionId::from("session-1"),
+        area_id: AreaId::from("area-1"),
+        round_index: 1,
+        candidate_payload: CandidatePayload::AdoptResolution {
+            resolution_content: "valid".into(),
+        },
+        reversibility_intent: ReversibilityIntent::Reversible,
+        annotation: None,
+        created_at: None,
+        schema_version: 1,
+    }];
+
+    session.votes = vec![Vote {
+        vote_id: VoteId::from("v1"),
+        session_id: SessionId::from("session-1"),
+        area_id: AreaId::from("area-1"),
+        round_index: 1,
+        participant_id: ParticipantId::from("participant-1"),
+        candidate_id: CandidateId::from("c1"),
+        stance: Stance::Accept,
+        annotation: None,
+        created_at: None,
+        schema_version: 1,
+    }];
+
+    let engine = build_engine(session);
+
+    assert!(engine
+        .can_accept_session(SessionId::from("session-1"))
+        .is_ok());
+}
+
+#[test]
+fn session_cannot_be_accepted_with_multiple_winners() {
+    let mut session = make_session_with_ids();
+
+    session.participants.push(make_participant("participant-2"));
+
+    session.candidates = vec![
+        make_candidate("c1"),
+        make_candidate("c2"),
+    ];
+
+    session.votes = vec![
+        make_accept_vote("participant-1", "c1"),
+        make_accept_vote("participant-2", "c2"),
+    ];
+
+    let engine = build_engine(session);
+
+    assert!(engine
+        .can_accept_session(SessionId::from("session-1"))
+        .is_err());
+}
+

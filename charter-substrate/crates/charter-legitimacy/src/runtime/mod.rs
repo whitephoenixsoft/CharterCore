@@ -296,3 +296,43 @@ pub fn determine_decision_status(
         }),
     }
 }
+
+pub fn can_accept_session(
+    state: &CompiledState,
+    session_id: &SessionId,
+) -> Result<(), EvaluationReport> {
+    let report = evaluate_session(state, session_id);
+
+    if report.outcome != EvaluationOutcome::Success {
+        return Err(report);
+    }
+
+    let decision = determine_decision_status(state, session_id)?;
+
+    match decision {
+        DecisionStatus::UniqueWinner { .. } => Ok(()),
+
+        DecisionStatus::NoEligibleCandidates => Err(EvaluationReport::rejected(
+            "accept_session",
+            "session",
+            Some(session_id.as_str()),
+            "NO_ELIGIBLE_CANDIDATES",
+        )),
+
+        DecisionStatus::NoAcceptedCandidate => Err(EvaluationReport::rejected(
+            "accept_session",
+            "session",
+            Some(session_id.as_str()),
+            "NO_ACCEPTED_CANDIDATE",
+        )),
+
+        DecisionStatus::MultipleAcceptedCandidates { .. } => Err(
+            EvaluationReport::rejected(
+                "accept_session",
+                "session",
+                Some(session_id.as_str()),
+                "MULTIPLE_ACCEPTED_CANDIDATES",
+            ),
+        ),
+    }
+}

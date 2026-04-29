@@ -127,4 +127,16 @@ impl Engine {
             }),
         }
     }
+
+    pub fn can_accept_session(
+        &self,
+        session_id: crate::domain::SessionId,
+    ) -> Result<(), EngineError> {
+        match crate::runtime::can_accept_session(&self.state, &session_id) {
+            Ok(()) => Ok(()),
+            Err(_) => Err(EngineError::InvalidState {
+                message: "Session cannot be accepted".to_string(),
+            }),
+        }
+    }
 }

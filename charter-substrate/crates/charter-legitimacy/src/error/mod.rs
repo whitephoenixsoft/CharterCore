@@ -211,6 +211,9 @@ pub enum EngineError {
     InitializationFailed {
         errors: Vec<IntegrityError>,
     },
+    InvalidState {
+        message: String,
+    },
 }
 
 impl EngineError {
