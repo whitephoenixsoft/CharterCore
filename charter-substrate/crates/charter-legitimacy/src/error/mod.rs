@@ -235,7 +235,8 @@ impl fmt::Display for EngineError {
             Self::InvalidInput(msg) => write!(f, "invalid input: {}", msg),
             Self::InitializationFailed { errors } => {
                 write!(f, "initialization failed with {} integrity error(s)", errors.len())
-            }
+            },
+            Self::InvalidState { message } => write!(f, "{}", message),
         }
     }
 }

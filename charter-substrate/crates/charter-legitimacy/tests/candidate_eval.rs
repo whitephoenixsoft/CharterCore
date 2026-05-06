@@ -9,6 +9,64 @@ use charter_legitimacy::runtime::{
     CandidateDisposition, DecisionStatus
 };
 
+fn make_participant(participant: &str, display_name: &str) -> Participant {
+    Participant {
+        participant_id: ParticipantId::from(participant),
+        session_id: SessionId::from("session-1"),
+        area_id: AreaId::from("area-1"),
+        round_index: 1,
+        display_name: display_name.into(),
+        annotation: None,
+        created_at: None,
+        schema_version: 1,
+    }
+}
+
+fn make_candidate(candidate: &str, content: &str) -> Candidate {
+    Candidate {
+        candidate_id: CandidateId::from(candidate),
+        session_id: SessionId::from("session-1"),
+        area_id: AreaId::from("area-1"),
+        round_index: 1,
+        candidate_payload: CandidatePayload::AdoptResolution {
+            resolution_content: content.into(),
+        },
+        annotation: None,
+        reversibility_intent: ReversibilityIntent::Reversible,
+        created_at: None,
+        schema_version: 1,
+    }
+}
+
+fn make_accept_vote(participant: &str, candidate: &str) -> Vote {
+    Vote {
+        vote_id: VoteId::from("v1"),
+        session_id: SessionId::from("session-1"),
+        area_id: AreaId::from("area-1"),
+        round_index: 1,
+        participant_id: ParticipantId::from(participant),
+        candidate_id: CandidateId::from(candidate),
+        stance: Stance::Accept,
+        annotation: None,
+        created_at: None,
+        schema_version: 1,
+    }
+}
+
+fn build_engine(session: Session) -> Engine {
+    let graph = AreaGraph {
+        area_id: Some(AreaId::from("area-1")),
+        sessions: vec![session],
+        resolutions: vec![],
+        receipts: vec![],
+    };
+
+    Engine::rehydrate(RehydrateInput { graph })
+        .unwrap()
+        .engine
+        .unwrap()
+}
+
 fn make_session_with_ids() -> Session {
     Session {
         session_id: SessionId::from("session-1"),
@@ -384,11 +442,11 @@ fn session_can_be_accepted_with_unique_winner() {
 fn session_cannot_be_accepted_with_multiple_winners() {
     let mut session = make_session_with_ids();
 
-    session.participants.push(make_participant("participant-2"));
+    session.participants.push(make_participant("participant-2", "Bob"));
 
     session.candidates = vec![
-        make_candidate("c1"),
-        make_candidate("c2"),
+        make_candidate("c1", "example"),
+        make_candidate("c2", "example2"),
     ];
 
     session.votes = vec![
