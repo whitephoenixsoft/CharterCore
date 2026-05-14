@@ -5,7 +5,7 @@ use crate::domain::{
     CandidateId, CandidatePayload, ParticipantId, SessionId, SessionPhase, SessionState, Stance,
     Vote,
 };
-use crate::error::{ErrorEntry, EvaluationOutcome, EvaluationReport};
+use crate::error::{ErrorEntry, EvaluationOutcome, EvaluationReport, ErrorCode};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum CandidateDisposition {

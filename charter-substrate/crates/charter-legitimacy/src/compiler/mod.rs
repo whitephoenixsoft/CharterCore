@@ -4,7 +4,7 @@ use crate::domain::{
     AreaGraph, Receipt, ReceiptId, ReceiptType, Resolution, ResolutionId, ResolutionKind, Session,
     SessionId,
 };
-use crate::error::IntegrityError;
+use crate::error::ErrorCode;
 
 #[derive(Debug, Clone, Default)]
 pub struct StructuralIndexes {
@@ -135,7 +135,7 @@ impl CompiledState {
     }
 }
 
-pub fn validate_graph(graph: &AreaGraph) -> Vec<IntegrityError> {
+pub fn validate_graph(graph: &AreaGraph) -> Vec<ErrorCode> {
     let mut errors = Vec::new();
 
     validate_single_area(graph, &mut errors);
@@ -156,7 +156,7 @@ pub fn validate_graph(graph: &AreaGraph) -> Vec<IntegrityError> {
     errors
 }
 
-fn validate_single_area(graph: &AreaGraph, errors: &mut Vec<IntegrityError>) {
+fn validate_single_area(graph: &AreaGraph, errors: &mut Vec<ErrorCode>) {
     let expected = graph.area_id.as_ref().map(|x| x.as_str());
 
     for session in &graph.sessions {
@@ -195,7 +195,7 @@ fn check_area(
     found: &str,
     object_type: &str,
     object_id: &str,
-    errors: &mut Vec<IntegrityError>,
+    errors: &mut Vec<ErrorCode>,
 ) {
     if let Some(expected_area) = expected {
         if expected_area != found {
@@ -209,7 +209,7 @@ fn check_area(
     }
 }
 
-fn validate_duplicate_ids(graph: &AreaGraph, errors: &mut Vec<IntegrityError>) {
+fn validate_duplicate_ids(graph: &AreaGraph, errors: &mut Vec<ErrorCode>) {
     check_duplicates(
         graph.sessions.iter().map(|s| s.session_id.as_str()),
         "session",
@@ -227,7 +227,7 @@ fn validate_duplicate_ids(graph: &AreaGraph, errors: &mut Vec<IntegrityError>) {
     );
 }
 
-fn check_duplicates<'a, I>(iter: I, object_type: &str, errors: &mut Vec<IntegrityError>)
+fn check_duplicates<'a, I>(iter: I, object_type: &str, errors: &mut Vec<ErrorCode>)
 where
     I: IntoIterator<Item = &'a str>,
 {
@@ -248,7 +248,7 @@ where
     }
 }
 
-fn validate_resolution_references(graph: &AreaGraph, errors: &mut Vec<IntegrityError>) {
+fn validate_resolution_references(graph: &AreaGraph, errors: &mut Vec<ErrorCode>) {
     let resolution_ids: BTreeSet<&str> = graph
         .resolutions
         .iter()
@@ -261,7 +261,7 @@ fn validate_resolution_references(graph: &AreaGraph, errors: &mut Vec<IntegrityE
         if let Some(originating_session_id) = session_ids.get(resolution.originating_session_id.as_str()) {
             let _ = originating_session_id;
         } else {
-            errors.push(IntegrityError::MissingReference {
+            errors.push(ErrorCode::MissingReference {
                 object_type: "resolution".to_string(),
                 object_id: resolution.resolution_id.as_str().to_string(),
                 field_name: "originating_session_id".to_string(),
@@ -272,7 +272,7 @@ fn validate_resolution_references(graph: &AreaGraph, errors: &mut Vec<IntegrityE
 
         if let Some(authority_id) = &resolution.authority_snapshot_id {
             if !resolution_ids.contains(authority_id.as_str()) {
-                errors.push(IntegrityError::MissingReference {
+                errors.push(ErrorCode::MissingReference {
                     object_type: "resolution".to_string(),
                     object_id: resolution.resolution_id.as_str().to_string(),
                     field_name: "authority_snapshot_id".to_string(),
@@ -284,7 +284,7 @@ fn validate_resolution_references(graph: &AreaGraph, errors: &mut Vec<IntegrityE
 
         if let Some(scope_id) = &resolution.scope_snapshot_id {
             if !resolution_ids.contains(scope_id.as_str()) {
-                errors.push(IntegrityError::MissingReference {
+                errors.push(ErrorCode::MissingReference {
                     object_type: "resolution".to_string(),
                     object_id: resolution.resolution_id.as_str().to_string(),
                     field_name: "scope_snapshot_id".to_string(),
@@ -296,7 +296,7 @@ fn validate_resolution_references(graph: &AreaGraph, errors: &mut Vec<IntegrityE
 
         if let Some(successor_id) = &resolution.superseded_by {
             if !resolution_ids.contains(successor_id.as_str()) {
-                errors.push(IntegrityError::MissingReference {
+                errors.push(ErrorCode::MissingReference {
                     object_type: "resolution".to_string(),
                     object_id: resolution.resolution_id.as_str().to_string(),
                     field_name: "superseded_by".to_string(),
@@ -308,7 +308,7 @@ fn validate_resolution_references(graph: &AreaGraph, errors: &mut Vec<IntegrityE
     }
 }
 
-fn validate_session_references(graph: &AreaGraph, errors: &mut Vec<IntegrityError>) {
+fn validate_session_references(graph: &AreaGraph, errors: &mut Vec<ErrorCode>) {
     let resolution_ids: BTreeSet<&str> = graph
         .resolutions
         .iter()
@@ -320,7 +320,7 @@ fn validate_session_references(graph: &AreaGraph, errors: &mut Vec<IntegrityErro
     for session in &graph.sessions {
         if let Some(authority_id) = &session.authority_id {
             if !resolution_ids.contains(authority_id.as_str()) {
-                errors.push(IntegrityError::MissingReference {
+                errors.push(ErrorCode::MissingReference {
                     object_type: "session".to_string(),
                     object_id: session.session_id.as_str().to_string(),
                     field_name: "authority_id".to_string(),
@@ -332,7 +332,7 @@ fn validate_session_references(graph: &AreaGraph, errors: &mut Vec<IntegrityErro
 
         if let Some(scope_id) = &session.scope_id {
             if !resolution_ids.contains(scope_id.as_str()) {
-                errors.push(IntegrityError::MissingReference {
+                errors.push(ErrorCode::MissingReference {
                     object_type: "session".to_string(),
                     object_id: session.session_id.as_str().to_string(),
                     field_name: "scope_id".to_string(),
@@ -344,7 +344,7 @@ fn validate_session_references(graph: &AreaGraph, errors: &mut Vec<IntegrityErro
 
         if let Some(receipt_id) = &session.terminal_receipt_id {
             if !receipt_ids.contains(receipt_id.as_str()) {
-                errors.push(IntegrityError::InvalidTerminalReceiptReference {
+                errors.push(ErrorCode::InvalidTerminalReceiptReference {
                     session_id: session.session_id.as_str().to_string(),
                     receipt_id: receipt_id.as_str().to_string(),
                 });
@@ -353,7 +353,7 @@ fn validate_session_references(graph: &AreaGraph, errors: &mut Vec<IntegrityErro
 
         for resolution_ref in &session.internal_resolution_references {
             if !resolution_ids.contains(resolution_ref.as_str()) {
-                errors.push(IntegrityError::MissingReference {
+                errors.push(ErrorCode::MissingReference {
                     object_type: "session".to_string(),
                     object_id: session.session_id.as_str().to_string(),
                     field_name: "internal_resolution_references".to_string(),
@@ -365,7 +365,7 @@ fn validate_session_references(graph: &AreaGraph, errors: &mut Vec<IntegrityErro
     }
 }
 
-fn validate_receipt_references(graph: &AreaGraph, errors: &mut Vec<IntegrityError>) {
+fn validate_receipt_references(graph: &AreaGraph, errors: &mut Vec<ErrorCode>) {
     let session_ids: BTreeSet<&str> = graph.sessions.iter().map(|s| s.session_id.as_str()).collect();
     let resolution_ids: BTreeSet<&str> = graph
         .resolutions
@@ -375,7 +375,7 @@ fn validate_receipt_references(graph: &AreaGraph, errors: &mut Vec<IntegrityErro
 
     for receipt in &graph.receipts {
         if !session_ids.contains(receipt.session_id.as_str()) {
-            errors.push(IntegrityError::MissingReference {
+            errors.push(ErrorCode::MissingReference {
                 object_type: "receipt".to_string(),
                 object_id: receipt.receipt_id.as_str().to_string(),
                 field_name: "session_id".to_string(),
@@ -387,7 +387,7 @@ fn validate_receipt_references(graph: &AreaGraph, errors: &mut Vec<IntegrityErro
         match receipt.receipt_type {
             ReceiptType::Legitimacy => {
                 let Some(resolution_id) = &receipt.resolution_id else {
-                    errors.push(IntegrityError::InvalidReceiptResolutionBinding {
+                    errors.push(ErrorCode::InvalidReceiptResolutionBinding {
                         receipt_id: receipt.receipt_id.as_str().to_string(),
                         detail: "LEGITIMACY receipt must include resolution_id".to_string(),
                     });
@@ -395,7 +395,7 @@ fn validate_receipt_references(graph: &AreaGraph, errors: &mut Vec<IntegrityErro
                 };
 
                 if !resolution_ids.contains(resolution_id.as_str()) {
-                    errors.push(IntegrityError::InvalidReceiptResolutionBinding {
+                    errors.push(ErrorCode::InvalidReceiptResolutionBinding {
                         receipt_id: receipt.receipt_id.as_str().to_string(),
                         detail: format!(
                             "LEGITIMACY receipt references missing resolution {}",
@@ -413,7 +413,7 @@ fn validate_receipt_references(graph: &AreaGraph, errors: &mut Vec<IntegrityErro
             }
             ReceiptType::Exploration => {
                 if receipt.resolution_id.is_some() {
-                    errors.push(IntegrityError::InvalidReceiptResolutionBinding {
+                    errors.push(ErrorCode::InvalidReceiptResolutionBinding {
                         receipt_id: receipt.receipt_id.as_str().to_string(),
                         detail: "EXPLORATION receipt must not include resolution_id".to_string(),
                     });
@@ -423,7 +423,7 @@ fn validate_receipt_references(graph: &AreaGraph, errors: &mut Vec<IntegrityErro
 
         if let Some(authority_id) = &receipt.authority_snapshot_id {
             if !resolution_ids.contains(authority_id.as_str()) {
-                errors.push(IntegrityError::MissingReference {
+                errors.push(ErrorCode::MissingReference {
                     object_type: "receipt".to_string(),
                     object_id: receipt.receipt_id.as_str().to_string(),
                     field_name: "authority_snapshot_id".to_string(),
@@ -435,7 +435,7 @@ fn validate_receipt_references(graph: &AreaGraph, errors: &mut Vec<IntegrityErro
 
         if let Some(scope_id) = &receipt.scope_snapshot_id {
             if !resolution_ids.contains(scope_id.as_str()) {
-                errors.push(IntegrityError::MissingReference {
+                errors.push(ErrorCode::MissingReference {
                     object_type: "receipt".to_string(),
                     object_id: receipt.receipt_id.as_str().to_string(),
                     field_name: "scope_snapshot_id".to_string(),
@@ -448,7 +448,7 @@ fn validate_receipt_references(graph: &AreaGraph, errors: &mut Vec<IntegrityErro
         for round in &receipt.rounds {
             for resolution_ref in &round.internal_resolution_references {
                 if !resolution_ids.contains(resolution_ref.as_str()) {
-                    errors.push(IntegrityError::MissingReference {
+                    errors.push(ErrorCode::MissingReference {
                         object_type: "receipt".to_string(),
                         object_id: receipt.receipt_id.as_str().to_string(),
                         field_name: "rounds.internal_resolution_references".to_string(),
