@@ -5,7 +5,10 @@ use crate::domain::{
     CandidateId, CandidatePayload, ParticipantId, SessionId, SessionPhase, SessionState, Stance,
     Vote,
 };
-use crate::error::{ErrorEntry, EvaluationOutcome, EvaluationReport, ErrorCode};
+use crate::error::{
+    ErrorCode, ErrorEntry, EvaluationOutcome, EvaluationReport, EvaluationReportBuilder,
+    ReportPhase,
+};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum CandidateDisposition {
@@ -57,41 +60,43 @@ fn derive_effective_votes(votes: &[Vote]) -> BTreeMap<ParticipantId, EffectivePa
 
 pub fn evaluate_session(state: &CompiledState, session_id: &SessionId) -> EvaluationReport {
     let Some(session) = state.sessions.get(session_id) else {
-        return EvaluationReport::rejected(
+        return EvaluationReportBuilder::new(
             "evaluate_session",
             "session",
             Some(session_id.as_str()),
-            "SESSION_NOT_FOUND",
-        );
+        )
+        .error(ErrorEntry::new(
+            ReportPhase::StructuralValidation,
+            ErrorCode::MissingReference,
+            vec![format!("session:{}", session_id.as_str())],
+        ))
+        .finish(false);
     };
 
     let mut errors = Vec::new();
 
     if matches!(session.state, SessionState::Accepted | SessionState::Closed) {
-        errors.push(ErrorEntry {
-            error_code: "SESSION_TERMINAL_IMMUTABLE".to_string(),
-            related_objects: vec![format!("session:{}", session.session_id.as_str())],
-            block_type: None,
-            block_scope: None,
-        });
+        errors.push(ErrorEntry::new(
+            ReportPhase::SessionStateValidation,
+            ErrorCode::SessionTerminalImmutable,
+            vec![format!("session:{}", session.session_id.as_str())],
+        ));
     }
 
     if session.phase == SessionPhase::PreStance && !session.votes.is_empty() {
-        errors.push(ErrorEntry {
-            error_code: "INVALID_STATE_COMBINATION".to_string(),
-            related_objects: vec![format!("session:{}", session.session_id.as_str())],
-            block_type: None,
-            block_scope: None,
-        });
+        errors.push(ErrorEntry::new(
+            ReportPhase::SessionStateValidation,
+            ErrorCode::InvalidStateCombination,
+            vec![format!("session:{}", session.session_id.as_str())],
+        ));
     }
 
     if session.candidates.is_empty() {
-        errors.push(ErrorEntry {
-            error_code: "NO_ELIGIBLE_CANDIDATES".to_string(),
-            related_objects: vec![format!("session:{}", session.session_id.as_str())],
-            block_type: None,
-            block_scope: None,
-        });
+        errors.push(ErrorEntry::new(
+            ReportPhase::CandidateValidation,
+            ErrorCode::NoEligibleCandidates,
+            vec![format!("session:{}", session.session_id.as_str())],
+        ));
     }
 
     let participant_ids = session
@@ -108,47 +113,43 @@ pub fn evaluate_session(state: &CompiledState, session_id: &SessionId) -> Evalua
 
     for candidate in &session.candidates {
         if candidate.round_index != session.round_index {
-            errors.push(ErrorEntry {
-                error_code: "INVALID_PARTICIPANT_EPOCH".to_string(),
-                related_objects: vec![format!("candidate:{}", candidate.candidate_id.as_str())],
-                block_type: None,
-                block_scope: None,
-            });
+            errors.push(ErrorEntry::new(
+                ReportPhase::CandidateValidation,
+                ErrorCode::InvalidParticipantEpoch,
+                vec![format!("candidate:{}", candidate.candidate_id.as_str())],
+            ));
         }
     }
 
     for vote in &session.votes {
         if vote.round_index != session.round_index {
-            errors.push(ErrorEntry {
-                error_code: "INVALID_PARTICIPANT_EPOCH".to_string(),
-                related_objects: vec![format!("vote:{}", vote.vote_id.as_str())],
-                block_type: None,
-                block_scope: None,
-            });
+            errors.push(ErrorEntry::new(
+                ReportPhase::VoteValidation,
+                ErrorCode::InvalidParticipantEpoch,
+                vec![format!("vote:{}", vote.vote_id.as_str())],
+            ));
         }
 
         if !participant_ids.contains(vote.participant_id.as_str()) {
-            errors.push(ErrorEntry {
-                error_code: "PARTICIPANT_NOT_FOUND".to_string(),
-                related_objects: vec![
-                    format!("vote:{}", vote.vote_id.as_str()),
-                    format!("participant:{}", vote.participant_id.as_str()),
-                ],
-                block_type: None,
-                block_scope: None,
-            });
+            errors.push(ErrorEntry::new(
+                    ReportPhase::ParticipantValidation,
+                    ErrorCode::ParticipantNotFound,
+                    vec![
+                        format!("vote:{}", vote.vote_id.as_str()),
+                        format!("participant:{}", vote.participant_id.as_str()),
+                    ],
+                ));
         }
 
         if !candidate_ids.contains(vote.candidate_id.as_str()) {
-            errors.push(ErrorEntry {
-                error_code: "MISSING_REFERENCE".to_string(),
-                related_objects: vec![
+            errors.push(ErrorEntry::new(
+                ReportPhase::VoteValidation,
+                ErrorCode::MissingReference,
+                vec![
                     format!("vote:{}", vote.vote_id.as_str()),
                     format!("candidate:{}", vote.candidate_id.as_str()),
                 ],
-                block_type: None,
-                block_scope: None,
-            });
+            ));
         }
     }
 
@@ -156,22 +157,26 @@ pub fn evaluate_session(state: &CompiledState, session_id: &SessionId) -> Evalua
         std::cmp::Ordering::Equal => a.related_objects.cmp(&b.related_objects),
         other => other,
     });
-
+    
     if errors.is_empty() {
-        EvaluationReport::success("evaluate_session", "session", Some(session_id.as_str()))
+        EvaluationReportBuilder::new(
+            "evaluate_session",
+            "session",
+            Some(session_id.as_str()),
+        )
+        .finish(false)
     } else {
-        EvaluationReport {
-            evaluation_id: None,
-            command_type: "evaluate_session".to_string(),
-            target_object_type: "session".to_string(),
-            target_object_id: Some(session_id.as_str().to_string()),
-            outcome: EvaluationOutcome::Rejected,
-            primary_error_code: errors.first().map(|e| e.error_code.clone()),
-            errors,
-            diagnostics: None,
-            occurred_at: None,
-            schema_version: 1,
+        let mut builder = EvaluationReportBuilder::new(
+            "evaluate_session",
+            "session",
+            Some(session_id.as_str()),
+        );
+    
+        for error in errors {
+            builder.push_error(error);
         }
+    
+        builder.finish(false)
     }
 }
 
@@ -180,12 +185,19 @@ pub fn evaluate_candidates_for_session(
     session_id: &SessionId,
 ) -> Result<Vec<CandidateEvaluation>, EvaluationReport> {
     let Some(session) = state.sessions.get(session_id) else {
-        return Err(EvaluationReport::rejected(
-            "evaluate_candidates",
-            "session",
-            Some(session_id.as_str()),
-            "SESSION_NOT_FOUND",
-        ));
+        return Err(
+            EvaluationReportBuilder::new(
+                "evaluate_candidates",
+                "session",
+                Some(session_id.as_str()),
+            )
+            .error(ErrorEntry::new(
+                ReportPhase::StructuralValidation,
+                ErrorCode::MissingReference,
+                vec![format!("session:{}", session_id.as_str())],
+            ))
+            .finish(false),
+        );
     };
 
     let effective_votes = derive_effective_votes(&session.votes);
