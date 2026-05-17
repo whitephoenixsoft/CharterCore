@@ -4,6 +4,7 @@ use charter_legitimacy::domain::{
     ResolutionKind, ResolutionState, ReversibilityIntent, Session, SessionId, SessionPhase,
     SessionState, SessionType,
 };
+use charter_legitimacy::error::ErrorCode;
 
 fn make_session(id: &str, area: &str) -> Session {
     Session {
@@ -85,8 +86,8 @@ fn rehydrate_rejects_multi_area_graph() {
     assert!(result.engine.is_none());
     assert_eq!(result.runtime_mode, None);
     assert_eq!(
-        result.report.primary_error_code.as_deref(),
-        Some("MULTI_AREA_GRAPH_DETECTED")
+        result.report.primary_error_code,
+        Some(ErrorCode::MultiAreaGraphDetected),
     );
 }
 
@@ -106,8 +107,8 @@ fn rehydrate_rejects_missing_resolution_reference_from_session() {
 
     assert!(result.engine.is_none());
     assert_eq!(
-        result.report.primary_error_code.as_deref(),
-        Some("MISSING_REFERENCE")
+        result.report.primary_error_code,
+        Some(ErrorCode::MissingReference),
     );
 }
 
@@ -148,8 +149,8 @@ fn rehydrate_rejects_legitimacy_receipt_with_missing_resolution() {
 
     assert!(result.engine.is_none());
     assert_eq!(
-        result.report.primary_error_code.as_deref(),
-        Some("INVALID_RECEIPT_RESOLUTION_BINDING")
+        result.report.primary_error_code,
+        Some(ErrorCode::ReceiptOrphanDetected),
     );
 }
 
@@ -190,8 +191,8 @@ fn rehydrate_rejects_legitimacy_receipt_without_resolution_id() {
 
     assert!(result.engine.is_none());
     assert_eq!(
-        result.report.primary_error_code.as_deref(),
-        Some("INVALID_RECEIPT_RESOLUTION_BINDING")
+        result.report.primary_error_code,
+        Some(ErrorCode::ReceiptOrphanDetected),
     );
 }
 
@@ -232,7 +233,7 @@ fn rehydrate_rejects_exploration_receipt_with_resolution_id() {
 
     assert!(result.engine.is_none());
     assert_eq!(
-        result.report.primary_error_code.as_deref(),
-        Some("INVALID_RECEIPT_RESOLUTION_BINDING")
+        result.report.primary_error_code,
+        Some(ErrorCode::ReceiptOrphanDetected),
     );
 }

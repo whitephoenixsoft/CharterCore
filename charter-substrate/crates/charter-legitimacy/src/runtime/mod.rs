@@ -328,14 +328,14 @@ pub fn can_accept_session(
             "accept_session",
             "session",
             Some(session_id.as_str()),
-            "NO_ELIGIBLE_CANDIDATES",
+            ErrorCode::NoEligibleCandidates,
         )),
 
         DecisionStatus::NoAcceptedCandidate => Err(EvaluationReport::rejected(
             "accept_session",
             "session",
             Some(session_id.as_str()),
-            "NO_ACCEPTED_CANDIDATE",
+            ErrorCode::AcceptanceConditionsNotMet,
         )),
 
         DecisionStatus::MultipleAcceptedCandidates { .. } => Err(
@@ -343,7 +343,7 @@ pub fn can_accept_session(
                 "accept_session",
                 "session",
                 Some(session_id.as_str()),
-                "MULTIPLE_ACCEPTED_CANDIDATES",
+                ErrorCode::AcceptanceConditionsNotMet,
             ),
         ),
     }

@@ -3,7 +3,7 @@ use charter_legitimacy::domain::{
     AreaGraph, AreaId, Candidate, CandidateId, CandidatePayload, Participant, ParticipantId,
     Session, SessionId, SessionPhase, SessionState, SessionType, Stance, Vote, VoteId, ReversibilityIntent, 
 };
-use charter_legitimacy::error::EvaluationOutcome;
+use charter_legitimacy::error::{EvaluationOutcome, ErrorCode};
 
 fn make_session_with_ids() -> Session {
     Session {
@@ -86,7 +86,7 @@ fn evaluate_session_rejects_empty_candidate_set() {
     let report = engine.evaluate_session(SessionId::from("session-1")).unwrap();
 
     assert_eq!(report.outcome, EvaluationOutcome::Rejected);
-    assert_eq!(report.primary_error_code.as_deref(), Some("NO_ELIGIBLE_CANDIDATES"));
+    assert_eq!(report.primary_error_code, Some(ErrorCode::NoEligibleCandidates));
 }
 
 #[test]
@@ -118,7 +118,7 @@ fn evaluate_session_rejects_vote_with_missing_participant() {
     let report = engine.evaluate_session(SessionId::from("session-1")).unwrap();
 
     assert_eq!(report.outcome, EvaluationOutcome::Rejected);
-    assert_eq!(report.primary_error_code.as_deref(), Some("PARTICIPANT_NOT_FOUND"));
+    assert_eq!(report.primary_error_code, Some(ErrorCode::ParticipantNotFound));
 }
 
 #[test]
@@ -150,5 +150,5 @@ fn evaluate_session_rejects_vote_with_missing_candidate() {
     let report = engine.evaluate_session(SessionId::from("session-1")).unwrap();
 
     assert_eq!(report.outcome, EvaluationOutcome::Rejected);
-    assert_eq!(report.primary_error_code.as_deref(), Some("MISSING_REFERENCE"));
+    assert_eq!(report.primary_error_code, Some(ErrorCode::MissingReference));
 }
