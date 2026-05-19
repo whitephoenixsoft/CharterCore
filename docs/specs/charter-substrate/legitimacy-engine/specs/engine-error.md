@@ -272,6 +272,18 @@ Error codes are:
 
 Implementations must not introduce additional error codes.
 
+Generic reference and acceptance errors must not be used when the violated rule has domain-specific meaning.
+
+A missing or invalid reference should receive a specific error code when the reference participates in:
+
+- receipt legitimacy binding
+- candidate action structure
+- vote authority evaluation
+- round/epoch validity
+- lifecycle-state eligibility
+
+MISSING_REFERENCE is reserved for structurally missing references that do not have a more specific governing rule.
+
 ---
 
 ## 8.1 Structural Errors
@@ -291,10 +303,13 @@ Implementations must not introduce additional error codes.
 
 Receipt-related:
 
-- RECEIPT_MISSING  
-- RECEIPT_HASH_MISMATCH  
-- RECEIPT_ORPHAN_DETECTED  
-- SNAPSHOT_PARTICIPANT_MISMATCH  
+- RECEIPT_MISSING
+- RECEIPT_HASH_MISMATCH
+- RECEIPT_ORPHAN_DETECTED
+- RECEIPT_RESOLUTION_REQUIRED
+- RECEIPT_RESOLUTION_PROHIBITED
+- RECEIPT_CONTENT_MISSING
+- SNAPSHOT_PARTICIPANT_MISMATCH
 
 ---
 
@@ -341,13 +356,17 @@ Receipt-related:
 
 ## 8.7 Decision & Acceptance Errors
 
-- ACCEPTANCE_CONDITIONS_NOT_MET  
-- AREA_BLOCKED_BY_PERMANENT_SESSION  
-- AUTHORITY_RULE_VIOLATION  
-- CONSTRAINT_VIOLATION  
-- STRUCTURAL_CONFLICT  
-- RESOLUTION_ALREADY_SUPERSEDED  
+- AUTHORITY_RULE_VIOLATION
+- CONSTRAINT_VIOLATION
+- STRUCTURAL_CONFLICT
+- RESOLUTION_ALREADY_SUPERSEDED
 - NO_ELIGIBLE_CANDIDATES
+- NO_WINNING_CANDIDATE
+- MULTIPLE_WINNING_CANDIDATES
+- CANDIDATE_ACTION_TARGET_MISSING
+- INVALID_CANDIDATE_EPOCH
+- INVALID_VOTE_CANDIDATE_EPOCH
+- INVALID_VOTE_PARTICIPANT_EPOCH
 
 ---
 
