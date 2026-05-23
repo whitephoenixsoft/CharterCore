@@ -1,681 +1,1822 @@
 # Charter Query Layer (CQL) — JSON IL Foundation Specification
 
 Status: FOUNDATIONAL (DRAFT)  
-Applies to: All Charter-readable substrates and managed read surfaces  
-Depends On: CQL Foundation Specification, Determinism, Non-Interpretation Principle, Versioning & Identity Model, Provenance Model  
-Does NOT define: DSL syntax, UI rendering, storage engine implementation, mutation semantics, or host-specific transport bindings  
+Applies to: All Charter-readable substrates, managed read surfaces, SDK query builders, adapter dispatch paths, and DSL compilation targets  
+Depends On: CQL Shared Invariants, Charter substrate ownership model, determinism principle, non-interpretation principle, versioning and identity model, provenance model  
+Does NOT define: DSL syntax, UI rendering, substrate storage implementation, mutation semantics, host-specific transport bindings, or final result payload schemas  
 
 ---
 
 # 1. Purpose
 
-This document defines the JSON Intermediate Language for CQL.
+This document defines the JSON Intermediate Language for the Charter Query Layer.
 
-It exists to:
+CQL JSON Intermediate Language exists to provide a canonical machine-readable representation of CQL queries.
 
-- provide a canonical machine-readable representation of CQL queries  
-- unify query behavior across libraries, hosts, and interfaces  
-- support deterministic read access over managed Charter surfaces  
-- provide a stable substrate-neutral query contract  
-- allow DSLs and host adapters to compile into a common form  
+It supports:
 
-CQL JSON Intermediate Language is the canonical structural representation of a query.
+- deterministic read access across Charter-readable substrates
+- substrate-neutral query expression
+- adapter-safe dispatch
+- SDK construction of read-only queries
+- CLI and host integration
+- canonical logging and replay
+- DSL compilation into a stable query structure
+- capability validation before execution
+
+CQL JSON Intermediate Language is the canonical structural representation of a CQL query.
 
 The human DSL, if present, is an ergonomic layer that compiles into this form.
 
+SDK builders, CLI input, host-specific query helpers, and future authoring surfaces must normalize into JSON Intermediate Language or a typed equivalent before execution.
+
 ---
 
-# 2. Core Principle
+# 2. CQL Position in the Charter Ecosystem
+
+CQL is a common read/query layer for the Charter ecosystem.
+
+It is not a substrate.
+
+It is not a database.
+
+It is not an analysis engine.
+
+It is not a legitimacy engine.
+
+It is not a graph engine.
+
+It is not a semantic interpretation layer.
+
+CQL provides a common query contract that allows independent Charter substrates to expose managed read surfaces through adapters.
+
+Each substrate remains responsible for its own truth, semantics, storage, derivation rules, and read behavior.
+
+CQL standardizes how queries are expressed, validated, routed, and shaped.
+
+Substrates own what the queried data means.
+
+---
+
+# 3. Comparative Design References
+
+CQL intentionally borrows proven design ideas from existing query systems while remaining Charter-specific.
+
+The following references are locked as design guidance:
+
+- OpenSearch and Elasticsearch Query DSL inform the use of a canonical JSON query representation.
+- GraphQL informs capability discovery, schema-like adapter declarations, and static validation before execution.
+- OData informs separation of read options such as target, scope, filters, selection, and output.
+- Kusto Query Language informs human DSL ergonomics and CLI-friendly query authoring.
+- PromQL informs explicit temporal scope and time-windowed read behavior.
+- Cypher and SPARQL inform bounded graph read surfaces while avoiding unrestricted graph traversal as the default model.
+
+CQL does not copy any one of these systems directly.
+
+CQL remains a custom Charter-specific read-only query contract and SDK model.
+
+The intended pattern is:
+
+Human DSL compiles to JSON Intermediate Language.
+
+JSON Intermediate Language is validated against adapter capabilities.
+
+Validated queries dispatch to substrate-owned read adapters.
+
+Adapters return substrate-owned payloads inside CQL-compatible result handling.
+
+---
+
+# 4. Core Principle
 
 The JSON Intermediate Language is the canonical CQL query form.
 
-All CQL queries must be representable as a deterministic JSON query object.
+All CQL queries must be representable as deterministic JSON query objects.
 
-That object must be:
+A CQL JSON Intermediate Language object must be:
 
-- read-only  
-- deterministic  
-- substrate-neutral  
-- explicit  
-- serializable  
-- validatable independent of host language  
+- read-only
+- deterministic
+- substrate-neutral
+- explicit
+- serializable
+- validatable independent of host language
+- adapter-dispatchable
+- transport-neutral
+- non-mutating
+- non-interpreting
+
+The JSON Intermediate Language defines what is being queried.
+
+It does not define the substrate’s internal truth.
 
 ---
 
-# 3. Query Object Model
+# 5. Foundational Shared Invariant
+
+CQL queries are deterministic read-only access requests.
+
+JSON Intermediate Language is the canonical representation.
+
+The DSL is a human-authoring syntax that compiles into JSON Intermediate Language.
+
+Neither layer may mutate state, infer authority, redefine substrate meaning, or bypass adapter-declared capabilities.
+
+---
+
+# 6. Shared CQL Invariants
+
+## CQL-INV-01 — Read-Only Access
+
+A CQL query must never mutate substrate state.
+
+CQL may read from substrate-owned or host-exposed read surfaces.
+
+CQL must not:
+
+- create legitimacy
+- alter graph truth
+- modify identity truth
+- emit observations
+- change CAS outputs
+- repair data
+- trigger workflows
+- enqueue state-changing commands
+- perform write-side reconciliation
+
+CQL exists to expose read access, not to perform action.
+
+---
+
+## CQL-INV-02 — Access, Not Meaning
+
+CQL may expose substrate-owned data, views, and derived outputs.
+
+CQL must not redefine what those outputs mean.
+
+Substrate ownership remains authoritative:
+
+- Charter owns legitimacy, resolutions, sessions, authority, and supersession semantics.
+- CSG owns graph structure and topology.
+- CIS owns identity truth and identity boundaries.
+- CCare owns observations, check-ins, confidence, and timestamps.
+- CAS owns semantic condition, derived alignment state, and alignment dynamics.
+- CSP owns signal processing and feed emission behavior.
+- CRS owns relay and federation behavior.
+- Host systems own host-specific extension surfaces.
+
+CQL standardizes access.
+
+It does not standardize substrate truth.
+
+---
+
+## CQL-INV-03 — Deterministic Query Meaning
+
+Given the same query, same adapter capability declaration, same substrate state, and same execution context, a CQL query must have the same meaning.
+
+The following query components must be deterministically interpreted:
+
+- domain
+- subject
+- target
+- scope
+- filters
+- output
+- context
+- metadata
+
+CQL must not allow hidden interpretation, ambient guessing, or host-specific semantic drift outside declared capabilities.
+
+---
+
+## CQL-INV-04 — Explicit Projection
+
+When a query crosses representational layers, the projection must be explicit.
+
+Examples of projections may include:
+
+- resolution
+- item
+- commit
+- graph
+- signal
+- observation
+- snapshot
+
+CQL must not silently mix projections.
+
+A query over resolutions must not accidentally return items unless that behavior is explicitly modeled.
+
+A query over items must not accidentally reinterpret them as legitimacy resolutions.
+
+Mixed live graphs are not the default model.
+
+Projection is part of query meaning and must be visible to validation.
+
+---
+
+## CQL-INV-05 — Scope Before Filter
+
+Scope defines the visible slice of data.
+
+Filters constrain data within that visible slice.
+
+A filter must never expand scope.
+
+Examples of scope include:
+
+- active
+- historical
+- since
+- until
+- projection
+- window
+- current_round
+- include_superseded
+
+Examples of filters include:
+
+- state
+- confidence
+- volatility
+- relationship_type
+- provenance
+- semantic_state
+- participant
+- identity
+
+Scope answers:
+
+“What data is visible to this query?”
+
+Filters answer:
+
+“Within that visible data, what constraints apply?”
+
+---
+
+## CQL-INV-06 — Capability-Validated Execution
+
+A CQL query must be validated against the selected domain or adapter before execution.
+
+Adapters must declare what they support.
+
+Validation must reject unsupported:
+
+- domains
+- subjects
+- views
+- raw fields
+- target kinds
+- scope fields
+- filters
+- output modes
+- extension views
+- argument names
+- argument values
+- projection modes
+
+Unsupported query features must produce explicit validation errors.
+
+They must not be ignored silently.
+
+---
+
+## CQL-INV-07 — Extension Surfaces, Not Syntax
+
+Hosts and substrates may extend CQL by exposing managed read surfaces.
+
+They must not extend CQL by changing the core grammar or canonical query model.
+
+Extension mechanisms may define:
+
+- extension views
+- extension raw surfaces
+- extension filters
+- extension scope dimensions
+- extension output modes
+- extension metadata
+
+Extension mechanisms must not:
+
+- redefine canonical fields
+- override core grammar
+- change query semantics
+- introduce mutation
+- add implicit joins
+- bypass capability validation
+
+Extensions add surfaces.
+
+They do not add new language semantics.
+
+---
+
+## CQL-INV-08 — No Joins in V1 Query Language
+
+CQL V1 must not expose general joins, user-defined algebra, or arbitrary multi-view composition syntax.
+
+Managed read surfaces may internally compose data.
+
+Externally, composed surfaces must appear as declared views or raw surfaces.
+
+This means CQL users may query:
+
+- a CAS posture view
+- a CSG graph view
+- a host-defined operational summary view
+- a CDS deliberation read surface
+
+But CQL V1 should not let users freely join those surfaces together inside the query language.
+
+Composition belongs behind managed read surfaces.
+
+It does not belong in the V1 query grammar.
+
+---
+
+# 7. Query Object Model
 
 A CQL JSON Intermediate Language query is a structured object containing six conceptual parts:
 
-1. domain  
-2. subject  
-3. target  
-4. scope  
-5. filters  
-6. output  
+1. domain
+2. subject
+3. target
+4. scope
+5. filters
+6. output
 
-Additional metadata may be attached where explicitly defined.
+Additional fields may be present when explicitly defined:
+
+7. context
+8. metadata
+
+The first six fields form the core query model.
+
+Context and metadata are optional but must have deterministic behavior when present.
+
+The query object model must remain stable across transports, SDK languages, host implementations, and adapter boundaries.
 
 ---
 
-# 4. Top-Level Query Shape
+# 8. Top-Level Query Shape
 
 A canonical JSON Intermediate Language query object must support the following top-level fields:
 
-- domain  
-- subject  
-- target  
-- scope  
-- filters  
-- output  
+- domain
+- subject
+- target
+- scope
+- filters
+- output
 
 Optional top-level fields may include:
 
-- context  
-- metadata  
+- context
+- metadata
 
 No top-level field may imply mutation.
 
+Unknown top-level fields must be rejected unless they are inside a sanctioned extension namespace and explicitly supported by the selected adapter capability declaration.
+
+Top-level fields must remain structurally separate.
+
+In particular:
+
+- scope must not be flattened into filters
+- filters must not redefine scope
+- output must not redefine meaning
+- metadata must not affect query meaning unless explicitly standardized
+- context must not mutate truth or override substrate semantics
+
 ---
 
-# 5. Domain
+# 9. Domain
 
-## 5.1 Purpose
+## 9.1 Purpose
 
 The domain field identifies which Charter read domain or domains are being queried.
 
-A domain corresponds to a managed read surface owned by or exposed through a Charter substrate.
+A domain corresponds to a managed read surface owned by or exposed through a Charter substrate or host system.
+
+The domain determines which adapter or adapter group is responsible for validation and execution.
 
 ---
 
-## 5.2 Properties
+## 9.2 Properties
 
-A domain:
+A domain must be:
 
-- must be explicit  
-- must resolve to deterministic read surfaces  
-- must not imply mutation  
-- must not imply interpretation beyond domain-defined query behavior  
+- explicit
+- deterministic
+- read-only
+- capability-declared
+- resolvable to managed read surfaces
+- valid within the runtime or host context
+
+A domain must not:
+
+- imply mutation
+- imply interpretation beyond domain-defined query behavior
+- silently route to another domain
+- merge with another domain without explicit multi-domain behavior
+- override substrate ownership
 
 ---
 
-## 5.3 Cardinality
+## 9.3 Cardinality
 
-The domain field may be:
+The domain field may identify:
 
-- a single domain  
-- an explicit array of domains  
+- a single domain
+- an explicit array of domains
 
 When multiple domains are specified:
 
-- execution must remain explicit  
-- no implicit merging is allowed  
-- results must preserve domain attribution  
+- execution must remain explicit
+- no implicit merging is allowed
+- results must preserve domain attribution
+- ambiguity must remain visible
+- adapters must not reinterpret each other’s outputs
+- output envelopes must identify which domain produced each result section
+
+Multi-domain queries are allowed only when the CQL implementation and selected adapters explicitly support them.
 
 ---
 
-## 5.4 Canonical Domains
+## 9.4 Canonical Domains
 
 Canonical domains may include:
 
-- runtime  
-- review  
-- legitimacy  
-- ccs  
-- csg  
-- cis  
-- cas  
-- ccare  
-- cds  
-- csp  
-- crs  
-- audit  
+- runtime
+- review
+- legitimacy
+- ccs
+- csg
+- cis
+- cas
+- ccare
+- cds
+- csp
+- crs
+- audit
 
-Additional domains may be introduced only through explicit versioned extension.
+Additional domains may be introduced only through explicit versioned extension or adapter registration.
 
----
-
-# 6. Subject
-
-## 6.1 Purpose
-
-The subject identifies what kind of data or view is being requested from the selected domain.
-
-Two subject classes exist:
-
-- view  
-- raw  
+Domain names must be stable enough to support validation, logging, replay, and capability discovery.
 
 ---
 
-## 6.2 View Subject
+## 9.5 Domain Ownership
+
+The domain determines ownership of subject interpretation.
+
+A subject name is not globally interpreted unless explicitly defined as canonical across domains.
+
+For example:
+
+- cas owns the meaning of a CAS posture view
+- csg owns the meaning of a graph view
+- ccare owns the meaning of observation read surfaces
+- cis owns the meaning of identity read surfaces
+
+CQL may route to these domains.
+
+CQL must not redefine their meaning.
+
+---
+
+# 10. Subject
+
+## 10.1 Purpose
+
+The subject identifies what kind of data, view, or raw surface is being requested from the selected domain.
+
+Subject interpretation is domain-owned.
+
+The same subject name may have different meaning in different domains unless explicitly standardized.
+
+---
+
+## 10.2 Subject Classes
+
+Two primary subject classes exist:
+
+- view
+- raw
+
+A view requests a named domain-defined read surface.
+
+A raw subject requests explicitly defined structural data or fields from a domain.
+
+Both subject classes must be read-only and capability-declared.
+
+---
+
+## 10.3 View Subject
 
 A view requests a named domain-defined surface.
 
-Examples include:
+Examples of view subjects may include:
 
-- posture  
-- graph  
-- items  
-- provenance  
-- reviews  
-- proposals  
+- posture
+- graph
+- items
+- provenance
+- reviews
+- proposals
+- observations
+- identities
+- sessions
+- signals
+- feeds
+- alignment
+- dynamics
+
+A view may be backed by:
+
+- durable storage
+- materialized state
+- derived read models
+- adapter-composed read surfaces
+- host-owned operational projections
+
+A view must remain deterministic from the perspective of CQL query meaning.
 
 ---
 
-## 6.3 Raw Subject
+## 10.4 Raw Subject
 
 A raw subject requests explicitly defined structural data or fields from a domain.
 
 Raw access must remain:
 
-- read-only  
-- explicit  
-- domain-bounded  
+- read-only
+- explicit
+- domain-bounded
+- capability-declared
+- adapter-validated
+
+Raw access must not become an escape hatch around managed read surfaces.
+
+Raw fields must be explicitly supported by the domain or adapter.
 
 ---
 
-## 6.4 Subject Shape
+## 10.5 Subject Shape
 
 The subject must be an object containing:
 
-- kind  
-- name  
+- kind
+- name
 
 Optional fields may include:
 
-- fields  
-- args  
+- fields
+- args
+
+The kind identifies whether the subject is a view, raw surface, or other explicitly supported subject class.
+
+The name identifies the domain-owned subject.
+
+Fields request specific returned fields when supported.
+
+Arguments parameterize subject behavior when supported.
 
 ---
 
-## 6.5 Arguments
+## 10.6 Subject Arguments
 
 Arguments allow parameterization of subject behavior.
 
 Arguments must:
 
-- be explicitly defined by the domain  
-- be deterministic  
-- not introduce implicit semantics  
+- be explicitly defined by the domain
+- be declared in adapter capabilities
+- be deterministic
+- be validated before execution
+- not introduce implicit semantics
+- not mutate state
+- not expand scope unless modeled as explicit scope
+
+Unsupported arguments must be rejected.
+
+Arguments must not be silently ignored.
 
 ---
 
-# 7. Target
+# 11. Target
 
-## 7.1 Purpose
+## 11.1 Purpose
 
-The target identifies the object, collection, or scope to which the query applies.
+The target identifies the object, collection, pair, or global boundary to which the query applies.
 
 Targets must be explicit and domain-valid.
 
+A target identifier alone is not sufficient because the same string may refer to different kinds of objects in different domains.
+
 ---
 
-## 7.2 Common Target Kinds
+## 11.2 Target Typing
+
+Every target must declare what kind of thing it addresses.
+
+Target typing is required for deterministic dispatch and validation.
 
 Target kinds may include:
 
-- resolution  
-- area  
-- identity  
-- global  
-- pair  
-- deliberate  
-- item  
-- session  
-- review  
-- proposal  
-- signal  
-- receipt  
-- commit  
-- feed  
-- pipeline  
+- resolution
+- area
+- identity
+- global
+- pair
+- deliberate
+- item
+- session
+- review
+- proposal
+- signal
+- receipt
+- commit
+- feed
+- pipeline
+- graph
+- collection
+
+Adapters may support additional target kinds through capability declarations.
+
+Unsupported target kinds must be rejected.
 
 ---
 
-## 7.3 Target Shape
+## 11.3 Target Shape
 
 The target must be an object containing:
 
-- kind  
+- kind
 
 Optional fields may include:
 
-- id  
-- ids  
-- left  
-- right  
+- id
+- ids
+- left
+- right
+- relation
+- collection
+- namespace
+
+The allowed shape depends on the target kind and selected subject.
 
 ---
 
-## 7.4 Collection Targets
+## 11.4 Single Targets
 
-Targets may explicitly identify collections through ids.
+A single target identifies one object or boundary.
+
+Examples include:
+
+- one area
+- one resolution
+- one identity
+- one session
+- one item
+- one commit
+- one feed
+
+The adapter must validate that the target kind is supported for the selected domain and subject.
+
+---
+
+## 11.5 Collection Targets
+
+Targets may explicitly identify collections through ids or declared collection references.
 
 Collection targets must be:
 
-- explicit  
-- finite  
-- deterministic  
+- explicit
+- finite unless the domain declares bounded streaming or paginated behavior
+- deterministic
+- validated before execution
+
+Collection targets must not become implicit whole-domain scans unless the subject and adapter explicitly support that behavior.
 
 ---
 
-## 7.5 Pair Targets
+## 11.6 Pair Targets
 
 Pair targets must explicitly identify both sides.
 
 No implicit pairing is allowed.
 
----
+Pair targets may support comparison, relationship lookup, dependency review, conflict checks, or other domain-declared read behavior.
 
-# 8. Scope
-
-## 8.1 Purpose
-
-Scope constrains the slice of data examined by the query.
-
-Scope defines where data is visible within a domain.
+Both sides of a pair must be typed or resolved under declared target rules.
 
 ---
 
-## 8.2 Scope Rule
+## 11.7 Global Targets
+
+A global target may be used only when the selected domain and subject explicitly support global read behavior.
+
+Global targets must not bypass scope requirements.
+
+A global target does not mean unrestricted access.
+
+It means the adapter supports a domain-defined global read surface.
+
+---
+
+# 12. Scope
+
+## 12.1 Purpose
+
+Scope defines the visible slice of data examined by the query.
+
+Scope determines what data is in bounds before filters are applied.
+
+Scope is not the same as filtering.
+
+---
+
+## 12.2 Scope Rule
 
 Scope must not reduce a result set based on value conditions.
 
-Scope must not introduce filtering logic.
+Scope must not introduce ordinary filtering logic.
+
+Scope defines visibility boundaries.
+
+Filters constrain visible data.
+
+A filter must never expand scope.
 
 ---
 
-## 8.3 Common Scope Dimensions
+## 12.3 Common Scope Dimensions
 
 Scope dimensions may include:
 
-- activity  
-- time  
-- posture  
-- mode  
-- projection  
-- round  
-- history  
+- activity
+- time
+- posture
+- mode
+- projection
+- round
+- history
+- window
+- federation
+- visibility
+- trust_boundary
+
+Each scope dimension must be domain-valid and adapter-declared.
+
+Unsupported scope dimensions must be rejected.
 
 ---
 
-## 8.4 Activity
+## 12.4 Activity Scope
+
+Activity scope defines whether a query sees current, active, historical, superseded, paused, archived, or otherwise state-bounded surfaces.
 
 Examples include:
 
-- active  
-- historical  
+- active
+- historical
+- current
+- archived
+- superseded
+- all_supported
+
+The exact values are domain-owned.
+
+CQL requires explicit declaration and validation.
 
 ---
 
-## 8.5 Time
+## 12.5 Time Scope
 
-Time is observational only and must not alter meaning.
+Time scope constrains the temporal visibility of a query.
 
 Examples include:
 
-- since  
-- until  
+- since
+- until
+- at
+- window
+- range
+- latest
+- current
+
+Time scope is observational unless the domain explicitly defines stronger temporal semantics.
+
+Time scope must not alter substrate meaning.
+
+A time-bounded query over observations, signals, snapshots, or derived surfaces must preserve the domain’s own temporal rules.
 
 ---
 
-## 8.6 Projection
+## 12.6 Projection Scope
 
 Projection is explicit where supported.
 
 Examples include:
 
-- resolution  
-- item  
+- resolution
+- item
+- commit
+- graph
+- signal
+- observation
+- snapshot
 
 Mixed projections must be explicitly supported by the domain.
 
----
+A query over one projection must not silently return another projection.
 
-## 8.7 Round and History
-
-Domains that preserve rounds or history may expose fields such as:
-
-- current_round_only  
-- include_round_history  
+Projection is required when omission would cause ambiguity across representational layers.
 
 ---
 
-# 9. Filters
+## 12.7 Round and History Scope
 
-## 9.1 Purpose
+Domains that preserve rounds, phases, history, or supersession may expose fields such as:
+
+- current_round_only
+- round_index
+- include_round_history
+- include_history
+- include_superseded
+- include_replaced
+- as_of
+
+These fields define visibility boundaries.
+
+They must not be treated as ordinary value filters.
+
+---
+
+## 12.8 Federation and Trust Scope
+
+Federated systems may expose scope dimensions for trust boundaries, relay origin, externality, or identity authority.
+
+Examples include:
+
+- local_only
+- include_external
+- trusted_only
+- relay_origin
+- authority_boundary
+
+These dimensions must be explicitly declared by the relevant substrate or adapter.
+
+CQL must not infer trust.
+
+---
+
+# 13. Filters
+
+## 13.1 Purpose
 
 Filters constrain result sets within the selected domain and scope.
 
+Filters apply after scope determines visibility.
+
+Filters must not expand visibility boundaries.
+
 ---
 
-## 9.2 Filter Rule
-
-Filters must not change visibility boundaries of a domain.
+## 13.2 Filter Rule
 
 Filters operate only on data already visible within scope.
 
----
-
-## 9.3 Common Filter Dimensions
-
-Examples include:
-
-- state  
-- status  
-- volatility  
-- confidence  
-- relationship_type  
-- provenance  
-- blocking  
-- rule_identity  
-
----
-
-## 9.4 Constraints
-
-Filters must:
-
-- be explicit  
-- be deterministic  
-- be domain-valid  
-- fail when unsupported  
-
 Filters must not:
 
-- imply joins  
-- introduce inference  
-- cross domain boundaries implicitly  
+- expand scope
+- imply joins
+- introduce inference
+- cross domain boundaries implicitly
+- reinterpret unknown data
+- turn absence into falsehood unless the domain explicitly defines that behavior
 
 ---
 
-# 10. Output
+## 13.3 Common Filter Dimensions
 
-## 10.1 Purpose
+Filter dimensions may include:
+
+- state
+- status
+- volatility
+- confidence
+- relationship_type
+- provenance
+- blocking
+- rule_identity
+- semantic_state
+- participant
+- identity
+- authority
+- source
+- severity
+- signal_type
+- result_kind
+
+Each filter must be declared by the selected domain or adapter.
+
+Unsupported filters must be rejected.
+
+---
+
+## 13.4 Filter Constraints
+
+Filters must be:
+
+- explicit
+- deterministic
+- domain-valid
+- adapter-declared
+- type-valid
+- compatible with the selected subject
+- compatible with the selected target
+- compatible with the selected scope
+
+Filters must fail validation when unsupported.
+
+Filters must not be silently ignored.
+
+---
+
+## 13.5 Filter Values
+
+Filter values must be validated according to the domain’s capability declaration.
+
+A filter value may be:
+
+- scalar
+- list
+- range
+- enum
+- structured object
+- domain-defined expression
+
+Domain-defined expressions must remain deterministic and read-only.
+
+CQL V1 should avoid general-purpose expression languages unless the adapter explicitly declares a bounded supported form.
+
+---
+
+# 14. Output
+
+## 14.1 Purpose
 
 Output controls the structural presentation level of the query result.
 
----
-
-## 10.2 Principle
+Output defines how much or what shape of result is requested.
 
 Output does not alter truth.
 
-Output only controls representation depth.
+---
+
+## 14.2 Output Principle
+
+Output controls shape, not meaning.
+
+Output may affect:
+
+- field selection
+- level of detail
+- result envelope shape
+- inclusion of metadata
+- inclusion of provenance
+- inclusion of warnings
+- inclusion of counts
+- inclusion of identifiers
+- inclusion of domain attribution
+
+Output must not cause:
+
+- semantic reinterpretation
+- authority inference
+- hidden analysis
+- legitimacy decisions
+- CAS derivation changes
+- graph recomputation
+- mutation
+- workflow execution
+
+An output mode such as summary means “return a shorter supported form.”
+
+It does not mean “interpret this for the user.”
+
+Interpretation belongs in higher layers such as explanation, UI, CGL, assistant tooling, or host-specific presentation layers.
 
 ---
 
-## 10.3 Canonical Output Modes
+## 14.3 Canonical Output Modes
 
-Supported output modes include:
+Supported output modes may include:
 
-- summary  
-- structured  
-- detailed  
+- summary
+- structured
+- detailed
+- ids
+- count
+- envelope
+- raw
+
+The core implementation may begin with:
+
+- summary
+- structured
+- detailed
+
+Additional modes may be introduced through adapter capabilities.
+
+Unsupported output modes must be rejected.
 
 ---
 
-## 10.4 Output Shape
+## 14.4 Output Shape
 
 The output must be an object containing:
 
-- mode  
+- mode
 
-Optional fields may include host-neutral presentation hints.
+Optional fields may include:
 
----
+- fields
+- include_metadata
+- include_provenance
+- include_warnings
+- include_counts
+- limit
+- cursor
+- ordering
+- format
 
-## 11. Context
+Output fields are request-shaping controls.
 
-## 11.1 Purpose
-
-Context provides optional modifiers that affect query posture without mutating truth.
-
----
-
-## 11.2 Constraints
-
-Context must:
-
-- be explicitly defined by the domain  
-- be non-default  
-- be visible in result metadata  
-
-Context must not:
-
-- mutate state  
-- redefine domain semantics  
-- create inferred relationships  
-- override explicit data  
+They must not redefine substrate semantics.
 
 ---
 
-# 12. Metadata
+## 14.5 Ordering
 
-## 12.1 Purpose
+Result ordering must be explicitly defined by the domain or explicitly requested.
 
-Metadata carries host-neutral query metadata.
+No implicit ordering is guaranteed.
+
+If a domain exposes default ordering, that ordering must be declared in adapter capabilities or result metadata.
+
+Ordering must not alter query meaning.
+
+---
+
+## 14.6 Pagination and Limits
+
+Pagination and limits are output controls unless a domain explicitly models them as scope.
 
 Examples include:
 
-- query identifier  
-- correlation identifier  
-- issued timestamp  
+- limit
+- cursor
+- page_size
+- continuation_token
+
+Pagination must preserve deterministic query meaning across repeated calls when the substrate can support stable continuation.
+
+If stable pagination cannot be guaranteed, the result should expose that limitation.
 
 ---
 
-## 12.2 Constraint
+# 15. Context
+
+## 15.1 Purpose
+
+Context provides optional modifiers that affect query posture without mutating truth.
+
+Context may carry execution posture, caller posture, validation context, or host-neutral query context.
+
+Context is not substrate truth.
+
+---
+## 15.2 Context Constraints
+
+Context must:
+
+- be explicitly defined by the domain or CQL specification
+- be non-mutating
+- be visible in result metadata when it affects execution posture
+- be validated before execution
+- preserve deterministic query meaning
+
+Context must not:
+
+- mutate state
+- redefine domain semantics
+- create inferred relationships
+- override explicit data
+- bypass capability validation
+- silently change scope
+- silently change filters
+
+---
+
+## 15.3 Context Examples
+
+Context may include:
+
+- caller role when used only for read authorization
+- execution profile
+- validation mode
+- explanation preference
+- federation posture
+- trust posture
+- host environment identifier
+- correlation context
+
+If context affects visibility, it must be treated as a scope or authorization concern, not as a hidden query modifier.
+
+---
+
+# 16. Metadata
+
+## 16.1 Purpose
+
+Metadata carries host-neutral query metadata.
+
+Metadata supports tracing, correlation, logging, replay, and diagnostics.
+
+Metadata must not be used as hidden query input unless explicitly standardized.
+
+---
+
+## 16.2 Metadata Examples
+
+Metadata may include:
+
+- query identifier
+- correlation identifier
+- issued timestamp
+- client identifier
+- SDK version
+- DSL source hash
+- compiled query hash
+- adapter version
+- trace identifier
+
+---
+
+## 16.3 Metadata Constraint
 
 Metadata must not affect query meaning unless explicitly standardized.
 
+If metadata affects execution posture, validation, visibility, or result shape, it must be moved into a declared context, scope, filter, or output field.
+
 ---
 
-# 13. Managed Read Surface Model
+# 17. Managed Read Surface Model
 
-## 13.1 Principle
+## 17.1 Principle
 
 CQL queries managed read surfaces.
 
+A managed read surface is a substrate-owned or host-exposed read boundary that can be queried through CQL without giving CQL ownership of the underlying semantics.
+
+Managed read surfaces are the correct abstraction boundary for adapters.
+
 ---
 
-## 13.2 Surface Types
+## 17.2 Surface Types
 
 Managed read surfaces may include:
 
-- operational surfaces  
-- review surfaces  
-- durable artifact stores  
-- derived stores  
-- isolated stores  
-- untrusted stores  
+- operational surfaces
+- review surfaces
+- durable artifact stores
+- derived stores
+- isolated stores
+- untrusted stores
+- materialized read models
+- audit views
+- runtime snapshots
+- host-composed views
+- adapter-provided projections
+
+Each surface must have declared capabilities before CQL can validate queries against it.
 
 ---
 
-## 13.3 Store-First Rule
+## 17.3 Store-First Rule
 
 CQL queries store-backed or materialized surfaces by default.
 
+This protects CQL from becoming an implicit computation engine.
+
+Runtime or dynamic surfaces may be exposed only when they behave as managed read surfaces with deterministic query contracts.
+
 ---
 
-## 13.4 Runtime Surfaces
+## 17.4 Runtime Surfaces
 
 Runtime may expose materialized operational views that behave as managed read surfaces.
 
+Runtime surfaces must remain:
+
+- read-only from the CQL perspective
+- deterministic in query meaning
+- capability-declared
+- bounded by explicit scope
+- adapter-validated
+
+Runtime surfaces must not use CQL as a write or command path.
+
 ---
 
-## 13.5 Domain Surface Mapping
+## 17.5 Domain Surface Mapping
 
-Each domain must define its primary managed read surface.
+Each domain must define its primary managed read surfaces.
 
 This mapping is domain-owned and versioned outside the JSON Intermediate Language.
 
+CQL may depend on the capability declaration.
+
+CQL must not own the substrate’s surface implementation.
+
 ---
 
-# 14. Determinism Rules
+# 18. Adapter Capability Model
+
+## 18.1 Purpose
+
+Adapters expose substrate-owned read surfaces to CQL.
+
+The adapter capability model defines what a domain supports before execution.
+
+A query must be validated against the selected adapter’s capabilities.
+
+---
+
+## 18.2 Capability Declaration
+
+An adapter capability declaration should identify:
+
+- domain name
+- supported subjects
+- supported views
+- supported raw surfaces
+- supported target kinds
+- supported scope dimensions
+- supported filters
+- supported output modes
+- supported extensions
+- supported defaults
+- supported ordering
+- supported pagination
+- supported projections
+- unsupported features when useful for diagnostics
+
+Capability declarations allow clients, SDKs, CLIs, and validators to determine what can be queried.
+
+---
+
+## 18.3 Defaults
+
+Defaults are allowed only when declared by the adapter capability profile.
+
+The JSON Intermediate Language should normalize defaults into explicit fields before execution.
+
+Hidden defaults are forbidden.
+
+A query should not depend on ambient host behavior to determine meaning.
+
+---
+
+## 18.4 Validation
+
+Adapter validation must reject unsupported:
+
+- domains
+- subjects
+- target kinds
+- scope dimensions
+- filters
+- filter values
+- output modes
+- extension views
+- subject arguments
+- projections
+- ordering fields
+- pagination modes
+
+Validation must happen before execution.
+
+---
+# 19. Determinism Rules
 
 Given identical:
 
-- domain  
-- subject  
-- target  
-- scope  
-- filters  
-- output  
-- context  
+- domain
+- subject
+- target
+- scope
+- filters
+- output
+- context
+- metadata when standardized as meaningful
+- adapter capability declaration
+- substrate state
 
 the query must resolve to identical meaning.
 
 CQL must not depend on:
 
-- mutation timing  
-- storage iteration order  
-- hidden defaults  
-- ambient host state  
-- implicit joins  
+- mutation timing
+- storage iteration order
+- hidden defaults
+- ambient host state
+- implicit joins
+- parser guesses
+- non-declared adapter behavior
+- non-deterministic extension behavior
+
+Determinism applies to query meaning.
+
+Result values may differ when substrate state changes.
 
 ---
 
-## 14.1 Ordering
-
-Result ordering must be explicitly defined by the domain or explicitly requested.
-
-No implicit ordering is allowed.
-
----
-
-# 15. Non-Interpretation Rules
+# 20. Non-Interpretation Rules
 
 CQL must not:
 
-- infer intent  
-- infer missing relationships  
-- infer missing data as false  
-- reinterpret unknown provenance  
-- synthesize joins not explicitly defined  
+- infer intent
+- infer authority
+- infer missing relationships
+- infer missing data as false
+- reinterpret unknown provenance
+- synthesize joins not explicitly defined
+- classify semantic meaning outside substrate-defined views
+- convert observations into legitimacy
+- convert signals into truth
+- convert graph relationships into authority
+- convert output mode into explanation semantics
+
+CQL may expose data and views.
+
+It must not become the interpreter of those views.
 
 ---
 
-# 16. Extension Model
+# 21. Extension Model
 
-## 16.1 Principle
+## 21.1 Principle
 
-Extensions may add new views while preserving the JSON Intermediate Language structure.
+Extensions may add managed read surfaces while preserving the JSON Intermediate Language structure.
+
+Extensions add queryable surfaces.
+
+They do not add new language semantics.
 
 ---
 
-## 16.2 Naming
+## 21.2 Extension Naming
 
 Extension views must be namespaced.
 
+Extension names should make ownership visible.
+
+Examples of extension ownership patterns include:
+
+- x.cas.host_name.view_name
+- x.cds.host_name.view_name
+- x.runtime.host_name.view_name
+- x.csg.host_name.view_name
+- x.ccare.host_name.view_name
+
+Namespacing prevents host-defined meaning from colliding with canonical CQL meaning.
+
 ---
 
-## 16.3 Constraints
+## 21.3 Extension Constraints
 
-Extensions must:
+Extensions must be:
 
-- be read-only  
-- be deterministic  
-- remain structurally compatible  
+- read-only
+- deterministic
+- capability-declared
+- structurally compatible with JSON Intermediate Language
+- non-mutating
+- domain-attributed
+- adapter-validatable
 
 Extensions must not:
 
-- modify grammar  
-- override canonical fields  
+- modify grammar
+- override canonical fields
+- redefine substrate truth
+- bypass capability validation
+- add implicit joins
+- introduce mutation
+- silently expand scope
 
 ---
 
-# 17. Transport Neutrality
+## 21.4 Extension Dispatch
+
+Extension dispatch must preserve:
+
+- extension namespace
+- owning domain
+- target typing
+- scope boundaries
+- filter constraints
+- output mode
+- provenance context
+
+Extension results must remain distinguishable from canonical domain results when necessary.
+
+---
+
+# 22. Transport Neutrality
 
 The JSON Intermediate Language is transport-neutral.
 
 It may be used in:
 
-- library calls  
-- CLI execution  
-- APIs  
-- FFI boundaries  
-- testing  
+- library calls
+- CLI execution
+- APIs
+- FFI boundaries
+- tests
+- replay systems
+- host integrations
+- SDK builders
 
 Its meaning must remain stable across all transports.
 
+Transport bindings must not change query meaning.
+
+A query sent through an API must mean the same thing as the same normalized query sent through an SDK call, assuming the same adapter capabilities and substrate state.
+
 ---
 
-# 18. Relationship to DSL
+# 23. Relationship to DSL
 
 A DSL may exist as a human-facing layer.
 
-If present:
+If present, it must compile into valid JSON Intermediate Language.
 
-- it must compile into valid JSON Intermediate Language  
-- it must not introduce new semantics  
+The DSL must not introduce semantics that JSON Intermediate Language cannot represent.
+
+The DSL is syntax.
+
+JSON Intermediate Language is semantics.
+
+A DSL query must not execute directly.
+
+The DSL must not:
+
+- infer hidden meaning
+- mutate state
+- bypass validation
+- introduce implicit joins
+- add grammar extensions through host-specific views
+- silently ignore unsupported features
+- redefine output meaning
+- redefine substrate semantics
+
+DSL defaults must come from adapter capability declarations.
+
+After compilation, defaults should appear explicitly in the normalized JSON Intermediate Language query.
 
 ---
 
-# 19. Relationship to Results
+# 24. Relationship to SDK Builders
 
-This document defines query structure only.
+SDK builders may construct JSON Intermediate Language queries programmatically.
 
-It does not define:
+SDK builders are authoring helpers.
 
-- result schema  
-- payload structure  
-- pagination  
-- rendering  
+They are not canonical query semantics.
+
+An SDK builder must produce valid JSON Intermediate Language or a typed equivalent.
+
+SDK builders must not bypass:
+
+- validation
+- target typing
+- scope and filter separation
+- output rules
+- adapter capability checking
+- extension namespace rules
+- read-only constraints
+
+SDK builders should make valid queries easy to construct and invalid queries difficult to construct.
 
 ---
 
-## 19.1 Multi-Domain Results
+# 25. Relationship to Results
+
+This document defines query structure.
+
+It does not define final substrate payload schemas.
+
+However, CQL result handling should preserve enough structure for clients to understand what was queried and where results came from.
+
+A CQL-compatible result path should preserve:
+
+- query identifier when available
+- domain attribution
+- subject identity
+- target identity
+- output mode
+- provenance when requested or required
+- warnings
+- unsupported capability diagnostics
+- ambiguity indicators
+- adapter identity or version when useful
+
+Payloads may remain substrate-owned.
+
+The envelope around those payloads may be standardized in a separate result envelope specification.
+
+---
+
+## 25.1 Multi-Domain Results
 
 When multiple domains are queried:
 
-- results must preserve domain attribution  
-- results must not be implicitly merged  
-- ambiguity must remain visible  
+- results must preserve domain attribution
+- results must not be implicitly merged
+- ambiguity must remain visible
+- each result section must remain traceable to its domain and adapter
+- output mode must not erase domain boundaries
+- conflicts between domains must not be automatically reconciled by CQL
+
+CQL can expose multiple domain results.
+
+It must not decide what cross-domain disagreement means unless a domain-defined managed read surface explicitly provides that behavior.
 
 ---
 
-# 20. Invariants
+## 25.2 Result Payload Ownership
 
-- JSON Intermediate Language is canonical  
-- all query components are explicit  
-- domains map to managed read surfaces  
-- scope defines visibility, not filtering  
-- filters constrain, not expose  
-- output affects structure, not truth  
-- context is explicit and non-authoritative  
-- ordering is explicit or domain-defined  
-- extensions do not alter grammar  
-- CQL is read-only and non-interpreting  
+Result payloads are owned by the responding domain or adapter.
+
+CQL may standardize the envelope.
+
+CQL must not redefine the payload’s substrate-owned semantics.
+
+For example:
+
+- CAS owns the meaning of CAS semantic status and dynamics.
+- CSG owns graph structure and topology payload meaning.
+- CIS owns identity payload meaning.
+- CCare owns observation payload meaning.
+- Charter owns legitimacy payload meaning.
 
 ---
 
-# 21. Mental Model
+# 26. Validation Requirements
+
+A JSON Intermediate Language validator must verify:
+
+- the query is read-only
+- the domain is known
+- the subject is valid for the domain
+- the target kind is supported by the subject
+- the target shape is valid
+- the scope fields are supported
+- the scope values are valid
+- the filters are supported
+- the filter values are valid
+- scope and filters are structurally separate
+- the output mode is supported
+- output options are valid
+- subject arguments are valid
+- extensions are namespaced
+- unknown fields are rejected
+- multi-domain behavior is explicit
+- projection behavior is explicit when required
+- defaults are declared before being applied
+- adapter capabilities support the requested query
+
+Validation must happen before adapter execution.
+
+---
+
+# 27. Adapter Dispatch Requirements
+
+After validation, JSON Intermediate Language dispatch must preserve:
+
+- domain attribution
+- subject identity
+- target typing
+- scope boundaries
+- filter constraints
+- output intent
+- context posture
+- metadata used for tracing
+- extension namespaces
+- provenance context
+
+Adapters must not receive raw DSL text as their execution input.
+
+Adapters should receive normalized JSON Intermediate Language or a typed equivalent.
+
+This prevents each adapter from inventing its own parser and ensures validation is enforced before substrate execution.
+
+---
+
+# 28. Unknown Field Handling
+
+Unknown fields must not be silently ignored.
+
+A JSON Intermediate Language validator must reject:
+
+- unknown top-level fields
+- unknown subject fields
+- unknown target kinds
+- unknown target fields
+- unknown scope fields
+- unknown filters
+- unknown output modes
+- unknown argument names
+- malformed extension fields
+
+The only exception is a field inside a sanctioned extension namespace that is explicitly accepted by the relevant adapter capability declaration.
+
+Silent ignoring is forbidden because it creates false confidence.
+
+A query author must be able to trust that the executed query is the query they wrote.
+
+---
+
+# 29. Error Behavior
+
+CQL validation and execution should produce explicit errors for invalid query behavior.
+
+Error categories should include:
+
+- unknown domain
+- unknown subject
+- unsupported view
+- unsupported raw surface
+- invalid target kind
+- invalid target shape
+- missing required target
+- unsupported scope
+- unsupported filter
+- invalid filter value
+- unsupported output mode
+- unsupported projection
+- unsupported extension view
+- unknown field
+- ambiguous query
+- attempted mutation
+- capability mismatch
+- adapter unavailable
+- non-deterministic adapter behavior
+
+Error details should help the user or SDK identify what was invalid and what capabilities are available when safe to expose.
+
+Errors must not be converted into guessed behavior.
+
+---
+# 30. Security and Authorization Boundary
+
+CQL is a query contract, not an authorization system.
+
+However, CQL must not bypass authorization or visibility rules enforced by the host, adapter, or substrate.
+
+Authorization may affect which managed read surfaces are visible.
+
+If authorization affects visibility, it must be enforced before or during adapter execution.
+
+CQL must not treat authorization failures as empty truth unless the host explicitly chooses that behavior and records it appropriately.
+
+A result should distinguish, where safe and appropriate, between:
+
+- no matching data
+- unsupported query
+- unauthorized query
+- unavailable adapter
+- hidden data due to visibility rules
+
+---
+
+# 31. Non-Goals
+
+JSON Intermediate Language does not define:
+
+- the CQL DSL syntax
+- UI display behavior
+- storage engine implementation
+- graph traversal algorithms
+- CAS derivation algorithms
+- legitimacy calculation
+- identity resolution rules
+- observation semantics
+- federation protocols
+- mutation semantics
+- workflow execution
+- natural language understanding
+- final result payload schemas
+- host-specific transport protocols
+
+JSON Intermediate Language is the query contract.
+
+It is not the substrate model.
+
+---
+
+# 32. Implementation Guidance
+
+A compliant implementation should follow this lifecycle:
+
+1. Accept query input from DSL, SDK builder, API, CLI, or host integration.
+2. Compile or normalize the input into JSON Intermediate Language.
+3. Normalize declared defaults into explicit fields.
+4. Validate the query shape.
+5. Resolve the target domain and adapter.
+6. Validate the query against adapter capabilities.
+7. Dispatch the normalized query to the adapter.
+8. Receive substrate-owned payloads.
+9. Preserve domain attribution and result metadata.
+10. Return a CQL-compatible result envelope or host-specific result structure.
+
+The implementation should keep parsing, validation, dispatch, and adapter execution separate.
+
+---
+
+# 33. Invariants Summary
+
+The JSON Intermediate Language must preserve the following invariants:
+
+- JSON Intermediate Language is canonical.
+- CQL is read-only.
+- CQL owns access, not meaning.
+- All query components are explicit.
+- Domains map to managed read surfaces.
+- Subjects are interpreted inside domains.
+- Targets are typed.
+- Scope defines visibility.
+- Filters constrain visible data.
+- Filters do not expand scope.
+- Output affects shape, not truth.
+- Context is explicit and non-authoritative.
+- Metadata does not affect meaning unless standardized.
+- Ordering is explicit or domain-defined.
+- Defaults are capability-declared.
+- Unknown fields are rejected.
+- Extensions do not alter grammar.
+- Joins are not part of the V1 query language.
+- Adapters receive normalized query context.
+- Validation happens before execution.
+- Results preserve domain attribution.
+- CQL is non-interpreting.
+
+---
+
+# 34. Mental Model
 
 The JSON Intermediate Language defines:
 
-- what domain is queried  
-- what data is requested  
-- what object or set is targeted  
-- what slice is visible  
-- what constraints apply  
-- how the result is shaped  
+- what domain is queried
+- what data or view is requested
+- what object, collection, pair, or global surface is targeted
+- what slice of data is visible
+- what constraints apply inside that visible slice
+- how the result should be shaped
+- what context affects execution posture
+- what metadata supports tracing and replay
 
 It is the canonical machine form of a Charter query.
 
 ---
 
-# 22. Final Principle
+# 35. Final Principle
 
-The JSON Intermediate Language allows all Charter systems to share one internal query language.
+The JSON Intermediate Language allows Charter systems to share one internal query contract.
 
 It ensures queries are:
 
-- explicit  
-- deterministic  
-- substrate-neutral  
-- transportable  
-- safe  
+- explicit
+- deterministic
+- substrate-neutral
+- transportable
+- safe
+- read-only
+- adapter-validatable
+- human-authorable through DSL compilation
+- SDK-friendly
 
 The DSL may evolve.
+
+Adapters may expand.
+
+Managed read surfaces may grow.
 
 The JSON form remains the foundation.
