@@ -33,6 +33,21 @@ They answer:
 
 Capability declarations make CQL discoverable, validatable, explainable, and safe.
 
+Capability Declaration not only defines what may be queried.
+
+It also defines:
+
+- field dependency relationships
+- output conformance rules
+- attribution behavior
+- partial result behavior
+- dependency execution expectations
+- boundedness expectations
+- visibility expectations
+
+Capability Declaration is the declarative contract that allows CQL to validate queries, constrain execution, derive partial result behavior, preserve attribution, and finalize trustworthy Result Envelopes.
+
+
 ---
 
 # 2. Foundational Principle
@@ -50,6 +65,16 @@ CQL must not guess.
 CQL must not silently ignore unsupported query features.
 
 CQL must not treat undeclared behavior as valid.
+
+Capability Declaration is the declared execution contract of a domain or view.
+
+Execution Context controls runtime execution posture.
+
+Adapter Outcome preserves handler output.
+
+Result Envelope preserves execution truth.
+
+Capability Declaration defines what behaviors are valid and how fields, dependencies, outputs, and partial behavior relate.
 
 ---
 
@@ -496,6 +521,25 @@ A raw surface must not:
 Raw access is still managed access.
 
 ---
+## 11.4 Raw Surface Dependencies 
+
+Raw surfaces may participate in field dependency declarations.
+
+Raw surfaces must remain:
+
+- registered
+- typed
+- capability-declared
+- bounded
+
+Capability declarations may define raw-surface dependency behavior including:
+
+- attribution requirements
+- boundedness requirements
+- visibility policy
+- dependency failure behavior
+
+---
 
 # 12. Field Capability
 
@@ -681,6 +725,24 @@ An output mode may declare:
 - stability status
 - deprecation metadata
 
+Output modes may affect:
+
+- field dependency activation
+- attribution behavior
+- partial behavior
+- dependency requirements
+- visibility behavior
+
+Capability declarations may define different dependency behavior for:
+
+- detailed
+- structured
+- summary
+- raw
+
+Summary outputs may support reduced attribution or reduced dependency detail when explicitly declared.
+
+
 ---
 
 ## 13.4 Field Support Per Output Mode
@@ -748,6 +810,23 @@ Field selection must not:
 - cause the domain to invent unavailable data
 
 Field selection changes what is returned, not what is true.
+
+---
+## 14.4 Field Selection Dependencies
+
+Field selection interacts with field dependency declarations.
+
+Selected fields may activate dependency requirements declared by the capability contract.
+
+Capability declarations may define:
+
+- field dependency surfaces
+- field-specific boundedness
+- field-specific attribution
+- field-specific partial behavior
+- field-specific visibility behavior
+
+Field selection must not silently bypass dependency declarations.
 
 ---
 
@@ -1035,6 +1114,31 @@ Discovery must not lie by presenting hidden or unauthorized capabilities as none
 When that posture is chosen, it should be understood as a host security policy, not a CQL truth claim.
 
 ---
+## 20.4 Discovery Dependency and Attribution
+
+Capability discovery should expose dependency and attribution metadata when supported.
+
+Discovery may expose:
+
+- field dependencies
+- required dependencies
+- optional dependencies
+- attribution levels
+- partial-result policies
+- safe-if-missing behavior
+- dependency versions
+- dependency boundedness policies
+
+This supports:
+
+- IDE tooling
+- diagnostics
+- replay analysis
+- explainability layers
+- managed composition debugging
+- generated documentation
+
+---
 
 # 21. Managed Composition Capability
 
@@ -1062,6 +1166,28 @@ A composed view must:
 - report partial failure
 - preserve source-domain attribution where relevant
 - be traceable
+
+Managed composed views should preserve declared dependency relationships.
+
+Capability declarations may define:
+
+- dependency surfaces
+- dependency versions
+- dependency requirements
+- dependency boundedness
+- dependency attribution
+- dependency partial behavior
+
+Execution Context records dependency execution outcomes.
+
+Result Envelope finalization combines:
+
+- capability declarations
+- dependency outcomes
+- selected fields
+- adapter outcomes
+
+to produce explicit partial-result reporting and attribution reporting.
 
 ---
 
@@ -1145,6 +1271,18 @@ A query should be bounded by at least one of:
 
 Global queries are allowed only when explicitly declared.
 
+Capability declarations may define boundedness rules for:
+
+- dependency calls
+- dependency depth
+- dependency fanout
+- field activation
+- output modes
+- composed views
+- raw surface access
+
+Execution Context enforces boundedness during execution.
+
 ---
 
 # 23. Authorization and Visibility Posture
@@ -1174,6 +1312,23 @@ CQL must distinguish, when safe and appropriate:
 These conditions must not be collapsed by default.
 
 Host security policy may intentionally hide details, but that is a host posture, not a CQL semantic claim.
+
+Capability declarations may define visibility posture for:
+
+- fields
+- dependencies
+- attribution
+- diagnostics
+- trace visibility
+- dependency reporting
+
+Visibility declarations must preserve explicit distinctions between:
+
+- visible
+- unauthorized
+- hidden
+- unavailable
+- unsupported
 
 ---
 
@@ -1210,6 +1365,18 @@ Canonical names are for queries.
 Display names are for humans.
 
 Descriptions are for discovery and documentation.
+
+Capability declarations may define dependency-version requirements.
+
+Examples include:
+
+- required dependency versions
+- compatible dependency ranges
+- dependency capability versions
+- output compatibility versions
+
+Execution Context preserves resolved dependency versions for Result Envelope reporting.
+
 
 ---
 
@@ -1306,8 +1473,200 @@ This supports reproducibility, logging, auditing, debugging, and diagnostics.
 CQL does not need to be a persistence system to preserve replay metadata.
 
 ---
+# 29. Field Dependency Declaration
 
-# 29. Validation Requirements
+## 29.1 Purpose
+
+Capability declarations may define field dependency relationships.
+
+Field dependency declarations allow CQL to understand:
+
+- which fields depend on which dependency surfaces
+- which dependencies are required
+- which dependencies are optional
+- what happens when dependencies fail
+- whether partial results remain safe
+- how attribution should be preserved
+
+This enables trustworthy partial-result handling and managed composition.
+
+---
+
+## 29.2 Field Dependency Concepts
+
+Field dependency declarations may conceptually define:
+
+- dependency
+- requiredness
+- failure behavior
+- safe-if-missing behavior
+- attribution level
+
+---
+
+### Dependency
+
+Dependency identifies the dependency surface required to produce a field.
+
+Examples:
+
+- cas.posture
+- ccare.recent_observations
+- csg.boundary
+- runtime.payment_state
+
+Dependencies may reference:
+
+- domains
+- views
+- raw surfaces
+- typed dependency contracts
+
+---
+
+## Requiredness
+
+Requiredness defines whether a dependency is:
+
+- required
+- optional
+- conditional
+
+Required dependencies normally affect result completeness.
+
+Optional dependencies may allow degraded output.
+
+---
+
+## Failure Behavior
+
+Failure behavior defines what occurs when a dependency fails, becomes unavailable, hidden, unauthorized, or unsupported.
+
+Conceptual examples include:
+
+- fail_result
+- mark_partial
+- omit_field
+- return_hidden
+- return_unavailable
+- use_declared_default
+
+Failure behavior must remain explicit.
+
+Unavailable data must not silently become empty data.
+
+---
+
+## Safe-If-Missing Behavior
+
+Capability declarations may define whether a result remains safe to use when a dependency fails.
+
+Conceptual examples include:
+
+- safe
+- degraded
+- diagnostic_only
+- unsafe
+
+This metadata supports Result Envelope partial reporting.
+
+---
+
+## Attribution Level
+
+Capability declarations may define attribution requirements.
+
+Attribution levels may include:
+
+- result
+- dependency
+- field
+- hidden
+
+Attribution defines how much dependency ownership and provenance should remain visible during execution reporting.
+
+---
+# 30. Attribution Declaration
+
+## Purpose
+
+Capability declarations may define attribution behavior for views and fields.
+
+Attribution preserves dependency ownership and execution provenance.
+
+This is especially important for:
+
+- managed composition
+- partial results
+- dependency failures
+- traceability
+- diagnostics
+- replay analysis
+
+---
+
+## Attribution Levels
+
+Capability declarations may support:
+
+### Result-Level Attribution
+
+The result preserves the owning domain/view attribution.
+
+### Dependency-Level Attribution
+
+The result preserves dependency source attribution.
+
+### Field-Level Attribution
+
+Specific fields preserve dependency attribution relationships.
+
+---
+
+## Attribution Rule
+
+Capability declarations should preserve enough attribution information for Result Envelope finalization to honestly report:
+
+- where data originated
+- which dependencies participated
+- which dependencies failed
+- which fields became partial or degraded
+
+---
+# 31. Partial Result Declaration
+
+## Purpose
+
+Capability declarations may define partial-result behavior.
+
+This allows CQL to derive trustworthy partial-result reporting automatically.
+
+---
+
+## Partial Declaration May Define
+
+Capability declarations may define:
+
+- required dependencies
+- optional dependencies
+- degraded behavior
+- safe-if-missing behavior
+- omission behavior
+- fallback behavior
+- partial visibility policy
+- dependency attribution policy
+
+---
+
+## Partial Rule
+
+Capability declarations must not allow dependency failure to silently appear as complete success.
+
+Partial behavior must remain explicit.
+
+---
+
+# 32. Validation Requirements
 
 A CQL validator must use capability declarations to reject unsupported behavior before dispatch.
 
@@ -1335,9 +1694,56 @@ Validation must reject:
 
 Validation must not silently ignore unsupported features.
 
+Validation should verify:
+
+- selected fields are capability-declared
+- dependency declarations are valid
+- dependency references resolve
+- dependency boundedness is legal
+- attribution rules are legal
+- field dependency rules are compatible with output modes
+- field selection does not bypass capability contracts
+
+Validation does not execute dependency calls.
+
+Execution Context controls runtime dependency execution.
+
+---
+# 33. Execution Context Integration 
+
+Execution Context uses capability declarations to determine:
+
+- dependency-call legality
+- dependency boundedness
+- scope propagation rules
+- attribution behavior
+- partial-result behavior
+- visibility posture
+- dependency version rules
+- output conformance rules
+
+Capability declarations define what execution behavior is allowed.
+
+Execution Context enforces it during runtime execution.
+
+---
+# 34. Result Envelope Integration 
+
+Result Envelope finalization uses capability declarations to derive:
+
+- attribution reporting
+- partial-result reporting
+- dependency visibility
+- selected field conformance
+- output conformance
+- dependency failure reporting
+- safe-if-missing reporting
+
+Capability declarations provide the declarative trust rules used during envelope finalization.
+
 ---
 
-# 30. Capability Declaration Invariants
+# 35. Capability Declaration Invariants
 
 ## CAP-INV-01 — Capabilities Are Contracts
 
@@ -1464,8 +1870,53 @@ CQL does not become the explanation layer.
 A query is portable only across hosts that expose compatible capability contracts.
 
 ---
+## CAP-INV-19 — Field Dependencies Must Be Declarable
 
-# 31. Non-Goals
+Capability declarations may define field dependency relationships.
+
+Dependency relationships must remain explicit.
+
+---
+
+## CAP-INV-20 — Dependency Failure Must Remain Explicit
+
+Capability declarations must not allow dependency failure to silently appear as successful complete data.
+
+---
+
+## CAP-INV-21 — Attribution Must Be Preservable
+
+Capability declarations must support attribution behavior sufficient for trustworthy partial-result and dependency reporting.
+
+---
+
+## CAP-INV-22 — Field Selection Must Respect Dependencies
+
+Field selection must not bypass field dependency declarations or dependency boundedness rules.
+
+---
+
+## CAP-INV-23 — Capability Declarations Define Execution Legality
+
+Capability declarations define what dependency behavior, attribution behavior, partial behavior, and boundedness behavior are legal.
+
+Execution Context enforces those rules during execution.
+
+---
+
+## CAP-INV-24 — Capability Declarations Support Envelope Finalization
+
+Capability declarations must preserve enough metadata for Result Envelope finalization to derive:
+
+- attribution
+- partial behavior
+- dependency reporting
+- selected field conformance
+- output conformance
+
+---
+
+# 36. Non-Goals
 
 This specification does not define:
 
@@ -1489,7 +1940,7 @@ This specification defines the conceptual contract for what can be queried and h
 
 ---
 
-# 32. Final Principle
+# 37. Final Principle
 
 Capability declarations are the trust surface of CQL.
 
@@ -1504,3 +1955,24 @@ They allow CQL to validate before dispatch.
 They preserve the difference between unsupported, unauthorized, hidden, nonexistent, unavailable, partial, empty, and error.
 
 They keep CQL domain-neutral while making Charter and non-Charter hosts queryable through one consistent foundation.
+
+Capability Declaration is not merely a query-validation contract.
+
+It is the declarative execution contract that allows CQL to preserve:
+
+- bounded execution
+- dependency legality
+- attribution
+- partial-result trust
+- output conformance
+- visibility boundaries
+- managed composition safety
+- Result Envelope honesty
+
+Capability Declaration defines what execution behaviors are legal.
+
+Execution Context enforces those behaviors.
+
+Adapter Outcomes preserve handler output.
+
+Result Envelope finalization preserves execution truth.

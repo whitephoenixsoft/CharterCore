@@ -61,6 +61,20 @@ CQL uses Execution Context to preserve:
 - traceability
 - envelope finalization support
 
+Execution Context does not define execution legality.
+
+Capability Declarations define execution legality.
+
+Execution Context enforces and records execution behavior according to declared capability contracts.
+
+Execution Context exists to ensure execution remains:
+
+- bounded
+- authorized
+- traceable
+- scope-preserving
+- capability-compliant
+
 ---
 
 # 3. Execution Pipeline Position
@@ -87,6 +101,24 @@ Adapter Outcome
 Envelope Builder  
 Envelope Finalizer  
 Result Envelope
+
+Execution Context now participates in a larger trust chain.
+
+Conceptual execution flow:
+
+Capability Declaration
+→ Query Validation
+→ Execution Context
+→ Adapter Outcome
+→ Envelope Builder
+→ Envelope Finalizer
+→ Result Envelope
+
+Execution Context is responsible for enforcing and recording execution behavior.
+
+Execution Context is not responsible for determining execution legality.
+
+Capability declarations define legality.
 
 ---
 
@@ -406,10 +438,108 @@ Dependency policy may define:
 - maximum dependency depth
 
 ---
-
-# 13. Scope Propagation
+# 13. Dependency Outcome Recording
 
 ## 13.1 Purpose
+
+Execution Context records dependency execution outcomes.
+
+Dependency outcomes are later consumed by:
+
+- Adapter Outcomes
+- Result Envelope Finalization
+- Attribution Reporting
+- Partial Result Derivation
+- Diagnostics
+- Replay Metadata
+
+---
+
+## 13.2 Dependency Outcome Recording
+
+Execution Context may record:
+
+- dependency identity
+- dependency version
+- dependency visibility state
+- dependency authorization state
+- dependency condition
+- dependency duration
+- dependency attribution metadata
+- dependency trace references
+- dependency boundedness information
+
+---
+
+## 13.3 Dependency Recording Rule
+
+Execution Context records dependency execution.
+
+It does not determine dependency policy.
+
+Dependency policy is declared through Capability Declarations.
+
+---
+# 14. Field Dependency Awareness
+
+## 14.1 Purpose
+
+Execution Context may observe field dependency declarations defined by capabilities.
+
+This allows dependency execution to be associated with selected fields.
+
+---
+
+## 14.2 Field Dependency Awareness Rule
+
+Execution Context should be able to determine:
+
+- which selected fields require which dependencies
+- which dependency calls support which fields
+- which fields became partial
+- which fields became unavailable
+- which fields became hidden
+
+Execution Context records this information.
+
+Result Envelope finalization decides how it is reported.
+
+---
+# 15. Attribution Recording
+
+## 15.1 Purpose
+
+Execution Context records attribution information generated during execution.
+
+Attribution metadata is later consumed by Result Envelope finalization.
+
+---
+
+## 15.2 Attribution Recording May Include
+
+Execution Context may record:
+
+- result-level attribution
+- dependency-level attribution
+- field-level attribution
+- hidden attribution
+- dependency ownership
+- dependency provenance
+
+---
+
+## 15.3 Attribution Rule
+
+Execution Context records attribution.
+
+Capability Declarations define attribution policy.
+
+Result Envelope finalization determines attribution visibility.
+
+---
+# 16. Scope Propagation
+
+## 16.1 Purpose
 
 Scope propagation controls how caller scope flows into dependency calls.
 
@@ -417,7 +547,7 @@ This is critical for managed composed views.
 
 ---
 
-## 13.2 Scope Propagation Rule
+## 16.2 Scope Propagation Rule
 
 A composed view must preserve or narrow caller scope unless explicitly declared otherwise by capability and allowed by policy.
 
@@ -425,7 +555,7 @@ A dependency call must not silently widen scope.
 
 ---
 
-## 13.3 Scope Propagation May Include
+## 16.3 Scope Propagation May Include
 
 Scope propagation may define:
 
@@ -440,7 +570,7 @@ Scope propagation may define:
 
 ---
 
-## 13.4 Scope Widening
+## 16.4 Scope Widening
 
 Scope widening is allowed only when:
 
@@ -452,10 +582,25 @@ Scope widening is allowed only when:
 Silent widening is forbidden.
 
 ---
+### 16.5. Scope Capability Awareness 
 
-# 14. Partial Failure Policy
+Scope propagation should be capability-aware.
 
-## 14.1 Purpose
+Capability declarations may define:
+
+- inherited scope behavior
+- prohibited widening
+- dependency scope rules
+- target propagation rules
+- dependency visibility boundaries
+
+Execution Context enforces declared scope behavior.
+
+---
+
+# 17. Partial Failure Policy
+
+## 17.1 Purpose
 
 Partial Failure Policy controls what happens when a dependency or part of execution fails.
 
@@ -463,7 +608,7 @@ This is especially important for composed views.
 
 ---
 
-## 14.2 Partial Failure Policy May Define
+## 17.2 Partial Failure Policy May Define
 
 Partial Failure Policy may define:
 
@@ -478,7 +623,7 @@ Partial Failure Policy may define:
 
 ---
 
-## 14.3 Partial Failure Rule
+## 17.3 Partial Failure Rule
 
 Partial failure must be explicit.
 
@@ -493,10 +638,26 @@ A partial result must report:
 - whether the result is safe to use
 
 ---
+## 17.4 Partial Failure Derivation 
 
-# 15. Boundedness Controls
+Partial failure behavior should derive from declared dependency policies when available.
 
-## 15.1 Purpose
+Execution Context records:
+
+- dependency success
+- dependency failure
+- dependency omission
+- dependency visibility restrictions
+
+Execution Context does not determine whether a dependency is required or optional.
+
+Capability Declarations define that policy.
+
+---
+
+# 18. Boundedness Controls
+
+## 18.1 Purpose
 
 Boundedness controls prevent accidental unbounded reads and unsafe composition.
 
@@ -504,7 +665,7 @@ Execution Context applies boundedness policies declared by capabilities.
 
 ---
 
-## 15.2 Boundedness May Include
+## 18.2 Boundedness May Include
 
 Boundedness controls may include:
 
@@ -522,17 +683,82 @@ Boundedness controls may include:
 
 ---
 
-## 15.3 Global Query Rule
+## 18.3 Global Query Rule
 
 Global queries are allowed only when the selected domain, view, or raw surface explicitly declares support.
 
 Execution Context must enforce declared global query policy.
 
 ---
+## 18.4 Dependency Boundedness Behavior 
 
-# 16. Version and Capability Resolution Context
+Capability declarations may define dependency boundedness behavior.
 
-## 16.1 Purpose
+Execution Context enforces:
+
+- dependency depth
+- dependency fanout
+- dependency budgets
+- dependency result limits
+- field-triggered dependency execution
+
+Execution Context should preserve boundedness diagnostics for envelope finalization.
+
+---
+# 19. Capability-Aware Execution
+
+## 19.1 Purpose
+
+Execution Context executes within capability-declared boundaries.
+
+Execution Context is capability-aware.
+
+---
+
+## 19.2 Capability-Aware Rule
+
+Execution Context should be able to access capability metadata relevant to execution.
+
+Examples include:
+
+- dependency declarations
+- field dependencies
+- attribution declarations
+- boundedness declarations
+- partial-result declarations
+- visibility declarations
+
+Execution Context uses these declarations to enforce execution behavior.
+
+---
+# 20. Adapter Outcome Integration
+
+## 20.1 Purpose
+
+Execution Context supplies execution metadata used by Adapter Outcomes and envelope construction.
+
+---
+
+## 20.2 Integration Rule
+
+Execution Context may provide:
+
+- dependency outcomes
+- attribution metadata
+- visibility metadata
+- trace metadata
+- boundedness metadata
+- partial-result metadata
+
+Adapters may use this information when constructing Adapter Outcomes.
+
+Execution Context does not replace Adapter Outcomes.
+
+---
+
+# 21. Version and Capability Resolution Context
+
+## 21.1 Purpose
 
 Execution Context preserves the resolved capability contract used for execution.
 
@@ -540,7 +766,7 @@ This is necessary for validation, dependency calls, result metadata, and replay.
 
 ---
 
-## 16.2 Resolution Context May Include
+## 21.2 Resolution Context May Include
 
 Resolution context may include:
 
@@ -556,7 +782,7 @@ Resolution context may include:
 
 ---
 
-## 16.3 Version Rule
+## 21.3 Version Rule
 
 If an unversioned reference resolves to latest, the resolved version must remain available to envelope finalization.
 
@@ -564,9 +790,9 @@ Latest resolution must never be invisible.
 
 ---
 
-# 17. Envelope Construction Context
+# 22. Envelope Construction Context
 
-## 17.1 Purpose
+## 22.1 Purpose
 
 Execution Context must provide enough information for Result Envelope construction and finalization.
 
@@ -576,7 +802,7 @@ It supplies the conditions and metadata needed for envelope construction.
 
 ---
 
-## 17.2 Envelope Construction Context May Include
+## 22.2 Envelope Construction Context May Include
 
 Envelope construction context may include:
 
@@ -595,7 +821,7 @@ Envelope construction context may include:
 
 ---
 
-## 17.3 Envelope Boundary Rule
+## 22.3 Envelope Boundary Rule
 
 Execution Context supports envelope finalization.
 
@@ -603,11 +829,22 @@ It does not replace the Envelope Builder or Envelope Finalizer.
 
 Adapter Outcome remains a separate contract.
 
+Execution Context should additionally preserve:
+
+- dependency outcome records
+- field dependency records
+- attribution records
+- partial-result derivation metadata
+- capability references
+
+This information supports Result Envelope finalization.
+
+
 ---
 
-# 18. Managed Composition
+# 23. Managed Composition
 
-## 18.1 Purpose
+## 23.1 Purpose
 
 Managed composition allows a declared view to internally query other CQL domains or views.
 
@@ -615,7 +852,7 @@ Execution Context is what makes managed composition safe.
 
 ---
 
-## 18.2 Managed Composition Rule
+## 23.2 Managed Composition Rule
 
 A composed view may call dependency views only through controlled CQL execution.
 
@@ -631,7 +868,7 @@ The composed view must not directly bypass:
 
 ---
 
-## 18.3 Managed Composition Must Preserve
+## 23.3 Managed Composition Must Preserve
 
 Managed composition must preserve:
 
@@ -645,10 +882,24 @@ Managed composition must preserve:
 - bounded execution
 
 ---
+## 23.4 Managed Composition Field Dependencies
 
-# 19. Adapter Interaction
+Managed composition should preserve declared field dependency behavior.
 
-## 19.1 Purpose
+Execution Context should be capable of recording:
+
+- which dependencies supported which fields
+- which fields became partial
+- which fields became unavailable
+- which fields became hidden
+
+This enables trustworthy partial-result reporting.
+
+---
+
+# 24. Adapter Interaction
+
+## 24.1 Purpose
 
 Adapters use Execution Context to execute safely.
 
@@ -656,7 +907,7 @@ Execution Context gives adapters controlled access to execution services and exe
 
 ---
 
-## 19.2 Adapter May Use Context To
+## 24.2 Adapter May Use Context To
 
 Adapters may use Execution Context to:
 
@@ -671,7 +922,7 @@ Adapters may use Execution Context to:
 
 ---
 
-## 19.3 Adapter Must Not Use Context To
+## 24.3 Adapter Must Not Use Context To
 
 Adapters must not use Execution Context to:
 
@@ -687,9 +938,9 @@ Adapters must not use Execution Context to:
 
 ---
 
-# 20. Diagnostics and Reporting
+# 25. Diagnostics and Reporting
 
-## 20.1 Purpose
+## 25.1 Purpose
 
 Execution Context records or carries diagnostics generated during execution.
 
@@ -697,7 +948,7 @@ Diagnostics may later be included in the Result Envelope according to visibility
 
 ---
 
-## 20.2 Diagnostics May Include
+## 25.2 Diagnostics May Include
 
 Diagnostics may include:
 
@@ -714,9 +965,20 @@ Diagnostics may include:
 
 Diagnostics must not leak hidden details without authorization.
 
+Execution Context diagnostics may additionally include:
+
+- dependency policy application
+- field dependency activation
+- attribution recording
+- dependency boundedness enforcement
+- dependency visibility filtering
+- partial-result derivation events
+
+Diagnostics remain subject to visibility policy.
+
 ---
 
-# 21. Execution Context Invariants
+# 26. Execution Context Invariants
 
 ## EC-INV-01 — Execution Context Is CQL-Owned
 
@@ -803,8 +1065,49 @@ It does not replace envelope finalization.
 Managed composed views are allowed only when dependency execution remains validated, authorized, bounded, traceable, and envelope-compliant.
 
 ---
+## EC-INV-13 — Execution Context Records Dependency Outcomes
 
-# 22. Non-Goals
+Execution Context must be capable of recording dependency execution outcomes.
+
+---
+
+## EC-INV-14 — Execution Context Is Capability-Aware
+
+Execution Context may use capability declarations to enforce execution behavior.
+
+Execution Context must not invent undeclared behavior.
+
+---
+
+## EC-INV-15 — Attribution Recording Must Be Supported
+
+Execution Context must be capable of recording attribution metadata needed for Result Envelope finalization.
+
+---
+
+## EC-INV-16 — Field Dependency Awareness Must Be Supported
+
+Execution Context must be capable of associating dependency execution outcomes with declared field dependencies.
+
+---
+
+## EC-INV-17 — Capability Declarations Define Legality
+
+Execution Context enforces execution behavior.
+
+Capability Declarations define what execution behavior is legal.
+
+These responsibilities must remain separate.
+
+---
+
+## EC-INV-18 — Execution Context Supports Partial Derivation
+
+Execution Context must preserve enough dependency metadata to support trustworthy partial-result derivation during Result Envelope finalization.
+
+---
+
+# 27. Non-Goals
 
 This specification does not define:
 
@@ -826,7 +1129,7 @@ This specification defines the conceptual runtime control boundary for CQL execu
 
 ---
 
-# 23. Final Principle
+# 28. Final Principle
 
 Execution Context is the controlled runtime boundary that makes CQL execution trustworthy.
 
@@ -839,3 +1142,17 @@ It ensures dependency calls remain validated, authorized, bounded, traceable, an
 It supplies the information needed for envelope finalization without replacing the Result Envelope contract.
 
 It lets hosts plug into a rigid CQL execution framework without requiring templating or allowing trust-critical behavior to become informal.
+
+Execution Context is not merely a runtime execution container.
+
+It is the capability-aware execution boundary of CQL.
+
+Capability Declarations define execution legality.
+
+Execution Context enforces and records execution behavior.
+
+Adapter Outcomes preserve handler output.
+
+Result Envelope finalization preserves execution truth.
+
+Execution Context exists so that managed composition, attribution, dependency execution, boundedness, and partial-result reporting remain explicit, controlled, and trustworthy.
