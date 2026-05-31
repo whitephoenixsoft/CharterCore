@@ -465,6 +465,11 @@ CQL supports:
 - identity scoping (CIS overlays)  
 - alignment queries (CAS views)  
 - cross-substrate composition  
+- AI friendly metadata
+- authority classification
+  - freshness classification
+  - origin classification
+  - confidence source
 
 ---
 

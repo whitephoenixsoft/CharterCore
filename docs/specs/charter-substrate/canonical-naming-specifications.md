@@ -299,6 +299,12 @@ Owns:
 - cross-substrate query gateway
 - query expression
 - read-only query access model
+- classification family
+  - authority classification
+  - freshness classification
+  - origin classification
+  - confidence source
+  - ambiguous reference
 
 Canonical terms associated with CQL must refer to access, not substrate semantics.
 

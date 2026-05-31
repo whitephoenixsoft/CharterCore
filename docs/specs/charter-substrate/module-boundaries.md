@@ -275,7 +275,7 @@ CAS must never:
 
 CQL owns common query access across substrates.
 
-CQL is the top-level query gateway.
+CQL is the top-level query gateway that is AI-host-friendly but is not an AI reasoning layer.
 
 CQL is responsible for:
 
@@ -283,12 +283,15 @@ CQL is responsible for:
 - exposing cross-substrate read paths
 - enabling structured access to outputs from multiple modules
 - presenting substrate outputs through a common access model
+- giving external systems a way to become AI-host-compatible by exposing CQL adapters
+- giving CGL the access layer it needs to all substrates 
 
 CQL answers questions such as:
 
 - How do I query CAS, Charter, CSG, CIS, or CCare outputs consistently?
 - How are read-only results accessed across substrates?
 - How are structured queries expressed across modules?
+- What is the context behind the data?
 
 CQL does not own:
 
