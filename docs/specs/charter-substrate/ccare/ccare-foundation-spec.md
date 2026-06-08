@@ -70,19 +70,93 @@ CCare defines four primary constructs:
 
 ## 4.1 Check-ins (Signals)
 
-Unchanged.
+Check-ins are lightweight observations about alignment.
+
+They:
+
+- reference a target (resolution, area, or identity if present)  
+- describe perceived alignment condition  
+- may include confidence  
+
+Check-ins do not:
+
+- trigger action  
+- imply authority  
+- modify decisions  
+
+---
+
+### 4.1.1 Semantic States
+
+Check-ins may express states such as:
+
+- alignment
+- misalignment
+- uncertainty
+- reduced_capacity
+- intentional_pause
+- need_reassessment
+
+These states are:
+
+- descriptive
+- non-exhaustive
+- not prescriptive
+
+---
+
+### 4.1.2 Silence
+
+Silence is a valid state.
+
+Silence may indicate:
+
+- stability
+- lack of change
+- absense of observation
+
+Silence must not be interpreted as:
+
+- agreement
+- alignment
+- compliance
 
 ---
 
 ## 4.2 Requests
 
-Unchanged.
+Requests are non-coercive signals indicating:
+
+- attention may be needed
+- clarification my be benefitial
+- reassessment may be appropriate
+
+Requests:
+
+- do not create obligations
+- do not assign responsibility
+- do not enforce outcomes
+
+They are invitations, not commands. 
 
 ---
 
 ## 4.3 Supportability Signals
 
-Unchanged.
+Supportability signals describe whether the system can:
+
+> reliably demonstrate alignment relative to declared intent
+
+Examples:
+
+- supportable
+- degraded supportability
+- unclear supportability
+
+These signals:
+
+- reflect clarity, not correctness
+- may exist even when no misalignment is present
 
 ---
 
@@ -142,6 +216,38 @@ Care Suggestions:
 
 All CCare artifacts are stored as CCS commits.
 
+## 5.1 Check-in Commit Structure
+
+A check-in commit includes:
+
+- target reference (resolution, area, identity optional)
+- semantic state
+- optional confidence
+- timestamp
+- optional annotations
+
+---
+
+## 5.2 Request Commit Structure
+
+A request commit includes:
+
+- target reference
+- request type (attention, clarification, reassessment)
+- timestamp
+- optional context
+
+---
+
+## 5.3 Supportability Commit Structure
+
+- A supportability commit includes:
+
+- target reference
+- supportability state
+- timestamp
+- optional annoatations
+
 ---
 
 ## 5.4 Care Suggestion Commit Structure (NEW)
@@ -158,13 +264,33 @@ A care suggestion commit includes:
 
 # 6. Targeting Model
 
-Unchanged.
+CCare may target:
+
+- resolution
+- area
+- identity (if CIS present)
+- global
+
+Targets are references only.
+
+CCare does not interpret structural relationships.
 
 ---
 
 # 7. Temporal Model
 
-Unchanged.
+CCare signals are:
+
+- append-only
+- time-stamped
+- non-retractable
+
+They represent:
+
+- observatiosn at a point in time
+- not persistent truth
+
+CAS is repsonsible for interpreting temporal dynamics.
 
 ---
 
@@ -184,7 +310,19 @@ CCare must never:
 
 # 9. Relationship to CAS
 
-Unchanged.
+CCare provides inputs to CAS.
+
+CAS:
+
+- aggregates signals
+- computes alignment dynamics
+- derives trends and propagation
+
+CCare does not:
+
+- compute alignment
+- aggregate signals
+- dreive trends
 
 ---
 
@@ -216,31 +354,72 @@ CCare may act as a **source of thinking inputs**.
 
 # 11. Relationship to CSG
 
-Unchanged.
+CCare is struturally unaware.
+
+It:
+
+- references targets
+- does not interpret graph relationships
+
+CSG provides structure for CAS, not for CCare.
 
 ---
 
 # 12. Relationship to CIS (Optional)
 
-Unchanged.
+If identity exists:
+
+- CCare may target identities
+- CCare does not define identity
+
+Identity semantics are handled by CIS.
 
 ---
 
 # 13. Observation Philosophy
 
-Unchanged.
+CCare treats:
+
+- divergence as information
+- capacity limits as valid
+- uncertainty as acceptable
+- pauses as legitimate
+
+It avoids:
+
+- performance framing
+- success/failure framing
+- optimization pressure
 
 ---
 
 # 14. Signal Characteristics
 
-Unchanged.
+CCare signals are:
+
+- sparse (no requirement for constant reporting)
+- voluntary
+- contextual
+- non-normalized across systems
+
+Different targets may:
+
+- use different interpretations
+- express signals differenctly
+
+CAS normalizes through computation, not CCare.
 
 ---
 
 # 15. Failure Modes
 
-Unchanged.
+CCare explicitly allows:
+
+- incomplete signal coverage
+- inconsistent reporting
+- delayed observations
+
+CAS must operate under these conditions.
 
 ---
 
