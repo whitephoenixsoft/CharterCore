@@ -60,7 +60,7 @@ The canonical categories are:
 - REVIEW  
 - RECONCILIATION  
 - LEGITIMACY  
-- EXPLORATION (specialized, non-primary)
+- EXPLORATION (deprecated / planned removal; non-primary)
 
 No additional categories are permitted without explicit version governance.
 
@@ -70,29 +70,69 @@ No additional categories are permitted without explicit version governance.
 
 ### Trigger
 
-Emitted upon closure of a **deliberate instance**.
-
-Closure types include:
-
-- SYNTHESIZED  
-- ABANDONED  
-- FORKED  
-- ARCHIVED  
+Emitted when a **Deliberate** reaches any terminal state: `CLOSED` or `ABANDONED`.
 
 ### Captures
 
 - receipt_type: DELIBERATE  
 - engine_id  
 - deliberate_id  
+- terminal_state  
 - closure_type  
-- item_ids  
-- applied_item_ids  
+- closure_reason  
+- declared_purpose / epic  
+- scope  
+- item_state_summary  
+- locked_item_ids  
+- abandoned_item_ids  
+- deferred_item_ids  
+- discarded_item_ids  
 - settled_item_ids  
-- participant snapshot (if present)  
+- applied_item_event_refs  
+- transferred_item_event_refs  
+- copied_item_event_refs  
+- forked_item_event_refs  
+- breakout_output_item_ids  
+- ddr_record_refs  
+- feed_selection_refs  
+- feed_range_refs  
+- evidence_refs  
+- relationship_events  
+- provenance_path  
+- provenance_events  
+- origin_deliberate_id  
+- successor_deliberate_ids  
+- unresolved_tensions  
+- authority_assumptions (if present)  
+- participant_snapshot (if present)  
 - referenced review_receipt_ids (if applicable)  
 - referenced resolution_ids (optional)  
 - timestamp  
-- annotations (optional, non-authoritative)  
+- annotations  
+
+### Closure Type Normalization
+
+Deliberate receipts distinguish terminal state from closure type and relationship/provenance events.
+
+```yaml
+terminal_state: CLOSED | ABANDONED
+closure_type: STRUCTURAL_CLOSURE | WORK_TRANSFERRED | SUPERSEDED | PURPOSE_GIVEN_UP | LOSS_OF_CONTINUITY | OTHER
+closure_reason: optional human-readable explanation
+```
+
+The following are prohibited as Deliberate `closure_type` values:
+
+- FORKED  
+- COPIED  
+- FEDERATED  
+- ARCHIVED  
+- SYNTHESIZED  
+
+`FORKED`, `COPIED`, `FEDERATED`, `SPLIT`, `MERGED`, `CONTINUED`, and `SUPERSEDED_BY` are relationship/provenance events.
+
+`ARCHIVED` is an artifact lifecycle or storage posture.
+
+`SYNTHESIZED` is a DDR outcome or closure reason, not a Deliberate state.
 
 ### Does NOT Capture
 
@@ -102,7 +142,7 @@ Closure types include:
 
 ### Principle
 
-> Deliberate receipts record the closure of structured thinking, not decisions.
+> Deliberate receipts record terminal preservation and lineage for structured thinking, not decisions.
 
 ---
 
@@ -221,38 +261,23 @@ This includes:
 
 ---
 
-## E. Exploration Receipts (Specialized)
+## E. Exploration Receipts (Deprecated / Planned Removal)
 
-### Trigger
+CDS does not require a separate Exploration Receipt category.
 
-Emitted upon explicit closure of **exploratory artifacts** that do not result in legitimacy.
+The entire Deliberate is exploratory/non-legitimate.
 
-Examples:
+Exploratory work is preserved through:
 
-- synthesis artifacts frozen without review  
-- abandoned exploratory outputs  
-- non-legitimizing investigation endpoints  
-
-### Captures
-
-- receipt_type: EXPLORATION  
-- engine_id  
-- artifact_id  
-- originating deliberate_id (if applicable)  
-- artifact IDs  
-- end-state (e.g., SYNTHESIZED, ABANDONED)  
-- timestamp  
-- optional annotations  
-
-### Does NOT Capture
-
-- authority  
-- legitimacy  
-- review outcomes  
+- Deliberate state  
+- Item history  
+- Breakout outputs  
+- DDR records  
+- terminal Deliberate Receipts  
 
 ### Principle
 
-> Exploration receipts record non-legitimizing closure of investigation artifacts.
+> Exploratory work is preserved through Deliberate lineage and terminal receipts without requiring a separate receipt category.
 
 ---
 
@@ -263,14 +288,19 @@ The following must always hold:
 1. Every session closure MUST produce a LEGITIMACY receipt.  
 2. Every review closure MUST produce a REVIEW receipt.  
 3. Every reconciliation closure MUST produce a RECONCILIATION receipt.  
-4. Every deliberate closure MUST produce a DELIBERATE receipt.  
-5. Receipts are immutable.  
-6. Receipts are the canonical proof artifacts for structural closure.  
-7. Audit logs must allow deterministic reconstruction of receipts.  
-8. If a receipt and audit diverge, the system is invalid.  
-9. Receipt presence never implies correctness.  
-10. Receipt presence never implies consensus beyond recorded stances.  
-11. Receipt absence means structural closure did not occur.  
+4. Every terminal Deliberate state MUST produce a DELIBERATE receipt.  
+5. A Deliberate Receipt MUST include `terminal_state`.  
+6. A Deliberate Receipt MUST distinguish terminal state from relationship/provenance events.  
+7. A copied, forked, federated, split, merged, continued, or recovered Deliberate MUST preserve provenance.  
+8. A receipt may preserve ancestry of non-legitimate thinking without implying authority.  
+9. Receipts formalize terminal preservation and lineage. They do not elevate non-legitimate artifacts into authority.  
+10. Receipts are immutable.  
+11. Receipts are the canonical proof artifacts for structural closure.  
+12. Audit logs must allow deterministic reconstruction of receipts.  
+13. If a receipt and audit diverge, the system is invalid.  
+14. Receipt presence never implies correctness.  
+15. Receipt presence never implies consensus beyond recorded stances.  
+16. Receipt absence means structural closure did not occur.  
 
 Violation of these invariants indicates system correctness failure.
 
@@ -292,6 +322,8 @@ Common patterns include:
 - references must use canonical engine IDs  
 - lineage must be explicit and directional  
 - no implicit inference is allowed  
+- Receipt lineage must preserve Deliberate provenance across copied, forked, federated, split, merged, continued, recovered, and returned instances.  
+- A returned receipt from a copied or federated Deliberate must preserve origin and provenance path sufficiently to reconstruct ancestry even if intermediate generations are absent.  
 
 Receipts may reference multiple prior receipts.
 

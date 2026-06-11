@@ -193,6 +193,10 @@ A commit is the central durable wrapper used for many substrate artifacts.
 
 CCS holds commits for all substrates, even though many substrates mainly consume from it rather than add to it directly.
 
+Mutable CDS working state remains in the Deliberate store.
+
+Only terminal Deliberate Receipts are emitted as CCS commit artifacts.
+
 CCS is important because it enables:
 
 - durable communication
@@ -203,11 +207,17 @@ CCS is important because it enables:
 
 CCS is one of the main platform backbones.
 
+**Invariant:** CCS preserves terminal CDS receipts, not every mutable note-taking action inside a Deliberate.
+
 ---
 
 # 8. CDS — Deliberation Substrate
 
 CDS is the substrate for non-legitimate thinking.
+
+CDS is the substrate for non-legitimate structured investigation, deliberation, simulation, and convergence.
+
+It preserves the formation of understanding before, beside, and after legitimate decisions.
 
 Its core unit is the item.
 
@@ -225,6 +235,8 @@ This allows CDS to support:
 - proposal generation for later legitimacy
 
 CDS is a workspace, not a legitimacy system.
+
+CDS may contribute ancestry to later legitimate outcomes, but it does not create legitimacy.
 
 A deliberate is a workspace for an epic or line of inquiry.
 
@@ -247,11 +259,15 @@ Observation items may record facts such as:
 - concrete instances of problems
 - milestone conditions used for replay
 
+CDS observations may include software events, care observations, investigation notes, evidence references, symptoms, intervention responses, disputed interpretations, and feed-derived observations.
+
 Observation items are investigatory and structured.
 
 They are not the same as CCare signals.
 
 They belong to deliberation space.
+
+Observation Items remain non-legitimate even when derived from legitimate or external sources.
 
 They may relate to copied items representing resolutions or other CDS items.
 
@@ -302,6 +318,19 @@ It is used for:
 
 This relation preserves traceability across substrate boundaries and trust contexts.
 
+`derived_from` preserves lineage only.
+
+It must not be used to infer current authority posture.
+
+A normalized source model may represent cross-substrate derivation as:
+
+```yaml
+source_kind: RESOLUTION | FEED | CAS_OUTPUT | CCARE_SIGNAL | OBSERVATION | RECEIPT | MANUAL_ENTRY
+authority_class: LEGITIMATE | NON_LEGITIMATE | SIMULATION | FEDERATED_UNTRUSTED | FEDERATED_ADMITTED
+derivation_kind: RESOLUTION_DERIVED | FEED_DERIVED | CAS_DERIVED | CCARE_DERIVED | RECEIPT_DERIVED | NONE
+derived_from: optional source reference
+```
+
 It is not limited to one substrate.
 
 ---
@@ -315,6 +344,13 @@ It is responsible for all graph structure related work.
 CSG builds graph structure from commits only, at least for now.
 
 It does not consume whole graph objects directly.
+
+A CSG projection must declare its graph type and authority context.
+
+Projection types include:
+
+- `RESOLUTION_GRAPH`
+- `CDS_ITEM_GRAPH`
 
 CSG may build:
 
@@ -331,9 +367,13 @@ However:
 
 remain separate.
 
+For CDS, CSG graphs Items only.
+
 Items may point to resolutions, but those cross-class relationships are ignored when the graph is created.
 
 This preserves separate graph classes.
+
+Mixed comparison projections may exist only as explicit comparison views and must not be treated as legitimate-state graphs.
 
 CSG is a second major platform backbone.
 
@@ -456,6 +496,10 @@ It is responsible for defining the signals and allowing hosts to emit them.
 
 CCare owns care/check-in style observational input.
 
+CCare signals are generally interpreted from the perspective of alignment around a decision or Resolution.
+
+Signals may include confidence and rich annotation.
+
 These signals are descriptive and non-authoritative.
 
 They may later be consumed by CAS.
@@ -468,6 +512,10 @@ CCare does not own:
 - structural truth
 
 It owns signal definition and emission.
+
+One candidate signal is `reduced_trust`.
+
+`reduced_trust` indicates reduced confidence in the process, relationship, context, or decision environment surrounding a Resolution or decision candidate. It does not by itself establish fault, invalidity, or illegitimacy.
 
 ---
 
@@ -491,6 +539,22 @@ It may push outward through CRS or inward through feeds.
 Its purpose is to prevent the commit store and the rest of the ecosystem from being overwhelmed by noise.
 
 Feeds are transient monitoring channels.
+
+A CSP feed is a live time-based vector projection, not merely a passive event stream.
+
+Feeds may be:
+
+- streamed forward
+- streamed backward
+- bounded by time
+- bounded by count
+- bounded by scope
+- defined over signal, commit, resolution, group, or range criteria
+- replayed or sampled depending on feed definition
+
+CDS consumes CSP feed material only through explicit host selection, historic range selection, group selection, deliberate-local rule, or configured materialization policy.
+
+**Invariant:** Feed events do not automatically become CDS Items.
 
 Commits are durable records.
 
@@ -522,6 +586,22 @@ It can analyze both:
 
 - resolution graphs
 - item graphs
+
+CAS determines analysis context from the CSG graph type/source.
+
+Examples:
+
+```yaml
+input_graph_type: CDS_ITEM_GRAPH
+analysis_context: SIMULATION
+```
+
+```yaml
+input_graph_type: RESOLUTION_GRAPH
+analysis_context: LEGITIMATE
+```
+
+CAS outputs must preserve the input graph type and analysis context so downstream consumers do not confuse simulation analysis with legitimate-state analysis.
 
 The default is to apply the same analysis to both, though simulation-sensitive variations may be useful later.
 

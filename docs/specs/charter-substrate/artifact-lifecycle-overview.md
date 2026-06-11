@@ -74,13 +74,27 @@ CGL (Interpretation)
 
 ## 3.2 Investigative Flow (CDS Loop)
 
-Signals / Structure  
+uncertain condition  
 ↓  
-CDS (Deliberate: Items, Observations, Simulation)  
+observations  
 ↓  
-Synthesis (LOCKED Items)  
+questions  
 ↓  
-Review Layer (integration path)  
+hypotheses  
+↓  
+evidence  
+↓  
+disputed interpretations  
+↓  
+relationship mapping  
+↓  
+breakout reasoning  
+↓  
+DDR synthesis  
+↓  
+conclusion candidate  
+↓  
+optional Review / legitimacy path  
 
 ---
 
@@ -151,6 +165,12 @@ Runtime Purge (optional)
 - exploratory  
 - non-authoritative  
 - simulation-capable  
+
+CDS Deliberate state is mutable workspace state.
+
+It remains in the Deliberate store until terminal preservation.
+
+A Deliberate may end as CLOSED or ABANDONED.
 
 ---
 
@@ -236,13 +256,18 @@ It may:
 
 ## 7.1 What Happens
 
-All outputs become **immutable commit artifacts**:
+All terminal outputs become **immutable commit artifacts**:
 
 - resolution commits  
 - identity commits  
 - signal commits  
 - receipt commits  
+- terminal deliberate receipts  
 - deliberate artifacts (optional packaging)  
+
+Terminal Deliberate Receipts are CCS commit artifacts.
+
+Mutable CDS workspace activity is not automatically committed to CCS.
 
 ---
 
@@ -270,6 +295,11 @@ All outputs become **immutable commit artifacts**:
 
 - commits stored immutably  
 - append-only history preserved  
+- terminal Deliberate Receipts preserved as durable CCS artifacts  
+
+When a Deliberate reaches CLOSED or ABANDONED, its Deliberate Receipt is preserved in the Commit Store as a durable CCS artifact.
+
+The receipt preserves non-legitimate history and lineage without making the Deliberate legitimate.
 
 ---
 
@@ -309,9 +339,14 @@ All outputs become **immutable commit artifacts**:
 
 ## 9.2 Projections
 
-- resolution-only  
-- item-only  
-- mixed  
+CSG projections must preserve graph type.
+
+Projection types:
+
+- `RESOLUTION_GRAPH`  
+- `CDS_ITEM_GRAPH`  
+
+`CDS_ITEM_GRAPH` is an Item graph and must not be treated as a legitimate Resolution graph.
 
 ---
 
@@ -387,6 +422,20 @@ All outputs become **immutable commit artifacts**:
 - propagation patterns  
 - tension and drift  
 - predictive dynamics  
+
+CAS outputs must preserve the input graph type and analysis context.
+
+Examples:
+
+```yaml
+input_graph_type: CDS_ITEM_GRAPH
+analysis_context: SIMULATION
+```
+
+```yaml
+input_graph_type: RESOLUTION_GRAPH
+analysis_context: LEGITIMATE
+```
 
 ---
 
@@ -522,7 +571,13 @@ CGL answers:
 
 ---
 
-## 14.3 Key Property
+## 14.3 Provenance Requirements
+
+Copied, forked, federated, split, merged, continued, recovered, and returned Deliberates must preserve durable provenance.
+
+Returned receipts must preserve origin and provenance path sufficiently to reconstruct ancestry even when intermediate generations are absent.
+
+## 14.4 Key Property
 
 > Structure moves. Authority does not.
 
@@ -572,10 +627,16 @@ CGL answers:
 - legitimacy is created only by the Legitimacy Engine  
 - review never creates legitimacy  
 - CCS defines structure, not meaning  
+- mutable CDS state is not a CCS commit  
+- terminal Deliberate Receipts are CCS commit artifacts  
+- receipts formalize terminal preservation and lineage  
+- receipts do not elevate non-legitimate artifacts into authority  
 - commit store is immutable and append-only  
 - CSG never infers structure  
+- a `CDS_ITEM_GRAPH` must not be treated as a `RESOLUTION_GRAPH`  
 - CIS never infers identity  
 - CAS never infers authority  
+- CAS outputs must preserve graph type and analysis context  
 - CGL never enforces action  
 - federation never implies synchronization  
 - archival precedes purge  
