@@ -1,9 +1,9 @@
 # Charter CAS Mathematical and Physics Foundations — Knowledge Skill
 
-Version: 0.2.0
+Version: 0.3.0
 Status: Research baseline / knowledge skill; not a CAS specification
-Scope: Mathematical research, model evaluation, validation, traceability, and learning for Charter CAS 
-Supersedes: 0.1.0
+Scope: Mathematical research, model evaluation, validation, traceability, and learning for Charter CAS
+Supersedes: 0.2.0
 
 ## Purpose
 
@@ -34,6 +34,14 @@ Before substantive CAS-specific analysis, consult the relevant sources in this o
 
 Every report must include a **source execution audit**: sources reviewed (with version, URL, commit, or date when available); sources unavailable; sources intentionally omitted and why; conflicting definitions; applied precedence; and the effect of missing sources on confidence. Do not claim complete review after partial inspection. If required sources cannot be accessed, proceed only with an explicit scope limitation.
 
+### Reproducible source snapshots (mandatory for regressions)
+
+Record a **source snapshot manifest** for each regression run. For repository-backed CAS specifications, prefer the immutable repository commit SHA and exact path; record blob SHA or content hash when available. For external research record DOI/version, publication or retrieval date, and immutable archive or checksum when feasible. For conversations record an identifiable conversation reference/date and clearly mark mutable or unavailable content. Record the skill version and exact regression protocol revision alongside the source manifest.
+
+A branch name, `main`, a moving URL, or an access date alone is **not** a reproducible snapshot. If the exact revision cannot be resolved, label the snapshot `UNPINNED`, explain the limitation, and do not claim controlled same-source regression comparability. Include the source snapshot ID (for example `SRCSET-001`) in each research run and link it to all findings that depend on that source set.
+
+To compare skill versions, use identical pinned source snapshots, input datasets, parameter definitions, and regression scenarios; explicitly list any differences. If sources changed, classify the comparison as a **changed-source comparison**, not a controlled skill-only regression. A source snapshot documents what was consulted; it does not establish that every relevant source was reviewed.
+
 ## Mathematical research map
 
 ### A. Discrete mathematics and graph algorithms
@@ -50,7 +58,7 @@ Vectors, norms, projections, angles, cosine similarity, incidence/adjacency oper
 
 ### D. Statistics, uncertainty, and time series
 
-Rolling means, variance, density, recency, confidence, missingness, event windows, trends, change points, burstiness, and uncertainty propagation. Distinguish negative condition, volatility, disagreement, and absence of observations. Silence is not evidence of stability or misalignment.
+Rolling means, variance, density, recency, confidence, missingness, event windows, trends, change points, burstiness, and uncertainty propagation. Distinguish negative condition, volatility, disagreement, and absence of observations. Silence is not evidence of stability or misalignment. For temporal models, distinguish event time, reporting/ingestion time, observation schedule/frequency, and evidence reliability; freshness alone does not characterize the observation process.
 
 ### E. Dynamics, fields, and network propagation
 
@@ -103,6 +111,8 @@ All substantive model evaluations must pass through the following gates. If a ga
 4. Propose at least one plausible competing explanatory mechanism for behavioral or causal interpretations, or explain why none is relevant.
 5. Specify which observables would distinguish models, which parameters cannot be identified from available evidence, and what additional observations or interventions would help.
 6. Fitting an observation does not identify its generating mechanism. If models remain observationally equivalent, preserve ambiguity.
+7. **For temporal models, define the observation process separately from latent/system dynamics.** Specify event time (when the underlying occurrence happened), reporting/ingestion time (when evidence became available), observation schedule and frequency (when measurement was possible or attempted), and evidence reliability (error, bias, coverage, and uncertainty). Identify late, missing, duplicated, backfilled, censored, or revised reports where relevant. State which timestamps are known, inferred, or absent. Do not substitute time since last received report for time since last underlying event.
+8. Distinguish **system-state uncertainty** from **observation-process uncertainty**. If an apparent trend can be produced by changes in reporting cadence, delay, or reliability, report that alternative explanation and whether the trend is identifiable.
 
 ### Gate 3 — Verification, sensitivity, and counterexamples
 
@@ -116,6 +126,13 @@ For each claimed mathematical property, record its premises, verification method
 - `FAILED`
 
 Multiple statuses may apply to different properties or evidence dimensions. `EMPIRICALLY_VALIDATED` requires identified data and a validation design; numerical simulation alone does not qualify. Never claim a test was run unless it was actually executed. Distinguish necessary, sufficient, and necessary-and-sufficient conditions.
+
+**Property proof is not protocol completion.** Maintain two independent registers:
+
+- **Mathematical property register:** property ID, premises, method, evidence/artifact, result, and limitations; e.g. `ANALYTICALLY_VERIFIED` for a fixed-point theorem under declared conditions.
+- **Regression execution register:** check ID, expected evidence, execution state (`NOT_RUN`, `PARTIAL`, `COMPLETED`, `BLOCKED`, or `NOT_APPLICABLE`), actual evidence, failures/omissions, and scope of completion.
+
+A central theorem may be proven while the regression remains `PARTIAL` because sensitivity, alternative cases, observation-process tests, or source audits were not executed. Never report `REGRESSION_COMPLETE` solely from a proven mathematical property. Distinguish **protocol execution completeness** from **acceptance outcome** (`PASS`, `PASS_WITH_LIMITATIONS`, `FAIL`, or `INDETERMINATE`); a completed protocol can fail, and an incomplete one cannot be presented as fully validated.
 
 Check relevant properties: mathematical well-definedness, dimensions, determinism, invariance, boundedness, monotonicity (when claimed), existence/uniqueness, convergence, stability, and algorithmic reproducibility. Explain why non-applicable properties are omitted.
 
@@ -133,7 +150,7 @@ Use lightweight **research-local IDs** (not new CAS/CIS identity semantics):
 - Every finding cites its model, assumptions, relevant parameters, derivation, verification, and source evidence.
 - Each interpretation cites findings and its claim classification; never imply stronger evidence than its dependencies.
 - Record version, source provenance, and changes. When an assumption, source, parameter, or model changes, identify downstream findings and interpretations needing reevaluation.
-- Include the source execution audit described above.
+- Include the source execution audit described above. Link each research run to a pinned `SRCSET-###` snapshot manifest, or mark it `UNPINNED`. Maintain separate mathematical property and regression execution registers; preserve check IDs across skill-version comparisons.
 
 ### Gate 5 — Interpretation and disposition
 
@@ -165,12 +182,12 @@ For each dimension report evidence, limitations, and `SUPPORTED`, `PARTIAL`, `NO
 A report should include, in this order:
 
 1. Research question, scope, and CAS boundary.
-2. Source execution audit and source-precedence discrepancies.
+2. Source execution audit, immutable source snapshot manifest (`SRCSET-###`), and source-precedence discrepancies.
 3. Hypothesis, alternative explanations, and claim classifications.
 4. Traceable assumptions, variables, model, and parameters.
 5. Worked derivation/example with references to assumptions and model IDs.
-6. Mathematical property verification register (property, assumptions, method, status, result, limitation).
-7. Parameter sensitivity, boundary conditions, robustness, and counterexamples.
+6. Mathematical property verification register (property, assumptions, method, status, result, limitation). Separately report regression protocol execution (check ID, run state, evidence, omissions, acceptance result).
+7. Parameter sensitivity, boundary conditions, robustness, and counterexamples. Include temporal observation-process sensitivity where applicable.
 8. Identifiability assessment: indistinguishable explanations and required additional evidence.
 9. Separate mathematical-verification, model-adequacy, and empirical-support assessments.
 10. Findings, semantic interpretation limits, and traceability references.
@@ -180,7 +197,9 @@ For lightweight exploratory conversations, concise formatting is acceptable, but
 
 ## Regression protocol for skill changes
 
-Use a fixed hypothesis and the same source snapshot to compare skill versions. Evaluate **research quality, not report length**. Compare unsupported claims caught, assumption coverage, rival explanations, verified properties, parameter robustness, traceability, and changes in evidence classification. Record what was actually computed, simulated, or empirically tested.
+Use a fixed hypothesis and an **identical immutable source snapshot manifest (`SRCSET-###`)** to compare skill versions. Pin the repository commit(s), relevant file paths/content hashes, data version, parameters, and protocol revision. If pinning is impossible, declare the comparison uncontrolled. Evaluate **research quality, not report length**. Compare unsupported claims caught, assumption coverage, rival explanations, verified properties, parameter robustness, traceability, and changes in evidence classification. Record what was actually computed, simulated, or empirically tested.
+
+For **every** numbered regression check, record `NOT_RUN`, `PARTIAL`, `COMPLETED`, `BLOCKED`, or `NOT_APPLICABLE`, plus evidence and acceptance outcome. Publish a completion matrix and list remaining checks. Mathematical proofs and executed examples can support a check but never silently substitute for checks that were not run. Do not call a regression fully executed unless every applicable check has been completed; a completed check may still fail its acceptance criterion.
 
 ### Regression A — Organizational incentives and strategic behavior
 
@@ -209,9 +228,10 @@ Required checks:
 3. Check a stability property analytically or numerically; distinguish sufficient from necessary conditions and stability from desirability.
 4. Compare stable adverse equilibrium, recovering disturbance, and escalating disturbance; report which cases are actually demonstrated.
 5. Vary missing-observation patterns, feedback delay, thresholds, and parameters; record sensitivity and uncertainty.
-6. Do not equate absent signals with evidence of stability or deterioration.
-7. Preserve the current semantic state's projection role; do not make a research stability label authoritative.
-8. Apply the full evidence and traceability contract.
+6. **Model the observation process explicitly**, distinguishing event time, reporting/ingestion time, observation frequency/sampling schedule, and evidence reliability. Include at least two contrasting observation processes applied to the **same underlying system trajectory** (for example delayed reporting versus genuinely reduced event frequency), and determine whether they yield different apparent stability or degradation. If not executed, mark the check `NOT_RUN` or `PARTIAL`; freshness-only models do not satisfy this check.
+7. Do not equate absent signals with evidence of stability or deterioration.
+8. Preserve the current semantic state's projection role; do not make a research stability label authoritative.
+9. Apply the full evidence and traceability contract.
 
 ### Acceptance criteria for both regressions
 
@@ -227,6 +247,9 @@ Required checks:
 - **AC-10:** Every model has a research disposition without silent specification promotion.
 - **AC-11:** Mathematical verification, model adequacy, and empirical support are assessed separately.
 - **AC-12:** The revision improves claim discipline or traceability, not just output volume.
+- **AC-13:** A regression has an immutable source snapshot manifest, or is explicitly marked uncontrolled/`UNPINNED`.
+- **AC-14:** Mathematical property verification and regression check execution are reported independently; unexecuted checks remain visible even when central theorems are proven.
+- **AC-15:** Temporal regression distinguishes event time, report time, sampling cadence, and evidence reliability, and tests at least two observation processes against a shared underlying trajectory (or records the test as incomplete).
 
 ## Priority study sequence
 
@@ -251,6 +274,10 @@ Required checks:
 - Predictive estimates must be separated from current observations.
 - A contraction condition such as `||alpha W|| < 1` can be sufficient under specified norm and update assumptions; do not call it necessary without proof.
 - A numeric experiment is not empirical validation of human behavior.
+- A fresh report is not necessarily a recent event; a stale report is not necessarily evidence that no event occurred.
+- Increased reporting frequency can imitate increased event frequency; delayed/backfilled reporting can imitate abrupt changes.
+- A proven property is not evidence that every regression scenario was executed.
+- A moving branch URL is not an immutable research snapshot.
 
 ## Canonical and historical links
 
@@ -263,6 +290,14 @@ Required checks:
 - Archived engine: https://github.com/whitephoenixsoft/CharterCore/blob/main/docs/specs/archive/cli/foundations/CAS/14-vls-alignment-engine.md
 
 ## Maintenance and changelog
+
+### v0.3.0 — 2026-11-06
+
+- Required pinned source snapshot manifests for reproducible skill-version regression comparisons; documented uncontrolled comparisons.
+- Separated mathematical property verification from regression protocol execution and acceptance outcomes, with per-check execution states.
+- Required explicit temporal observation-process modeling: event time, report/ingestion time, observation schedule/frequency, and evidence reliability.
+- Strengthened temporal regression with same-trajectory/different-observation-process comparisons and added AC-13 through AC-15.
+- Preserved CAS boundaries: research observation models are not automatically CAS formulas or requirements.
 
 ### v0.2.0 — 2026-11-06
 
